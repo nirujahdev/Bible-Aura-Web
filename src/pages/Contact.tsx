@@ -1,22 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Clock, Send, ArrowLeft, MessageCircle, Globe, Instagram, CheckCircle, Home, Info, Crown, Heart, LogIn, UserPlus, Menu, X } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ArrowLeft, MessageCircle, Globe, Instagram, Home, Info, Crown, Heart, LogIn, UserPlus, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Contact = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -24,31 +14,6 @@ const Contact = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitted(true);
-    setIsSubmitting(false);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 3000);
   };
 
   const contactMethods = [
@@ -319,119 +284,10 @@ const Contact = () => {
           ))}
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-16">
-          {/* Contact Form */}
-          <div>
-            <Card className="border-2 border-orange-100">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-gray-900 flex items-center">
-                  <MessageCircle className="h-6 w-6 mr-2 text-orange-600" />
-                  Send Us a Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!isSubmitted ? (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                          Your Name
-                        </label>
-                        <Input
-                          id="name"
-                          name="name"
-                          type="text"
-                          required
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          placeholder="John Doe"
-                          className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address
-                        </label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          required
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="john@example.com"
-                          className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                        Subject
-                      </label>
-                      <Input
-                        id="subject"
-                        name="subject"
-                        type="text"
-                        required
-                        value={formData.subject}
-                        onChange={handleInputChange}
-                        placeholder="How can we help you?"
-                        className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                        Message
-                      </label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        required
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        placeholder="Tell us more about your inquiry..."
-                        rows={6}
-                        className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                      />
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Send Message
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
-                      <CheckCircle className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
-                    <p className="text-gray-600">
-                      Thank you for reaching out. We'll get back to you within 24 hours.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Additional Information */}
+        {/* Main Content */}
+        <div className="max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8">
+          {/* Contact Information Cards */}
           <div className="space-y-8">
             {/* Office Information */}
             <Card>
@@ -485,21 +341,35 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            {/* Developer Information */}
-            <Card className="border-2 border-orange-100">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
-                    BN
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Benaiah Nicholas Nimal</h3>
-                  <p className="text-orange-600 font-medium mb-2">Founder & Lead Developer</p>
-                  <p className="text-gray-600 text-sm">
-                    Passionate about combining technology with faith to create meaningful spiritual experiences.
-                  </p>
+          </div>
+          
+          {/* Social Media Links */}
+          <div className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
+                  <Instagram className="h-5 w-5 mr-2 text-orange-600" />
+                  Connect with Us
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <a 
+                    href="https://www.instagram.com/bible_aura.ai" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-orange-50 transition-colors"
+                  >
+                    <Instagram className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">@bible_aura.ai</p>
+                      <p className="text-gray-600 text-sm">Follow us for daily inspiration</p>
+                    </div>
+                  </a>
                 </div>
               </CardContent>
             </Card>
+          </div>
           </div>
         </div>
 

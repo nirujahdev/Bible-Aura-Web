@@ -38,44 +38,7 @@ const About = () => {
     }
   ];
 
-  const milestones = [
-    {
-      year: "2023",
-      title: "The Vision",
-      description: "Bible Aura was conceived with the vision of making biblical wisdom accessible through AI technology."
-    },
-    {
-      year: "2024",
-      title: "Platform Launch",
-      description: "Launched the beta version with core AI analysis features and biblical study tools."
-    },
-    {
-      year: "2024",
-      title: "Community Growth",
-      description: "Reached 10,000+ active users worldwide, building a thriving community of believers."
-    },
-    {
-      year: "2025",
-      title: "Advanced Features",
-      description: "Introduced personalized study plans, sermon library, and enhanced AI capabilities."
-    }
-  ];
 
-  const teamMembers = [
-    {
-      name: "Benaiah Nicholas Nimal",
-      role: "Founder & Lead Developer",
-      description: "Passionate about combining technology with faith to create meaningful spiritual experiences.",
-      skills: ["AI Development", "Theological Research", "Product Design"]
-    }
-  ];
-
-  const stats = [
-    { number: "10,000+", label: "Active Users" },
-    { number: "500K+", label: "Bible Analyses" },
-    { number: "50+", label: "Bible Translations" },
-    { number: "99.9%", label: "Uptime" }
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -302,16 +265,37 @@ const About = () => {
           </Card>
         </div>
 
-        {/* Stats Section */}
+        {/* About Me Section */}
         <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-8 mb-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Our Impact</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-orange-600 mb-2">{stat.number}</div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Profile Image */}
+              <div className="text-center md:text-left">
+                <div className="relative inline-block">
+                  <img 
+                    src="/benaiah.jpg" 
+                    alt="Benaiah Nicholas Nimal" 
+                    className="w-64 h-64 rounded-2xl object-cover shadow-2xl mx-auto md:mx-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 to-transparent rounded-2xl"></div>
+                </div>
               </div>
-            ))}
+              
+              {/* About Text */}
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">About Me</h2>
+                <h3 className="text-xl font-semibold text-orange-600 mb-4">Benaiah Nicholas Nimal</h3>
+                <p className="text-gray-700 leading-relaxed mb-6">
+                  I'm a passionate developer and believer who saw the incredible potential of combining cutting-edge AI technology with biblical wisdom. My journey in software development, coupled with a deep love for Scripture, inspired me to create Bible Aura.
+                </p>
+                <p className="text-gray-700 leading-relaxed mb-6">
+                  With a background in AI development and theological research, I've dedicated myself to building tools that make biblical insights more accessible to believers worldwide. My vision is to bridge the gap between ancient wisdom and modern technology.
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  When I'm not coding or studying Scripture, I enjoy exploring how technology can serve the global Christian community and create meaningful spiritual experiences for people from all walks of life.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -335,64 +319,9 @@ const About = () => {
           </div>
         </div>
 
-        {/* Story/Timeline */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Our Journey</h2>
-          <div className="max-w-4xl mx-auto">
-            <div className="space-y-8">
-              {milestones.map((milestone, index) => (
-                <div key={index} className="flex items-start space-x-6">
-                  <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold">
-                      {index + 1}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-4 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-900">{milestone.title}</h3>
-                      <span className="text-orange-600 font-semibold">{milestone.year}</span>
-                    </div>
-                    <p className="text-gray-600">{milestone.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Team Section */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Meet Our Team</h2>
-          <div className="max-w-4xl mx-auto">
-            <div className="grid gap-8">
-              {teamMembers.map((member, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-                      <div className="flex-shrink-0">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center text-white text-2xl font-bold">
-                          {member.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                      </div>
-                      <div className="flex-1 text-center md:text-left">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-1">{member.name}</h3>
-                        <p className="text-orange-600 font-semibold mb-3">{member.role}</p>
-                        <p className="text-gray-600 mb-4">{member.description}</p>
-                        <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                          {member.skills.map((skill, skillIndex) => (
-                            <span key={skillIndex} className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
+
+
 
         {/* Technology Section */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-8 mb-20">
