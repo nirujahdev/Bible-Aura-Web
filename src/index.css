@@ -1,0 +1,484 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+✦Bible Aura Design System
+AI-Powered Biblical Insight
+Primary: #f85700 (Vibrant Orange)
+Typography: Montserrat (300-900)
+Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
+*/
+
+@layer base {
+  /* Smooth scrolling for navigation links */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  :root {
+    /* Core ✦Bible Aura Colors */
+    --aura-orange: 16 100% 49%;        /* #f85700 */
+    --aura-orange-light: 22 100% 58%;   /* #ff7f39 */
+    --aura-orange-dark: 14 100% 42%;    /* #d64900 */
+    --aura-white: 0 0% 100%;            /* #ffffff */
+    --aura-black: 0 0% 0%;              /* #000000 */
+
+    /* Primary System Colors */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 16 100% 49%;              /* ✦Bible Aura Orange */
+    --primary-foreground: 0 0% 100%;
+    --primary-50: 16 100% 97%;
+    --primary-100: 16 100% 93%;
+    --primary-200: 16 100% 86%;
+    --primary-300: 18 100% 76%;
+    --primary-400: 20 100% 66%;
+    --primary-500: 16 100% 49%;          /* Main color */
+    --primary-600: 14 100% 42%;
+    --primary-700: 12 100% 35%;
+    --primary-800: 10 100% 28%;
+    --primary-900: 8 100% 21%;
+
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 16 20% 95%;
+    --muted-foreground: 16 20% 45%;
+
+    --accent: 16 50% 90%;
+    --accent-foreground: 16 100% 49%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 16 30% 90%;
+    --input: 16 30% 95%;
+    --ring: 16 100% 49%;
+
+    /* Spiritual Theme Colors */
+    --spiritual: 16 100% 49%;
+    --spiritual-foreground: 0 0% 100%;
+    --spiritual-light: 22 100% 58%;
+    --spiritual-dark: 14 100% 42%;
+    
+    --divine: 18 100% 55%;
+    --divine-foreground: 0 0% 100%;
+    --divine-light: 24 100% 65%;
+    --divine-dark: 16 100% 45%;
+
+    /* Sacred Gradients */
+    --gradient-aura: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(22 100% 58%) 100%);
+    --gradient-aura-hover: linear-gradient(135deg, hsl(22 100% 58%) 0%, hsl(16 100% 49%) 100%);
+    --gradient-divine: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(24 100% 60%) 50%, hsl(20 100% 55%) 100%);
+    --gradient-spiritual: linear-gradient(180deg, hsl(16 100% 49%), hsl(18 100% 55%));
+    --gradient-sacred-radial: radial-gradient(circle at center, hsl(16 100% 49% / 0.3) 0%, transparent 70%);
+    --gradient-celestial-glow: linear-gradient(45deg, hsl(16 100% 49% / 0.1), hsl(22 100% 58% / 0.2), hsl(16 100% 49% / 0.1));
+
+    /* Divine Shadows */
+    --shadow-spiritual: 0 10px 40px -10px hsl(16 100% 49% / 0.4);
+    --shadow-divine: 0 8px 32px -4px hsl(16 100% 49% / 0.5);
+    --shadow-aura-glow: 0 0 30px hsl(16 100% 49% / 0.6);
+    --shadow-sacred-glow: 0 0 50px hsl(16 100% 49% / 0.4), 0 0 100px hsl(16 100% 49% / 0.2);
+    --shadow-celestial: 0 20px 60px -15px hsl(16 100% 49% / 0.3);
+    --shadow-holy-light: inset 0 1px 0 hsl(0 0% 100% / 0.2), 0 1px 2px hsl(16 100% 49% / 0.3);
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 16 100% 49%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 16 20% 95%;
+    --sidebar-accent-foreground: 16 100% 49%;
+    --sidebar-border: 16 30% 90%;
+    --sidebar-ring: 16 100% 49%;
+  }
+
+  .dark {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 16 100% 49%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 16 100% 49%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 16 100% 49%;
+
+    --spiritual: 16 100% 49%;
+    --spiritual-foreground: 0 0% 100%;
+    
+    --divine: 18 100% 55%;
+    --divine-foreground: 0 0% 100%;
+
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 16 100% 49%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 16 100% 49%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* Smooth scrolling for divine experience */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Divine selection styling */
+  ::selection {
+    background: hsl(16 100% 49% / 0.2);
+    color: hsl(16 100% 49%);
+  }
+
+  /* Sacred focus states */
+  :focus-visible {
+    outline: 2px solid hsl(16 100% 49%);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+}
+
+@layer components {
+  /* Divine Button Variants - Simplified */
+  .btn-divine {
+    @apply relative overflow-hidden bg-aura-gradient text-white font-medium px-4 py-2 rounded-lg 
+           shadow-md transition-all duration-200 hover:scale-[1.02] 
+           hover:shadow-lg active:scale-[0.98];
+  }
+
+  .btn-divine::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent 
+           opacity-0 transition-opacity duration-300 transform -translate-x-full;
+  }
+
+  .btn-divine:hover::before {
+    @apply opacity-10 translate-x-full;
+    transition: transform 0.4s ease-in-out;
+  }
+
+  /* Sacred Card Styling - Simplified */
+  .card-sacred {
+    @apply bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-orange-100 
+           dark:border-orange-900/20 backdrop-blur-sm relative overflow-hidden
+           hover:shadow-md transition-all duration-200 hover:translate-y-[-1px];
+  }
+
+  .card-sacred::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent 
+           opacity-0 transition-opacity duration-200;
+  }
+
+  .card-sacred:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Spiritual Input Fields - Simplified */
+  .input-spiritual {
+    @apply border border-orange-200 focus:border-primary focus:ring-1 focus:ring-primary/20 
+           rounded-md px-3 py-2 bg-white dark:bg-gray-800 transition-all duration-200
+           placeholder:text-gray-400 dark:placeholder:text-gray-500;
+  }
+
+  .input-spiritual:focus {
+    @apply shadow-sm;
+  }
+
+  /* Holy Text Effects - Simplified */
+  .text-divine {
+    @apply font-semibold text-transparent bg-clip-text bg-aura-gradient;
+  }
+
+  .text-sacred {
+    @apply text-primary font-medium;
+  }
+
+  /* Celestial Loading Spinner - Simplified */
+  .spinner-celestial {
+    @apply animate-spin rounded-full border-2 border-orange-200 border-t-primary;
+  }
+
+  /* Divine Navigation */
+  .nav-divine {
+    @apply backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-orange-100 
+           dark:border-orange-900/20 sticky top-0 z-50;
+  }
+
+  /* Sacred Scrollbar */
+  .scrollbar-sacred::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-sacred::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+  }
+
+  .scrollbar-sacred::-webkit-scrollbar-thumb {
+    @apply bg-aura-gradient rounded-full hover:shadow-aura-glow;
+  }
+
+  /* Spiritual Animations - Simplified and Subtle */
+  .animate-entrance {
+    animation: sacred-fade-in 0.4s ease-out;
+  }
+
+  .animate-divine-hover {
+    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-md;
+  }
+
+  .animate-celestial-float {
+    animation: celestial-float 8s ease-in-out infinite;
+  }
+
+  .animate-sacred-pulse {
+    animation: divine-pulse 4s ease-in-out infinite;
+  }
+
+  /* Holy Gradient Text */
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-500 to-primary;
+    animation: spiritual-gradient 3s ease infinite;
+    background-size: 400% 400%;
+  }
+
+  /* Divine Backdrop */
+  .backdrop-divine {
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(248, 87, 0, 0.05);
+    border: 1px solid rgba(248, 87, 0, 0.1);
+  }
+
+  /* Sacred Glow Effect */
+  .glow-sacred {
+    filter: drop-shadow(0 0 10px rgba(248, 87, 0, 0.5));
+  }
+
+  .glow-sacred:hover {
+    filter: drop-shadow(0 0 20px rgba(248, 87, 0, 0.8));
+  }
+
+  /* Celestial Border Animation */
+  .border-celestial {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .border-celestial::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: linear-gradient(45deg, #f85700, #ff7f39, #f85700);
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    animation: aura-rotate 3s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* Typography Utilities */
+  .font-divine {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
+
+  .font-sacred {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+  }
+
+  .font-holy {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+  }
+
+  /* Animation Utilities - Simplified */
+  .transition-divine {
+    transition-property: transform, box-shadow, filter, opacity;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Enhanced Shadow Effects */
+  .shadow-3xl {
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
+  /* Custom Gradient Borders */
+  .border-gradient-to-r {
+    border-image: linear-gradient(to right, hsl(var(--aura-orange-light)), hsl(var(--aura-orange))) 1;
+  }
+
+  .transition-sacred {
+    transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .transition-celestial {
+    transition: all 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Hover Effects - Simplified */
+  .hover-divine:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(248, 87, 0, 0.15);
+  }
+
+  .hover-sacred:hover {
+    filter: brightness(1.05) saturate(1.1);
+    transform: scale(1.02);
+  }
+
+  .hover-celestial:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Custom Float Animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Mobile-first utilities */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .mobile-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+
+  /* Improved mobile typography */
+  @media (max-width: 640px) {
+    .text-responsive {
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    
+    .text-responsive-lg {
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    
+    .text-responsive-xl {
+      font-size: 1.125rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+/* Keyframe Animations */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+  }
+  33% { 
+    transform: translateY(-3px) rotate(1deg); 
+  }
+  66% { 
+    transform: translateY(3px) rotate(-1deg); 
+  }
+}
+
+@keyframes celestial-float {
+  0%, 100% { 
+    transform: translateY(0px) scale(1); 
+    opacity: 0.6;
+  }
+  50% { 
+    transform: translateY(-8px) scale(1.1); 
+    opacity: 1;
+  }
+}
+
+@keyframes divine-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(248, 87, 0, 0.4);
+  }
+  50% { 
+    transform: scale(1.05); 
+    box-shadow: 0 0 0 10px rgba(248, 87, 0, 0);
+  }
+}
+
+@keyframes sacred-fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes spiritual-gradient {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+@keyframes aura-rotate {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
