@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Users, Target, Lightbulb, ArrowLeft, Star, Crown, BookOpen, Brain, MessageCircle, Shield, Home, Info, Phone, LogIn, UserPlus, Menu, X } from "lucide-react";
+import { Heart, Users, Target, Lightbulb, ArrowLeft, Star, Crown, BookOpen, Brain, MessageCircle, Shield, Home, Info, Phone, LogIn, UserPlus, Menu, X, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const About = () => {
@@ -49,90 +49,90 @@ const About = () => {
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
           
           <div className="relative flex items-center justify-between">
-            {/* Enhanced Logo - Single Line */}
-            <div className="hidden lg:flex items-center space-x-3 px-4 py-2 rounded-full transition-all duration-500 hover:bg-primary/5 group cursor-pointer">
-              <span className="text-xl font-divine text-primary whitespace-nowrap transition-all duration-500 group-hover:text-primary/80 group-hover:scale-105">✦Bible Aura</span>
+            {/* Desktop Layout */}
+            <div className="hidden lg:flex items-center justify-between w-full">
+              {/* Left - Logo */}
+              <div className="flex items-center">
+                <span className="text-xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
+              </div>
+
+              {/* Center - Navigation Items */}
+              <div className="flex items-center space-x-2">
+                              <a 
+                  href="/" 
+                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                >
+                  <Home className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                  <span className="text-sm font-semibold whitespace-nowrap">Home</span>
+                </a>
+              
+                              <Link 
+                  to="/about"
+                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                >
+                  <Info className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                  <span className="text-sm font-semibold whitespace-nowrap">About</span>
+                </Link>
+
+                <Link 
+                  to="/contact"
+                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                >
+                  <Phone className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                  <span className="text-sm font-semibold whitespace-nowrap">Contact</span>
+                </Link>
+
+                <Link 
+                  to="/pricing"
+                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                >
+                  <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                  <span className="text-sm font-semibold whitespace-nowrap">Pricing</span>
+                </Link>
+
+                <Link 
+                  to="/funding"
+                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                >
+                  <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                  <span className="text-sm font-semibold whitespace-nowrap">Support Us</span>
+                </Link>
             </div>
             
-            {/* Enhanced Desktop Navigation Items */}
-            <div className="hidden lg:flex items-center space-x-3">
-              {/* Home */}
-              <Link 
-                to="/" 
-                className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-              >
-                <Home className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-sm font-semibold whitespace-nowrap">Home</span>
-                <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              </Link>
-              
-              {/* About */}
-              <Link 
-                to="/about" 
-                className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-              >
-                <Info className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-sm font-semibold whitespace-nowrap">About</span>
-                <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              </Link>
-              
-              {/* Contact */}
-              <Link 
-                to="/contact" 
-                className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-              >
-                <Phone className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-sm font-semibold whitespace-nowrap">Contact</span>
-                <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              </Link>
-              
-              {/* Pricing */}
-              <Link 
-                to="/pricing" 
-                className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-              >
-                <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-sm font-semibold whitespace-nowrap">Pricing</span>
-                <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              </Link>
-              
-              {/* Give */}
-              <Link 
-                to="/funding" 
-                className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-              >
-                <Heart className="h-4 w-4 text-orange-500 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 group-hover:text-white" />
-                <span className="text-sm font-semibold whitespace-nowrap text-orange-500 group-hover:text-white">Give</span>
-                <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              </Link>
-            </div>
-            
-            {/* Desktop Auth Button */}
-            <div className="hidden lg:flex items-center">
-              <Link to="/auth">
-                <button className="group flex items-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-8 py-3 rounded-full hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-110 active:scale-95">
-                  <div className="flex items-center space-x-1">
-                    <LogIn className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
-                    <UserPlus className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
-                  </div>
-                  <span className="text-sm font-semibold whitespace-nowrap">Sign In/Up</span>
-                </button>
-              </Link>
+              {/* Right - Auth Button */}
+              <div className="flex items-center">
+                <Link to="/auth">
+                  <button className="group flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-110 active:scale-95">
+                    <div className="flex items-center space-x-1">
+                      <LogIn className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
+                      <UserPlus className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
+                    </div>
+                    <span className="text-sm font-semibold whitespace-nowrap">Sign In/Up</span>
+                  </button>
+                </Link>
+              </div>
             </div>
 
-            {/* Enhanced Mobile Menu Button - Centered and Bigger */}
-            <div className="lg:hidden flex items-center justify-center w-full">
-              {/* Mobile Menu Button - Big and Centered */}
+            {/* Mobile Layout */}
+            <div className="lg:hidden flex items-center justify-between w-full">
+              {/* Big Centered Logo */}
+              <div className="flex-1 flex justify-center">
+                <span className="text-xl sm:text-2xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
+              </div>
+              
+              {/* Mobile Hamburger Menu */}
               <button
                 onClick={toggleMobileMenu}
-                className="group relative p-6 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 hover:bg-white/30 transition-all duration-500 hover:scale-125 shadow-lg hover:shadow-xl"
+                className="relative p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-500 group"
               >
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/30 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                {isMobileMenuOpen ? (
-                  <X className="relative h-8 w-8 text-primary transition-all duration-500 group-hover:rotate-90" />
-                ) : (
-                  <Menu className="relative h-8 w-8 text-primary transition-all duration-500 group-hover:rotate-180" />
-                )}
+                <div className="relative w-6 h-6 flex items-center justify-center">
+                  {isMobileMenuOpen ? (
+                    <X className="h-6 w-6 text-primary transition-all duration-500 rotate-180" />
+                  ) : (
+                    <Menu className="h-6 w-6 text-primary transition-all duration-500" />
+                  )}
+                </div>
+                <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
               </button>
             </div>
           </div>
@@ -144,22 +144,17 @@ const About = () => {
             {/* Enhanced glowing border effect for mobile */}
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/20 via-transparent to-white/20 opacity-60"></div>
             
-            {/* Centered Bible Aura Text */}
-            <div className="relative flex items-center justify-center mb-6 pb-4 border-b border-primary/20">
-              <span className="text-2xl font-divine text-primary">✦Bible Aura</span>
-            </div>
-            
             <div className="relative flex flex-col space-y-3">
               {/* Enhanced Mobile Navigation Items */}
-              <Link 
-                to="/" 
+              <a 
+                href="/" 
                 onClick={closeMobileMenu}
                 className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
               >
                 <Home className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
                 <span className="text-base font-semibold">Home</span>
                 <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </Link>
+              </a>
               
               <Link 
                 to="/about" 
@@ -191,28 +186,23 @@ const About = () => {
                 <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </Link>
               
-              <Link 
-                to="/funding" 
-                onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
-              >
-                <Heart className="h-5 w-5 text-orange-500 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 group-hover:text-white" />
-                <span className="text-base font-semibold text-orange-500 group-hover:text-white">Give</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </Link>
-
-              {/* Enhanced Mobile Auth Button */}
-              <div className="border-t border-gradient-to-r from-primary/20 to-primary/10 pt-4 mt-4">
-                <Link to="/auth" onClick={closeMobileMenu}>
-                  <button className="group relative flex items-center justify-center space-x-3 bg-gradient-to-r from-primary to-primary/80 text-white px-8 py-4 rounded-2xl hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 w-full">
-                    <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="relative flex items-center space-x-2">
-                      <LogIn className="h-5 w-5 transition-all duration-500 group-hover:scale-125" />
-                      <UserPlus className="h-5 w-5 transition-all duration-500 group-hover:scale-125" />
-                    </div>
-                    <span className="relative text-base font-bold">Sign In/Up</span>
-                  </button>
-                </Link>
+              
+              {/* Mobile CTA Buttons */}
+              <div className="border-t border-gradient-to-r from-primary/20 to-primary/10 pt-6 mt-6">
+                <div className="flex space-x-3 w-full">
+                  <Link to="/auth" onClick={closeMobileMenu} className="flex-1">
+                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-3 rounded-full hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 w-full">
+                      <Sparkles className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
+                      <span className="text-sm font-semibold">Get Started</span>
+                    </button>
+                  </Link>
+                  <Link to="/funding" onClick={closeMobileMenu} className="flex-1">
+                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-105 w-full">
+                      <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
+                      <span className="text-sm font-semibold">Support Us</span>
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

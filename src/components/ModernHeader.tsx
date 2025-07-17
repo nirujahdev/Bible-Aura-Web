@@ -26,18 +26,11 @@ export function ModernHeader({
 
   if (variant === 'minimal') {
     return (
-      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-2 left-20 w-1 h-1 bg-white rounded-full animate-pulse"></div>
-          <div className="absolute top-3 right-32 w-1.5 h-1.5 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-2 left-40 w-1 h-1 bg-white rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
-        </div>
-        
+      <div className="bg-orange-500 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Star className="h-4 w-4 text-amber-200 animate-spin" style={{animationDuration: '3s'}} />
+              <Star className="h-4 w-4 text-amber-200" />
               <span className="text-sm font-medium">
                 Unlock AI-powered biblical insights with a free account
               </span>
@@ -48,18 +41,17 @@ export function ModernHeader({
                 asChild 
                 className="bg-white text-orange-600 hover:bg-orange-50 font-semibold shadow-sm h-8 px-4 text-sm"
               >
-                <Link to="/auth">
-                  Join Free
-                  <ChevronRight className="h-3 w-3 ml-1" />
-                </Link>
+                <Link to="/auth">Get Started</Link>
               </Button>
               
               {showDismiss && (
                 <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleDismiss}
-                  className="text-white hover:bg-white/10 bg-transparent border-none p-1 h-6 w-6"
+                  className="text-white hover:bg-white/10 h-8 w-8 p-0"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -71,67 +63,70 @@ export function ModernHeader({
 
   if (variant === 'premium') {
     return (
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 text-white relative overflow-hidden">
-        {/* Premium animated background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse"></div>
-          <div className="absolute top-2 left-10 w-2 h-2 bg-white rounded-full animate-bounce opacity-60"></div>
-          <div className="absolute bottom-2 right-20 w-1.5 h-1.5 bg-white rounded-full animate-bounce opacity-40" style={{animationDelay: '0.5s'}}></div>
-          <div className="absolute top-3 right-40 w-1 h-1 bg-white rounded-full animate-bounce opacity-50" style={{animationDelay: '1s'}}></div>
+      <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-purple-600 text-white relative overflow-hidden">
+        {/* Simplified background */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-2 left-10 w-2 h-2 bg-white rounded-full"></div>
+          <div className="absolute bottom-2 right-20 w-1.5 h-1.5 bg-white rounded-full"></div>
+          <div className="absolute top-3 right-40 w-1 h-1 bg-white rounded-full"></div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="flex-shrink-0">
-                <div className="relative">
-                  <Crown className="h-7 w-7 sm:h-8 sm:w-8 text-amber-300" />
-                  <Sparkles className="h-3 w-3 text-white absolute -top-1 -right-1 animate-pulse" />
-                </div>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="relative">
+                <Crown className="h-8 w-8 text-yellow-300" />
+                <Sparkles className="h-3 w-3 text-white absolute -top-1 -right-1" />
               </div>
               
               <div>
-                <h3 className="font-bold text-base sm:text-lg mb-1">Unlock Premium Biblical Experience</h3>
-                <p className="text-white/90 text-xs sm:text-sm leading-relaxed">
-                  Access AI-powered verse analysis, unlimited notes, advanced search, and personalized spiritual insights
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg font-bold">Premium Features Available</h3>
+                  <Badge className="bg-yellow-400 text-purple-900 font-semibold">NEW</Badge>
+                </div>
+                
+                <p className="text-sm text-purple-100">
+                  Unlock AI biblical analysis, unlimited chats, and premium study tools
                 </p>
                 
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
-                  <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                    <Brain className="h-3 w-3 mr-1" />
+                <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-purple-200">
+                  <div className="flex items-center gap-1">
+                    <Brain className="h-3 w-3" />
                     AI Analysis
-                  </Badge>
-                  <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                    <Bookmark className="h-3 w-3 mr-1" />
-                    Smart Notes
-                  </Badge>
-                  <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                    <Heart className="h-3 w-3 mr-1" />
-                    Personal Journey
-                  </Badge>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <BookOpen className="h-3 w-3" />
+                    Study Tools
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Heart className="h-3 w-3" />
+                    Unlimited Access
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 lg:flex-shrink-0">
+            <div className="flex items-center gap-3">
               <Button 
                 asChild 
-                className="bg-white text-purple-600 hover:bg-purple-50 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="bg-white text-purple-600 hover:bg-purple-50 font-bold shadow-lg"
               >
                 <Link to="/auth">
-                  <Star className="h-4 w-4 mr-2" />
                   Start Free Trial
+                  <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
               
-                             {showDismiss && (
-                 <Button
-                   onClick={handleDismiss}
-                   className="text-white hover:bg-white/10 bg-transparent border-none p-2"
-                 >
-                   <X className="h-4 w-4" />
-                 </Button>
-               )}
+              {showDismiss && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDismiss}
+                  className="text-white hover:bg-white/10 h-9 w-9 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -139,92 +134,92 @@ export function ModernHeader({
     );
   }
 
-  // Default variant
+  // Default variant - simplified
   return (
-    <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white relative overflow-hidden shadow-lg">
-      {/* Modern animated background */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
-        <div className="absolute top-3 left-16 w-2 h-2 bg-white rounded-full animate-float opacity-60"></div>
-        <div className="absolute bottom-2 right-24 w-1.5 h-1.5 bg-white rounded-full animate-float opacity-40" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-2 right-16 w-1 h-1 bg-white rounded-full animate-float opacity-50" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-3 left-32 w-1.5 h-1.5 bg-white rounded-full animate-float opacity-45" style={{animationDelay: '0.5s'}}></div>
+    <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white relative overflow-hidden">
+      {/* Simplified background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-3 left-16 w-2 h-2 bg-white rounded-full"></div>
+        <div className="absolute bottom-2 right-24 w-1.5 h-1.5 bg-white rounded-full"></div>
+        <div className="absolute top-2 right-16 w-1 h-1 bg-white rounded-full"></div>
+        <div className="absolute bottom-3 left-32 w-1.5 h-1.5 bg-white rounded-full"></div>
       </div>
       
       <div className="max-w-7xl mx-auto px-4 py-5">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Left side - Content */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <div className="relative">
-                <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                  <BookOpen className="h-6 w-6 text-white" />
-                </div>
-                <Star className="h-3 w-3 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
-              </div>
+            <div className="relative">
+              <Sparkles className="h-10 w-10 text-white" />
+              <Star className="h-3 w-3 text-amber-300 absolute -top-1 -right-1" />
             </div>
             
-            <div className="min-w-0">
-              <h2 className="font-bold text-xl lg:text-2xl mb-2 leading-tight">
-                Enhance Your Bible Study Experience
-              </h2>
-              <p className="text-white/95 text-sm lg:text-base leading-relaxed mb-3">
-                Create a free account to bookmark verses, take notes, and unlock AI-powered biblical insights
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl lg:text-2xl font-bold">
+                  Welcome to ✦Bible Aura
+                </h2>
+                <Badge className="bg-amber-400 text-orange-900 font-bold text-xs">
+                  AI POWERED
+                </Badge>
+              </div>
+              
+              <p className="text-sm lg:text-base text-orange-100 mb-3">
+                Experience scripture like never before with AI-powered insights, personalized study plans, and intelligent biblical analysis.
               </p>
               
-              {/* Feature highlights */}
-              <div className="flex flex-wrap gap-2">
-                <div className="flex items-center gap-1.5 text-xs lg:text-sm">
-                  <Bookmark className="h-3 w-3 text-amber-300" />
-                  <span className="text-white/90">Save Verses</span>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-orange-200">
+                <div className="flex items-center gap-1">
+                  <Brain className="h-3 w-3" />
+                  AI Biblical Analysis
                 </div>
-                <div className="flex items-center gap-1.5 text-xs lg:text-sm">
-                  <Brain className="h-3 w-3 text-amber-300" />
-                  <span className="text-white/90">AI Insights</span>
+                <div className="flex items-center gap-1">
+                  <BookOpen className="h-3 w-3" />
+                  Multiple Translations
                 </div>
-                <div className="flex items-center gap-1.5 text-xs lg:text-sm">
-                  <Heart className="h-3 w-3 text-amber-300" />
-                  <span className="text-white/90">Personal Notes</span>
+                <div className="flex items-center gap-1">
+                  <Bookmark className="h-3 w-3" />
+                  Personal Study Tools
+                </div>
+                <div className="flex items-center gap-1">
+                  <Heart className="h-3 w-3" />
+                  Community Features
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Right side - Actions */}
-          <div className="flex items-center gap-3 lg:flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3">
             <Button 
               asChild 
-              className="bg-white text-orange-600 hover:bg-orange-50 font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-sm lg:text-base px-6 py-2.5"
+              className="bg-white text-orange-600 hover:bg-orange-50 font-bold shadow-lg text-sm lg:text-base px-6 py-2.5"
             >
               <Link to="/auth">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Join Free
+                Start Your Journey
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             
             <Button 
               asChild 
-              className="border-2 border-white/40 text-white hover:bg-white/10 font-semibold backdrop-blur-sm transition-all duration-300 bg-transparent text-sm px-4"
+              variant="outline"
+              className="border-2 border-white/40 text-white hover:bg-white/10 font-semibold backdrop-blur-sm bg-transparent text-sm px-4"
             >
-              <Link to="/auth">
-                Sign In
-              </Link>
+              <Link to="/about">Learn More</Link>
             </Button>
             
-                         {showDismiss && (
-               <Button
-                 onClick={handleDismiss}
-                 className="text-white hover:bg-white/10 bg-transparent border-none p-2 ml-2"
-               >
-                 <X className="h-4 w-4" />
-               </Button>
-             )}
+            {showDismiss && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDismiss}
+                className="text-white hover:bg-white/10 h-10 w-10 p-0 self-center"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
-      
-      {/* Bottom highlight line */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
     </div>
   );
 } 

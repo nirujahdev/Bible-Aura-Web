@@ -15,7 +15,7 @@ import Bible from "./pages/Bible";
 import Chat from "./pages/Chat";
 import Journal from "./pages/Journal";
 import Sermons from "./pages/Sermons";
-import Prayers from "./pages/Prayers";
+
 import Profile from "./pages/Profile";
 import Favorites from "./pages/Favorites";
 import Songs from "./pages/Songs";
@@ -159,11 +159,7 @@ function AppContent() {
                 <Sermons />
               </ProtectedRoute>
             } />
-            <Route path="/prayers" element={
-              <ProtectedRoute>
-                <Prayers />
-              </ProtectedRoute>
-            } />
+
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />

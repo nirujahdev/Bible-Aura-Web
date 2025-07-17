@@ -1,263 +1,494 @@
-// Bible API Service for Multi-language Support
-// Supports Tamil, Sinhala, English and other languages
+// Real Bible API Service with actual API calls
+// Supports Tamil, English, and multiple translations through berinaniesh API
 
 export interface BibleBook {
   id: string;
   name: string;
+  nameLong: string;
   chapters: number;
   testament: 'Old' | 'New';
 }
 
 export interface BibleVerse {
+  id: string;
+  orgId: string;
   book: string;
   chapter: number;
   verse: number;
   text: string;
+  reference: string;
 }
 
 export interface BibleTranslation {
   id: string;
   name: string;
+  abbreviation: string;
   language: string;
   languageCode: string;
+  description: string;
+  apiId: string;
 }
 
-// Available Bible translations
+// Real translations available through berinaniesh API
 export const BIBLE_TRANSLATIONS: BibleTranslation[] = [
-  // English
-  { id: 'KJV', name: 'King James Version', language: 'English', languageCode: 'en' },
-  { id: 'NIV', name: 'New International Version', language: 'English', languageCode: 'en' },
-  { id: 'ESV', name: 'English Standard Version', language: 'English', languageCode: 'en' },
-  { id: 'NLT', name: 'New Living Translation', language: 'English', languageCode: 'en' },
-  
-  // Tamil
-  { id: 'IRV', name: 'Indian Revised Version (Tamil)', language: 'Tamil', languageCode: 'ta' },
-  { id: 'TBSI', name: 'Tamil Bible Society of India', language: 'Tamil', languageCode: 'ta' },
-  
-  // Sinhala  
-  { id: 'SIOV', name: 'Sinhala Old Version', language: 'Sinhala', languageCode: 'si' },
-  { id: 'SIRV', name: 'Sinhala Revised Version', language: 'Sinhala', languageCode: 'si' },
+  // English Translations
+  { 
+    id: 'kjv', 
+    name: 'King James Version', 
+    abbreviation: 'KJV',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'The classic 1611 King James Bible',
+    apiId: 'kjv'
+  },
+  { 
+    id: 'asv', 
+    name: 'American Standard Version', 
+    abbreviation: 'ASV',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'American Standard Version 1901',
+    apiId: 'asv'
+  },
+  { 
+    id: 'web', 
+    name: 'World English Bible', 
+    abbreviation: 'WEB',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'World English Bible 2020',
+    apiId: 'web'
+  },
+  { 
+    id: 'webu', 
+    name: 'World English Bible Updated', 
+    abbreviation: 'WEBU',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'World English Bible Updated 2020',
+    apiId: 'webu'
+  },
+
+  // Tamil Translation
+  { 
+    id: 'tamil-ov', 
+    name: 'Tamil Old Version Bible', 
+    abbreviation: 'TOVBSI',
+    language: 'Tamil', 
+    languageCode: 'ta',
+    description: 'தமிழ் பழைய வேத வாசன் வேதம் (1957)',
+    apiId: 'tovbsi'
+  },
+
+  // Other Indian Languages
+  { 
+    id: 'malayalam', 
+    name: 'Malayalam Sathya Veda Pusthakam', 
+    abbreviation: 'MLSVP',
+    language: 'Malayalam', 
+    languageCode: 'ml',
+    description: 'Malayalam Bible 1910',
+    apiId: 'mlsvp'
+  },
+  { 
+    id: 'gujarati', 
+    name: 'Gujarati Old Version Bible', 
+    abbreviation: 'GOVBSI',
+    language: 'Gujarati', 
+    languageCode: 'gu',
+    description: 'Gujarati Bible 1908',
+    apiId: 'govbsi'
+  },
+  { 
+    id: 'odia', 
+    name: 'Odia Old Version Bible', 
+    abbreviation: 'OOVBSI',
+    language: 'Odia', 
+    languageCode: 'or',
+    description: 'Odia Bible 1958',
+    apiId: 'oovbsi'
+  }
 ];
 
-// Bible books data
-const BIBLE_BOOKS: BibleBook[] = [
-  // Old Testament
-  { id: 'gen', name: 'Genesis', chapters: 50, testament: 'Old' },
-  { id: 'exo', name: 'Exodus', chapters: 40, testament: 'Old' },
-  { id: 'lev', name: 'Leviticus', chapters: 27, testament: 'Old' },
-  { id: 'num', name: 'Numbers', chapters: 36, testament: 'Old' },
-  { id: 'deu', name: 'Deuteronomy', chapters: 34, testament: 'Old' },
-  { id: 'jos', name: 'Joshua', chapters: 24, testament: 'Old' },
-  { id: 'jdg', name: 'Judges', chapters: 21, testament: 'Old' },
-  { id: 'rut', name: 'Ruth', chapters: 4, testament: 'Old' },
-  { id: '1sa', name: '1 Samuel', chapters: 31, testament: 'Old' },
-  { id: '2sa', name: '2 Samuel', chapters: 24, testament: 'Old' },
-  { id: '1ki', name: '1 Kings', chapters: 22, testament: 'Old' },
-  { id: '2ki', name: '2 Kings', chapters: 25, testament: 'Old' },
-  { id: '1ch', name: '1 Chronicles', chapters: 29, testament: 'Old' },
-  { id: '2ch', name: '2 Chronicles', chapters: 36, testament: 'Old' },
-  { id: 'ezr', name: 'Ezra', chapters: 10, testament: 'Old' },
-  { id: 'neh', name: 'Nehemiah', chapters: 13, testament: 'Old' },
-  { id: 'est', name: 'Esther', chapters: 10, testament: 'Old' },
-  { id: 'job', name: 'Job', chapters: 42, testament: 'Old' },
-  { id: 'psa', name: 'Psalms', chapters: 150, testament: 'Old' },
-  { id: 'pro', name: 'Proverbs', chapters: 31, testament: 'Old' },
-  { id: 'ecc', name: 'Ecclesiastes', chapters: 12, testament: 'Old' },
-  { id: 'sng', name: 'Song of Songs', chapters: 8, testament: 'Old' },
-  { id: 'isa', name: 'Isaiah', chapters: 66, testament: 'Old' },
-  { id: 'jer', name: 'Jeremiah', chapters: 52, testament: 'Old' },
-  { id: 'lam', name: 'Lamentations', chapters: 5, testament: 'Old' },
-  { id: 'ezk', name: 'Ezekiel', chapters: 48, testament: 'Old' },
-  { id: 'dan', name: 'Daniel', chapters: 12, testament: 'Old' },
-  { id: 'hos', name: 'Hosea', chapters: 14, testament: 'Old' },
-  { id: 'jol', name: 'Joel', chapters: 3, testament: 'Old' },
-  { id: 'amo', name: 'Amos', chapters: 9, testament: 'Old' },
-  { id: 'oba', name: 'Obadiah', chapters: 1, testament: 'Old' },
-  { id: 'jon', name: 'Jonah', chapters: 4, testament: 'Old' },
-  { id: 'mic', name: 'Micah', chapters: 7, testament: 'Old' },
-  { id: 'nam', name: 'Nahum', chapters: 3, testament: 'Old' },
-  { id: 'hab', name: 'Habakkuk', chapters: 3, testament: 'Old' },
-  { id: 'zep', name: 'Zephaniah', chapters: 3, testament: 'Old' },
-  { id: 'hag', name: 'Haggai', chapters: 2, testament: 'Old' },
-  { id: 'zec', name: 'Zechariah', chapters: 14, testament: 'Old' },
-  { id: 'mal', name: 'Malachi', chapters: 4, testament: 'Old' },
-  
-  // New Testament
-  { id: 'mat', name: 'Matthew', chapters: 28, testament: 'New' },
-  { id: 'mrk', name: 'Mark', chapters: 16, testament: 'New' },
-  { id: 'luk', name: 'Luke', chapters: 24, testament: 'New' },
-  { id: 'jhn', name: 'John', chapters: 21, testament: 'New' },
-  { id: 'act', name: 'Acts', chapters: 28, testament: 'New' },
-  { id: 'rom', name: 'Romans', chapters: 16, testament: 'New' },
-  { id: '1co', name: '1 Corinthians', chapters: 16, testament: 'New' },
-  { id: '2co', name: '2 Corinthians', chapters: 13, testament: 'New' },
-  { id: 'gal', name: 'Galatians', chapters: 6, testament: 'New' },
-  { id: 'eph', name: 'Ephesians', chapters: 6, testament: 'New' },
-  { id: 'php', name: 'Philippians', chapters: 4, testament: 'New' },
-  { id: 'col', name: 'Colossians', chapters: 4, testament: 'New' },
-  { id: '1th', name: '1 Thessalonians', chapters: 5, testament: 'New' },
-  { id: '2th', name: '2 Thessalonians', chapters: 3, testament: 'New' },
-  { id: '1ti', name: '1 Timothy', chapters: 6, testament: 'New' },
-  { id: '2ti', name: '2 Timothy', chapters: 4, testament: 'New' },
-  { id: 'tit', name: 'Titus', chapters: 3, testament: 'New' },
-  { id: 'phm', name: 'Philemon', chapters: 1, testament: 'New' },
-  { id: 'heb', name: 'Hebrews', chapters: 13, testament: 'New' },
-  { id: 'jas', name: 'James', chapters: 5, testament: 'New' },
-  { id: '1pe', name: '1 Peter', chapters: 5, testament: 'New' },
-  { id: '2pe', name: '2 Peter', chapters: 3, testament: 'New' },
-  { id: '1jn', name: '1 John', chapters: 5, testament: 'New' },
-  { id: '2jn', name: '2 John', chapters: 1, testament: 'New' },
-  { id: '3jn', name: '3 John', chapters: 1, testament: 'New' },
-  { id: 'jud', name: 'Jude', chapters: 1, testament: 'New' },
-  { id: 'rev', name: 'Revelation', chapters: 22, testament: 'New' },
-];
+// Bible API endpoints
+const BIBLE_API_BASE = 'https://api.bible.berinaniesh.xyz';
+const FALLBACK_API_BASE = 'https://bible-api.com';
 
-interface ApiResponse {
-  verses: ApiVerse[];
+interface ApiBook {
+  id: number;
+  name: string;
+  translation_id: string;
+  total_chapters: number;
+  testament: string;
 }
 
 interface ApiVerse {
+  id: number;
+  book_id: number;
+  chapter: number;
   verse: number;
   text: string;
+  translation_id: string;
+}
+
+interface ApiChapterResponse {
+  verses: ApiVerse[];
+  book_name: string;
+  chapter: number;
+  translation: string;
 }
 
 class BibleApiService {
-  private baseUrl = 'https://bible-api.com';
-  private fallbackUrl = 'https://api.scripture.api.bible/v1';
+  private cache = new Map<string, any>();
+  private cacheTimeout = 5 * 60 * 1000; // 5 minutes
 
-  // Get all available books
-  getBooks(): BibleBook[] {
-    return BIBLE_BOOKS;
+  // Get cached data or fetch from API
+  private async getCachedData<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      return cached.data;
+    }
+
+    const data = await fetcher();
+    this.cache.set(key, { data, timestamp: Date.now() });
+    return data;
   }
 
-  // Get available translations
-  getTranslations(): BibleTranslation[] {
-    return BIBLE_TRANSLATIONS;
+  // Fetch books for a translation
+  async getBooks(translationId: string = 'kjv'): Promise<BibleBook[]> {
+    const cacheKey = `books_${translationId}`;
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+        const apiId = translation?.apiId || 'kjv';
+        
+        const response = await fetch(`${BIBLE_API_BASE}/books?translation=${apiId}`);
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const books: ApiBook[] = await response.json();
+        
+        return books.map(book => ({
+          id: book.id.toString(),
+          name: book.name,
+          nameLong: book.name,
+          chapters: book.total_chapters,
+          testament: book.testament === 'ot' ? 'Old' : 'New'
+        }));
+      } catch (error) {
+        console.error('Error fetching books:', error);
+        // Return fallback book list
+        return this.getFallbackBooks();
+      }
+    });
   }
 
   // Fetch chapter verses
-  async fetchChapter(bookId: string, chapter: number, translation: string = 'KJV'): Promise<BibleVerse[]> {
-    try {
-      // For Tamil and Sinhala, we'll use a different approach
-      if (translation === 'IRV' || translation === 'TBSI') {
-        return await this.fetchTamilChapter(bookId, chapter, translation);
-      } else if (translation === 'SIOV' || translation === 'SIRV') {
-        return await this.fetchSinhalaChapter(bookId, chapter, translation);
-      } else {
-        return await this.fetchEnglishChapter(bookId, chapter, translation);
+  async fetchChapter(bookId: string, chapter: number, translationId: string = 'kjv'): Promise<BibleVerse[]> {
+    const cacheKey = `chapter_${bookId}_${chapter}_${translationId}`;
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+        const apiId = translation?.apiId || 'kjv';
+        
+        const response = await fetch(`${BIBLE_API_BASE}/chapter?book_id=${bookId}&chapter=${chapter}&translation=${apiId}`);
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const data: ApiChapterResponse = await response.json();
+        
+        return data.verses.map(verse => ({
+          id: `${bookId}.${chapter}.${verse.verse}`,
+          orgId: verse.id.toString(),
+          book: bookId,
+          chapter: verse.chapter,
+          verse: verse.verse,
+          text: verse.text,
+          reference: `${data.book_name} ${verse.chapter}:${verse.verse}`
+        }));
+      } catch (error) {
+        console.error('Error fetching chapter:', error);
+        // Try fallback API
+        return this.fetchChapterFallback(bookId, chapter, translationId);
       }
+    });
+  }
+
+  // Search verses
+  async searchVerses(query: string, translationId: string = 'kjv', limit: number = 20): Promise<BibleVerse[]> {
+    const cacheKey = `search_${query}_${translationId}_${limit}`;
+    
+    return this.getCachedData(cacheKey, async () => {
+      try {
+        const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+        const apiId = translation?.apiId || 'kjv';
+        
+        const response = await fetch(`${BIBLE_API_BASE}/search?q=${encodeURIComponent(query)}&translation=${apiId}&limit=${limit}`);
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const verses: ApiVerse[] = await response.json();
+        
+        return verses.map(verse => ({
+          id: `${verse.book_id}.${verse.chapter}.${verse.verse}`,
+          orgId: verse.id.toString(),
+          book: verse.book_id.toString(),
+          chapter: verse.chapter,
+          verse: verse.verse,
+          text: verse.text,
+          reference: `Book ${verse.book_id} ${verse.chapter}:${verse.verse}`
+        }));
+      } catch (error) {
+        console.error('Error searching verses:', error);
+        return [];
+      }
+    });
+  }
+
+  // Get verse by reference (e.g., "John 3:16")
+  async getVerseByReference(reference: string, translationId: string = 'kjv'): Promise<BibleVerse | null> {
+    try {
+      // Parse reference like "John 3:16" or "JHN.3.16"
+      const parsed = this.parseReference(reference);
+      if (!parsed) return null;
+
+      const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+      const apiId = translation?.apiId || 'kjv';
+      
+      const response = await fetch(`${BIBLE_API_BASE}/verse?book=${parsed.book}&chapter=${parsed.chapter}&verse=${parsed.verse}&translation=${apiId}`);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const verse: ApiVerse = await response.json();
+      
+      return {
+        id: `${verse.book_id}.${verse.chapter}.${verse.verse}`,
+        orgId: verse.id.toString(),
+        book: verse.book_id.toString(),
+        chapter: verse.chapter,
+        verse: verse.verse,
+        text: verse.text,
+        reference: `${parsed.bookName} ${verse.chapter}:${verse.verse}`
+      };
     } catch (error) {
-      console.error('Error fetching chapter:', error);
-      throw new Error('Failed to fetch Bible chapter');
+      console.error('Error getting verse by reference:', error);
+      return null;
     }
   }
 
-  // Fetch English translations
-  private async fetchEnglishChapter(bookId: string, chapter: number, translation: string): Promise<BibleVerse[]> {
-    const book = BIBLE_BOOKS.find(b => b.id === bookId);
-    if (!book) throw new Error('Book not found');
-
+  // Get daily verse
+  async getDailyVerse(translationId: string = 'kjv'): Promise<BibleVerse | null> {
     try {
-      // Using Bible API for English translations
-      const response = await fetch(`${this.baseUrl}/${book.name.toLowerCase()}${chapter}?translation=${translation.toLowerCase()}`);
+      const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+      const apiId = translation?.apiId || 'kjv';
+      
+      const response = await fetch(`${BIBLE_API_BASE}/daily?translation=${apiId}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch from Bible API');
+        // Fallback to a popular verse
+        return this.getVerseByReference('John 3:16', translationId);
+      }
+
+      const verse: ApiVerse = await response.json();
+      
+      return {
+        id: `${verse.book_id}.${verse.chapter}.${verse.verse}`,
+        orgId: verse.id.toString(),
+        book: verse.book_id.toString(),
+        chapter: verse.chapter,
+        verse: verse.verse,
+        text: verse.text,
+        reference: `Book ${verse.book_id} ${verse.chapter}:${verse.verse}`
+      };
+    } catch (error) {
+      console.error('Error getting daily verse:', error);
+      return this.getVerseByReference('John 3:16', translationId);
+    }
+  }
+
+  // Fallback chapter fetch using bible-api.com
+  private async fetchChapterFallback(bookId: string, chapter: number, translationId: string): Promise<BibleVerse[]> {
+    try {
+      // Use bible-api.com as fallback (only supports English)
+      if (translationId !== 'kjv' && translationId !== 'web') {
+        return [];
+      }
+
+      const bookName = this.getBookNameFromId(bookId);
+      const response = await fetch(`${FALLBACK_API_BASE}/${bookName}+${chapter}`);
+      
+      if (!response.ok) {
+        return [];
       }
 
       const data = await response.json();
       
-      // Parse the response and return verses
-      return this.parseEnglishApiResponse(data, book.name, chapter);
+      return data.verses.map((verse: { book: string; chapter: number; verse: number; text: string }, index: number) => ({
+        id: `${bookId}.${chapter}.${index + 1}`,
+        orgId: `${bookId}.${chapter}.${index + 1}`,
+        book: bookId,
+        chapter: chapter,
+        verse: index + 1,
+        text: verse.text,
+        reference: `${data.reference} ${index + 1}`
+      }));
     } catch (error) {
-      // Fallback to sample data if API fails
-      return this.getSampleEnglishVerses(book.name, chapter);
+      console.error('Fallback API error:', error);
+      return [];
     }
   }
 
-  // Fetch Tamil Bible chapters
-  private async fetchTamilChapter(bookId: string, chapter: number, translation: string): Promise<BibleVerse[]> {
-    const book = BIBLE_BOOKS.find(b => b.id === bookId);
-    if (!book) throw new Error('Book not found');
-
-    // For now, return sample Tamil verses (you can integrate with Tamil Bible API)
-    return this.getSampleTamilVerses(book.name, chapter);
-  }
-
-  // Fetch Sinhala Bible chapters
-  private async fetchSinhalaChapter(bookId: string, chapter: number, translation: string): Promise<BibleVerse[]> {
-    const book = BIBLE_BOOKS.find(b => b.id === bookId);
-    if (!book) throw new Error('Book not found');
-
-    // For now, return sample Sinhala verses (you can integrate with Sinhala Bible API)
-    return this.getSampleSinhalaVerses(book.name, chapter);
-  }
-
-  // Parse English API response
-  private parseEnglishApiResponse(data: ApiResponse, bookName: string, chapter: number): BibleVerse[] {
-    if (!data || !data.verses) {
-      throw new Error('Invalid API response');
+  // Parse reference strings
+  private parseReference(reference: string): { book: string, bookName: string, chapter: number, verse: number } | null {
+    // Handle "John 3:16" format
+    const match = reference.match(/(\w+)\s*(\d+):(\d+)/);
+    if (match) {
+      const [, bookName, chapter, verse] = match;
+      return {
+        book: this.getBookIdFromName(bookName),
+        bookName: bookName,
+        chapter: parseInt(chapter),
+        verse: parseInt(verse)
+      };
     }
 
-    return data.verses.map((verse: ApiVerse) => ({
-      book: bookName,
-      chapter: chapter,
-      verse: verse.verse,
-      text: verse.text
-    }));
+    // Handle "JHN.3.16" format
+    const dotMatch = reference.match(/(\w+)\.(\d+)\.(\d+)/);
+    if (dotMatch) {
+      const [, bookId, chapter, verse] = dotMatch;
+      return {
+        book: bookId,
+        bookName: this.getBookNameFromId(bookId),
+        chapter: parseInt(chapter),
+        verse: parseInt(verse)
+      };
+    }
+
+    return null;
   }
 
-  // Sample English verses (fallback)
-  private getSampleEnglishVerses(bookName: string, chapter: number): BibleVerse[] {
-    if (bookName === 'John' && chapter === 3) {
-      return [
-        { book: bookName, chapter, verse: 16, text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life." },
-        { book: bookName, chapter, verse: 17, text: "For God did not send his Son into the world to condemn the world, but to save the world through him." }
-      ];
-    }
+  // Book name mappings
+  private getBookIdFromName(name: string): string {
+    const mappings: Record<string, string> = {
+      'genesis': '1', 'gen': '1',
+      'exodus': '2', 'exo': '2', 'ex': '2',
+      'leviticus': '3', 'lev': '3',
+      'numbers': '4', 'num': '4',
+      'deuteronomy': '5', 'deut': '5', 'deu': '5',
+      'joshua': '6', 'josh': '6', 'jos': '6',
+      'judges': '7', 'judg': '7', 'jdg': '7',
+      'ruth': '8', 'rut': '8',
+      'samuel': '9', '1samuel': '9', '1sam': '9', '1sa': '9',
+      '2samuel': '10', '2sam': '10', '2sa': '10',
+      'kings': '11', '1kings': '11', '1kgs': '11', '1ki': '11',
+      '2kings': '12', '2kgs': '12', '2ki': '12',
+      'chronicles': '13', '1chronicles': '13', '1chr': '13', '1ch': '13',
+      '2chronicles': '14', '2chr': '14', '2ch': '14',
+      'ezra': '15', 'ezr': '15',
+      'nehemiah': '16', 'neh': '16',
+      'esther': '17', 'est': '17',
+      'job': '18',
+      'psalms': '19', 'psalm': '19', 'psa': '19', 'ps': '19',
+      'proverbs': '20', 'prov': '20', 'pro': '20',
+      'ecclesiastes': '21', 'eccl': '21', 'ecc': '21',
+      'song': '22', 'songs': '22', 'sng': '22',
+      'isaiah': '23', 'isa': '23',
+      'jeremiah': '24', 'jer': '24',
+      'lamentations': '25', 'lam': '25',
+      'ezekiel': '26', 'ezek': '26', 'ezk': '26',
+      'daniel': '27', 'dan': '27',
+      'hosea': '28', 'hos': '28',
+      'joel': '29', 'joe': '29', 'jol': '29',
+      'amos': '30', 'amo': '30',
+      'obadiah': '31', 'obad': '31', 'oba': '31',
+      'jonah': '32', 'jon': '32',
+      'micah': '33', 'mic': '33',
+      'nahum': '34', 'nah': '34', 'nam': '34',
+      'habakkuk': '35', 'hab': '35',
+      'zephaniah': '36', 'zeph': '36', 'zep': '36',
+      'haggai': '37', 'hag': '37',
+      'zechariah': '38', 'zech': '38', 'zec': '38',
+      'malachi': '39', 'mal': '39',
+      'matthew': '40', 'matt': '40', 'mat': '40',
+      'mark': '41', 'mrk': '41',
+      'luke': '42', 'luk': '42',
+      'john': '43', 'jhn': '43',
+      'acts': '44', 'act': '44',
+      'romans': '45', 'rom': '45',
+      'corinthians': '46', '1corinthians': '46', '1cor': '46', '1co': '46',
+      '2corinthians': '47', '2cor': '47', '2co': '47',
+      'galatians': '48', 'gal': '48',
+      'ephesians': '49', 'eph': '49',
+      'philippians': '50', 'phil': '50', 'php': '50',
+      'colossians': '51', 'col': '51',
+      'thessalonians': '52', '1thessalonians': '52', '1thess': '52', '1th': '52',
+      '2thessalonians': '53', '2thess': '53', '2th': '53',
+      'timothy': '54', '1timothy': '54', '1tim': '54', '1ti': '54',
+      '2timothy': '55', '2tim': '55', '2ti': '55',
+      'titus': '56', 'tit': '56',
+      'philemon': '57', 'phlm': '57',
+      'hebrews': '58', 'heb': '58',
+      'james': '59', 'jas': '59', 'jam': '59',
+      'peter': '60', '1peter': '60', '1pet': '60', '1pe': '60',
+      '2peter': '61', '2pet': '61', '2pe': '61',
+      'john1': '62', '1john': '62', '1jn': '62',
+      'john2': '63', '2john': '63', '2jn': '63',
+      'john3': '64', '3john': '64', '3jn': '64',
+      'jude': '65', 'jud': '65',
+      'revelation': '66', 'rev': '66'
+    };
     
-    // Default sample verses
-    return [
-      { book: bookName, chapter, verse: 1, text: `This is verse 1 of ${bookName} chapter ${chapter}.` },
-      { book: bookName, chapter, verse: 2, text: `This is verse 2 of ${bookName} chapter ${chapter}.` }
-    ];
+    return mappings[name.toLowerCase()] || '43'; // Default to John
   }
 
-  // Sample Tamil verses
-  private getSampleTamilVerses(bookName: string, chapter: number): BibleVerse[] {
-    if (bookName === 'John' && chapter === 3) {
-      return [
-        { book: bookName, chapter, verse: 16, text: "ஏனென்றால் தேவன் உலகத்தில் அன்பு வைத்து, தம்முடைய ஒரே பிறந்த குமாரனைக் கொடுத்தார்; அவர்மேல் விசுவாசமுள்ள எவனும் கெட்டுப்போகாமல் நித்திய ஜீவனை அடையும்படிக்கு." },
-        { book: bookName, chapter, verse: 17, text: "ஏனென்றால் தேவன் உலகத்தைக் கண்டிக்கும்படிக்குத் தம்முடைய குமாரனை உலகத்தில் அனுப்பாமல், உலகம் அவர் மூலமாய் இரட்சிக்கப்படும்படிக்கே அவரை அனுப்பினார்." }
-      ];
-    }
-
-    return [
-      { book: bookName, chapter, verse: 1, text: `இது ${bookName} அதிகாரம் ${chapter} வசனம் 1 ஆகும்.` },
-      { book: bookName, chapter, verse: 2, text: `இது ${bookName} அதிகாரம் ${chapter} வசனம் 2 ஆகும்.` }
-    ];
+  private getBookNameFromId(id: string): string {
+    const names: Record<string, string> = {
+      '1': 'Genesis', '2': 'Exodus', '3': 'Leviticus', '4': 'Numbers', '5': 'Deuteronomy',
+      '6': 'Joshua', '7': 'Judges', '8': 'Ruth', '9': '1 Samuel', '10': '2 Samuel',
+      '11': '1 Kings', '12': '2 Kings', '13': '1 Chronicles', '14': '2 Chronicles', '15': 'Ezra',
+      '16': 'Nehemiah', '17': 'Esther', '18': 'Job', '19': 'Psalms', '20': 'Proverbs',
+      '21': 'Ecclesiastes', '22': 'Song of Songs', '23': 'Isaiah', '24': 'Jeremiah', '25': 'Lamentations',
+      '26': 'Ezekiel', '27': 'Daniel', '28': 'Hosea', '29': 'Joel', '30': 'Amos',
+      '31': 'Obadiah', '32': 'Jonah', '33': 'Micah', '34': 'Nahum', '35': 'Habakkuk',
+      '36': 'Zephaniah', '37': 'Haggai', '38': 'Zechariah', '39': 'Malachi', '40': 'Matthew',
+      '41': 'Mark', '42': 'Luke', '43': 'John', '44': 'Acts', '45': 'Romans',
+      '46': '1 Corinthians', '47': '2 Corinthians', '48': 'Galatians', '49': 'Ephesians', '50': 'Philippians',
+      '51': 'Colossians', '52': '1 Thessalonians', '53': '2 Thessalonians', '54': '1 Timothy', '55': '2 Timothy',
+      '56': 'Titus', '57': 'Philemon', '58': 'Hebrews', '59': 'James', '60': '1 Peter',
+      '61': '2 Peter', '62': '1 John', '63': '2 John', '64': '3 John', '65': 'Jude', '66': 'Revelation'
+    };
+    
+    return names[id] || 'John';
   }
 
-  // Sample Sinhala verses
-  private getSampleSinhalaVerses(bookName: string, chapter: number): BibleVerse[] {
-    if (bookName === 'John' && chapter === 3) {
-      return [
-        { book: bookName, chapter, verse: 16, text: "දෙවියන් වහන්සේ ලෝකය මෙතරම් ප්‍රේම කළ සේක, ඔහුගේ එකම පුත්‍රයාව දුන් සේක. ඔහු මත විශ්වාස කරන සෑම කෙනෙකුම විනාශ නොවී සදාකාල ජීවය ලබන පිණිස ය." },
-        { book: bookName, chapter, verse: 17, text: "දෙවියන් වහන්සේ තම පුත්‍රයාව ලෝකයට යැව්වේ ලෝකය නිරූපණය කරන්නට නොව, ලෝකය ඔහු මගින් ගැලවීමට ය." }
-      ];
-    }
-
+  // Fallback book list
+  private getFallbackBooks(): BibleBook[] {
     return [
-      { book: bookName, chapter, verse: 1, text: `මෙය ${bookName} පරිච්ඡේදය ${chapter} පදය 1 වේ.` },
-      { book: bookName, chapter, verse: 2, text: `මෙය ${bookName} පරිච්ඡේදය ${chapter} පදය 2 වේ.` }
+      { id: '40', name: 'Matthew', nameLong: 'The Gospel According to Matthew', chapters: 28, testament: 'New' },
+      { id: '41', name: 'Mark', nameLong: 'The Gospel According to Mark', chapters: 16, testament: 'New' },
+      { id: '42', name: 'Luke', nameLong: 'The Gospel According to Luke', chapters: 24, testament: 'New' },
+      { id: '43', name: 'John', nameLong: 'The Gospel According to John', chapters: 21, testament: 'New' },
+      { id: '44', name: 'Acts', nameLong: 'The Acts of the Apostles', chapters: 28, testament: 'New' },
+      { id: '45', name: 'Romans', nameLong: 'The Epistle to the Romans', chapters: 16, testament: 'New' },
+      { id: '46', name: '1 Corinthians', nameLong: 'The First Epistle to the Corinthians', chapters: 16, testament: 'New' },
+      { id: '47', name: '2 Corinthians', nameLong: 'The Second Epistle to the Corinthians', chapters: 13, testament: 'New' },
+      { id: '48', name: 'Galatians', nameLong: 'The Epistle to the Galatians', chapters: 6, testament: 'New' },
+      { id: '49', name: 'Ephesians', nameLong: 'The Epistle to the Ephesians', chapters: 6, testament: 'New' },
+      { id: '19', name: 'Psalms', nameLong: 'The Book of Psalms', chapters: 150, testament: 'Old' },
+      { id: '20', name: 'Proverbs', nameLong: 'The Book of Proverbs', chapters: 31, testament: 'Old' },
+      { id: '1', name: 'Genesis', nameLong: 'The Book of Genesis', chapters: 50, testament: 'Old' },
+      { id: '23', name: 'Isaiah', nameLong: 'The Book of Isaiah', chapters: 66, testament: 'Old' }
     ];
-  }
-
-  // Search verses across translations
-  async searchVerses(query: string, translation: string = 'KJV'): Promise<BibleVerse[]> {
-    // Implement search functionality here
-    // For now, return empty array
-    return [];
   }
 }
 

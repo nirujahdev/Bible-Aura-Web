@@ -31,7 +31,7 @@ const Landing = () => {
               <div className="hidden lg:flex items-center justify-between w-full">
                 {/* Left - Logo */}
                 <div className="flex items-center">
-                  <span className="text-3xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
+                  <span className="text-xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
                 </div>
 
                 {/* Center - Navigation Items */}
@@ -121,11 +121,6 @@ const Landing = () => {
           <div className="lg:hidden mt-3 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 py-6 px-4 animate-sacred-fade-in">
             {/* Enhanced glowing border effect for mobile */}
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/20 via-transparent to-white/20 opacity-60"></div>
-            
-            {/* Centered Bible Aura Text */}
-            <div className="relative flex items-center justify-center mb-6 pb-4 border-b border-primary/20">
-              <span className="text-2xl font-divine text-primary">✦Bible Aura</span>
-            </div>
             
             <div className="relative flex flex-col space-y-3">
               {/* Enhanced Mobile Navigation Items */}
@@ -337,18 +332,6 @@ const Landing = () => {
                 Start your spiritual transformation today with AI-powered biblical insights and community support.
               </p>
               
-              <div className="max-w-lg mx-auto mb-8">
-                <div className="flex space-x-3">
-                  <Input 
-                    placeholder="Enter your email for magic link" 
-                    className="bg-white/20 border-white/30 text-white placeholder:text-white/70 backdrop-blur-md flex-1 py-4 text-lg rounded-xl focus:bg-white/25 transition-all"
-                  />
-                  <Button className="bg-white text-orange-600 hover:bg-orange-50 whitespace-nowrap font-bold py-4 px-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all">
-                    Send Link
-                  </Button>
-                </div>
-              </div>
-              
               <div className="flex justify-center items-center mb-6">
                 <Link to="/auth">
                   <Button size="lg" className="bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white hover:text-orange-600 text-xl px-10 py-5 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 rounded-full">
@@ -358,24 +341,26 @@ const Landing = () => {
                 </Link>
               </div>
               
-              <div className="flex items-center justify-center space-x-6 text-white/80 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                  <span>No credit card required</span>
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 text-white/80 text-xs sm:text-sm">
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>
+                  <span className="whitespace-nowrap">No credit card required</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                  <span>5 free AI analyses</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                  <span>Cancel anytime</span>
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>
+                  <span className="whitespace-nowrap">5 free AI analyses</span>
+                </div>
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>
+                  <span className="whitespace-nowrap">Cancel anytime</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+
 
       {/* Enhanced Features Showcase Section */}
       <section id="features" className="py-20 bg-gradient-to-br from-gray-50 to-orange-50 relative overflow-hidden">
@@ -447,69 +432,44 @@ const Landing = () => {
           </div>
           
           {/* Enhanced Main Features Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
             
             {/* Feature 1 - AI Bible Analysis */}
             <div className="group relative h-full">
-              {/* Animated Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-orange-400/15 to-red-500/20 rounded-2xl transform rotate-1 group-hover:rotate-2 group-hover:scale-105 transition-all duration-700 blur-sm"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-2xl transform -rotate-1 group-hover:-rotate-2 group-hover:scale-105 transition-all duration-700 delay-75"></div>
-              
               <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-700 h-full flex flex-col border border-orange-100/50 group-hover:border-orange-200 overflow-hidden">
-                
-                {/* Floating Particles */}
-                <div className="absolute top-4 right-4 w-1 h-1 bg-orange-400 rounded-full animate-float opacity-60"></div>
-                <div className="absolute bottom-8 left-6 w-0.5 h-0.5 bg-orange-300 rounded-full animate-float opacity-40" style={{animationDelay: '1s'}}></div>
                 
                 {/* Enhanced Icon */}
                 <div className="text-center mb-6">
                   <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-400 via-orange-500 to-red-600 rounded-2xl shadow-xl group-hover:shadow-orange-300/50 group-hover:scale-110 transition-all duration-700 mb-4">
                     <BookOpen className="h-8 w-8 text-white" />
-                    <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </div>
                   
-                  <Badge className="bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold border border-orange-200 shadow-sm">
-                    Advanced AI
-                  </Badge>
-                </div>
-
-                <div className="text-center mb-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">
                     AI Bible Analysis
                   </h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    Deep contextual insights and theological understanding for every Bible verse with advanced AI-powered analysis
-                  </p>
                 </div>
 
-                {/* Enhanced Features List */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-2 bg-orange-50/50 rounded-lg p-2 group-hover:bg-orange-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
-                    <span className="text-gray-700 font-medium text-sm">Contextual verse recommendations</span>
+                {/* Features List */}
+                <div className="space-y-3 mb-6 flex-1">
+                  <div className="flex items-center space-x-3 p-3 bg-orange-50/50 rounded-lg group-hover:bg-orange-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Contextual verse insights</span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-orange-50/50 rounded-lg p-2 group-hover:bg-orange-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                  <div className="flex items-center space-x-3 p-3 bg-orange-50/50 rounded-lg group-hover:bg-orange-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">50+ Bible translations</span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-orange-50/50 rounded-lg p-2 group-hover:bg-orange-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                  <div className="flex items-center space-x-3 p-3 bg-orange-50/50 rounded-lg group-hover:bg-orange-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Cross-reference suggestions</span>
                   </div>
                 </div>
 
-                {/* Enhanced Highlight */}
-                <div className="bg-gradient-to-r from-orange-50 via-orange-100 to-red-50 rounded-xl p-4 border border-orange-200/50 shadow-inner">
+                {/* Summary Feature */}
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200/50 shadow-sm">
                   <div className="flex items-center justify-center space-x-2">
-                    <Star className="h-3 w-3 text-orange-500 animate-pulse" />
+                    <Star className="h-3 w-3 text-orange-500" />
                     <span className="text-orange-700 font-bold text-center text-xs">Instant analysis in 50+ languages</span>
-                    <Star className="h-3 w-3 text-orange-500 animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -517,65 +477,40 @@ const Landing = () => {
 
             {/* Feature 2 - AI Chat Assistant */}
             <div className="group relative h-full">
-              {/* Animated Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-blue-400/15 to-purple-500/20 rounded-2xl transform -rotate-1 group-hover:-rotate-2 group-hover:scale-105 transition-all duration-700 blur-sm"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl transform rotate-1 group-hover:rotate-2 group-hover:scale-105 transition-all duration-700 delay-75"></div>
-              
               <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-700 h-full flex flex-col border border-blue-100/50 group-hover:border-blue-200 overflow-hidden">
-                
-                {/* Floating Particles */}
-                <div className="absolute top-6 left-4 w-1 h-1 bg-blue-400 rounded-full animate-float opacity-60"></div>
-                <div className="absolute bottom-12 right-6 w-0.5 h-0.5 bg-blue-300 rounded-full animate-float opacity-40" style={{animationDelay: '1.5s'}}></div>
                 
                 {/* Enhanced Icon */}
                 <div className="text-center mb-6">
                   <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-400 via-blue-500 to-purple-600 rounded-2xl shadow-xl group-hover:shadow-blue-300/50 group-hover:scale-110 transition-all duration-700 mb-4">
                     <MessageCircle className="h-8 w-8 text-white" />
-                    <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </div>
                   
-                  <Badge className="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200 shadow-sm">
-                    24/7 Available
-                  </Badge>
-                </div>
-
-                <div className="text-center mb-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
                     AI Chat Assistant
                   </h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    Meaningful conversations about faith and theology with our biblically-trained AI companion
-                  </p>
                 </div>
 
-                {/* Enhanced Features List */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-2 bg-blue-50/50 rounded-lg p-2 group-hover:bg-blue-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                {/* Features List */}
+                <div className="space-y-3 mb-6 flex-1">
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50/50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Biblical Q&A support</span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-blue-50/50 rounded-lg p-2 group-hover:bg-blue-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50/50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Personal spiritual guidance</span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-blue-50/50 rounded-lg p-2 group-hover:bg-blue-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50/50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Scripture memorization help</span>
                   </div>
                 </div>
 
-                {/* Enhanced Highlight */}
-                <div className="bg-gradient-to-r from-blue-50 via-blue-100 to-purple-50 rounded-xl p-4 border border-blue-200/50 shadow-inner">
+                {/* Summary Feature */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200/50 shadow-sm">
                   <div className="flex items-center justify-center space-x-2">
-                    <Star className="h-3 w-3 text-blue-500 animate-pulse" />
+                    <MessageCircle className="h-3 w-3 text-blue-500" />
                     <span className="text-blue-700 font-bold text-center text-xs">24/7 biblical companion</span>
-                    <Star className="h-3 w-3 text-blue-500 animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -583,173 +518,170 @@ const Landing = () => {
 
             {/* Feature 3 - Smart Study Tools */}
             <div className="group relative h-full">
-              {/* Animated Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-purple-400/15 to-pink-500/20 rounded-2xl transform rotate-1 group-hover:rotate-2 group-hover:scale-105 transition-all duration-700 blur-sm"></div>
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl transform -rotate-1 group-hover:-rotate-2 group-hover:scale-105 transition-all duration-700 delay-75"></div>
-              
               <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-700 h-full flex flex-col border border-purple-100/50 group-hover:border-purple-200 overflow-hidden">
-                
-                {/* Floating Particles */}
-                <div className="absolute top-8 right-6 w-1 h-1 bg-purple-400 rounded-full animate-float opacity-60"></div>
-                <div className="absolute bottom-6 left-4 w-0.5 h-0.5 bg-purple-300 rounded-full animate-float opacity-40" style={{animationDelay: '2s'}}></div>
                 
                 {/* Enhanced Icon */}
                 <div className="text-center mb-6">
                   <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-400 via-purple-500 to-pink-600 rounded-2xl shadow-xl group-hover:shadow-purple-300/50 group-hover:scale-110 transition-all duration-700 mb-4">
                     <Star className="h-8 w-8 text-white" />
-                    <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </div>
                   
-                  <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold border border-purple-200 shadow-sm">
-                    Comprehensive
-                  </Badge>
-                </div>
-
-                <div className="text-center mb-4">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300">
                     Smart Study Tools
                   </h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">
-                    Complete suite of study resources including concordances, commentaries, and word studies
-                  </p>
                 </div>
 
-                {/* Enhanced Features List */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-2 bg-purple-50/50 rounded-lg p-2 group-hover:bg-purple-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                {/* Features List */}
+                <div className="space-y-3 mb-6 flex-1">
+                  <div className="flex items-center space-x-3 p-3 bg-purple-50/50 rounded-lg group-hover:bg-purple-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Hebrew/Greek word studies</span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-purple-50/50 rounded-lg p-2 group-hover:bg-purple-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                  <div className="flex items-center space-x-3 p-3 bg-purple-50/50 rounded-lg group-hover:bg-purple-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Historical context insights</span>
                   </div>
-                  <div className="flex items-center space-x-2 bg-purple-50/50 rounded-lg p-2 group-hover:bg-purple-50 transition-colors duration-300">
-                    <div className="w-4 h-4 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white font-bold" />
-                    </div>
+                  <div className="flex items-center space-x-3 p-3 bg-purple-50/50 rounded-lg group-hover:bg-purple-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                     <span className="text-gray-700 font-medium text-sm">Topical study generation</span>
                   </div>
                 </div>
 
-                {/* Enhanced Highlight */}
-                <div className="bg-gradient-to-r from-purple-50 via-purple-100 to-pink-50 rounded-xl p-4 border border-purple-200/50 shadow-inner">
+                {/* Summary Feature */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200/50 shadow-sm">
                   <div className="flex items-center justify-center space-x-2">
-                    <Star className="h-3 w-3 text-purple-500 animate-pulse" />
+                    <Star className="h-3 w-3 text-purple-500" />
                     <span className="text-purple-700 font-bold text-center text-xs">Original language research</span>
-                    <Star className="h-3 w-3 text-purple-500 animate-pulse" />
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Enhanced Secondary Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
 
             {/* Feature 4 - Sermon Preparation */}
-            <div className="group bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 rounded-2xl p-6 border-2 border-green-200/50 hover:border-green-300 hover:shadow-xl transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="h-full w-full bg-green-600 bg-[radial-gradient(circle_at_1px_1px,rgba(22,163,74,0.15)_1px,transparent_0)] bg-[length:20px_20px]"></div>
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <Users className="h-6 w-6 text-white" />
+            <div className="group relative h-full">
+              <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-700 h-full flex flex-col border border-green-100/50 group-hover:border-green-200 overflow-hidden">
+                
+                {/* Enhanced Icon */}
+                <div className="text-center mb-6">
+                  <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-2xl shadow-xl group-hover:shadow-green-300/50 group-hover:scale-110 transition-all duration-700 mb-4">
+                    <Users className="h-8 w-8 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors">AI Sermon Prep</h4>
-                    <p className="text-green-600 font-semibold text-sm">For Ministers</p>
+                  
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors duration-300">
+                    AI Sermon Prep
+                  </h3>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3 mb-6 flex-1">
+                  <div className="flex items-center space-x-3 p-3 bg-green-50/50 rounded-lg group-hover:bg-green-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Automated sermon outlines</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-green-50/50 rounded-lg group-hover:bg-green-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Scripture cross-references</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-green-50/50 rounded-lg group-hover:bg-green-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Illustration suggestions</span>
                   </div>
                 </div>
-                <p className="text-gray-600 leading-relaxed mb-4 text-sm">
-                  Streamline sermon preparation with AI-assisted research and outline generation.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-gray-600">
-                    <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium text-sm">Automated outlines</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium text-sm">Scripture cross-references</span>
+
+                {/* Summary Feature */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200/50 shadow-sm">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Users className="h-3 w-3 text-green-500" />
+                    <span className="text-green-700 font-bold text-center text-xs">Complete ministry toolkit</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Feature 5 - Reading Plans */}
-            <div className="group bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100 rounded-2xl p-6 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-xl transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="h-full w-full bg-emerald-600 bg-[radial-gradient(circle_at_1px_1px,rgba(5,150,105,0.15)_1px,transparent_0)] bg-[length:20px_20px]"></div>
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <BookOpen className="h-6 w-6 text-white" />
+            <div className="group relative h-full">
+              <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-700 h-full flex flex-col border border-teal-100/50 group-hover:border-teal-200 overflow-hidden">
+                
+                {/* Enhanced Icon */}
+                <div className="text-center mb-6">
+                  <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-400 via-teal-500 to-cyan-600 rounded-2xl shadow-xl group-hover:shadow-teal-300/50 group-hover:scale-110 transition-all duration-700 mb-4">
+                    <BookOpen className="h-8 w-8 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">Reading Plans</h4>
-                    <p className="text-emerald-600 font-semibold text-sm">Personalized</p>
+                  
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors duration-300">
+                    Reading Plans
+                  </h3>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3 mb-6 flex-1">
+                  <div className="flex items-center space-x-3 p-3 bg-teal-50/50 rounded-lg group-hover:bg-teal-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Personalized schedules</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-teal-50/50 rounded-lg group-hover:bg-teal-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Progress tracking</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-teal-50/50 rounded-lg group-hover:bg-teal-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Achievement rewards</span>
                   </div>
                 </div>
-                <p className="text-gray-600 leading-relaxed mb-4 text-sm">
-                  AI-generated personalized Bible reading plans tailored to your goals.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-gray-600">
-                    <Check className="h-3 w-3 text-emerald-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium text-sm">Progress tracking</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Check className="h-3 w-3 text-emerald-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium text-sm">Adaptive pacing</span>
+
+                {/* Summary Feature */}
+                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200/50 shadow-sm">
+                  <div className="flex items-center justify-center space-x-2">
+                    <BookOpen className="h-3 w-3 text-teal-500" />
+                    <span className="text-teal-700 font-bold text-center text-xs">AI-guided spiritual journey</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Feature 6 - Digital Journal */}
-            <div className="group bg-gradient-to-br from-indigo-50 via-blue-50 to-indigo-100 rounded-2xl p-6 border-2 border-indigo-200/50 hover:border-indigo-300 hover:shadow-xl transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="h-full w-full bg-indigo-600 bg-[radial-gradient(circle_at_1px_1px,rgba(79,70,229,0.15)_1px,transparent_0)] bg-[length:20px_20px]"></div>
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 via-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mr-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <PenTool className="h-6 w-6 text-white" />
+            {/* Feature 6 - Prayer & Devotion */}
+            <div className="group relative h-full">
+              <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-700 h-full flex flex-col border border-rose-100/50 group-hover:border-rose-200 overflow-hidden">
+                
+                {/* Enhanced Icon */}
+                <div className="text-center mb-6">
+                  <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-rose-400 via-rose-500 to-pink-600 rounded-2xl shadow-xl group-hover:shadow-rose-300/50 group-hover:scale-110 transition-all duration-700 mb-4">
+                    <Heart className="h-8 w-8 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">Digital Journal</h4>
-                    <p className="text-indigo-600 font-semibold text-sm">Personal Growth</p>
+                  
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-rose-600 transition-colors duration-300">
+                    Prayer & Devotion
+                  </h3>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3 mb-6 flex-1">
+                  <div className="flex items-center space-x-3 p-3 bg-rose-50/50 rounded-lg group-hover:bg-rose-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Daily prayer prompts</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-rose-50/50 rounded-lg group-hover:bg-rose-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Spiritual reflection journal</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-rose-50/50 rounded-lg group-hover:bg-rose-50 transition-colors duration-300">
+                    <div className="w-2 h-2 bg-rose-500 rounded-full"></div>
+                    <span className="text-gray-700 font-medium text-sm">Guided meditation</span>
                   </div>
                 </div>
-                <p className="text-gray-600 leading-relaxed mb-4 text-sm">
-                  Document your spiritual journey with intelligent journaling features.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-gray-600">
-                    <Check className="h-3 w-3 text-indigo-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium text-sm">Prayer tracking</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Check className="h-3 w-3 text-indigo-500 mr-2 flex-shrink-0" />
-                    <span className="font-medium text-sm">AI insights</span>
+
+                {/* Summary Feature */}
+                <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200/50 shadow-sm">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Heart className="h-3 w-3 text-rose-500" />
+                    <span className="text-rose-700 font-bold text-center text-xs">Deepen your spiritual life</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+
 
           {/* Enhanced Call-to-Action */}
           <div className="text-center mt-16 animate-fade-in-up" style={{animationDelay: '0.7s'}}>
@@ -795,7 +727,7 @@ const Landing = () => {
                 </div>
                 
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-orange-200/50 shadow-lg inline-block">
-                  <p className="text-orange-600 font-bold flex items-center justify-center space-x-2 text-sm">
+                  <p className="text-orange-600 font-bold flex items-center justify-center space-x-2 text-sm whitespace-nowrap flex-nowrap">
                     <span>✨ No credit card required</span>
                     <span>•</span>
                     <span>Start with 5 free AI analyses</span>

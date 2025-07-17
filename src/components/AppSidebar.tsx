@@ -213,12 +213,7 @@ const authenticatedNavigation: NavigationGroup[] = [
         icon: FileText,
         description: "Your notes"
       },
-      {
-        title: "Prayers",
-        url: "/prayers",
-        icon: Star,
-        description: "Prayer requests"
-      },
+
       {
         title: "Profile",
         url: "/profile",
@@ -229,7 +224,7 @@ const authenticatedNavigation: NavigationGroup[] = [
   },
 ]
 
-// Mobile Navigation Component
+// Mobile Navigation Component - Simplified without animations
 function MobileNavigation({ navigation, user, profile, signOut }: { navigation: NavigationGroup[], user: SupabaseUser | null, profile: Profile | null, signOut: () => void }) {
   const location = useLocation()
   const [open, setOpen] = useState(false)
@@ -240,34 +235,41 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
         <Button
           variant="ghost"
           size="sm"
-          className="lg:hidden fixed top-4 left-4 z-50 h-10 w-10 p-0 bg-white/90 backdrop-blur-sm border border-orange-200 shadow-md hover:bg-orange-50"
+          className="lg:hidden fixed top-3 left-3 z-[60] h-12 w-12 p-0 bg-white/95 backdrop-blur-md border-2 border-orange-200/80 shadow-md hover:bg-orange-50 rounded-xl touch-manipulation"
+          style={{ touchAction: 'manipulation' }}
         >
-          <Menu className="h-5 w-5 text-orange-600" />
+          <Menu className="h-6 w-6 text-orange-600" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] p-0 bg-gradient-to-b from-white via-orange-50/30 to-white">
+      <SheetContent 
+        side="left" 
+        className="w-[85vw] max-w-[320px] p-0 bg-white border-r-2 border-orange-200/50"
+      >
         <div className="flex flex-col h-full">
-          {/* Mobile Header */}
-          <div className="p-5 border-b border-orange-200/60 bg-gradient-to-r from-orange-50 to-orange-100/50">
+          {/* Mobile Header - Simplified */}
+          <div className="p-4 border-b border-orange-200/60 bg-orange-50">
             <div className="flex items-center gap-3">
-              <img 
-                src="/✦Bible Aura.svg" 
-                alt="✦Bible Aura" 
-                className="h-12 w-12 drop-shadow-md"
-              />
+              <div className="relative flex-shrink-0">
+                <img 
+                  src="/✦Bible Aura.svg" 
+                  alt="✦Bible Aura" 
+                  className="h-10 w-10"
+                />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full"></div>
+              </div>
               <div>
-                <h1 className="text-lg font-bold text-transparent bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text">
+                <h1 className="text-lg font-bold text-orange-700">
                   ✦Bible Aura
                 </h1>
-                <p className="text-sm text-orange-600/80 font-medium">
+                <p className="text-xs text-orange-600 font-medium">
                   AI Biblical Insights
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Mobile Navigation Content */}
-          <div className="flex-1 px-4 py-5 overflow-y-auto">
+          {/* Mobile Navigation Content - Simplified */}
+          <div className="flex-1 px-4 py-4 overflow-y-auto">
             {navigation.map((group) => (
               <div key={group.title} className="mb-6">
                 <div className="text-sm font-bold text-orange-700 mb-3 flex items-center gap-2 px-2">
@@ -280,19 +282,20 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
                       key={item.title}
                       to={item.url}
                       onClick={() => setOpen(false)}
-                      className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border border-transparent hover:border-orange-200/50 hover:shadow-sm ${
+                      className={`flex items-center gap-3 p-4 rounded-xl border border-transparent hover:bg-orange-50 touch-manipulation ${
                         location.pathname === item.url 
-                          ? 'bg-gradient-to-r from-orange-100 to-orange-50 border-orange-300/50 shadow-sm' 
-                          : 'hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100/50'
+                          ? 'bg-orange-100 border-orange-300/50' 
+                          : ''
                       }`}
+                      style={{ touchAction: 'manipulation', minHeight: '48px' }}
                     >
-                      <item.icon className={`h-5 w-5 ${
+                      <item.icon className={`h-5 w-5 flex-shrink-0 ${
                         location.pathname === item.url 
                           ? 'text-orange-600' 
                           : 'text-gray-600'
                       }`} />
                       <div className="flex-1 min-w-0">
-                        <div className={`font-semibold text-sm flex items-center gap-2 truncate ${
+                        <div className={`font-semibold text-sm flex items-center gap-2 ${
                           location.pathname === item.url 
                             ? 'text-orange-700' 
                             : 'text-gray-700'
@@ -310,21 +313,26 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
                           {item.description}
                         </div>
                       </div>
+                      {location.pathname === item.url && (
+                        <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
+                      )}
                     </Link>
                   ))}
                 </div>
               </div>
             ))}
+            {/* Extra padding at bottom for better scrolling */}
+            <div className="h-6"></div>
           </div>
 
-          {/* Mobile Footer */}
-          <div className="p-4 border-t border-orange-200/60 bg-gradient-to-r from-orange-50 to-orange-100/50">
+          {/* Mobile Footer - Simplified */}
+          <div className="p-4 border-t border-orange-200/60 bg-orange-50 flex-shrink-0">
             {user ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl">
-                  <Avatar className="h-10 w-10 border-2 border-orange-200">
+                  <Avatar className="h-10 w-10 border-2 border-orange-200 flex-shrink-0">
                     <AvatarImage src={profile?.avatar_url} />
-                    <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold">
+                    <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold text-sm">
                       {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -337,20 +345,39 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
                     </div>
                   </div>
                 </div>
-                <Button 
-                  onClick={signOut} 
-                  variant="outline" 
-                  className="w-full text-sm h-9 border-orange-300/50 hover:bg-orange-50"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to="/profile">
+                    <Button 
+                      variant="outline" 
+                      className="w-full text-xs h-10 border-orange-300/50 hover:bg-orange-50 touch-manipulation"
+                      style={{ touchAction: 'manipulation' }}
+                    >
+                      <User className="h-4 w-4 mr-1" />
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button 
+                    onClick={signOut} 
+                    variant="outline" 
+                    className="w-full text-xs h-10 border-orange-300/50 hover:bg-orange-50 touch-manipulation"
+                    style={{ touchAction: 'manipulation' }}
+                  >
+                    <LogOut className="h-4 w-4 mr-1" />
+                    Sign Out
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
+                <div className="text-center mb-3">
+                  <Sparkles className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                  <h3 className="text-sm font-bold text-orange-800 mb-1">Join ✦Bible Aura</h3>
+                  <p className="text-xs text-orange-600/80">Unlock AI insights & premium features</p>
+                </div>
                 <Button 
                   asChild 
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-sm h-9 shadow-md"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm h-12 touch-manipulation"
+                  style={{ touchAction: 'manipulation' }}
                 >
                   <Link to="/auth" onClick={() => setOpen(false)}>
                     <LogIn className="h-4 w-4 mr-2" />
@@ -360,13 +387,20 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
                 <Button 
                   asChild 
                   variant="outline" 
-                  className="w-full text-sm h-9 border-orange-300/50 hover:bg-orange-50"
+                  className="w-full text-sm h-12 border-orange-300/50 hover:bg-orange-50 touch-manipulation"
+                  style={{ touchAction: 'manipulation' }}
                 >
                   <Link to="/auth" onClick={() => setOpen(false)}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Create Account
                   </Link>
                 </Button>
+                <div className="text-center mt-3">
+                  <p className="text-xs text-orange-600/70 flex items-center justify-center gap-1">
+                    <Star className="h-3 w-3 text-amber-500" />
+                    Premium features available
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -404,30 +438,30 @@ export function AppSidebar() {
 
   return (
     <Sidebar 
-      className={`border-r border-orange-200 dark:border-orange-800/30 bg-gradient-to-b from-white via-orange-50/30 to-white dark:from-gray-900 dark:via-orange-900/10 dark:to-gray-900 backdrop-blur-md transition-all duration-300 shadow-lg ${
+      className={`border-r border-orange-200 bg-white ${
         isExpanded ? 'w-80' : 'w-20'
       }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Enhanced Divine Header */}
-      <SidebarHeader className="p-5 border-b border-orange-200/60 dark:border-orange-800/30 bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/20">
+      {/* Desktop Header - Simplified */}
+      <SidebarHeader className="p-5 border-b border-orange-200/60 bg-orange-50">
         <div className="flex items-center gap-3 justify-between">
-          <div className={`flex items-center gap-4 transition-all duration-300`}>
+          <div className={`flex items-center gap-4`}>
             <div className="relative flex-shrink-0">
               <img 
                 src="/✦Bible Aura.svg" 
                 alt="✦Bible Aura" 
-                className={`transition-all duration-300 ${isExpanded ? 'h-14 w-14' : 'h-12 w-12'} drop-shadow-md`}
+                className={`${isExpanded ? 'h-14 w-14' : 'h-12 w-12'}`}
               />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full animate-pulse shadow-lg"></div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full"></div>
             </div>
             {isExpanded && (
-              <div className="transition-all duration-300">
-                <h1 className="text-xl font-bold text-transparent bg-gradient-to-r from-orange-600 to-orange-700 bg-clip-text">
+              <div>
+                <h1 className="text-xl font-bold text-orange-700">
                   ✦Bible Aura
                 </h1>
-                <p className="text-sm text-orange-600/80 dark:text-orange-400/80 font-medium">
+                <p className="text-sm text-orange-600 font-medium">
                   AI Biblical Insights
                 </p>
               </div>
@@ -437,19 +471,19 @@ export function AppSidebar() {
             variant="ghost"
             size="sm"
             onClick={toggle}
-            className="h-9 w-9 p-0 hover:bg-orange-100 dark:hover:bg-orange-900/20 flex-shrink-0 border border-orange-200/50 shadow-sm"
+            className="h-9 w-9 p-0 hover:bg-orange-100 flex-shrink-0 border border-orange-200/50"
           >
             {isExpanded ? <X className="h-5 w-5 text-orange-600" /> : <Menu className="h-5 w-5 text-orange-600" />}
           </Button>
         </div>
       </SidebarHeader>
 
-      {/* Enhanced Sacred Content */}
+      {/* Desktop Content - Simplified */}
       <SidebarContent className="px-4 py-5">
         {navigation.map((group, groupIndex) => (
           <SidebarGroup key={group.title} className="mb-6">
             {isExpanded && (
-              <SidebarGroupLabel className="text-sm font-bold text-orange-700 dark:text-orange-400 mb-3 flex items-center gap-2 px-2">
+              <SidebarGroupLabel className="text-sm font-bold text-orange-700 mb-3 flex items-center gap-2 px-2">
                 <Crown className="h-4 w-4" />
                 {group.title}
               </SidebarGroupLabel>
@@ -461,46 +495,43 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       isActive={location.pathname === item.url}
-                      className={`group hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100/50 dark:hover:from-orange-900/20 dark:hover:to-orange-800/20 transition-all duration-200 rounded-xl p-3 border border-transparent hover:border-orange-200/50 hover:shadow-sm ${
+                      className={`group hover:bg-orange-50 rounded-xl p-3 border border-transparent ${
                         !isExpanded ? 'justify-center' : ''
                       } ${
-                        location.pathname === item.url ? 'bg-gradient-to-r from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-800/30 border-orange-300/50 shadow-sm' : ''
+                        location.pathname === item.url ? 'bg-orange-100 border-orange-300/50' : ''
                       }`}
                     >
                       <Link to={item.url} className="flex items-center gap-3 w-full">
                         <div className="relative flex-shrink-0">
-                          <item.icon className={`h-5 w-5 transition-colors ${
+                          <item.icon className={`h-5 w-5 ${
                             location.pathname === item.url 
-                              ? 'text-orange-600 dark:text-orange-400' 
-                              : 'text-gray-600 dark:text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400'
+                              ? 'text-orange-600' 
+                              : 'text-gray-600 group-hover:text-orange-600'
                           }`} />
-                          {location.pathname === item.url && (
-                            <div className="absolute inset-0 bg-orange-500/20 rounded-full animate-pulse"></div>
-                          )}
                         </div>
                         {isExpanded && (
                           <div className="flex-1 min-w-0">
-                            <div className={`font-semibold text-sm transition-colors flex items-center gap-2 truncate ${
+                            <div className={`font-semibold text-sm flex items-center gap-2 truncate ${
                               location.pathname === item.url 
-                                ? 'text-orange-700 dark:text-orange-300' 
-                                : 'text-gray-700 dark:text-gray-300 group-hover:text-orange-700 dark:group-hover:text-orange-300'
+                                ? 'text-orange-700' 
+                                : 'text-gray-700 group-hover:text-orange-700'
                             }`}>
                               <span className="truncate">{item.title}</span>
                               {!user && item.requiresAuth && (
                                 <Star className="h-3 w-3 text-amber-500 flex-shrink-0" />
                               )}
                             </div>
-                            <div className={`text-xs transition-colors truncate ${
+                            <div className={`text-xs truncate ${
                               location.pathname === item.url 
-                                ? 'text-orange-600/80 dark:text-orange-400/80' 
-                                : 'text-gray-500 dark:text-gray-400 group-hover:text-orange-600/80 dark:group-hover:text-orange-400/80'
+                                ? 'text-orange-600/80' 
+                                : 'text-gray-500 group-hover:text-orange-600/80'
                             }`}>
                               {item.description}
                             </div>
                           </div>
                         )}
                         {isExpanded && location.pathname === item.url && (
-                          <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0 animate-pulse"></div>
+                          <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
                         )}
                       </Link>
                     </SidebarMenuButton>
@@ -512,41 +543,41 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      {/* Enhanced Divine Footer */}
-      <SidebarFooter className="p-4 border-t border-orange-200/60 dark:border-orange-800/30 bg-gradient-to-r from-orange-50/50 to-orange-100/30 dark:from-orange-900/10 dark:to-orange-800/10">
+      {/* Desktop Footer - Simplified */}
+      <SidebarFooter className="p-4 border-t border-orange-200/60 bg-orange-50">
         {user ? (
-          // Enhanced Authenticated User Section
+          // Authenticated User Section - Simplified
           <>
-            <div className={`bg-gradient-to-r from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-4 mb-3 border border-orange-200/50 shadow-sm transition-all duration-300 ${
+            <div className={`bg-orange-100 rounded-xl p-4 mb-3 border border-orange-200/50 ${
               !isExpanded ? 'p-3' : ''
             }`}>
               <div className={`flex items-center gap-3 mb-3 ${!isExpanded ? 'justify-center mb-0' : ''}`}>
                 <Avatar className="h-10 w-10 flex-shrink-0 border-2 border-orange-300/50">
                   <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold">
+                  <AvatarFallback className="bg-orange-500 text-white text-sm font-bold">
                     {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {isExpanded && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-orange-800 dark:text-orange-200 truncate">
+                    <p className="text-sm font-semibold text-orange-800 truncate">
                       {profile?.display_name || 'User'}
                     </p>
-                    <p className="text-xs text-orange-600/80 dark:text-orange-400/80 truncate">
+                    <p className="text-xs text-orange-600/80 truncate">
                       {user?.email}
                     </p>
                   </div>
                 )}
               </div>
               
-              {/* Enhanced Action Buttons */}
+              {/* Action Buttons - Simplified */}
               {isExpanded && (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 text-xs h-8 border-orange-300/50 hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs h-8 border-orange-300/50 hover:bg-orange-50">
                     <User className="h-3 w-3 mr-1" />
                     Profile
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1 text-xs h-8 border-orange-300/50 hover:bg-orange-50 dark:hover:bg-orange-900/20">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs h-8 border-orange-300/50 hover:bg-orange-50">
                     <Settings className="h-3 w-3 mr-1" />
                     Settings
                   </Button>
@@ -554,33 +585,33 @@ export function AppSidebar() {
               )}
             </div>
 
-            {/* Enhanced Sign Out */}
+            {/* Sign Out - Simplified */}
             <Button 
               onClick={signOut}
               variant="outline" 
-              className={`w-full text-sm h-9 border-orange-300/50 hover:bg-orange-50 dark:hover:bg-orange-900/20 ${!isExpanded ? 'px-2' : ''}`}
+              className={`w-full text-sm h-9 border-orange-300/50 hover:bg-orange-50 ${!isExpanded ? 'px-2' : ''}`}
             >
               <LogOut className="h-4 w-4 mr-2" />
               {isExpanded ? 'Sign Out' : ''}
             </Button>
           </>
         ) : (
-          // Enhanced Guest User Section
-          <div className={`bg-gradient-to-r from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl p-4 border border-orange-200/50 shadow-sm transition-all duration-300 ${
+          // Guest User Section - Simplified
+          <div className={`bg-orange-100 rounded-xl p-4 border border-orange-200/50 ${
             !isExpanded ? 'p-3' : ''
           }`}>
             {isExpanded ? (
               <>
                 <div className="text-center mb-4">
                   <Sparkles className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <h3 className="text-sm font-bold text-orange-800 dark:text-orange-200 mb-1">Join ✦Bible Aura</h3>
-                  <p className="text-xs text-orange-600/80 dark:text-orange-400/80">Unlock AI insights & premium features</p>
+                  <h3 className="text-sm font-bold text-orange-800 mb-1">Join ✦Bible Aura</h3>
+                  <p className="text-xs text-orange-600/80">Unlock AI insights & premium features</p>
                 </div>
                 
                 <div className="space-y-3">
                   <Button 
                     asChild 
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-sm h-9 shadow-md"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm h-9"
                   >
                     <Link to="/auth">
                       <LogIn className="h-4 w-4 mr-2" />
@@ -590,7 +621,7 @@ export function AppSidebar() {
                   <Button 
                     asChild 
                     variant="outline" 
-                    className="w-full text-sm h-9 border-orange-300/50 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                    className="w-full text-sm h-9 border-orange-300/50 hover:bg-orange-50"
                   >
                     <Link to="/auth">
                       <UserPlus className="h-4 w-4 mr-2" />
@@ -600,7 +631,7 @@ export function AppSidebar() {
                 </div>
                 
                 <div className="text-center mt-3">
-                  <p className="text-xs text-orange-600/70 dark:text-orange-400/70 flex items-center justify-center gap-1">
+                  <p className="text-xs text-orange-600/70 flex items-center justify-center gap-1">
                     <Star className="h-3 w-3 text-amber-500" />
                     Premium features available
                   </p>
@@ -611,7 +642,7 @@ export function AppSidebar() {
                 <Button 
                   asChild 
                   size="sm"
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 w-10 h-10 p-0 shadow-md"
+                  className="bg-orange-500 hover:bg-orange-600 w-10 h-10 p-0"
                 >
                   <Link to="/auth">
                     <LogIn className="h-4 w-4 text-white" />

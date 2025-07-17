@@ -1,106 +1,70 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, Target, DollarSign, ArrowLeft, Star, Crown, Rocket, Globe, Heart, CheckCircle } from "lucide-react";
+import { Heart, Globe, Users, BookOpen, ArrowLeft, Star, Crown, Shield, CheckCircle, Gift, Wallet, CreditCard, Banknote, Smartphone, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Funding = () => {
-  const fundingRounds = [
+  const impactAreas = [
     {
-      round: "Pre-Seed",
-      amount: "$50K",
-      stage: "Completed",
-      date: "Q2 2024",
-      description: "Initial development and prototype funding",
-      investors: ["Founder Investment", "Angel Investors"],
-      status: "completed"
-    },
-    {
-      round: "Seed",
-      amount: "$250K",
-      stage: "Current",
-      date: "Q1 2025",
-      description: "Platform development and user acquisition",
-      investors: ["Seeking Strategic Partners"],
-      status: "current"
-    },
-    {
-      round: "Series A",
-      amount: "$1M",
-      stage: "Planned",
-      date: "Q4 2025",
-      description: "Global expansion and advanced AI features",
-      investors: ["To Be Announced"],
-      status: "planned"
-    }
-  ];
-
-  const keyMetrics = [
-    { metric: "Monthly Users", value: "10,000+", growth: "+150%" },
-    { metric: "Revenue Growth", value: "$25K", growth: "+300%" },
-    { metric: "User Retention", value: "85%", growth: "+15%" },
-    { metric: "Market Size", value: "$2.1B", growth: "Global" }
-  ];
-
-  const roadmapMilestones = [
-    {
-      quarter: "Q1 2025",
-      title: "Advanced AI Features",
-      description: "Enhanced natural language processing and personalized recommendations",
-      status: "in-progress"
-    },
-    {
-      quarter: "Q2 2025",
-      title: "Mobile App Launch",
-      description: "iOS and Android applications with offline capabilities",
-      status: "planned"
-    },
-    {
-      quarter: "Q3 2025",
-      title: "Multi-Language Support",
-      description: "Support for Spanish, French, and Portuguese",
-      status: "planned"
-    },
-    {
-      quarter: "Q4 2025",
-      title: "Global Expansion",
-      description: "International market entry and partnerships",
-      status: "planned"
-    }
-  ];
-
-  const investmentHighlights = [
-    {
-      icon: TrendingUp,
-      title: "Rapid Growth",
-      description: "150% monthly user growth with strong retention rates",
-      color: "from-green-500 to-green-600"
-    },
-    {
-      icon: Users,
-      title: "Engaged Community",
-      description: "10,000+ active users with 85% retention rate",
+      icon: BookOpen,
+      title: "Keep the App Free for Everyone",
+      description: "Your gift ensures Bible Aura remains accessible to all believers worldwide, regardless of their financial situation.",
       color: "from-blue-500 to-blue-600"
     },
     {
-      icon: Target,
-      title: "Large Market",
-      description: "Addressing $2.1B global religious education market",
+      icon: Star,
+      title: "Improve Bible AI Tools & Study Features",
+      description: "Help us develop more advanced AI-powered insights and study tools to deepen biblical understanding.",
       color: "from-purple-500 to-purple-600"
     },
     {
-      icon: Rocket,
-      title: "AI Innovation",
-      description: "Cutting-edge AI technology for biblical insights",
+      icon: Globe,
+      title: "Help People Discover Jesus Worldwide",
+      description: "Support our mission to reach souls across the globe with God's Word through innovative technology.",
+      color: "from-green-500 to-green-600"
+    },
+    {
+      icon: Heart,
+      title: "Support a Faith-Based Tech Mission",
+      description: "Join us in pioneering Christ-centered technology that honors God and serves His people.",
       color: "from-orange-500 to-orange-600"
     }
   ];
 
-  const useOfFunds = [
-    { category: "Product Development", percentage: 40, color: "bg-blue-500" },
-    { category: "Marketing & Growth", percentage: 30, color: "bg-green-500" },
-    { category: "Team Expansion", percentage: 20, color: "bg-purple-500" },
-    { category: "Operations", percentage: 10, color: "bg-orange-500" }
+  const givingOptions = [
+    {
+      type: "One-Time Gift",
+      description: "Make a single donation to support our mission",
+      icon: Gift,
+      amounts: ["$25", "$50", "$100", "Custom"]
+    },
+    {
+      type: "Monthly Partnership",
+      description: "Become a monthly partner in spreading God's Word",
+      icon: Heart,
+      amounts: ["$10/mo", "$25/mo", "$50/mo", "Custom"]
+    },
+    {
+      type: "Annual Commitment",
+      description: "Make a yearly commitment to our ministry",
+      icon: Crown,
+      amounts: ["$120", "$300", "$600", "Custom"]
+    }
+  ];
+
+  const paymentMethods = [
+    { name: "Credit/Debit Card", icon: CreditCard, available: true },
+    { name: "Bank Transfer", icon: Banknote, available: true },
+    { name: "Mobile Payment", icon: Smartphone, available: true },
+    { name: "UPI (India/Sri Lanka)", icon: Wallet, available: true }
+  ];
+
+  const trustPoints = [
+    "All donations go directly toward platform development and global outreach",
+    "Secure, encrypted payment processing with receipt confirmation",
+    "Tax-deductible receipts provided for all qualifying donations",
+    "Complete transparency in how your gifts are used for God's glory"
   ];
 
   return (
@@ -127,84 +91,80 @@ const Funding = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Funding <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">Our Mission</span>
+            Support <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">The Mission</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Join us in revolutionizing biblical education through AI technology. 
-            We're building the future of spiritual learning and seeking strategic partners to scale our impact.
-          </p>
+          <div className="space-y-4 text-xl text-gray-600 max-w-4xl mx-auto">
+            <p>
+              Bible Aura is committed to helping people understand God's Word through AI-powered insights. 
+              Your gift helps us keep the platform free, grow its reach, and serve people worldwide with Biblical truth.
+            </p>
+            <p className="text-lg font-medium text-orange-600">
+              Join us in spreading God's Word through faith and innovation.
+            </p>
+          </div>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          {keyMetrics.map((metric, index) => (
-            <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{metric.value}</div>
-                <div className="text-sm text-gray-600 mb-2">{metric.metric}</div>
-                <Badge className="bg-green-100 text-green-800">{metric.growth}</Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Investment Highlights */}
+        {/* Impact Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Investment Highlights</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Why Give?</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+            Your generosity directly impacts lives and helps us fulfill the Great Commission through technology
+          </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {investmentHighlights.map((highlight, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+            {impactAreas.map((area, index) => (
+              <Card key={index} className="text-center hover:shadow-lg transition-all duration-300 hover:scale-105">
                 <CardContent className="p-6">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${highlight.color} text-white mb-4`}>
-                    <highlight.icon className="h-8 w-8" />
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${area.color} text-white mb-4`}>
+                    <area.icon className="h-8 w-8" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{highlight.title}</h3>
-                  <p className="text-gray-600 text-sm">{highlight.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">{area.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{area.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
 
-        {/* Funding Rounds */}
+        {/* Main Call to Action */}
+        <div className="text-center mb-16">
+          <Card className="border-2 border-orange-100 bg-gradient-to-r from-orange-50 to-orange-100 max-w-2xl mx-auto">
+            <CardContent className="p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Give Now</h2>
+              <p className="text-gray-600 mb-6">
+                Your faithful giving helps us reach souls with the Gospel through innovative Bible study tools
+              </p>
+              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-4 text-lg">
+                <Heart className="mr-2 h-5 w-5" />
+                Sow a Seed
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Giving Options */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Funding Journey</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Giving Options</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {fundingRounds.map((round, index) => (
-              <Card key={index} className={`relative overflow-hidden ${
-                round.status === 'current' ? 'ring-2 ring-orange-500' : ''
-              }`}>
-                {round.status === 'current' && (
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-center py-2 text-sm font-semibold">
-                    Current Round
+            {givingOptions.map((option, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-4 mx-auto">
+                    <option.icon className="h-8 w-8" />
                   </div>
-                )}
-                <CardHeader className={`${round.status === 'current' ? 'pt-12' : ''}`}>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-bold">{round.round}</CardTitle>
-                    <Badge className={
-                      round.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      round.status === 'current' ? 'bg-orange-100 text-orange-800' :
-                      'bg-gray-100 text-gray-800'
-                    }>
-                      {round.stage}
-                    </Badge>
-                  </div>
-                  <div className="text-3xl font-bold text-orange-600">{round.amount}</div>
-                  <div className="text-sm text-gray-600">{round.date}</div>
+                  <CardTitle className="text-xl font-bold">{option.type}</CardTitle>
+                  <p className="text-gray-600">{option.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 mb-4">{round.description}</p>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-gray-900">Investors:</h4>
-                    <ul className="text-sm text-gray-600">
-                      {round.investors.map((investor, i) => (
-                        <li key={i} className="flex items-center">
-                          <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
-                          {investor}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="grid grid-cols-2 gap-3">
+                    {option.amounts.map((amount, i) => (
+                      <Button 
+                        key={i} 
+                        variant="outline" 
+                        className="border-orange-200 hover:bg-orange-50 hover:border-orange-300"
+                      >
+                        {amount}
+                      </Button>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -212,132 +172,112 @@ const Funding = () => {
           </div>
         </div>
 
-        {/* Use of Funds */}
-        <div className="grid lg:grid-cols-2 gap-16 mb-16">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Use of Funds</h2>
-            <div className="space-y-6">
-              {useOfFunds.map((fund, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-900 font-medium">{fund.category}</span>
-                    <span className="text-orange-600 font-semibold">{fund.percentage}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div 
-                      className={`h-3 rounded-full ${fund.color} transition-all duration-500`}
-                      style={{ width: `${fund.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Roadmap 2025</h2>
-            <div className="space-y-6">
-              {roadmapMilestones.map((milestone, index) => (
-                <div key={index} className="flex items-start space-x-4">
-                  <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
-                    milestone.status === 'in-progress' ? 'bg-orange-500' : 'bg-gray-400'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="text-lg font-semibold text-gray-900">{milestone.title}</h3>
-                      <Badge className={
-                        milestone.status === 'in-progress' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
-                      }>
-                        {milestone.quarter}
-                      </Badge>
-                    </div>
-                    <p className="text-gray-600 text-sm">{milestone.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Payment Methods */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">We Accept</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+            {paymentMethods.map((method, index) => (
+              <Card key={index} className="text-center py-6 hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <method.icon className="h-8 w-8 mx-auto mb-2 text-orange-600" />
+                  <p className="text-sm font-medium text-gray-700">{method.name}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
-        {/* Investment Opportunity */}
-        <Card className="border-2 border-orange-100 mb-16">
-          <CardContent className="p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Investment Opportunity</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                We're currently raising our seed round to accelerate growth and expand our AI capabilities. 
-                Join us in transforming how millions of people study and understand Scripture.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-2">$250K</div>
-                <div className="text-gray-600">Current Round</div>
+        {/* Biblical Encouragement */}
+        <div className="mb-16">
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-none">
+            <CardContent className="p-8 text-center">
+              <Quote className="h-12 w-12 text-orange-500 mx-auto mb-6" />
+              <blockquote className="text-2xl font-semibold text-gray-800 mb-4">
+                "God loves a cheerful giver."
+              </blockquote>
+              <cite className="text-lg text-orange-600 font-medium">— 2 Corinthians 9:7</cite>
+              <div className="mt-6 pt-6 border-t border-orange-200">
+                <blockquote className="text-xl text-gray-700 mb-2">
+                  "Give, and it will be given to you. A good measure, pressed down, shaken together and running over, will be poured into your lap."
+                </blockquote>
+                <cite className="text-orange-600 font-medium">— Luke 6:38</cite>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-2">$2.1B</div>
-                <div className="text-gray-600">Market Size</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-2">10,000+</div>
-                <div className="text-gray-600">Active Users</div>
-              </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <div className="text-center">
-              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3" asChild>
-                <Link to="/contact">
-                  <DollarSign className="mr-2 h-5 w-5" />
-                  Interested in Investing?
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Team & Vision */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Our Vision</h2>
-          <p className="text-gray-600 max-w-4xl mx-auto mb-8">
-            We envision a world where every believer has access to deep, personalized biblical insights through AI technology. 
-            Our mission is to democratize biblical education and make spiritual growth accessible to everyone, regardless of 
-            their theological background or geographic location.
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white mb-4">
-                  <Globe className="h-8 w-8" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Global Impact</h3>
-                <p className="text-gray-600 text-sm">Reaching believers worldwide with AI-powered biblical insights</p>
+        {/* Trust & Transparency Section */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Your Trust Matters</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="border-green-100">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-green-700">
+                  <Shield className="h-6 w-6" />
+                  <span>Transparency & Security</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {trustPoints.map((point, index) => (
+                    <li key={index} className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-600">{point}</span>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
-            
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white mb-4">
-                  <Heart className="h-8 w-8" />
+
+            <Card className="border-blue-100">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-blue-700">
+                  <Users className="h-6 w-6" />
+                  <span>Frequently Asked Questions</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">Is my donation secure?</h4>
+                    <p className="text-gray-600 text-sm">Yes, we use industry-standard encryption and secure payment processors to protect your information.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">Can I get a receipt?</h4>
+                    <p className="text-gray-600 text-sm">Absolutely! You'll receive an immediate email receipt and tax documentation if applicable.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">How is my gift used?</h4>
+                    <p className="text-gray-600 text-sm">Every dollar goes toward platform development, server costs, and expanding our global reach with the Gospel.</p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Faith-Centered</h3>
-                <p className="text-gray-600 text-sm">Technology that respects and enhances spiritual growth</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center">
-              <CardContent className="p-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white mb-4">
-                  <Star className="h-8 w-8" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Excellence</h3>
-                <p className="text-gray-600 text-sm">Committed to the highest standards of accuracy and innovation</p>
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Final Call to Action */}
+        <div className="text-center">
+          <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+            <CardContent className="p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Partner With Us Today</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+                Join thousands of believers who are supporting the advancement of God's Kingdom through technology. 
+                Your partnership makes eternal impact possible.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3">
+                  <Heart className="mr-2 h-5 w-5" />
+                  Give Now
+                </Button>
+                <Button size="lg" variant="outline" className="border-orange-200 hover:bg-orange-50" asChild>
+                  <Link to="/contact">
+                    Learn More About Our Mission
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

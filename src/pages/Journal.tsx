@@ -476,7 +476,7 @@ const Journal = () => {
     }
   };
 
-  const insertVerse = (verse: any) => {
+  const insertVerse = (verse: { text: string; reference: string }) => {
     const reference = `${verse.book.name} ${verse.chapter}:${verse.verse}`;
     const verseText = `"${verse.text_esv}" - ${reference}`;
     

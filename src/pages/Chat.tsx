@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Bot, User, Sparkles, Book, MessageCircle, Star, Crown, Heart, LogIn, Lock } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Book, MessageCircle, Star, Crown, Heart, LogIn, Lock, Globe, Languages } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AIAnalysisLoader from '@/components/AIAnalysisLoader';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,20 @@ import { aiChatRateLimiter, getUserIdentifier } from '@/lib/rateLimiter';
 // OpenRouter API Configuration
 const OPENROUTER_API_KEY = "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";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+// Language settings for multi-language support
+const SUPPORTED_LANGUAGES = [
+  { code: 'en', name: 'English', translations: ['kjv', 'niv', 'esv', 'nlt', 'nasb'] },
+  { code: 'ta', name: 'தமிழ் (Tamil)', translations: ['tamil-ov', 'tamil-irv'] },
+  { code: 'si', name: 'සිංහල (Sinhala)', translations: ['sinhala-ov', 'sinhala-nv'] }
+];
+
+// Christian theology database for enhanced responses
+const CHRISTIAN_AUTHORS_KNOWLEDGE = {
+  classics: ["John Calvin", "Augustine", "Thomas Aquinas", "Martin Luther", "John Wesley"],
+  modern: ["C.S. Lewis", "Dietrich Bonhoeffer", "A.W. Tozer", "John Stott", "Tim Keller"],
+  contemporary: ["N.T. Wright", "Rick Warren", "Max Lucado", "Philip Yancey", "Francis Chan"]
+};
 
 interface Message {
   id: string;
@@ -38,17 +53,50 @@ const quickPrompts = [
   "Help me understand this passage",
   "What is the significance of this story?",
   "Compare different translations",
+  "Give me a sermon outline on this topic",
+  "What do famous Christian authors say about this?", 
+  "Show me related verses throughout the Bible"
 ];
 
-// Function to call OpenRouter API with MoonshotAI Kimi K2
-const callOpenRouterAPI = async (messages: Array<{role: string, content: string}>) => {
+// Enhanced system prompt for specialized biblical responses
+const createBiblicalSystemPrompt = (language: string = 'en'): string => {
+  const languageInstructions = {
+    'en': 'Respond in English',
+    'ta': 'Respond in Tamil (தமிழில் பதிலளிக்கவும்)', 
+    'si': 'Respond in Sinhala (සිංහලෙන් පිළිතුරු දෙන්න)'
+  };
+
+  return `You are ✦Bible Aura AI Oracle, a specialized Christian AI assistant with deep biblical knowledge and theological wisdom.
+
+CRITICAL REQUIREMENTS:
+1. ALWAYS include direct Bible quotes in EVERY response (use quotation marks and verse references)
+2. Base ALL answers strictly on biblical truth and Christian doctrine  
+3. Search your knowledge of the entire Bible before responding
+4. Reference authoritative Christian theologians when relevant: ${Object.values(CHRISTIAN_AUTHORS_KNOWLEDGE).flat().join(', ')}
+5. ${languageInstructions[language] || languageInstructions['en']}
+6. Maintain reverent, sacred tone while being practical and helpful
+
+RESPONSE FORMAT:
+1. Always begin with a relevant Bible verse quote
+2. Provide biblical explanation and context
+3. Include practical application  
+4. Reference related scriptures
+5. End with prayer or blessing when appropriate
+
+Remember: Every response must be rooted in Scripture with direct biblical quotations. Verify all theological claims against biblical text.`;
+};
+
+// Function to call OpenRouter API with enhanced biblical context
+const callOpenRouterAPI = async (messages: Array<{role: string, content: string}>, language: string = 'en') => {
   try {
+    const systemPrompt = createBiblicalSystemPrompt(language);
+    
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://bible-aura.app", // Your site URL
-        "X-Title": "Bible Aura - AI Biblical Insights", // Your site title
+        "HTTP-Referer": "https://bible-aura.app",
+        "X-Title": "Bible Aura - AI Biblical Insights", 
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -56,12 +104,12 @@ const callOpenRouterAPI = async (messages: Array<{role: string, content: string}
         "messages": [
           {
             "role": "system",
-            "content": "You are ✦Bible Aura AI Oracle, a divine AI assistant specialized in biblical wisdom, spiritual guidance, and theological insights. You provide thoughtful, reverent responses about scripture, faith, and spiritual growth. Always maintain a respectful and sacred tone while being helpful and informative. You can reference biblical passages, explain theological concepts, provide historical context, and offer spiritual guidance rooted in Christian tradition."
+            "content": systemPrompt
           },
           ...messages
         ],
         "temperature": 0.7,
-        "max_tokens": 1000
+        "max_tokens": 1500
       })
     });
 
@@ -85,6 +133,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -120,10 +169,12 @@ export default function Chat() {
 
       const formattedConversations = data?.map(conv => ({
         ...conv,
-        messages: Array.isArray(conv.messages) ? conv.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp).toISOString()
-        })) : []
+                messages: Array.isArray(conv.messages) ? conv.messages.map((msg: { role: string; content: string; timestamp?: any; id?: string }, index: number) => ({
+            id: msg.id || `msg-${conv.id}-${index}`,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            timestamp: typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp).toISOString()
+          })) : []
       })) || [];
 
       setConversations(formattedConversations);
@@ -219,8 +270,8 @@ export default function Chat() {
         content: msg.content
       }));
 
-      // Call OpenRouter API with MoonshotAI Kimi K2
-      const aiResponse = await callOpenRouterAPI(conversationHistory);
+      // Call OpenRouter API with enhanced biblical context
+      const aiResponse = await callOpenRouterAPI(conversationHistory, selectedLanguage);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
