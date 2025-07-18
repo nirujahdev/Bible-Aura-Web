@@ -152,6 +152,10 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     min-height: 100vh;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
   }
 
   /* Fallback for root element */
@@ -159,12 +163,19 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     min-height: 100vh;
     background-color: hsl(var(--background));
     position: relative;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   /* Smooth scrolling for divine experience */
   html {
     scroll-behavior: smooth;
     background-color: hsl(var(--background));
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
   }
 
   /* Divine selection styling */

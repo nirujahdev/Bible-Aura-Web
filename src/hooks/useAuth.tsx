@@ -41,17 +41,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     
-    // Reduce timeout to 3 seconds and add better error handling
+    // Reduce timeout to 2 seconds for better UX
     const loadingTimeout = setTimeout(() => {
       if (isMounted) {
         console.log('Auth loading timeout, setting loading to false');
         setLoading(false);
       }
-    }, 3000); // Reduced from 5 seconds to 3 seconds
+    }, 2000); // Reduced from 3 seconds to 2 seconds
 
     const initializeAuth = async () => {
       try {
-        // Check for existing session first
+        // Check for existing session first with better error handling
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Don't wait for profile fetch to complete loading
+            // Fetch profile in background - don't wait for it
             fetchUserProfile(session.user.id);
           } else {
             setProfile(null);
@@ -85,17 +85,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener with improved handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!isMounted) return;
+        
+        console.log('Auth state changed:', event, session?.user?.email);
         
         clearTimeout(loadingTimeout);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile in the background
+          // Fetch user profile in background
           fetchUserProfile(session.user.id);
         } else {
           setProfile(null);

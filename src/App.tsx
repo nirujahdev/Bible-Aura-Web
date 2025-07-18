@@ -44,7 +44,7 @@ function AppLayout() {
   const isFullScreen = fullScreenRoutes.includes(location.pathname);
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background w-full overflow-x-hidden">
       {/* Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-full"></div>
@@ -58,7 +58,7 @@ function AppLayout() {
       
       {isFullScreen ? (
         // Full-screen layout for landing and static pages
-        <main className="relative z-10">
+        <main className="relative z-10 w-full">
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
@@ -73,7 +73,7 @@ function AppLayout() {
         </main>
       ) : (
         // Sidebar layout for app pages
-        <div className="flex h-screen relative z-10">
+        <div className="flex h-screen relative z-10 w-full">
           <AppSidebar />
           <main className="flex-1 overflow-auto">
             <Routes>

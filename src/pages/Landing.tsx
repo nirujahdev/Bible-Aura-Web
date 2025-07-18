@@ -4,11 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Check, Star, BookOpen, MessageCircle, PenTool, Sparkles, Heart, Users, Crown, Zap, Home, Info, DollarSign, Quote, Phone, LogIn, UserPlus, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@/assets/hero-spiritual.jpg";
 
 const Landing = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -16,6 +19,24 @@ const Landing = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  // Smart navigation for Support Us button
+  const handleSupportUsClick = () => {
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      navigate("/funding");
+    }
+  };
+
+  // Smart navigation for Get Started button
+  const handleGetStartedClick = () => {
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      navigate("/auth");
+    }
   };
 
   return (
@@ -68,13 +89,13 @@ const Landing = () => {
                     <span className="text-sm font-semibold whitespace-nowrap">Careers</span>
                   </Link>
 
-                  <Link 
-                    to="/funding"
+                  <button 
+                    onClick={handleSupportUsClick}
                     className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
                   >
                     <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                    <span className="text-sm font-semibold whitespace-nowrap">Support Us</span>
-                  </Link>
+                    <span className="text-sm font-semibold whitespace-nowrap">{user ? "Dashboard" : "Support Us"}</span>
+                  </button>
                 </div>
 
                 {/* Right - Auth Button */}
@@ -169,18 +190,26 @@ const Landing = () => {
               {/* Mobile CTA Buttons */}
               <div className="border-t border-gradient-to-r from-primary/20 to-primary/10 pt-6 mt-6">
                 <div className="flex space-x-3 w-full">
-                  <Link to="/auth" onClick={closeMobileMenu} className="flex-1">
-                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-3 rounded-full hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 w-full">
-                      <Sparkles className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                      <span className="text-sm font-semibold">Get Started</span>
-                    </button>
-                  </Link>
-                  <Link to="/funding" onClick={closeMobileMenu} className="flex-1">
-                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-105 w-full">
-                      <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                      <span className="text-sm font-semibold">Support Us</span>
-                    </button>
-                  </Link>
+                  <button 
+                    onClick={() => {
+                      closeMobileMenu();
+                      handleGetStartedClick();
+                    }} 
+                    className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-3 rounded-full hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 w-full flex-1"
+                  >
+                    <Sparkles className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
+                    <span className="text-sm font-semibold">{user ? "Go to Dashboard" : "Get Started"}</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      closeMobileMenu();
+                      handleSupportUsClick();
+                    }} 
+                    className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-105 w-full flex-1"
+                  >
+                    <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
+                    <span className="text-sm font-semibold">{user ? "Dashboard" : "Support Us"}</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -221,22 +250,23 @@ const Landing = () => {
             </div>
             
             <div className="flex flex-row gap-3 sm:gap-4 justify-center items-center animate-sacred-fade-in" style={{animationDelay: '0.6s'}}>
-              <Link to="/auth">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 animate-divine-pulse whitespace-nowrap font-semibold">
-                  <Sparkles className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Get Started
-                </Button>
-              </Link>
-              <Link to="/funding">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-white text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 whitespace-nowrap font-semibold"
-                >
-                  <Heart className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Support Us
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                onClick={handleGetStartedClick}
+                className="bg-white text-primary hover:bg-white/90 text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 animate-divine-pulse whitespace-nowrap font-semibold"
+              >
+                <Sparkles className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                {user ? "Go to Dashboard" : "Get Started"}
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                onClick={handleSupportUsClick}
+                className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-white text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 whitespace-nowrap font-semibold"
+              >
+                <Heart className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                {user ? "Dashboard" : "Support Us"}
+              </Button>
             </div>
             
             <div className="flex flex-row gap-3 sm:gap-4 md:gap-6 justify-center items-center text-white text-sm sm:text-base animate-sacred-fade-in" style={{animationDelay: '0.8s'}}>
