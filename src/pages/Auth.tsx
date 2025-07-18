@@ -169,11 +169,9 @@ export default function Auth() {
           {/* Logo Section */}
           <div className="mb-8">
             <div className="text-center">
-              <img 
-                src="/✦Bible Aura.svg" 
-                alt="Bible Aura" 
-                className="h-32 w-32 mx-auto drop-shadow-lg mb-4"
-              />
+              <div className="h-32 w-32 mx-auto mb-4 flex items-center justify-center">
+                <span className="text-5xl font-bold text-primary">✦Bible Aura</span>
+              </div>
               <h1 className="text-4xl font-bold text-primary mb-2">
                 ✦ Bible Aura
               </h1>

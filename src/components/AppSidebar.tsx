@@ -254,11 +254,9 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
             <div className="p-4 border-b border-orange-200/60 bg-orange-50">
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0">
-                  <img 
-                    src="/✦Bible Aura.svg" 
-                    alt="✦Bible Aura" 
-                    className="h-10 w-10"
-                  />
+                  <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-full">
+                    <span className="text-lg font-bold text-primary">✦</span>
+                  </div>
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full"></div>
                 </div>
                 <div>
@@ -437,11 +435,9 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 justify-between">
           <div className={`flex items-center gap-4`}>
             <div className="relative flex-shrink-0">
-              <img 
-                src="/✦Bible Aura.svg" 
-                alt="✦Bible Aura" 
-                className={`${isExpanded ? 'h-14 w-14' : 'h-12 w-12'}`}
-              />
+              <div className={`${isExpanded ? 'h-14 w-14' : 'h-12 w-12'} flex items-center justify-center bg-primary/10 rounded-full`}>
+                <span className={`${isExpanded ? 'text-2xl' : 'text-xl'} font-bold text-primary`}>✦</span>
+              </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full"></div>
             </div>
             {isExpanded && (

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
   Palette, 
   Code, 
@@ -201,6 +202,9 @@ Best regards,
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+      {/* Global Navigation */}
+      <GlobalNavigation variant="landing" />
+      
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-red-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-16 text-center">
@@ -247,7 +251,7 @@ Best regards,
       {/* Why Join Section */}
       <div className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">🙌 Why Join Bible Aura?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Join Bible Aura?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <Globe className="h-8 w-8 text-orange-600 mx-auto mb-3" />
@@ -270,7 +274,7 @@ Best regards,
 
         {/* Roles Section */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">🎯 Open Volunteer Roles</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Open Volunteer Roles</h2>
         </div>
 
         {/* Roles Grid */}
@@ -288,7 +292,7 @@ Best regards,
                     </div>
                     
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      🎨 {role.id}. {role.title}
+                      {role.id}. {role.title}
                     </h3>
                     <p className="text-gray-600 mb-2">{role.description}</p>
                     <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
@@ -323,9 +327,9 @@ Best regards,
                       <h4 className="font-semibold text-gray-900 mb-3">
                         {role.id <= 4 ? "Tech Stack" : "Tools"}
                       </h4>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {role.tools.map((tool, index) => (
-                          <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                          <span key={index} className={`px-4 py-2 bg-gradient-to-r ${role.color} text-white rounded-2xl text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
                             {tool}
                           </span>
                         ))}
@@ -339,7 +343,7 @@ Best regards,
                       href={createEmailLink(role.title, role.type)}
                       className={`block w-full text-center bg-gradient-to-r ${role.color} text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105`}
                     >
-                      👉 Apply Now
+                      Apply Now
                     </a>
                   </div>
                 </div>
@@ -357,7 +361,7 @@ Best regards,
               We welcome people of all experience levels, especially Tamil or Sinhala speakers.
             </p>
             <p className="text-lg font-semibold text-orange-700">
-              No deadlines, no pressure — just purpose. 🙏
+              No deadlines, no pressure — just purpose.
             </p>
           </div>
         </div>

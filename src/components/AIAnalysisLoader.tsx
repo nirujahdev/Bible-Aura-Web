@@ -22,11 +22,9 @@ export function AIAnalysisLoader({ message = "Seeking divine wisdom...", size = 
     <div className="flex items-center gap-3 animate-sacred-fade-in">
       {/* AI Avatar with Secondary Logo */}
       <div className="relative">
-        <img 
-          src="/✦Bible Aura secondary.svg" 
-          alt="Bible Aura AI" 
-          className={`${sizeClasses[size]} animate-divine-pulse drop-shadow-lg`}
-        />
+        <div className={`${sizeClasses[size]} flex items-center justify-center bg-primary/10 rounded-full animate-divine-pulse`}>
+          <span className="text-primary font-bold">✦AI</span>
+        </div>
         <div className="absolute inset-0">
           <Sparkles className="h-3 w-3 text-primary absolute top-0 right-0 animate-celestial-float" />
           <Crown className="h-2 w-2 text-primary/80 absolute bottom-0 left-0 animate-celestial-float" style={{animationDelay: '0.5s'}} />

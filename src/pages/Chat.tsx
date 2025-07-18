@@ -362,7 +362,7 @@ export default function Chat() {
         {isAI && (
           <div className="flex-shrink-0">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/✦Bible Aura secondary.svg" alt="Bible Aura AI" />
+                                  <AvatarImage src="" alt="Bible Aura AI" />
               <AvatarFallback className="bg-primary text-white">
                 <Bot className="h-5 w-5" />
               </AvatarFallback>
@@ -449,11 +449,9 @@ export default function Chat() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img 
-                src="/✦Bible Aura secondary.svg" 
-                alt="Bible Aura AI" 
-                className="h-8 w-8"
-              />
+              <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-full">
+                <span className="text-sm font-bold text-primary">✦AI</span>
+              </div>
               <h1 className="text-2xl font-bold">
                 Biblical AI Oracle
               </h1>
@@ -521,11 +519,9 @@ export default function Chat() {
               <CardHeader className="border-b flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-primary">
-                    <img 
-                      src="/✦Bible Aura secondary.svg" 
-                      alt="Bible Aura AI" 
-                      className="h-6 w-6"
-                    />
+                                      <div className="h-6 w-6 flex items-center justify-center bg-primary/10 rounded-full">
+                    <span className="text-xs font-bold text-primary">✦</span>
+                  </div>
                     Biblical Conversation
                   </CardTitle>
                   <div className="text-sm text-muted-foreground">
@@ -540,11 +536,9 @@ export default function Chat() {
                   {messages.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="relative mx-auto w-24 h-24 mb-6">
-                        <img 
-                          src="/✦Bible Aura secondary.svg" 
-                          alt="Bible Aura AI" 
-                          className="w-full h-full"
-                        />
+                        <div className="w-full h-full flex items-center justify-center bg-primary/10 rounded-lg">
+                          <span className="text-2xl font-bold text-primary">✦AI</span>
+                        </div>
                       </div>
                       <h3 className="text-xl font-semibold text-primary mb-3">
                         Welcome to Biblical AI Oracle
@@ -575,7 +569,7 @@ export default function Chat() {
                         <div className="flex justify-start">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src="/✦Bible Aura secondary.svg" alt="Bible Aura AI" />
+                              <AvatarImage src="" alt="Bible Aura AI" />
                               <AvatarFallback className="bg-primary text-white">
                                 <Bot className="h-5 w-5" />
                               </AvatarFallback>

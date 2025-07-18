@@ -1,20 +1,10 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Users, Target, Lightbulb, ArrowLeft, Star, Crown, BookOpen, Brain, MessageCircle, Shield, Home, Info, Phone, LogIn, UserPlus, Menu, X, Sparkles } from "lucide-react";
+import { GlobalNavigation } from "@/components/GlobalNavigation";
+import { Heart, Users, Target, Lightbulb, Star, Crown, BookOpen, Brain, MessageCircle, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const About = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
   const values = [
     {
       icon: Heart,
@@ -38,331 +28,211 @@ const About = () => {
     }
   ];
 
-
+  const teamMembers = [
+    {
+      name: "AI Oracle",
+      role: "Biblical Assistant",
+      description: "Our advanced AI system trained on theological texts and biblical commentaries."
+    },
+    {
+      name: "Community",
+      role: "Global Believers",
+      description: "Thousands of believers worldwide who contribute to our mission of spreading God's word."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Enhanced Floating Curved Navigation */}
-      <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-7xl px-4">
-        <div className="bg-white/95 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 px-6 lg:px-12 py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] lg:min-w-[800px]">
-          {/* Glowing border effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-          
-          <div className="relative flex items-center justify-between">
-            {/* Desktop Layout */}
-            <div className="hidden lg:flex items-center justify-between w-full">
-              {/* Left - Logo */}
-              <div className="flex items-center">
-                <span className="text-xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
-              </div>
-
-              {/* Center - Navigation Items */}
-              <div className="flex items-center space-x-2">
-                              <a 
-                  href="/" 
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Home className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Home</span>
-                </a>
-              
-                              <Link 
-                  to="/about"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Info className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">About</span>
-                </Link>
-
-                <Link 
-                  to="/contact"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Phone className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Contact</span>
-                </Link>
-
-                                  <Link 
-                    to="/careers"
-                    className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                  >
-                    <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                    <span className="text-sm font-semibold whitespace-nowrap">Careers</span>
-                  </Link>
-
-                <Link 
-                  to="/funding"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Support Us</span>
-                </Link>
-            </div>
-            
-              {/* Right - Auth Button */}
-              <div className="flex items-center">
-                <Link to="/auth">
-                  <button className="group flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-110 active:scale-95">
-                    <div className="flex items-center space-x-1">
-                      <LogIn className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
-                      <UserPlus className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
-                    </div>
-                    <span className="text-sm font-semibold whitespace-nowrap">Sign In/Up</span>
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Mobile Layout */}
-            <div className="lg:hidden flex items-center justify-between w-full">
-              {/* Big Centered Logo */}
-              <div className="flex-1 flex justify-center">
-                <span className="text-xl sm:text-2xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
-              </div>
-              
-              {/* Mobile Hamburger Menu */}
-              <button
-                onClick={toggleMobileMenu}
-                className="relative p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-500 group"
-              >
-                <div className="relative w-6 h-6 flex items-center justify-center">
-                  {isMobileMenuOpen ? (
-                    <X className="h-6 w-6 text-primary transition-all duration-500 rotate-180" />
-                  ) : (
-                    <Menu className="h-6 w-6 text-primary transition-all duration-500" />
-                  )}
-                </div>
-                <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Mobile Menu Dropdown */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden mt-3 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 py-6 px-4 animate-sacred-fade-in">
-            {/* Enhanced glowing border effect for mobile */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/20 via-transparent to-white/20 opacity-60"></div>
-            
-            <div className="relative flex flex-col space-y-3">
-              {/* Enhanced Mobile Navigation Items */}
-              <a 
-                href="/" 
-                onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
-              >
-                <Home className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Home</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </a>
-              
-              <Link 
-                to="/about" 
-                onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
-              >
-                <Info className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">About</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </Link>
-              
-              <Link 
-                to="/contact" 
-                onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
-              >
-                <Phone className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Contact</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </Link>
-              
-              <Link 
-                to="/careers" 
-                onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
-              >
-                <Crown className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Careers</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </Link>
-              
-              
-              {/* Mobile CTA Buttons */}
-              <div className="border-t border-gradient-to-r from-primary/20 to-primary/10 pt-6 mt-6">
-                <div className="flex space-x-3 w-full">
-                  <Link to="/auth" onClick={closeMobileMenu} className="flex-1">
-                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-3 rounded-full hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 w-full">
-                      <Sparkles className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                      <span className="text-sm font-semibold">Get Started</span>
-                    </button>
-                  </Link>
-                  <Link to="/funding" onClick={closeMobileMenu} className="flex-1">
-                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-105 w-full">
-                      <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                      <span className="text-sm font-semibold">Support Us</span>
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
+      {/* Global Navigation */}
+      <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
-        <div className="text-center mb-16">
+      <section className="py-24 bg-gradient-to-br from-orange-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            About <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">✦Bible Aura</span>
+            About <span className="text-primary">✦Bible Aura</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Transforming spiritual journeys through AI-powered biblical insights, connecting believers worldwide with the timeless wisdom of Scripture.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            We're on a mission to make biblical wisdom accessible to everyone through the power of AI and community-driven insights.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+              <Link to="/auth">Join Our Community</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link to="/contact">Get in Touch</Link>
+            </Button>
+          </div>
         </div>
+      </section>
 
-        {/* Mission & Vision */}
-        <div className="grid md:grid-cols-2 gap-12 mb-20">
-          <Card className="border-2 border-orange-100 hover:shadow-lg transition-shadow">
-            <CardHeader className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-4">
-                <Target className="h-8 w-8" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">Our Mission</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 leading-relaxed text-center">
-                To democratize biblical wisdom by making profound spiritual insights accessible to everyone, 
-                regardless of their theological background, through innovative AI technology that respects 
-                the sacred nature of Scripture while enhancing understanding and personal growth.
+      {/* Mission Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+                Our Mission
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Bible Aura was born from a simple belief: that everyone should have access to deep, meaningful biblical insights. 
+                We combine cutting-edge AI technology with timeless biblical wisdom to create a platform that serves believers 
+                at every stage of their spiritual journey.
               </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-orange-100 hover:shadow-lg transition-shadow">
-            <CardHeader className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white mb-4">
-                <Lightbulb className="h-8 w-8" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">Our Vision</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 leading-relaxed text-center">
-                To become the world's most trusted platform for AI-enhanced biblical study, fostering 
-                a global community where faith and technology unite to deepen spiritual understanding 
-                and transform lives through the power of God's Word.
+              <p className="text-lg text-gray-600 mb-6">
+                Whether you're seeking answers to theological questions, looking for guidance in your daily walk with Christ, 
+                or simply wanting to explore the depths of Scripture, Bible Aura is here to guide and support you.
               </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* About Me Section */}
-        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-8 mb-20">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              {/* Profile Image */}
-              <div className="text-center md:text-left">
-                <div className="relative inline-block">
-                  <img 
-                    src="/benaiah.jpg" 
-                    alt="Benaiah Nicholas Nimal" 
-                    className="w-64 h-64 rounded-2xl object-cover shadow-2xl mx-auto md:mx-0"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 to-transparent rounded-2xl"></div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  <span className="text-sm font-medium">AI-Powered Insights</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-purple-500" />
+                  <span className="text-sm font-medium">Theologically Sound</span>
                 </div>
               </div>
-              
-              {/* About Text */}
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">About Me</h2>
-                <h3 className="text-xl font-semibold text-orange-600 mb-4">Benaiah Nicholas Nimal</h3>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  I'm a passionate developer and believer who saw the incredible potential of combining cutting-edge AI technology with biblical wisdom. My journey in software development, coupled with a deep love for Scripture, inspired me to create Bible Aura.
+            </div>
+            <div className="relative">
+              <div className="bg-gradient-to-br from-primary/10 to-orange-100 rounded-2xl p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
+                <p className="text-gray-700 mb-4">
+                  To become the world's most trusted platform for biblical study and spiritual growth, 
+                  empowering millions of believers to deepen their relationship with God.
                 </p>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  With a background in AI development and theological research, I've dedicated myself to building tools that make biblical insights more accessible to believers worldwide. My vision is to bridge the gap between ancient wisdom and modern technology.
-                </p>
-                <p className="text-gray-700 leading-relaxed">
-                  When I'm not coding or studying Scripture, I enjoy exploring how technology can serve the global Christian community and create meaningful spiritual experiences for people from all walks of life.
-                </p>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-primary">50K+</div>
+                    <div className="text-sm text-gray-600">Users Worldwide</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-primary">1M+</div>
+                    <div className="text-sm text-gray-600">Questions Answered</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Values Section */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Our Values</h2>
-          <p className="text-gray-600 text-center mb-12">The principles that guide everything we do</p>
+      {/* Values Section */}
+      <section className="py-24 bg-gradient-to-br from-orange-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Our Values
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              These core values guide everything we do and shape our approach to serving the global Christian community.
+            </p>
+          </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white mb-4">
-                    <value.icon className="h-8 w-8" />
+            {values.map((value, index) => {
+              const IconComponent = value.icon;
+              return (
+                <Card key={index} className="text-center border-2 border-gray-100 hover:border-primary/20 transition-all duration-300 hover:shadow-lg">
+                  <CardHeader className="pb-4">
+                    <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
+                      <IconComponent className="h-8 w-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl text-gray-900">{value.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600">{value.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+              Our Team
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We're a diverse team of believers, technologists, and theologians united by our passion for making Scripture accessible to all.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {teamMembers.map((member, index) => (
+              <Card key={index} className="text-center">
+                <CardHeader>
+                  <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-primary">✦</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{value.title}</h3>
-                  <p className="text-gray-600 text-sm">{value.description}</p>
+                  <CardTitle className="text-xl text-gray-900">{member.name}</CardTitle>
+                  <p className="text-primary font-medium">{member.role}</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{member.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
+      </section>
 
-
-
-
-
-        {/* Technology Section */}
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-8 mb-20">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Powered by Advanced Technology</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white mb-4">
-                <Brain className="h-8 w-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">AI & Machine Learning</h3>
-              <p className="text-gray-600 text-sm">Advanced natural language processing for biblical text analysis</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white mb-4">
-                <BookOpen className="h-8 w-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Theological Database</h3>
-              <p className="text-gray-600 text-sm">Comprehensive theological knowledge base with scholarly insights</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white mb-4">
-                <MessageCircle className="h-8 w-8" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Conversational AI</h3>
-              <p className="text-gray-600 text-sm">Interactive chat system for personalized biblical guidance</p>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Join Our Mission</h2>
-          <p className="text-gray-600 mb-8">Be part of a community that's transforming how we study and understand Scripture</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3" asChild>
-              <Link to="/auth">
-                <Star className="mr-2 h-5 w-5" />
-                Start Your Journey
-              </Link>
+      {/* CTA Section */}
+      <section className="py-24 bg-gradient-to-r from-primary to-orange-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            Ready to Begin Your Journey?
+          </h2>
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Join thousands of believers who are already discovering deeper biblical insights with Bible Aura.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
+              <Link to="/auth">Get Started Today</Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50 px-8 py-3" asChild>
-              <Link to="/contact">
-                <MessageCircle className="mr-2 h-5 w-5" />
-                Get in Touch
-              </Link>
+            <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-primary">
+              <Link to="/funding">Support Our Mission</Link>
             </Button>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-2">
+              <h3 className="text-2xl font-bold mb-4">✦Bible Aura</h3>
+              <p className="text-gray-400 mb-6 max-w-md">
+                Empowering believers with AI-driven biblical insights and spiritual guidance for a deeper relationship with God.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/" className="hover:text-white transition-colors">Home</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
+                <li><Link to="/funding" className="hover:text-white transition-colors">Support Us</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 Bible Aura. All rights reserved. Made with ❤️ for the Kingdom of God.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
