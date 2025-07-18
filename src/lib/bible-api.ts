@@ -211,20 +211,25 @@ class BibleApiService {
   private maxRetries = 3;
   private retryDelay = 1000;
 
-  // Enhanced error handling wrapper
+  // Enhanced error handling wrapper - now with silent error mode
   private async safeApiCall<T>(
     operation: () => Promise<T>, 
     fallback: T, 
-    operationName: string
+    operationName: string,
+    silent: boolean = true
   ): Promise<T> {
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        console.warn(`${operationName} attempt ${attempt} failed:`, error);
+        if (!silent) {
+          console.warn(`${operationName} attempt ${attempt} failed:`, error);
+        }
         
         if (attempt === this.maxRetries) {
-          console.error(`${operationName} failed after ${this.maxRetries} attempts, using fallback`);
+          if (!silent) {
+            console.error(`${operationName} failed after ${this.maxRetries} attempts, using fallback`);
+          }
           return fallback;
         }
         
@@ -299,7 +304,8 @@ class BibleApiService {
           }
         },
         FALLBACK_BOOKS,
-        'getBooks'
+        'getBooks',
+        true // Silent mode
       );
     });
   }
@@ -352,7 +358,8 @@ class BibleApiService {
           }
         },
         [FALLBACK_VERSE],
-        'fetchChapter'
+        'fetchChapter',
+        true // Silent mode
       );
     });
   }
@@ -409,7 +416,8 @@ class BibleApiService {
           }
         },
         [],
-        'searchVerses'
+        'searchVerses',
+        true // Silent mode
       );
     });
   }

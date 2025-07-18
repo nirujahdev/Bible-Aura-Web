@@ -34,8 +34,6 @@ import VerseDemo from "./pages/VerseDemo";
 // Component imports
 import { AppSidebar } from "./components/AppSidebar";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { DebugConsole } from "./components/DebugConsole";
-import { BibleApiTest } from "./components/BibleApiTest";
 
 // Component to handle layout based on route
 function AppLayout() {
@@ -166,8 +164,6 @@ function App() {
           <Router>
             <AppLayout />
             <Toaster />
-            <DebugConsole />
-            <BibleApiTest />
           </Router>
         </SidebarProvider>
       </AuthProvider>

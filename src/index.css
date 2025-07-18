@@ -193,6 +193,29 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     justify-content: center;
     z-index: 9999;
   }
+
+  /* Ensure navigation is always clickable */
+  nav, .nav-divine {
+    position: relative;
+    z-index: 1000;
+    pointer-events: auto;
+  }
+
+  /* Ensure buttons and links are clickable */
+  button, a, .btn-divine {
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Fix any overlay issues */
+  .fixed {
+    pointer-events: none;
+  }
+
+  .fixed > * {
+    pointer-events: auto;
+  }
 }
 
 @layer components {
