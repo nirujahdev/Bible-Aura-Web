@@ -39,24 +39,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Add a timeout fallback to prevent infinite loading
+    let isMounted = true;
+    
+    // Reduce timeout to 3 seconds and add better error handling
     const loadingTimeout = setTimeout(() => {
-      console.log('Auth loading timeout, setting loading to false');
-      setLoading(false);
-    }, 5000); // 5 second timeout
+      if (isMounted) {
+        console.log('Auth loading timeout, setting loading to false');
+        setLoading(false);
+      }
+    }, 3000); // Reduced from 5 seconds to 3 seconds
+
+    const initializeAuth = async () => {
+      try {
+        // Check for existing session first
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          if (isMounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (isMounted) {
+          clearTimeout(loadingTimeout);
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            // Don't wait for profile fetch to complete loading
+            fetchUserProfile(session.user.id);
+          } else {
+            setProfile(null);
+          }
+          
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (isMounted) {
+          clearTimeout(loadingTimeout);
+          setLoading(false);
+        }
+      }
+    };
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isMounted) return;
+        
         clearTimeout(loadingTimeout);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile
-          setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
+          // Fetch user profile in the background
+          fetchUserProfile(session.user.id);
         } else {
           setProfile(null);
         }
@@ -65,24 +105,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      clearTimeout(loadingTimeout);
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      
-      setLoading(false);
-    }).catch((error) => {
-      console.error('Auth session error:', error);
-      clearTimeout(loadingTimeout);
-      setLoading(false);
-    });
+    // Initialize auth
+    initializeAuth();
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
       clearTimeout(loadingTimeout);
     };

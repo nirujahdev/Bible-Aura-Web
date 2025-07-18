@@ -51,9 +51,6 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     --primary-700: 12 100% 36%;
     --primary-800: 10 100% 30%;
     --primary-900: 8 100% 24%;
-    --primary-700: 12 100% 35%;
-    --primary-800: 10 100% 28%;
-    --primary-900: 8 100% 21%;
 
     --secondary: 0 0% 100%;
     --secondary-foreground: 0 0% 0%;
@@ -81,22 +78,6 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     --divine-foreground: 0 0% 100%;
     --divine-light: 24 100% 65%;
     --divine-dark: 16 100% 45%;
-
-    /* Sacred Gradients */
-    --gradient-aura: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(22 100% 58%) 100%);
-    --gradient-aura-hover: linear-gradient(135deg, hsl(22 100% 58%) 0%, hsl(16 100% 49%) 100%);
-    --gradient-divine: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(24 100% 60%) 50%, hsl(20 100% 55%) 100%);
-    --gradient-spiritual: linear-gradient(180deg, hsl(16 100% 49%), hsl(18 100% 55%));
-    --gradient-sacred-radial: radial-gradient(circle at center, hsl(16 100% 49% / 0.3) 0%, transparent 70%);
-    --gradient-celestial-glow: linear-gradient(45deg, hsl(16 100% 49% / 0.1), hsl(22 100% 58% / 0.2), hsl(16 100% 49% / 0.1));
-
-    /* Divine Shadows */
-    --shadow-spiritual: 0 10px 40px -10px hsl(16 100% 49% / 0.4);
-    --shadow-divine: 0 8px 32px -4px hsl(16 100% 49% / 0.5);
-    --shadow-aura-glow: 0 0 30px hsl(16 100% 49% / 0.6);
-    --shadow-sacred-glow: 0 0 50px hsl(16 100% 49% / 0.4), 0 0 100px hsl(16 100% 49% / 0.2);
-    --shadow-celestial: 0 20px 60px -15px hsl(16 100% 49% / 0.3);
-    --shadow-holy-light: inset 0 1px 0 hsl(0 0% 100% / 0.2), 0 1px 2px hsl(16 100% 49% / 0.3);
 
     --radius: 0.75rem;
 
@@ -167,11 +148,23 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-weight: 400;
     line-height: 1.6;
+    /* Prevent white screen by ensuring body always has background */
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Fallback for root element */
+  #root {
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    position: relative;
   }
 
   /* Smooth scrolling for divine experience */
   html {
     scroll-behavior: smooth;
+    background-color: hsl(var(--background));
   }
 
   /* Divine selection styling */
@@ -185,6 +178,20 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     outline: 2px solid hsl(16 100% 49%);
     outline-offset: 2px;
     border-radius: 0.25rem;
+  }
+
+  /* Loading state fallback */
+  .loading-fallback {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: hsl(var(--background));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
   }
 }
 
@@ -652,4 +659,15 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Simplified gradients to prevent rendering issues */
+@layer utilities {
+  .bg-aura-gradient {
+    background: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(22 100% 58%) 100%);
+  }
+  
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(18 100% 55%) 100%);
+  }
 }

@@ -1,14 +1,4 @@
-// Real Bible API Service with actual API calls
-// Supports Tamil, English, and multiple translations through berinaniesh API
-
-export interface BibleBook {
-  id: string;
-  name: string;
-  nameLong: string;
-  chapters: number;
-  testament: 'Old' | 'New';
-}
-
+// Bible API types and constants
 export interface BibleVerse {
   id: string;
   orgId: string;
@@ -16,7 +6,15 @@ export interface BibleVerse {
   chapter: number;
   verse: number;
   text: string;
-  reference: string;
+  reference?: string;
+}
+
+export interface BibleBook {
+  id: string;
+  name: string;
+  nameLong: string;
+  chapters: number;
+  testament: 'Old' | 'New';
 }
 
 export interface BibleTranslation {
@@ -38,97 +36,135 @@ export const BIBLE_TRANSLATIONS: BibleTranslation[] = [
     abbreviation: 'KJV',
     language: 'English', 
     languageCode: 'en',
-    description: 'The classic 1611 King James Bible',
+    description: 'The classic English translation from 1611',
     apiId: 'kjv'
   },
   { 
-    id: 'asv', 
-    name: 'American Standard Version', 
-    abbreviation: 'ASV',
+    id: 'niv', 
+    name: 'New International Version', 
+    abbreviation: 'NIV',
     language: 'English', 
     languageCode: 'en',
-    description: 'American Standard Version 1901',
-    apiId: 'asv'
+    description: 'Contemporary English translation balancing accuracy and readability',
+    apiId: 'niv'
   },
   { 
-    id: 'web', 
-    name: 'World English Bible', 
-    abbreviation: 'WEB',
+    id: 'esv', 
+    name: 'English Standard Version', 
+    abbreviation: 'ESV',
     language: 'English', 
     languageCode: 'en',
-    description: 'World English Bible 2020',
-    apiId: 'web'
+    description: 'Word-for-word translation emphasizing accuracy and literary excellence',
+    apiId: 'esv'
   },
   { 
-    id: 'webu', 
-    name: 'World English Bible Updated', 
-    abbreviation: 'WEBU',
+    id: 'nlt', 
+    name: 'New Living Translation', 
+    abbreviation: 'NLT',
     language: 'English', 
     languageCode: 'en',
-    description: 'World English Bible Updated 2020',
-    apiId: 'webu'
-  },
-
-  // Tamil Translation
-  { 
-    id: 'tamil-ov', 
-    name: 'Tamil Old Version Bible', 
-    abbreviation: 'TOVBSI',
-    language: 'Tamil', 
-    languageCode: 'ta',
-    description: 'தமிழ் பழைய வேத வாசன் வேதம் (1957)',
-    apiId: 'tovbsi'
-  },
-
-  // Other Indian Languages
-  { 
-    id: 'malayalam', 
-    name: 'Malayalam Sathya Veda Pusthakam', 
-    abbreviation: 'MLSVP',
-    language: 'Malayalam', 
-    languageCode: 'ml',
-    description: 'Malayalam Bible 1910',
-    apiId: 'mlsvp'
+    description: 'Thought-for-thought translation for clarity and readability',
+    apiId: 'nlt'
   },
   { 
-    id: 'gujarati', 
-    name: 'Gujarati Old Version Bible', 
-    abbreviation: 'GOVBSI',
-    language: 'Gujarati', 
-    languageCode: 'gu',
-    description: 'Gujarati Bible 1908',
-    apiId: 'govbsi'
+    id: 'nasb', 
+    name: 'New American Standard Bible', 
+    abbreviation: 'NASB',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Literal translation known for accuracy to original texts',
+    apiId: 'nasb'
   },
   { 
-    id: 'odia', 
-    name: 'Odia Old Version Bible', 
-    abbreviation: 'OOVBSI',
-    language: 'Odia', 
-    languageCode: 'or',
-    description: 'Odia Bible 1958',
-    apiId: 'oovbsi'
+    id: 'csb', 
+    name: 'Christian Standard Bible', 
+    abbreviation: 'CSB',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Balance of accuracy and readability for modern readers',
+    apiId: 'csb'
   },
-
-  // Sinhala Translation
   { 
-    id: 'sinhala', 
-    name: 'Sinhala Bible', 
-    abbreviation: 'SIN',
-    language: 'Sinhala', 
-    languageCode: 'si',
-    description: 'සිංහල බයිබලය',
-    apiId: 'sinhala'
+    id: 'amp', 
+    name: 'Amplified Bible', 
+    abbreviation: 'AMP',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Expanded translation with additional meanings and implications',
+    apiId: 'amp'
+  },
+  { 
+    id: 'msg', 
+    name: 'The Message', 
+    abbreviation: 'MSG',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Contemporary paraphrase in modern American English',
+    apiId: 'msg'
+  },
+  { 
+    id: 'nkjv', 
+    name: 'New King James Version', 
+    abbreviation: 'NKJV',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Modern language update of the King James Version',
+    apiId: 'nkjv'
+  },
+  { 
+    id: 'rsv', 
+    name: 'Revised Standard Version', 
+    abbreviation: 'RSV',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Mid-20th century revision of the American Standard Version',
+    apiId: 'rsv'
+  },
+  { 
+    id: 'nrsv', 
+    name: 'New Revised Standard Version', 
+    abbreviation: 'NRSV',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Updated version of RSV with inclusive language',
+    apiId: 'nrsv'
+  },
+  { 
+    id: 'cev', 
+    name: 'Contemporary English Version', 
+    abbreviation: 'CEV',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Simple, clear English for all reading levels',
+    apiId: 'cev'
+  },
+  { 
+    id: 'gnt', 
+    name: 'Good News Translation', 
+    abbreviation: 'GNT',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Dynamic equivalence translation for clarity',
+    apiId: 'gnt'
+  },
+  { 
+    id: 'net', 
+    name: 'New English Translation', 
+    abbreviation: 'NET',
+    language: 'English', 
+    languageCode: 'en',
+    description: 'Modern translation with extensive translator notes',
+    apiId: 'net'
   }
 ];
 
-// Bible API endpoints
+// Bible API endpoints with improved error handling
 const BIBLE_API_BASE = 'https://api.bible.berinaniesh.xyz';
 const FALLBACK_API_BASE = 'https://bible-api.com';
 
 interface ApiBook {
   id: number;
   name: string;
-  translation_id: string;
   total_chapters: number;
   testament: string;
 }
@@ -149,118 +185,232 @@ interface ApiChapterResponse {
   translation: string;
 }
 
+// Fallback data to prevent crashes
+const FALLBACK_BOOKS: BibleBook[] = [
+  { id: '1', name: 'Genesis', nameLong: 'Genesis', chapters: 50, testament: 'Old' },
+  { id: '2', name: 'Exodus', nameLong: 'Exodus', chapters: 40, testament: 'Old' },
+  { id: '40', name: 'Matthew', nameLong: 'Matthew', chapters: 28, testament: 'New' },
+  { id: '41', name: 'Mark', nameLong: 'Mark', chapters: 16, testament: 'New' },
+  { id: '42', name: 'Luke', nameLong: 'Luke', chapters: 24, testament: 'New' },
+  { id: '43', name: 'John', nameLong: 'John', chapters: 21, testament: 'New' }
+];
+
+const FALLBACK_VERSE: BibleVerse = {
+  id: 'john.3.16',
+  orgId: '1',
+  book: '43',
+  chapter: 3,
+  verse: 16,
+  text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.',
+  reference: 'John 3:16'
+};
+
 class BibleApiService {
-  private cache = new Map<string, any>();
+  private cache = new Map<string, { data: any; timestamp: number }>();
   private cacheTimeout = 5 * 60 * 1000; // 5 minutes
+  private maxRetries = 3;
+  private retryDelay = 1000;
+
+  // Enhanced error handling wrapper
+  private async safeApiCall<T>(
+    operation: () => Promise<T>, 
+    fallback: T, 
+    operationName: string
+  ): Promise<T> {
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        console.warn(`${operationName} attempt ${attempt} failed:`, error);
+        
+        if (attempt === this.maxRetries) {
+          console.error(`${operationName} failed after ${this.maxRetries} attempts, using fallback`);
+          return fallback;
+        }
+        
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+      }
+    }
+    
+    return fallback;
+  }
 
   // Get cached data or fetch from API
   private async getCachedData<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
-    const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-      return cached.data;
-    }
+    try {
+      const cached = this.cache.get(key);
+      if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.data;
+      }
 
-    const data = await fetcher();
-    this.cache.set(key, { data, timestamp: Date.now() });
-    return data;
+      const data = await fetcher();
+      this.cache.set(key, { data, timestamp: Date.now() });
+      return data;
+    } catch (error) {
+      console.error('Cache operation failed:', error);
+      return await fetcher();
+    }
   }
 
-  // Fetch books for a translation
+  // Fetch books for a translation with comprehensive error handling
   async getBooks(translationId: string = 'kjv'): Promise<BibleBook[]> {
     const cacheKey = `books_${translationId}`;
     
     return this.getCachedData(cacheKey, async () => {
-      try {
-        const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
-        const apiId = translation?.apiId || 'kjv';
-        
-        const response = await fetch(`${BIBLE_API_BASE}/books?translation=${apiId}`);
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`);
-        }
+      return this.safeApiCall(
+        async () => {
+          const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+          const apiId = translation?.apiId || 'kjv';
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+          
+          try {
+            const response = await fetch(`${BIBLE_API_BASE}/books?translation=${apiId}`, {
+              signal: controller.signal,
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+              throw new Error(`API request failed: ${response.status} - ${response.statusText}`);
+            }
 
-        const books: ApiBook[] = await response.json();
-        
-        return books.map(book => ({
-          id: book.id.toString(),
-          name: book.name,
-          nameLong: book.name,
-          chapters: book.total_chapters,
-          testament: book.testament === 'ot' ? 'Old' : 'New'
-        }));
-      } catch (error) {
-        console.error('Error fetching books:', error);
-        // Return fallback book list
-        return this.getFallbackBooks();
-      }
+            const books: ApiBook[] = await response.json();
+            
+            if (!Array.isArray(books) || books.length === 0) {
+              throw new Error('Invalid books data received');
+            }
+            
+            return books.map(book => ({
+              id: book.id.toString(),
+              name: book.name,
+              nameLong: book.name,
+              chapters: book.total_chapters,
+              testament: book.testament === 'ot' ? 'Old' : 'New'
+            }));
+          } finally {
+            clearTimeout(timeoutId);
+          }
+        },
+        FALLBACK_BOOKS,
+        'getBooks'
+      );
     });
   }
 
-  // Fetch chapter verses
+  // Fetch chapter verses with enhanced error handling
   async fetchChapter(bookId: string, chapter: number, translationId: string = 'kjv'): Promise<BibleVerse[]> {
     const cacheKey = `chapter_${bookId}_${chapter}_${translationId}`;
     
     return this.getCachedData(cacheKey, async () => {
-      try {
-        const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
-        const apiId = translation?.apiId || 'kjv';
-        
-        const response = await fetch(`${BIBLE_API_BASE}/chapter?book_id=${bookId}&chapter=${chapter}&translation=${apiId}`);
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`);
-        }
+      return this.safeApiCall(
+        async () => {
+          const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+          const apiId = translation?.apiId || 'kjv';
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+          
+          try {
+            const response = await fetch(`${BIBLE_API_BASE}/chapter?book_id=${bookId}&chapter=${chapter}&translation=${apiId}`, {
+              signal: controller.signal,
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+              throw new Error(`API request failed: ${response.status} - ${response.statusText}`);
+            }
 
-        const data: ApiChapterResponse = await response.json();
-        
-        return data.verses.map(verse => ({
-          id: `${bookId}.${chapter}.${verse.verse}`,
-          orgId: verse.id.toString(),
-          book: bookId,
-          chapter: verse.chapter,
-          verse: verse.verse,
-          text: verse.text,
-          reference: `${data.book_name} ${verse.chapter}:${verse.verse}`
-        }));
-      } catch (error) {
-        console.error('Error fetching chapter:', error);
-        // Try fallback API
-        return this.fetchChapterFallback(bookId, chapter, translationId);
-      }
+            const data: ApiChapterResponse = await response.json();
+            
+            if (!data.verses || !Array.isArray(data.verses) || data.verses.length === 0) {
+              throw new Error('Invalid chapter data received');
+            }
+            
+            return data.verses.map(verse => ({
+              id: `${bookId}.${chapter}.${verse.verse}`,
+              orgId: verse.id.toString(),
+              book: bookId,
+              chapter: verse.chapter,
+              verse: verse.verse,
+              text: verse.text || '',
+              reference: `${data.book_name} ${verse.chapter}:${verse.verse}`
+            }));
+          } finally {
+            clearTimeout(timeoutId);
+          }
+        },
+        [FALLBACK_VERSE],
+        'fetchChapter'
+      );
     });
   }
 
-  // Search verses
+  // Search verses with enhanced error handling
   async searchVerses(query: string, translationId: string = 'kjv', limit: number = 20): Promise<BibleVerse[]> {
+    if (!query || query.trim().length < 2) {
+      return [];
+    }
+    
     const cacheKey = `search_${query}_${translationId}_${limit}`;
     
     return this.getCachedData(cacheKey, async () => {
-      try {
-        const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
-        const apiId = translation?.apiId || 'kjv';
-        
-        const response = await fetch(`${BIBLE_API_BASE}/search?q=${encodeURIComponent(query)}&translation=${apiId}&limit=${limit}`);
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`);
-        }
+      return this.safeApiCall(
+        async () => {
+          const translation = BIBLE_TRANSLATIONS.find(t => t.id === translationId);
+          const apiId = translation?.apiId || 'kjv';
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout for search
+          
+          try {
+            const response = await fetch(`${BIBLE_API_BASE}/search?q=${encodeURIComponent(query)}&translation=${apiId}&limit=${limit}`, {
+              signal: controller.signal,
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+              throw new Error(`Search request failed: ${response.status} - ${response.statusText}`);
+            }
 
-        const verses: ApiVerse[] = await response.json();
-        
-        return verses.map(verse => ({
-          id: `${verse.book_id}.${verse.chapter}.${verse.verse}`,
-          orgId: verse.id.toString(),
-          book: verse.book_id.toString(),
-          chapter: verse.chapter,
-          verse: verse.verse,
-          text: verse.text,
-          reference: `Book ${verse.book_id} ${verse.chapter}:${verse.verse}`
-        }));
-      } catch (error) {
-        console.error('Error searching verses:', error);
-        return [];
-      }
+            const verses: ApiVerse[] = await response.json();
+            
+            if (!Array.isArray(verses)) {
+              throw new Error('Invalid search results received');
+            }
+            
+            return verses.map(verse => ({
+              id: `${verse.book_id}.${verse.chapter}.${verse.verse}`,
+              orgId: verse.id.toString(),
+              book: verse.book_id.toString(),
+              chapter: verse.chapter,
+              verse: verse.verse,
+              text: verse.text || '',
+              reference: `Book ${verse.book_id} ${verse.chapter}:${verse.verse}`
+            }));
+          } finally {
+            clearTimeout(timeoutId);
+          }
+        },
+        [],
+        'searchVerses'
+      );
     });
   }
 
@@ -327,36 +477,17 @@ class BibleApiService {
     }
   }
 
-  // Fallback chapter fetch using bible-api.com
-  private async fetchChapterFallback(bookId: string, chapter: number, translationId: string): Promise<BibleVerse[]> {
-    try {
-      // Use bible-api.com as fallback (only supports English)
-      if (translationId !== 'kjv' && translationId !== 'web') {
-        return [];
-      }
+  // Clear cache (useful for testing or memory management)
+  clearCache(): void {
+    this.cache.clear();
+  }
 
-      const bookName = this.getBookNameFromId(bookId);
-      const response = await fetch(`${FALLBACK_API_BASE}/${bookName}+${chapter}`);
-      
-      if (!response.ok) {
-        return [];
-      }
-
-      const data = await response.json();
-      
-      return data.verses.map((verse: { book: string; chapter: number; verse: number; text: string }, index: number) => ({
-        id: `${bookId}.${chapter}.${index + 1}`,
-        orgId: `${bookId}.${chapter}.${index + 1}`,
-        book: bookId,
-        chapter: chapter,
-        verse: index + 1,
-        text: verse.text,
-        reference: `${data.reference} ${index + 1}`
-      }));
-    } catch (error) {
-      console.error('Fallback API error:', error);
-      return [];
-    }
+  // Get cache statistics
+  getCacheStats(): { size: number; keys: string[] } {
+    return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys())
+    };
   }
 
   // Parse reference strings
