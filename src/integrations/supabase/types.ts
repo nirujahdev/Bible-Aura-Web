@@ -412,6 +412,39 @@ export type Database = {
           },
         ]
       }
+      daily_verses: {
+        Row: {
+          ai_context: string
+          created_at: string
+          daily_theme: string
+          id: string
+          user_id: string
+          verse_date: string
+          verse_reference: string
+          verse_text: string
+        }
+        Insert: {
+          ai_context: string
+          created_at?: string
+          daily_theme: string
+          id?: string
+          user_id: string
+          verse_date: string
+          verse_reference: string
+          verse_text: string
+        }
+        Update: {
+          ai_context?: string
+          created_at?: string
+          daily_theme?: string
+          id?: string
+          user_id?: string
+          verse_date?: string
+          verse_reference?: string
+          verse_text?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

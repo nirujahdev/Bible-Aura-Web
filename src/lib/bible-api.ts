@@ -107,6 +107,17 @@ export const BIBLE_TRANSLATIONS: BibleTranslation[] = [
     languageCode: 'or',
     description: 'Odia Bible 1958',
     apiId: 'oovbsi'
+  },
+
+  // Sinhala Translation
+  { 
+    id: 'sinhala', 
+    name: 'Sinhala Bible', 
+    abbreviation: 'SIN',
+    language: 'Sinhala', 
+    languageCode: 'si',
+    description: 'සිංහල බයිබලය',
+    apiId: 'sinhala'
   }
 ];
 

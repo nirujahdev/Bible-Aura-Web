@@ -9,6 +9,7 @@ import {
  
   ReadingProgressWidget 
 } from "@/components/FeatureWidgets";
+import { DailyVerseWidget } from "@/components/DailyVerseWidget";
 import { 
   Calendar, 
   BookOpen, 
@@ -57,40 +58,51 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 text-white">
-        <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="gradient-primary text-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
+        
+        <div className="container relative z-10 section-spacing-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             {/* Greeting and User Info */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+            <div className="text-spacing">
+              <div className="flex items-center gap-4 mb-3">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
                   {getGreeting()}, {profile?.display_name?.split(' ')[0] || 'Friend'}!
                 </h1>
-                <div className="flex items-center gap-1">
-                  {profile?.reading_streak >= 7 && <span className="text-2xl">🔥</span>}
-                  {profile?.reading_streak >= 30 && <span className="text-2xl">⭐</span>}
+                <div className="flex items-center gap-2">
+                  {profile?.reading_streak >= 7 && <span className="text-3xl animate-bounce">🔥</span>}
+                  {profile?.reading_streak >= 30 && <span className="text-3xl animate-pulse">⭐</span>}
                 </div>
               </div>
-              <p className="text-white/90 text-sm sm:text-base">
+              <p className="text-white/90 text-lg sm:text-xl font-medium">
                 Continue your spiritual journey with AI-powered biblical insights
               </p>
-              <div className="flex items-center gap-4 text-sm text-white/80">
-                <span>📅 {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
-                <span>🕒 {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+              <div className="flex flex-wrap items-center gap-6 text-base text-white/80 pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">📅</span>
+                  <span>{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🕒</span>
+                  <span>{currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="btn-group">
               <Link to="/bible">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
-                  <BookOpen className="mr-2 h-5 w-5" />
+                <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 rounded-xl">
+                  <BookOpen className="mr-3 h-6 w-6" />
                   Read Bible
                 </Button>
               </Link>
               <Link to="/chat">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-semibold">
-                  <MessageCircle className="mr-2 h-5 w-5" />
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-primary font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 rounded-xl">
+                  <MessageCircle className="mr-3 h-6 w-6" />
                   Ask AI
                 </Button>
               </Link>
@@ -101,8 +113,13 @@ const Dashboard = () => {
 
       {/* Main Dashboard Content */}
       <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
+        {/* Daily Verse Section - Full Width */}
+        <div className="mb-12">
+          <DailyVerseWidget />
+        </div>
+        
         {/* Overview Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">

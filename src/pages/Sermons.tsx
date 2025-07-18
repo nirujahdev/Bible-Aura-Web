@@ -24,7 +24,6 @@ import {
   PenTool, RefreshCw, Archive, FolderOpen, UserPlus, GitBranch,
   ThumbsUp, TrendingUp, Database, Highlighter, Smartphone
 } from "lucide-react";
-import { PremiumFeaturePrompt } from "@/components/PremiumFeaturePrompt";
 
 // Rich Text Editor (will be dynamically imported)
 const ReactQuill = React.lazy(() => import('react-quill'));
@@ -860,19 +859,25 @@ const Sermons = () => {
 
   if (!user) {
     return (
-      <PremiumFeaturePrompt
-        title="Advanced Sermon Creator"
-        description="Create professional sermons with AI assistance, rich text editing, collaboration tools, and comprehensive management features."
-        features={[
-          "AI-powered sermon generation with customizable settings",
-          "Rich text editor with formatting, verse lookup, and auto-save",
-          "Professional templates and structure tools",
-          "Team collaboration with sharing and approval workflows",
-          "Presentation mode, timer, and delivery support",
-          "Analytics, feedback collection, and growth tracking"
-        ]}
-        icon={<Mic className="h-8 w-8 text-white" />}
-      />
+      <div className="h-screen bg-background flex items-center justify-center p-8">
+        <div className="text-center space-y-6 max-w-md">
+          <Mic className="h-16 w-16 text-primary mx-auto" />
+          <h1 className="text-3xl font-bold text-primary">Sermon Creator</h1>
+          <p className="text-muted-foreground text-lg">
+            Create and manage your sermons with AI assistance
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Please sign in to access the sermon creator
+          </p>
+          <Button 
+            asChild 
+            size="lg"
+            className="bg-primary hover:bg-primary/90"
+          >
+            <a href="/auth">Sign In</a>
+          </Button>
+        </div>
+      </div>
     );
   }
 

@@ -4,38 +4,39 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Bot, User, Sparkles, Book, MessageCircle, Star, Crown, Heart, LogIn, Lock, Globe, Languages } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import AIAnalysisLoader from '@/components/AIAnalysisLoader';
+import { Send, Bot, User, Book, MessageCircle, LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/rateLimiter';
+import OpenAI from 'openai';
 
-// OpenRouter API Configuration
-const OPENROUTER_API_KEY = "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";
-const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-
-// Language settings for multi-language support
-const SUPPORTED_LANGUAGES = [
-  { code: 'en', name: 'English', translations: ['kjv', 'niv', 'esv', 'nlt', 'nasb'] },
-  { code: 'ta', name: 'தமிழ் (Tamil)', translations: ['tamil-ov', 'tamil-irv'] },
-  { code: 'si', name: 'සිංහල (Sinhala)', translations: ['sinhala-ov', 'sinhala-nv'] }
+// Multi-Model API Configuration
+const API_CONFIGS = [
+  {
+    apiKey: "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",
+    model: "tngtech/deepseek-r1t2-chimera:free",
+    name: "DeepSeek R1T2 Chimera"
+  },
+  {
+    apiKey: "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",
+    model: "moonshotai/kimi-k2:free",
+    name: "MoonshotAI Kimi K2"
+  },
+  {
+    apiKey: "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",
+    model: "moonshotai/kimi-k2:free",
+    name: "MoonshotAI Kimi K2 (Backup)"
+  }
 ];
-
-// Christian theology database for enhanced responses
-const CHRISTIAN_AUTHORS_KNOWLEDGE = {
-  classics: ["John Calvin", "Augustine", "Thomas Aquinas", "Martin Luther", "John Wesley"],
-  modern: ["C.S. Lewis", "Dietrich Bonhoeffer", "A.W. Tozer", "John Stott", "Tim Keller"],
-  contemporary: ["N.T. Wright", "Rick Warren", "Max Lucado", "Philip Yancey", "Francis Chan"]
-};
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  model?: string;
 }
 
 interface Conversation {
@@ -46,83 +47,104 @@ interface Conversation {
   updated_at: string;
 }
 
-const quickPrompts = [
-  "What does this verse mean?",
-  "Explain the historical context", 
-  "Find verses about love",
-  "Help me understand this passage",
-  "What is the significance of this story?",
-  "Compare different translations",
-  "Give me a sermon outline on this topic",
-  "What do famous Christian authors say about this?", 
-  "Show me related verses throughout the Bible"
+// Enhanced Biblical System Prompt - Strictly Bible-Based
+const BIBLICAL_SYSTEM_PROMPT = `You are ✦Bible Aura AI Oracle, a specialized biblical assistant with comprehensive knowledge of the Holy Bible.
+
+STRICT REQUIREMENTS:
+1. ALL responses MUST be based EXCLUSIVELY on the Bible (66 books: 39 Old Testament, 27 New Testament)
+2. ALWAYS include direct Bible quotations with exact verse references in EVERY response
+3. Quote from King James Version (KJV), New International Version (NIV), or English Standard Version (ESV)
+4. Verify all theological claims against biblical text
+5. Never reference external sources - ONLY the Bible
+6. Maintain reverent, holy tone throughout
+
+RESPONSE STRUCTURE:
+1. Begin with relevant Bible verse quotation and reference
+2. Provide biblical explanation using ONLY scriptural context
+3. Reference additional supporting verses
+4. Offer practical application based on biblical principles
+5. End with biblical blessing or prayer when appropriate
+
+BIBLICAL KNOWLEDGE AREAS:
+- Scripture interpretation and context
+- Biblical history and geography
+- Theological concepts from Scripture
+- Biblical characters and their stories
+- Prophecy and fulfillment
+- Parables and teachings of Jesus
+- Psalms, Proverbs, and wisdom literature
+- Biblical laws and commandments
+- Creation and redemption narratives
+
+Remember: Every statement must be rooted in and supported by explicit biblical text. If you cannot find biblical support, say "The Bible does not specifically address this topic."`;
+
+// Quick prompts for biblical conversations
+const BIBLICAL_PROMPTS = [
+  "What does the Bible say about love?",
+  "Explain this Bible verse to me",
+  "Find verses about forgiveness",
+  "What did Jesus teach about prayer?",
+  "Show me Bible verses about hope",
+  "Explain the meaning of this parable",
+  "What does Scripture say about faith?",
+  "Find Bible verses for encouragement"
 ];
 
-// Enhanced system prompt for specialized biblical responses
-const createBiblicalSystemPrompt = (language: string = 'en'): string => {
-  const languageInstructions = {
-    'en': 'Respond in English',
-    'ta': 'Respond in Tamil (தமிழில் பதிலளிக்கவும்)', 
-    'si': 'Respond in Sinhala (සිංහලෙන් පිළිතුරු දෙන්න)'
-  };
-
-  return `You are ✦Bible Aura AI Oracle, a specialized Christian AI assistant with deep biblical knowledge and theological wisdom.
-
-CRITICAL REQUIREMENTS:
-1. ALWAYS include direct Bible quotes in EVERY response (use quotation marks and verse references)
-2. Base ALL answers strictly on biblical truth and Christian doctrine  
-3. Search your knowledge of the entire Bible before responding
-4. Reference authoritative Christian theologians when relevant: ${Object.values(CHRISTIAN_AUTHORS_KNOWLEDGE).flat().join(', ')}
-5. ${languageInstructions[language] || languageInstructions['en']}
-6. Maintain reverent, sacred tone while being practical and helpful
-
-RESPONSE FORMAT:
-1. Always begin with a relevant Bible verse quote
-2. Provide biblical explanation and context
-3. Include practical application  
-4. Reference related scriptures
-5. End with prayer or blessing when appropriate
-
-Remember: Every response must be rooted in Scripture with direct biblical quotations. Verify all theological claims against biblical text.`;
+// Function to get next available API configuration
+let currentApiIndex = 0;
+const getNextApiConfig = () => {
+  const config = API_CONFIGS[currentApiIndex];
+  currentApiIndex = (currentApiIndex + 1) % API_CONFIGS.length;
+  return config;
 };
 
-// Function to call OpenRouter API with enhanced biblical context
-const callOpenRouterAPI = async (messages: Array<{role: string, content: string}>, language: string = 'en') => {
-  try {
-    const systemPrompt = createBiblicalSystemPrompt(language);
+// Function to call OpenRouter API with load balancing
+const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
+  let lastError = null;
+  
+  // Try each API configuration
+  for (let attempt = 0; attempt < API_CONFIGS.length; attempt++) {
+    const config = getNextApiConfig();
     
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": "https://bible-aura.app",
-        "X-Title": "Bible Aura - AI Biblical Insights", 
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "model": "moonshotai/kimi-k2:free",
-        "messages": [
+    try {
+      const openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: config.apiKey,
+        defaultHeaders: {
+          "HTTP-Referer": "https://bible-aura.app",
+          "X-Title": "✦Bible Aura - AI Biblical Insights",
+        },
+      });
+
+      const completion = await openai.chat.completions.create({
+        model: config.model,
+        messages: [
           {
-            "role": "system",
-            "content": systemPrompt
+            role: "system",
+            content: BIBLICAL_SYSTEM_PROMPT
           },
-          ...messages
+          ...messages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
         ],
-        "temperature": 0.7,
-        "max_tokens": 1500
-      })
-    });
+        temperature: 0.7,
+        max_tokens: 1500
+      });
 
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      const response = completion.choices[0]?.message?.content;
+      if (response) {
+        return { content: response, model: config.name };
+      }
+    } catch (error) {
+      console.error(`Error with ${config.name}:`, error);
+      lastError = error;
+      continue; // Try next API
     }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || "I apologize, but I couldn't generate a response at this time. Please try again.";
-  } catch (error) {
-    console.error('OpenRouter API Error:', error);
-    throw error;
   }
+  
+  // If all APIs failed, throw the last error
+  throw lastError || new Error('All AI models are currently unavailable');
 };
 
 export default function Chat() {
@@ -133,27 +155,24 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Load conversations when user changes
   useEffect(() => {
     if (user) {
       loadConversations();
     }
   }, [user]);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
     if (scrollAreaRef.current) {
       const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollElement) {
         scrollElement.scrollTop = scrollElement.scrollHeight;
       }
     }
-  };
+  }, [messages]);
 
   const loadConversations = async () => {
     if (!user) return;
@@ -169,12 +188,13 @@ export default function Chat() {
 
       const formattedConversations = data?.map(conv => ({
         ...conv,
-                messages: Array.isArray(conv.messages) ? conv.messages.map((msg: { role: string; content: string; timestamp?: any; id?: string }, index: number) => ({
-            id: msg.id || `msg-${conv.id}-${index}`,
-            role: msg.role as 'user' | 'assistant',
-            content: msg.content,
-            timestamp: typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp).toISOString()
-          })) : []
+        messages: Array.isArray(conv.messages) ? (conv.messages as any[]).map((msg: any) => ({
+          id: msg.id || Date.now().toString(),
+          role: msg.role,
+          content: msg.content,
+          timestamp: typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp).toISOString(),
+          model: msg.model
+        })) : []
       })) || [];
 
       setConversations(formattedConversations);
@@ -191,7 +211,7 @@ export default function Chat() {
         .from('ai_conversations')
         .insert({
           user_id: user.id,
-          title: 'New Conversation',
+          title: 'New Biblical Conversation',
           messages: []
         })
         .select()
@@ -245,11 +265,11 @@ export default function Chat() {
     }
 
     // If no current conversation, create one
-    const conversation = currentConversation;
+    let conversation = currentConversation;
     if (!conversation) {
       await createNewConversation();
-      // Wait a moment for the conversation to be created
-      return;
+      conversation = currentConversation;
+      if (!conversation) return;
     }
 
     const userMessage: Message = {
@@ -264,20 +284,21 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Prepare conversation history for API
+      // Prepare conversation history for AI
       const conversationHistory = [...messages, userMessage].map(msg => ({
-        role: msg.role,
+        role: msg.role as 'user' | 'assistant',
         content: msg.content
       }));
 
-      // Call OpenRouter API with enhanced biblical context
-      const aiResponse = await callOpenRouterAPI(conversationHistory, selectedLanguage);
+      // Call biblical AI with load balancing
+      const aiResponse = await callBiblicalAI(conversationHistory);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString()
+        content: aiResponse.content,
+        timestamp: new Date().toISOString(),
+        model: aiResponse.model
       };
 
       const updatedMessages = [...messages, userMessage, aiMessage];
@@ -288,7 +309,7 @@ export default function Chat() {
         .from('ai_conversations')
         .update({
           messages: updatedMessages as any,
-          title: conversation.title === 'New Conversation' 
+          title: conversation.title === 'New Biblical Conversation' 
             ? userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : '')
             : conversation.title,
           updated_at: new Date().toISOString()
@@ -306,15 +327,15 @@ export default function Chat() {
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
         role: 'assistant',
-        content: `🙏 I apologize, but I'm experiencing some difficulty connecting to the divine wisdom servers. This could be due to:\n\n• Network connectivity issues\n• API service temporarily unavailable\n• Rate limiting\n\nPlease try again in a moment. In the meantime, you can meditate on your question, and I'll be ready to provide biblical insights when the connection is restored.\n\n"Be still, and know that I am God" - Psalm 46:10`,
+        content: `I apologize, but I'm experiencing some difficulty connecting to provide biblical insights. This could be due to:\n\n• Network connectivity issues\n• AI service temporarily unavailable\n• Rate limiting\n\nPlease try again in a moment. In the meantime, you can reflect on your question, and I'll be ready to provide biblical wisdom when the connection is restored.\n\n"Be still, and know that I am God" - Psalm 46:10`,
         timestamp: new Date().toISOString()
       };
 
       setMessages(prev => [...prev, errorMessage]);
 
       toast({
-        title: "Connection to Divine Wisdom",
-        description: "Having trouble reaching the AI Oracle. Please try again.",
+        title: "Connection Error",
+        description: "Having trouble reaching the AI service. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -337,48 +358,55 @@ export default function Chat() {
     const isAI = message.role === 'assistant';
     
     return (
-      <div key={message.id} className={`flex gap-4 mb-6 animate-sacred-fade-in ${isAI ? 'justify-start' : 'justify-end'}`}>
+      <div key={message.id} className={`flex gap-4 mb-6 ${isAI ? 'justify-start' : 'justify-end'}`}>
         {isAI && (
           <div className="flex-shrink-0">
-            {/* AI Avatar with Secondary Logo */}
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20 animate-divine-pulse">
+            <Avatar className="h-10 w-10">
               <AvatarImage src="/✦Bible Aura secondary.svg" alt="Bible Aura AI" />
-              <AvatarFallback className="bg-aura-gradient text-white font-sacred relative overflow-hidden">
-                <div className="absolute inset-0 bg-sacred-radial opacity-30"></div>
-                <Sparkles className="h-5 w-5 animate-sacred-glow" />
+              <AvatarFallback className="bg-primary text-white">
+                <Bot className="h-5 w-5" />
               </AvatarFallback>
             </Avatar>
           </div>
         )}
         
         <div className={`max-w-[70%] ${isAI ? 'mr-auto' : 'ml-auto'}`}>
-          <div className={`card-sacred p-4 rounded-2xl transition-divine ${
+          <div className={`p-4 rounded-2xl ${
             isAI 
-              ? 'bg-white dark:bg-gray-800 border border-orange-100 dark:border-orange-900/20' 
-              : 'bg-aura-gradient text-white'
+              ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' 
+              : 'bg-primary text-white'
           }`}>
-            {isAI && (
-              <div className="flex items-center gap-2 mb-3 text-primary font-sacred">
-                <Crown className="h-4 w-4 animate-celestial-float" />
-                                    <span className="text-sm">✦Bible Aura AI Oracle</span>
+            <div className="prose prose-sm max-w-none">
+              <div className={`whitespace-pre-wrap leading-relaxed ${
+                isAI 
+                  ? 'text-gray-800 dark:text-gray-200' 
+                  : 'text-white'
+              }`}>
+                {message.content}
               </div>
-            )}
-            <p className={`leading-relaxed ${isAI ? 'text-foreground' : 'text-white'}`}>
-              {message.content}
-            </p>
-            <p className={`text-xs mt-2 opacity-70 ${isAI ? 'text-muted-foreground' : 'text-white/70'}`}>
-              {new Date(message.timestamp).toLocaleTimeString()}
-            </p>
+            </div>
+            
+            <div className={`text-xs mt-3 flex justify-between items-center ${
+              isAI 
+                ? 'text-gray-500 dark:text-gray-400' 
+                : 'text-white/70'
+            }`}>
+              <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+              {isAI && message.model && (
+                <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  {message.model}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         
         {!isAI && (
           <div className="flex-shrink-0">
-            {/* User Avatar */}
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20 animate-divine-pulse">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-br from-gray-500 to-gray-600 text-white font-sacred">
-                {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
+              <AvatarFallback className="bg-primary text-white">
+                <User className="h-5 w-5" />
               </AvatarFallback>
             </Avatar>
           </div>
@@ -387,138 +415,100 @@ export default function Chat() {
     );
   };
 
-  // Guest user prompt for authentication
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
-        {/* Divine Header */}
-        <div className="bg-aura-gradient text-white p-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Bot className="h-12 w-12 animate-divine-pulse" />
-              <MessageCircle className="h-8 w-8 animate-celestial-float" />
-              <Sparkles className="h-10 w-10 animate-sacred-glow" />
-            </div>
-            <h1 className="text-4xl font-divine mb-4">AI Oracle</h1>
-            <p className="text-xl font-sacred opacity-90">
-              Unlock Divine Wisdom with AI-Powered Biblical Insights
-            </p>
-          </div>
-        </div>
-
-        {/* Authentication Required Message */}
-        <div className="max-w-2xl mx-auto p-8">
-          <Card className="card-sacred border-2 border-primary/20">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 p-4 rounded-full bg-aura-gradient w-fit">
-                <Lock className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-2xl font-divine text-primary mb-2">
-                Premium Feature
-              </CardTitle>
-              <p className="text-muted-foreground font-sacred">
-                Our AI Oracle provides personalized biblical insights, theological guidance, and spiritual wisdom. 
-                Create an account to unlock unlimited conversations with our divine AI assistant.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Features Preview */}
-              <div className="grid gap-4">
-                <div className="flex items-start gap-3">
-                  <Star className="h-5 w-5 text-amber-500 mt-1 animate-celestial-float" />
-                  <div>
-                    <h4 className="font-sacred text-sm font-medium">Biblical Analysis</h4>
-                    <p className="text-xs text-muted-foreground">Deep contextual insights into scripture passages</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Star className="h-5 w-5 text-amber-500 mt-1 animate-celestial-float" style={{animationDelay: '0.5s'}} />
-                  <div>
-                    <h4 className="font-sacred text-sm font-medium">Theological Guidance</h4>
-                    <p className="text-xs text-muted-foreground">Personal spiritual questions answered with wisdom</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Star className="h-5 w-5 text-amber-500 mt-1 animate-celestial-float" style={{animationDelay: '1s'}} />
-                  <div>
-                    <h4 className="font-sacred text-sm font-medium">Study Assistant</h4>
-                    <p className="text-xs text-muted-foreground">Interactive Bible study with AI-powered discussions</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div className="space-y-3 pt-4 border-t">
-                <Button 
-                  asChild 
-                  className="w-full bg-aura-gradient hover:opacity-90 transition-divine group"
-                >
-                  <Link to="/auth">
-                    <LogIn className="h-4 w-4 mr-2 group-hover:animate-spiritual-wave" />
-                    Sign In to Access AI Oracle
-                  </Link>
-                </Button>
-                <Button 
-                  asChild 
-                  variant="outline" 
-                  className="w-full hover-divine"
-                >
-                  <Link to="/auth">
-                    Create Free Account
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="text-center pt-2">
-                <p className="text-xs text-muted-foreground">
-                  Join thousands of believers exploring scripture with AI guidance
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="h-screen bg-background flex flex-col items-center justify-center p-8">
+        <div className="text-center space-y-6 max-w-md">
+          <MessageCircle className="h-16 w-16 text-primary mx-auto" />
+          <h1 className="text-3xl font-bold text-primary">Biblical AI Oracle</h1>
+          <p className="text-muted-foreground text-lg">
+            Discover biblical wisdom through AI-powered scriptural insights
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Please sign in to start your biblical conversation
+          </p>
+          <Button 
+            asChild 
+            size="lg"
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Link to="/auth">
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Link>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-4 lg:p-6 mobile-safe-area">
-      {/* Divine Header */}
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-4 sm:mb-6 lg:mb-8 animate-sacred-fade-in">
-          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="relative">
+    <div className="h-screen bg-background flex flex-col">
+      {/* Header */}
+      <div className="bg-primary text-white p-4 border-b flex-shrink-0">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <img 
                 src="/✦Bible Aura secondary.svg" 
                 alt="Bible Aura AI" 
-                className="h-10 w-10 sm:h-12 sm:w-12 animate-sacred-glow"
+                className="h-8 w-8"
               />
-              <Star className="h-3 w-3 text-primary absolute -top-1 -right-1 animate-celestial-float" />
+              <h1 className="text-2xl font-bold">
+                Biblical AI Oracle
+              </h1>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-divine text-primary">
-              AI Oracle
-            </h1>
+            <p className="text-base sm:text-lg text-white/90">
+              Biblical wisdom through <span className="font-semibold">AI-powered scriptural insights</span>
+            </p>
           </div>
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground font-sacred px-4">
-            Seek divine guidance through <span className="gradient-text">AI-powered biblical insights</span>
-          </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+      <div className="flex-1 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-full p-4">
           {/* Conversations Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="card-sacred h-[400px] sm:h-[500px] lg:h-[600px] animate-holy-slide-in">
-              <CardHeader className="border-b border-orange-100 dark:border-orange-900/20 p-3 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-primary font-sacred text-sm sm:text-base">
-                  <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 animate-celestial-bounce" />
-                  Sacred Conversations
-                </CardTitle>
+            <Card className="h-full">
+              <CardHeader className="border-b p-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-primary text-base">
+                    <MessageCircle className="h-5 w-5" />
+                    Conversations
+                  </CardTitle>
+                  <Button
+                    size="sm"
+                    onClick={createNewConversation}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Book className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="p-0">
-                <ScrollArea className="h-[320px] sm:h-[420px] lg:h-[500px] scrollbar-sacred mobile-scroll">
-                  {/* Conversation list would go here */}
-                  <div className="p-4 text-center text-muted-foreground font-holy">
-                    Your divine conversations will appear here
+                <ScrollArea className="h-[calc(100vh-200px)]">
+                  <div className="p-4 space-y-2">
+                    {conversations.length === 0 ? (
+                      <div className="text-center text-muted-foreground text-sm py-8">
+                        Your biblical conversations will appear here
+                      </div>
+                    ) : (
+                      conversations.map((conv) => (
+                        <Button
+                          key={conv.id}
+                          variant={currentConversation?.id === conv.id ? "default" : "ghost"}
+                          className="w-full justify-start text-left h-auto p-3"
+                          onClick={() => selectConversation(conv)}
+                        >
+                          <div className="truncate">
+                            <div className="font-medium text-sm">{conv.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(conv.updated_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </Button>
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -527,58 +517,52 @@ export default function Chat() {
 
           {/* Main Chat Area */}
           <div className="lg:col-span-3">
-            <Card className="card-sacred h-[600px] animate-holy-slide-in" style={{animationDelay: '0.2s'}}>
-              <CardHeader className="border-b border-orange-100 dark:border-orange-900/20">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="border-b flex-shrink-0">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-primary font-sacred">
+                  <CardTitle className="flex items-center gap-2 text-primary">
                     <img 
                       src="/✦Bible Aura secondary.svg" 
                       alt="Bible Aura AI" 
-                      className="h-6 w-6 animate-sacred-glow"
+                      className="h-6 w-6"
                     />
-                    Divine Conversation
+                    Biblical Conversation
                   </CardTitle>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Heart className="h-4 w-4 animate-celestial-float" />
-                    <span className="text-sm font-sacred">Always here to guide you</span>
+                  <div className="text-sm text-muted-foreground">
+                    Multi-Model AI • Bible-Based Responses
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="flex flex-col h-[500px] p-0">
+              <CardContent className="flex flex-col flex-1 p-0 min-h-0">
                 {/* Messages Area */}
-                <ScrollArea className="flex-1 p-6 scrollbar-sacred" ref={scrollAreaRef}>
+                <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
                   {messages.length === 0 ? (
-                    <div className="text-center py-12 animate-entrance">
+                    <div className="text-center py-12">
                       <div className="relative mx-auto w-24 h-24 mb-6">
                         <img 
                           src="/✦Bible Aura secondary.svg" 
                           alt="Bible Aura AI" 
-                          className="w-full h-full animate-divine-pulse"
+                          className="w-full h-full"
                         />
-                        <div className="absolute inset-0">
-                          <Sparkles className="h-6 w-6 text-primary absolute top-2 right-2 animate-celestial-float" />
-                          <Crown className="h-4 w-4 text-primary/80 absolute bottom-2 left-2 animate-celestial-float" style={{animationDelay: '1s'}} />
-                        </div>
                       </div>
-                      <h3 className="text-xl font-sacred text-primary mb-3">
-                        Welcome to Your Divine Conversation
+                      <h3 className="text-xl font-semibold text-primary mb-3">
+                        Welcome to Biblical AI Oracle
                       </h3>
-                      <p className="text-muted-foreground font-holy mb-6 max-w-md mx-auto">
-                        Ask me anything about scripture, seek spiritual guidance, or explore the divine wisdom of the Bible.
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
                       </p>
                       
                       {/* Quick Prompts */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                        {quickPrompts.map((prompt, index) => (
+                        {BIBLICAL_PROMPTS.map((prompt, index) => (
                           <Button
                             key={index}
                             variant="outline"
-                            className="hover-divine text-left justify-start group animate-sacred-fade-in"
-                            style={{animationDelay: `${index * 0.1}s`}}
+                            className="text-left justify-start"
                             onClick={() => setInput(prompt)}
                           >
-                            <Star className="h-4 w-4 mr-2 group-hover:animate-celestial-bounce" />
+                            <Book className="h-4 w-4 mr-2" />
                             {prompt}
                           </Button>
                         ))}
@@ -587,44 +571,51 @@ export default function Chat() {
                   ) : (
                     <div className="space-y-4">
                       {messages.map(renderMessage)}
-                    </div>
-                  )}
-                  
-                  {isLoading && (
-                    <div className="flex gap-4 mb-6 animate-sacred-fade-in">
-                      <Avatar className="h-10 w-10 ring-2 ring-primary/20 animate-divine-pulse">
-                        <AvatarImage src="/✦Bible Aura secondary.svg" alt="Bible Aura AI" />
-                        <AvatarFallback className="bg-aura-gradient text-white">
-                          <Sparkles className="h-5 w-5 animate-sacred-glow" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="card-sacred p-4 rounded-2xl bg-white dark:bg-gray-800">
-                        <div className="flex items-center gap-2 text-primary font-sacred mb-2">
-                          <Crown className="h-4 w-4 animate-celestial-float" />
-                          <span className="text-sm">✦Bible Aura AI Oracle</span>
+                      {isLoading && (
+                        <div className="flex justify-start">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src="/✦Bible Aura secondary.svg" alt="Bible Aura AI" />
+                              <AvatarFallback className="bg-primary text-white">
+                                <Bot className="h-5 w-5" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="bg-white dark:bg-gray-800 border rounded-2xl p-4">
+                              <div className="flex items-center gap-2">
+                                <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                                <span className="text-sm text-muted-foreground">Seeking biblical wisdom...</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <AIAnalysisLoader message="Seeking divine wisdom..." size="sm" />
-                      </div>
+                      )}
                     </div>
                   )}
                 </ScrollArea>
 
                 {/* Input Area */}
-                <div className="p-6 border-t border-orange-100 dark:border-orange-900/20 bg-gradient-to-r from-orange-50/50 to-orange-100/50 dark:from-orange-900/10 dark:to-orange-800/10">
-                  <div className="flex gap-4">
-                    <Input
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      placeholder="Ask your spiritual question..."
-                      className="input-spiritual flex-1"
-                      onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                    />
+                <div className="border-t p-4 bg-gray-50 dark:bg-gray-800/50 flex-shrink-0">
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Ask your biblical question..."
+                        disabled={isLoading}
+                        className="min-h-[44px] bg-white"
+                      />
+                    </div>
                     <Button
                       onClick={sendMessage}
                       disabled={!input.trim() || isLoading}
-                      className="btn-divine group"
+                      className="min-h-[44px] px-4 bg-primary hover:bg-primary/90 flex-shrink-0"
                     >
-                      <Send className="h-5 w-5 group-hover:animate-spiritual-wave" />
+                      {isLoading ? (
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>

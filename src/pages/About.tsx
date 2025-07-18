@@ -82,13 +82,13 @@ const About = () => {
                   <span className="text-sm font-semibold whitespace-nowrap">Contact</span>
                 </Link>
 
-                <Link 
-                  to="/pricing"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Pricing</span>
-                </Link>
+                                  <Link 
+                    to="/careers"
+                    className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                  >
+                    <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                    <span className="text-sm font-semibold whitespace-nowrap">Careers</span>
+                  </Link>
 
                 <Link 
                   to="/funding"
@@ -177,12 +177,12 @@ const About = () => {
               </Link>
               
               <Link 
-                to="/pricing" 
+                to="/careers" 
                 onClick={closeMobileMenu}
                 className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
               >
                 <Crown className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Pricing</span>
+                <span className="text-base font-semibold">Careers</span>
                 <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </Link>
               

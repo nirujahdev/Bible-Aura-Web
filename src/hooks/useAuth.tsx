@@ -190,7 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -211,8 +211,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } else {
         toast({
-          title: "Welcome to Bible Insight AI!",
-          description: "Please check your email to confirm your account.",
+          title: "Welcome to Bible Aura!",
+          description: "Account created successfully! You can now start exploring.",
         });
       }
 
