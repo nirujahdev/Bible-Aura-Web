@@ -21,8 +21,8 @@ const Landing = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Smart navigation for Support Us button
-  const handleSupportUsClick = () => {
+  // Smart navigation for Dashboard button (formerly Support Us)
+  const handleDashboardClick = () => {
     if (user) {
       navigate("/dashboard");
     } else {
@@ -90,11 +90,11 @@ const Landing = () => {
                   </Link>
 
                   <button 
-                    onClick={handleSupportUsClick}
+                    onClick={handleDashboardClick}
                     className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
                   >
                     <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                    <span className="text-sm font-semibold whitespace-nowrap">{user ? "Dashboard" : "Support Us"}</span>
+                    <span className="text-sm font-semibold whitespace-nowrap">Dashboard</span>
                   </button>
                 </div>
 
@@ -203,12 +203,12 @@ const Landing = () => {
                   <button 
                     onClick={() => {
                       closeMobileMenu();
-                      handleSupportUsClick();
+                      handleDashboardClick();
                     }} 
                     className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-105 w-full flex-1"
                   >
                     <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                    <span className="text-sm font-semibold">{user ? "Dashboard" : "Support Us"}</span>
+                    <span className="text-sm font-semibold">Dashboard</span>
                   </button>
                 </div>
               </div>
@@ -261,11 +261,11 @@ const Landing = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={handleSupportUsClick}
+                onClick={handleDashboardClick}
                 className="border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-white text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 whitespace-nowrap font-semibold"
               >
                 <Heart className="mr-1 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                {user ? "Dashboard" : "Support Us"}
+                Dashboard
               </Button>
             </div>
             
@@ -798,9 +798,12 @@ const Landing = () => {
                 <Link to="/careers" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-base">
                   Careers
                 </Link>
-                <Link to="/funding" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-base">
-                  Support Us
-                </Link>
+                <button 
+                  onClick={handleDashboardClick}
+                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-base text-left"
+                >
+                  Dashboard
+                </button>
                 <Link to="/auth" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-base">
                   Sign In
                 </Link>
