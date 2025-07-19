@@ -32,7 +32,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
   if (variant === 'landing') {
     return (
       <nav className={`fixed top-2 sm:top-4 left-1/2 transform -translate-x-1/2 z-50 w-[98%] sm:w-full px-2 sm:px-4 ${className}`}>
-        <div className="bg-white/90 backdrop-blur-2xl rounded-full shadow-2xl border border-white/30 px-5 sm:px-6 lg:px-12 py-3 sm:py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] relative">
+        <div className="bg-white/90 backdrop-blur-2xl rounded-full shadow-2xl border border-white/30 px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] relative">
           {/* Enhanced Glowing border effect */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/25 via-primary/10 to-primary/25 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
           
@@ -45,14 +45,14 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
               </div>
 
               {/* Center - Navigation Items */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 {navigationItems.map((item) => {
                   const IconComponent = item.icon;
                   return (
                     <Link 
                       key={item.href}
                       to={item.href}
-                      className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
+                      className="group relative flex items-center space-x-1.5 px-3 py-2 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
                     >
                       <IconComponent className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
                       <span className="text-sm font-semibold whitespace-nowrap">{item.label}</span>
@@ -62,11 +62,11 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
               </div>
 
               {/* Right - Auth Buttons */}
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1.5">
                 <Button 
                   asChild 
                   variant="outline" 
-                  className="border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300 rounded-full px-6 py-2 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+                  className="border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300 rounded-full px-3 py-1.5 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
                 >
                   <Link to="/auth">
                     <LogIn className="h-4 w-4 mr-2" />
@@ -76,7 +76,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                 
                 <Button 
                   asChild 
-                  className="bg-gradient-to-r from-primary to-primary/80 text-white hover:from-primary/90 hover:to-primary/70 transition-all duration-300 rounded-full px-6 py-2 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+                  className="bg-gradient-to-r from-primary to-primary/80 text-white hover:from-primary/90 hover:to-primary/70 transition-all duration-300 rounded-full px-3 py-1.5 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
                 >
                   <Link to="/auth">
                     <UserPlus className="h-4 w-4 mr-2" />

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   Eye, 
@@ -20,7 +21,8 @@ import {
   Brain,
   Lightbulb,
   LogIn,
-  UserPlus
+  UserPlus,
+  AlertCircle
 } from 'lucide-react';
 
 export default function Auth() {
@@ -29,6 +31,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [currentTab, setCurrentTab] = useState("signin");
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Features data for showcase
   const features = [
@@ -84,51 +87,152 @@ export default function Auth() {
     return () => clearInterval(interval);
   }, [features.length]);
 
-  // Redirect if already authenticated
+
+
+  // Show message for already authenticated users
   if (user && !loading) {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <div className="h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden">
+        <div className="w-full flex items-center justify-center p-8">
+          <Card className="shadow-xl bg-white/95 backdrop-blur-sm border-white/20 max-w-md w-full">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl font-bold text-primary">You're Already Signed In!</CardTitle>
+              <CardDescription>
+                Welcome back! You're already authenticated.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto">
+                <LogIn className="h-8 w-8 text-green-600" />
+              </div>
+              <p className="text-gray-600">
+                You'll be redirected to your dashboard in a moment, or click below to go there now.
+              </p>
+              <Button 
+                asChild 
+                className="w-full bg-primary hover:bg-primary/90 text-white"
+              >
+                <Link to="/dashboard">
+                  Go to Dashboard
+                </Link>
+              </Button>
+              <Button 
+                asChild 
+                variant="outline"
+                className="w-full"
+              >
+                <Link to="/">
+                  Back to Home
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setAuthError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    try {
+      const formData = new FormData(e.currentTarget);
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
 
-    await signIn(email, password);
-    setIsSubmitting(false);
+      if (!email || !password) {
+        setAuthError('Please fill in all fields');
+        return;
+      }
+
+      const result = await signIn(email, password);
+      if (result.error) {
+        setAuthError(result.error.message);
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setAuthError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const displayName = formData.get('displayName') as string;
+    try {
+      const formData = new FormData(e.currentTarget);
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
+      const displayName = formData.get('displayName') as string;
 
-    await signUp(email, password, displayName);
-    setIsSubmitting(false);
+      if (!email || !password) {
+        setAuthError('Please fill in all fields');
+        return;
+      }
+
+      if (password.length < 6) {
+        setAuthError('Password must be at least 6 characters');
+        return;
+      }
+
+      const result = await signUp(email, password, displayName);
+      if (result.error) {
+        setAuthError(result.error.message);
+      }
+    } catch (error) {
+      console.error('Sign up error:', error);
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleMagicLink = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setAuthError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    try {
+      const formData = new FormData(e.currentTarget);
+      const email = formData.get('email') as string;
 
-    await signInWithMagicLink(email);
-    setIsSubmitting(false);
+      if (!email) {
+        setAuthError('Please enter your email address');
+        return;
+      }
+
+      const result = await signInWithMagicLink(email);
+      if (result.error) {
+        setAuthError(result.error.message);
+      }
+    } catch (error) {
+      console.error('Magic link error:', error);
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
-    await signInWithGoogle();
-    setIsSubmitting(false);
+    setAuthError(null);
+
+    try {
+      const result = await signInWithGoogle();
+      if (result.error) {
+        setAuthError(result.error.message);
+      }
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      setAuthError('An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -310,6 +414,12 @@ export default function Auth() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {authError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              )}
               <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-primary/10 border border-primary/20 h-11">
                   <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-white text-sm">

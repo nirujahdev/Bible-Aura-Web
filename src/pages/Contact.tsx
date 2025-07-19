@@ -144,95 +144,95 @@ const Contact = () => {
             </div>
 
             {/* Mobile Layout */}
-            <div className="lg:hidden flex items-center justify-between w-full">
-              {/* Big Centered Logo */}
-              <div className="flex-1 flex justify-center">
-                <span className="text-xl sm:text-2xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
+            <div className="lg:hidden flex items-center justify-center w-full relative">
+              {/* Logo - Centered */}
+              <div className="flex items-center">
+                <span className="text-lg sm:text-xl font-divine text-primary font-bold">✦Bible Aura</span>
               </div>
-              
-              {/* Mobile Hamburger Menu */}
+
+              {/* Mobile Menu Button - Absolute Right */}
               <button
                 onClick={toggleMobileMenu}
-                className="relative p-3 rounded-full bg-primary/10 hover:bg-primary/20 transition-all duration-500 group"
+                className="absolute right-0 h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-primary/10 rounded-full flex items-center justify-center transition-colors z-10"
               >
-                <div className="relative w-6 h-6 flex items-center justify-center">
-                  {isMobileMenuOpen ? (
-                    <X className="h-6 w-6 text-primary transition-all duration-500 rotate-180" />
-                  ) : (
-                    <Menu className="h-6 w-6 text-primary transition-all duration-500" />
-                  )}
-                </div>
-                <div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></div>
+                {isMobileMenuOpen ? (
+                  <X className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                ) : (
+                  <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                )}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Mobile Menu Dropdown */}
+        {/* Enhanced Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mt-3 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 py-6 px-4 animate-sacred-fade-in">
-            {/* Enhanced glowing border effect for mobile */}
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/20 via-transparent to-white/20 opacity-60"></div>
-            
-            <div className="relative flex flex-col space-y-3">
-              {/* Enhanced Mobile Navigation Items */}
-              <a 
-                href="/" 
+          <div className="lg:hidden absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 overflow-hidden z-40 mx-2 sm:mx-4">
+            <div className="py-3 sm:py-4">
+              {/* Navigation Items */}
+              <Link
+                to="/"
                 onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
+                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
               >
-                <Home className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Home</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </a>
-              
-              <Link 
-                to="/about" 
-                onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
-              >
-                <Info className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">About</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Home className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-base sm:text-lg">Home</span>
               </Link>
               
-              <Link 
-                to="/contact" 
+              <Link
+                to="/about"
                 onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
+                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
               >
-                <Phone className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Contact</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Info className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-base sm:text-lg">About</span>
               </Link>
               
-              <Link 
-                to="/careers" 
+              <Link
+                to="/contact"
                 onClick={closeMobileMenu}
-                className="group relative flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
+                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
               >
-                <Crown className="h-5 w-5 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                <span className="text-base font-semibold">Careers</span>
-                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Phone className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-base sm:text-lg">Contact</span>
+              </Link>
+              
+              <Link
+                to="/careers"
+                onClick={closeMobileMenu}
+                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
+              >
+                <Crown className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-base sm:text-lg">Careers</span>
+              </Link>
+              
+              <Link
+                to="/funding"
+                onClick={closeMobileMenu}
+                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
+              >
+                <Heart className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-base sm:text-lg">Support Us</span>
               </Link>
               
               
-              {/* Mobile CTA Buttons */}
-              <div className="border-t border-gradient-to-r from-primary/20 to-primary/10 pt-6 mt-6">
-                <div className="flex space-x-3 w-full">
-                  <Link to="/auth" onClick={closeMobileMenu} className="flex-1">
-                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-3 rounded-full hover:from-primary/90 hover:to-primary/70 transition-all duration-500 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 w-full">
-                      <Sparkles className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                      <span className="text-sm font-semibold">Get Started</span>
-                    </button>
-                  </Link>
-                  <Link to="/funding" onClick={closeMobileMenu} className="flex-1">
-                    <button className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-105 w-full">
-                      <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125" />
-                      <span className="text-sm font-semibold">Support Us</span>
-                    </button>
-                  </Link>
-                </div>
+              <div className="border-t border-gray-200/60 mt-3 sm:mt-4 pt-3 sm:pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
+                <Link
+                  to="/auth"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center space-x-2 w-full px-4 sm:px-5 py-3 border-2 border-primary/20 text-primary rounded-xl hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg font-semibold hover:scale-[1.02] mx-1"
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span>Sign In</span>
+                </Link>
+                <Link
+                  to="/auth"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center space-x-2 w-full px-4 sm:px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-300 text-base sm:text-lg font-semibold hover:scale-[1.02] shadow-lg mx-1"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  <span>Get Started</span>
+                </Link>
               </div>
             </div>
           </div>
