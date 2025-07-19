@@ -60,6 +60,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        // Check if user came from email link
+        const isFromEmailLink = window.location.hash.includes('access_token') || 
+                               window.location.hash.includes('refresh_token') ||
+                               window.location.search.includes('token_hash') ||
+                               window.location.search.includes('type=recovery') ||
+                               window.location.search.includes('type=email_change') ||
+                               window.location.search.includes('type=signup');
+
+        // For normal visits (not from email), clear any existing sessions
+        if (!isFromEmailLink) {
+          try {
+            await supabase.auth.signOut();
+            console.log('Cleared existing session for normal visit');
+          } catch (error) {
+            console.log('No session to clear or error clearing session:', error);
+          }
+        }
+
         // Check for existing session first
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         

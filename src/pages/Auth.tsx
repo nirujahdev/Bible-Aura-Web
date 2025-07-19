@@ -89,48 +89,22 @@ export default function Auth() {
 
 
 
-  // Show message for already authenticated users
-  if (user && !loading) {
-    return (
-      <div className="h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden">
-        <div className="w-full flex items-center justify-center p-8">
-          <Card className="shadow-xl bg-white/95 backdrop-blur-sm border-white/20 max-w-md w-full">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-2xl font-bold text-primary">You're Already Signed In!</CardTitle>
-              <CardDescription>
-                Welcome back! You're already authenticated.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto">
-                <LogIn className="h-8 w-8 text-green-600" />
-              </div>
-              <p className="text-gray-600">
-                You'll be redirected to your dashboard in a moment, or click below to go there now.
-              </p>
-              <Button 
-                asChild 
-                className="w-full bg-primary hover:bg-primary/90 text-white"
-              >
-                <Link to="/dashboard">
-                  Go to Dashboard
-                </Link>
-              </Button>
-              <Button 
-                asChild 
-                variant="outline"
-                className="w-full"
-              >
-                <Link to="/">
-                  Back to Home
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // Redirect to dashboard only if user came from email link
+  useEffect(() => {
+    if (user && !loading) {
+      const isFromEmailLink = window.location.hash.includes('access_token') || 
+                             window.location.hash.includes('refresh_token') ||
+                             window.location.search.includes('token_hash') ||
+                             window.location.search.includes('type=recovery') ||
+                             window.location.search.includes('type=email_change') ||
+                             window.location.search.includes('type=signup');
+      
+      if (isFromEmailLink) {
+        // Auto-redirect to dashboard for email links
+        window.location.href = '/dashboard';
+      }
+    }
+  }, [user, loading]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -150,6 +124,10 @@ export default function Auth() {
       const result = await signIn(email, password);
       if (result.error) {
         setAuthError(result.error.message);
+      } else {
+        // Show success message and manual navigation option
+        setAuthError(null);
+        // Don't auto-redirect, let user choose
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -183,6 +161,10 @@ export default function Auth() {
       const result = await signUp(email, password, displayName);
       if (result.error) {
         setAuthError(result.error.message);
+      } else {
+        // Show success message and manual navigation option
+        setAuthError(null);
+        // Don't auto-redirect, let user choose
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -478,6 +460,20 @@ export default function Auth() {
                       <LogIn className="h-4 w-4 mr-2" />
                       {isSubmitting ? "Signing in..." : "Sign In"}
                     </Button>
+                    
+                    {user && !authError && (
+                      <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <p className="text-green-800 text-sm font-medium mb-3">✅ Successfully signed in!</p>
+                        <Button 
+                          asChild 
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Link to="/dashboard">
+                            Go to Dashboard
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
                   </form>
                   
                   <div className="relative my-4">
@@ -632,6 +628,20 @@ export default function Auth() {
                       <UserPlus className="h-4 w-4 mr-2" />
                       {isSubmitting ? "Creating account..." : "Create Account"}
                     </Button>
+                    
+                    {user && !authError && (
+                      <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <p className="text-green-800 text-sm font-medium mb-3">✅ Account created successfully!</p>
+                        <Button 
+                          asChild 
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Link to="/dashboard">
+                            Go to Dashboard
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
                   </form>
                   
                   <div className="relative my-4">

@@ -17,12 +17,21 @@ if (!SUPABASE_PUBLISHABLE_KEY) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Detect if user came from email link (magic link, confirmation, etc.)
+const isFromEmailLink = typeof window !== 'undefined' && 
+  (window.location.hash.includes('access_token') || 
+   window.location.hash.includes('refresh_token') ||
+   window.location.search.includes('token_hash') ||
+   window.location.search.includes('type=recovery') ||
+   window.location.search.includes('type=email_change') ||
+   window.location.search.includes('type=signup'));
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: typeof window !== 'undefined' ? localStorage : undefined,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
+    persistSession: isFromEmailLink, // Only persist sessions from email links
+    autoRefreshToken: isFromEmailLink, // Only auto-refresh for email link sessions
+    detectSessionInUrl: true, // Always detect email URLs
     flowType: 'pkce'
   },
   global: {
