@@ -540,7 +540,7 @@ const ParablesDatabase = () => {
     return (
       <div className="h-screen bg-background overflow-hidden flex flex-col">
         <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <div className="flex items-center gap-2">
               <BookOpen className="h-6 w-6" />
               <h1 className="text-2xl font-divine">Parables Database</h1>
@@ -577,7 +577,7 @@ const ParablesDatabase = () => {
       {/* Study Timer (when active) */}
       {isStudying && (
         <div className="bg-orange-100 dark:bg-orange-900/30 border-b px-4 py-2">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="w-full flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium">Studying: {selectedParable?.title}</span>
               <span className="text-sm text-muted-foreground">Time: {formatTime(studyTimer)}</span>

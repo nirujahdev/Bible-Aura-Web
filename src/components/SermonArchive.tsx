@@ -577,7 +577,7 @@ const SermonArchive = () => {
     return (
       <div className="h-screen bg-background overflow-hidden flex flex-col">
         <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <div className="flex items-center gap-2">
               <Mic className="h-6 w-6" />
               <h1 className="text-2xl font-divine">Sermon Archive</h1>

@@ -25,7 +25,7 @@ export default function VerseDemo() {
     <div className="h-screen bg-background overflow-auto">
       {/* Header */}
       <div className="bg-aura-gradient text-white p-4 border-b">
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full">
           <div className="flex items-center gap-2">
             <Book className="h-6 w-6" />
             <h1 className="text-2xl font-divine">Verse Lookup Demo</h1>
@@ -35,7 +35,7 @@ export default function VerseDemo() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+      <div className="w-full px-4 py-6 space-y-6">
         {/* Instructions */}
         <Card>
           <CardHeader>

@@ -360,7 +360,7 @@ Journal content: "${entry.content}"`
     <div className={`min-h-screen transition-colors duration-300 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50'
     } ${focusMode ? 'bg-gray-100' : ''}`}>
-      <div className="container mx-auto p-4 max-w-6xl">
+      <div className="w-full p-4">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Editor */}
           <div className="lg:col-span-3">

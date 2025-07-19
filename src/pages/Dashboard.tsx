@@ -112,7 +112,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
+      <div className="w-full px-4 sm:px-6 py-6 lg:py-8">
         {/* Daily Verse Section - Full Width */}
         <div className="mb-12">
           <DailyVerseWidget />

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Globe, Users, BookOpen, ArrowLeft, Star, Crown, Shield, CheckCircle, Gift, Wallet, CreditCard, Banknote, Smartphone, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
+import { GlobalNavigation } from "@/components/GlobalNavigation";
 
 const Funding = () => {
   const impactAreas = [
@@ -69,26 +70,11 @@ const Funding = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2 text-white hover:text-orange-200 transition-colors">
-                <ArrowLeft className="h-5 w-5" />
-                <span>Back to Home</span>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-3">
-              <img src="/✦Bible Aura.svg" alt="✦Bible Aura" className="h-8 w-8" />
-              <span className="text-xl font-bold">✦Bible Aura</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Global Navigation */}
+      <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-16 pt-32">
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
             Support <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">The Mission</span>
@@ -262,8 +248,8 @@ const Funding = () => {
             <CardContent className="p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Partner With Us Today</h2>
               <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-                Join thousands of believers who are supporting the advancement of God's Kingdom through technology. 
-                Your partnership makes eternal impact possible.
+                Partner with us in advancing God's Kingdom through technology. 
+                Your support makes eternal impact possible.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3">
@@ -280,6 +266,83 @@ const Funding = () => {
           </Card>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-black text-white py-16">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+            {/* Brand Section */}
+            <div className="text-center md:text-left">
+              <h3 className="text-2xl font-bold text-orange-400 mb-3">
+                ✦Bible Aura
+              </h3>
+              <p className="text-gray-400 text-base">
+                AI-Powered Biblical Insight
+              </p>
+            </div>
+            
+            {/* Menu Section */}
+            <div className="text-center md:text-left">
+              <h4 className="text-xl font-semibold text-white mb-6">Menu</h4>
+              <nav className="space-y-3">
+                <Link to="/about" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  About
+                </Link>
+                <Link to="/careers" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  Careers
+                </Link>
+                <Link to="/dashboard" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  Dashboard
+                </Link>
+                <Link to="/auth" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  Sign In
+                </Link>
+              </nav>
+            </div>
+            
+            {/* Contact Section */}
+            <div className="text-center md:text-left">
+              <h4 className="text-xl font-semibold text-white mb-6">Contact</h4>
+              <div className="space-y-3">
+                <p className="text-gray-400">@bible_aura.ai</p>
+                <a 
+                  href="mailto:bibleinsightai.contact@gmail.com" 
+                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
+                >
+                  bibleinsightai.contact@gmail.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section */}
+          <div className="border-t border-gray-800 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-gray-400">
+              <div>
+                <Link to="/terms" className="hover:text-orange-400 transition-colors duration-300 text-sm">
+                  Terms of Use
+                </Link>
+                <span className="mx-2">|</span>
+                <Link to="/privacy" className="hover:text-orange-400 transition-colors duration-300 text-sm">
+                  Privacy Policy
+                </Link>
+              </div>
+              
+              <div className="text-sm">
+                <span>&copy; 2024 ✦Bible Aura. All rights reserved. Developed by </span>
+                <a 
+                  href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
+                >
+                  Benaiah Nicholas Nimal
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

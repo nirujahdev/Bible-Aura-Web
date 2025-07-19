@@ -117,7 +117,7 @@ export default function BibleQA() {
     <div className="h-screen bg-background overflow-hidden flex flex-col">
       {/* Header */}
       <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-6 w-6" />
             <h1 className="text-2xl font-divine">Bible Q&A</h1>
@@ -129,7 +129,7 @@ export default function BibleQA() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="w-full px-4 py-6">
           {/* Search and Filter */}
           <Card className="mb-6">
             <CardContent className="p-4">

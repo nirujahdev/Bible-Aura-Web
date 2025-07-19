@@ -72,7 +72,7 @@ export default function HeaderDemo() {
         <ModernHeader variant={selectedVariant} showDismiss={false} />
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="w-full px-4 py-8">
         {/* Header Controls */}
         <Card className="mb-8">
           <CardHeader>

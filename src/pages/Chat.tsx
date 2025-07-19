@@ -446,7 +446,7 @@ export default function Chat() {
     <div className="h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="bg-primary text-white p-4 border-b flex-shrink-0">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-full">

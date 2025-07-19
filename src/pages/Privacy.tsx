@@ -85,7 +85,7 @@ const Privacy = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link to="/" className="flex items-center space-x-2 text-white hover:text-orange-200 transition-colors">
@@ -102,7 +102,7 @@ const Privacy = () => {
       </div>
 
       {/* Hero Section */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             Privacy <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">Policy</span>

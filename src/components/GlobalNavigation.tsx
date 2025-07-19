@@ -12,10 +12,12 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
+    console.log('Toggle menu clicked, current state:', isMobileMenuOpen);
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const closeMobileMenu = () => {
+    console.log('Closing menu');
     setIsMobileMenuOpen(false);
   };
 
@@ -29,10 +31,10 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
 
   if (variant === 'landing') {
     return (
-      <nav className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-7xl px-4 ${className}`}>
-        <div className="bg-white/95 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 px-6 lg:px-12 py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02]">
-          {/* Glowing border effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+      <nav className={`fixed top-2 sm:top-4 left-1/2 transform -translate-x-1/2 z-50 w-[98%] sm:w-full px-2 sm:px-4 ${className}`}>
+        <div className="bg-white/90 backdrop-blur-2xl rounded-full shadow-2xl border border-white/30 px-5 sm:px-6 lg:px-12 py-3 sm:py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] relative">
+          {/* Enhanced Glowing border effect */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/25 via-primary/10 to-primary/25 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
           
           <div className="relative flex items-center justify-between">
             {/* Desktop Layout */}
@@ -85,68 +87,66 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
             </div>
 
             {/* Mobile Layout */}
-            <div className="lg:hidden flex items-center justify-between w-full">
-              {/* Logo */}
+            <div className="lg:hidden flex items-center justify-center w-full relative">
+              {/* Logo - Centered */}
               <div className="flex items-center">
-                <span className="text-lg font-divine text-primary font-bold">✦Bible Aura</span>
+                <span className="text-lg sm:text-xl font-divine text-primary font-bold">✦Bible Aura</span>
               </div>
 
-              {/* Mobile Menu Button */}
-              <Button
-                variant="ghost"
-                size="sm"
+              {/* Mobile Menu Button - Absolute Right */}
+              <button
                 onClick={toggleMobileMenu}
-                className="h-10 w-10 p-0 hover:bg-primary/10"
+                className="absolute right-0 h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-primary/10 rounded-full flex items-center justify-center transition-colors z-10"
               >
                 {isMobileMenuOpen ? (
-                  <X className="h-5 w-5 text-primary" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 ) : (
-                  <Menu className="h-5 w-5 text-primary" />
+                  <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 )}
-              </Button>
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Mobile Navigation Menu */}
-          {isMobileMenuOpen && (
-            <div className="lg:hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="py-4">
-                {navigationItems.map((item) => {
-                  const IconComponent = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={closeMobileMenu}
-                      className="flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors duration-200"
-                    >
-                      <IconComponent className="h-4 w-4" />
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  );
-                })}
-                <div className="border-t border-gray-100 mt-4 pt-4 px-6 space-y-3">
+        {/* Enhanced Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 overflow-hidden z-40 mx-2 sm:mx-4">
+            <div className="py-3 sm:py-4">
+              {navigationItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
                   <Link
-                    to="/auth"
+                    key={item.href}
+                    to={item.href}
                     onClick={closeMobileMenu}
-                    className="flex items-center justify-center space-x-2 w-full px-4 py-2 border border-primary/20 text-primary rounded-lg hover:bg-primary hover:text-white transition-colors duration-200"
+                    className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
                   >
-                    <LogIn className="h-4 w-4" />
-                    <span>Sign In</span>
+                    <IconComponent className="h-5 w-5 text-primary" />
+                    <span className="font-semibold text-base sm:text-lg">{item.label}</span>
                   </Link>
-                  <Link
-                    to="/auth"
-                    onClick={closeMobileMenu}
-                    className="flex items-center justify-center space-x-2 w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>Get Started</span>
-                  </Link>
-                </div>
+                );
+              })}
+              <div className="border-t border-gray-200/60 mt-3 sm:mt-4 pt-3 sm:pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
+                <Link
+                  to="/auth"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center space-x-2 w-full px-4 sm:px-5 py-3 border-2 border-primary/20 text-primary rounded-xl hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg font-semibold hover:scale-[1.02] mx-1"
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span>Sign In</span>
+                </Link>
+                <Link
+                  to="/auth"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center space-x-2 w-full px-4 sm:px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-300 text-base sm:text-lg font-semibold hover:scale-[1.02] shadow-lg mx-1"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  <span>Get Started</span>
+                </Link>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </nav>
     );
   }
@@ -154,20 +154,20 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
   // App variant - simpler header for app pages
   return (
     <nav className={`bg-white border-b border-gray-200 ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-primary">✦Bible Aura</Link>
+            <Link to="/" className="text-lg sm:text-xl font-bold text-primary">✦Bible Aura</Link>
           </div>
 
           {/* Navigation Items */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
-                className="text-gray-600 hover:text-primary transition-colors duration-200 font-medium"
+                className="text-gray-600 hover:text-primary transition-colors duration-200 font-medium text-sm lg:text-base"
               >
                 {item.label}
               </Link>
@@ -180,12 +180,12 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
               variant="ghost"
               size="sm"
               onClick={toggleMobileMenu}
-              className="h-10 w-10 p-0"
+              className="h-8 w-8 sm:h-10 sm:w-10 p-0"
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
           </div>
@@ -194,13 +194,13 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200">
-            <div className="py-4 space-y-2">
+            <div className="py-2 sm:py-4 space-y-1 sm:space-y-2">
               {navigationItems.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
                   onClick={closeMobileMenu}
-                  className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors duration-200"
+                  className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base"
                 >
                   {item.label}
                 </Link>

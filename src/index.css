@@ -16,9 +16,9 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
 */
 
 @layer base {
-  /* Smooth scrolling for navigation links */
+  /* Smooth scrolling removed to prevent auto-scroll on navigation */
   html {
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; */
   }
   
   :root {
@@ -161,9 +161,9 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     position: relative;
   }
 
-  /* Smooth scrolling for divine experience */
+  /* Background styling for divine experience */
   html {
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; */
     background-color: hsl(var(--background));
   }
 
@@ -694,3 +694,64 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     background: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(18 100% 55%) 100%);
   }
 }
+
+/* Enhanced Landing Page Animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Animation Classes */
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out forwards;
+}
+
+/* Delay classes for staggered animations */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+.delay-900 { animation-delay: 900ms; }
+.delay-1000 { animation-delay: 1000ms; }
+.delay-1100 { animation-delay: 1100ms; }

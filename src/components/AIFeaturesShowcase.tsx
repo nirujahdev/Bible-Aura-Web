@@ -63,7 +63,7 @@ const AIFeaturesShowcase = () => {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-      <div className="max-w-7xl mx-auto">
+              <div className="w-full">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -143,7 +143,7 @@ const AIFeaturesShowcase = () => {
                 Ready to Transform Your Bible Study?
               </h3>
               <p className="text-lg sm:text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-                Join thousands of believers who have enhanced their spiritual journey with our AI-powered tools.
+                Enhance your spiritual journey with our AI-powered biblical tools and insights.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button 

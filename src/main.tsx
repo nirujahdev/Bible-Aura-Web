@@ -17,10 +17,10 @@ try {
   // Render with loading fallback
   root.render(<App />);
   
-  // Hide any initial loading screen
+  // Hide any initial loading screen immediately
   const initialLoader = document.getElementById('initial-loader');
   if (initialLoader) {
-    initialLoader.remove();
+    initialLoader.style.display = 'none';
   }
 } catch (error) {
   console.error('Failed to render React app:', error);

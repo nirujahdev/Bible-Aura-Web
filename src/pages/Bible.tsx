@@ -307,7 +307,7 @@ export default function Bible() {
 
       {/* Compact Header - NOT STICKY */}
       <div className="bg-aura-gradient text-white p-3 border-b flex-shrink-0">
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full">
           <div className="flex items-center gap-2">
             <Book className="h-5 w-5" />
             <h1 className="text-xl font-divine">Sacred Scripture</h1>
@@ -318,7 +318,7 @@ export default function Bible() {
 
       {/* Main Content - Scrollable */}
       <div className="flex-1 overflow-auto">
-        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 max-w-6xl">
+        <div className="w-full px-2 sm:px-4 py-2 sm:py-4">
           {/* Compact Language & Translation Controls */}
           <Card className="mb-3 sm:mb-4">
             <CardContent className="p-3 sm:p-4">

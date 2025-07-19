@@ -27,7 +27,7 @@ export function ModernHeader({
   if (variant === 'minimal') {
     return (
       <div className="bg-orange-500 text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="w-full px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Star className="h-4 w-4 text-amber-200" />
@@ -71,7 +71,7 @@ export function ModernHeader({
           <div className="absolute top-3 right-40 w-1 h-1 bg-white rounded-full"></div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="w-full px-4 py-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="relative">
@@ -145,7 +145,7 @@ export function ModernHeader({
         <div className="absolute bottom-3 left-32 w-1.5 h-1.5 bg-white rounded-full"></div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 py-5">
+      <div className="w-full px-4 py-5">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="relative">
