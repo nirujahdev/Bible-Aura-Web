@@ -73,9 +73,10 @@ function AppLayout() {
         </main>
       ) : (
         // Sidebar layout for app pages
-        <div className="flex h-screen relative z-10">
-          <AppSidebar />
-          <main className="flex-1 overflow-auto">
+        <SidebarProvider>
+          <div className="flex h-screen relative z-10">
+            <AppSidebar />
+            <main className="flex-1 overflow-auto">
             <Routes>
               <Route path="/header-demo" element={<HeaderDemo />} />
               <Route path="/verse-demo" element={<VerseDemo />} />
@@ -151,6 +152,7 @@ function AppLayout() {
             </Routes>
           </main>
         </div>
+        </SidebarProvider>
       )}
     </div>
   );
@@ -160,12 +162,10 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <SidebarProvider>
-          <Router>
-            <AppLayout />
-            <Toaster />
-          </Router>
-        </SidebarProvider>
+        <Router>
+          <AppLayout />
+          <Toaster />
+        </Router>
       </AuthProvider>
     </ErrorBoundary>
   );
