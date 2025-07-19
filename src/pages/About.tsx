@@ -87,7 +87,7 @@ const About = () => {
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-yellow-500" />
                   <span className="text-sm font-medium">AI-Powered Insights</span>
-                </div>
+        </div>
                 <div className="flex items-center gap-2">
                   <Crown className="h-5 w-5 text-purple-500" />
                   <span className="text-sm font-medium">Theologically Sound</span>
@@ -117,7 +117,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Values Section */}
+        {/* Values Section */}
       <section className="py-24 bg-gradient-to-br from-orange-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -198,7 +198,7 @@ const About = () => {
               <Link to="/funding">Support Our Mission</Link>
             </Button>
           </div>
-        </div>
+              </div>
       </section>
 
       {/* Footer */}
