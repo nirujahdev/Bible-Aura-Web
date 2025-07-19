@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://foleepziqgrdgkljedux.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbGVlcHppcWdyZGdrbGplZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNzkxNTgsImV4cCI6MjA2NzY1NTE1OH0.XyTKj6ayTYWnoJRUrkKyuNlQSfE6PMGeBHDdafqMs9g";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://foleepziqgrdgkljedux.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbGVlcHppcWdyZGdrbGplZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNzkxNTgsImV4cCI6MjA2NzY1NTE1OH0.XyTKj6ayTYWnoJRUrkKyuNlQSfE6PMGeBHDdafqMs9g";
 
 // Validate environment variables
 if (!SUPABASE_URL) {
@@ -19,7 +19,7 @@ if (!SUPABASE_PUBLISHABLE_KEY) {
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: typeof window !== 'undefined' ? localStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,

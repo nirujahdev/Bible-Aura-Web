@@ -40,19 +40,70 @@ import { useState, useEffect } from "react";
 const Dashboard = () => {
   const { profile, user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Update time every minute
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
+    try {
+      // Update time every minute
+      const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+      return () => clearInterval(timer);
+    } catch (error) {
+      console.error('Error setting up time update:', error);
+      setHasError(true);
+    }
   }, []);
 
-  // Get current hour for greeting
-  const hour = currentTime.getHours();
+  // Error fallback UI
+  if (hasError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardHeader className="text-center">
+            <CardTitle className="text-primary">✦Bible Aura</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p>Welcome back! We're having some technical difficulties.</p>
+            <div className="space-y-2">
+              <Button asChild className="w-full">
+                <Link to="/bible">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Continue to Bible
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/chat">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  AI Chat
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Get current hour for greeting with error handling
   const getGreeting = () => {
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    try {
+      const hour = currentTime.getHours();
+      if (hour < 12) return "Good morning";
+      if (hour < 17) return "Good afternoon";
+      return "Good evening";
+    } catch (error) {
+      console.error('Error getting greeting:', error);
+      return "Welcome";
+    }
+  };
+
+  // Safe profile name extraction
+  const getDisplayName = () => {
+    try {
+      return profile?.display_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend';
+    } catch (error) {
+      console.error('Error getting display name:', error);
+      return 'Friend';
+    }
   };
   
   return (
@@ -70,11 +121,11 @@ const Dashboard = () => {
             <div className="text-spacing">
               <div className="flex items-center gap-4 mb-3">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-                  {getGreeting()}, {profile?.display_name?.split(' ')[0] || 'Friend'}!
+                  {getGreeting()}, {getDisplayName()}!
                 </h1>
                 <div className="flex items-center gap-2">
-                  {profile?.reading_streak >= 7 && <span className="text-3xl animate-bounce">🔥</span>}
-                  {profile?.reading_streak >= 30 && <span className="text-3xl animate-pulse">⭐</span>}
+                  {(profile?.reading_streak || 0) >= 7 && <span className="text-3xl animate-bounce">🔥</span>}
+                  {(profile?.reading_streak || 0) >= 30 && <span className="text-3xl animate-pulse">⭐</span>}
                 </div>
               </div>
               <p className="text-white/90 text-lg sm:text-xl font-medium">

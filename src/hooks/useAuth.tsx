@@ -41,23 +41,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     
-    // Reduce timeout to 3 seconds and add better error handling
+    // Increase timeout to 5 seconds for production stability
     const loadingTimeout = setTimeout(() => {
       if (isMounted) {
         console.log('Auth loading timeout, setting loading to false');
         setLoading(false);
       }
-    }, 3000); // Reduced from 5 seconds to 3 seconds
+    }, 5000);
 
     const initializeAuth = async () => {
       try {
+        // Add connection check first
+        if (typeof window === 'undefined') {
+          console.log('Running in server environment, skipping auth initialization');
+          if (isMounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
         // Check for existing session first
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('Session error:', sessionError);
+          // Don't fail completely on session errors in production
           if (isMounted) {
             setLoading(false);
+            setSession(null);
+            setUser(null);
+            setProfile(null);
           }
           return;
         }
@@ -69,7 +82,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           if (session?.user) {
             // Don't wait for profile fetch to complete loading
-            fetchUserProfile(session.user.id);
+            fetchUserProfile(session.user.id).catch(error => {
+              console.error('Profile fetch error:', error);
+              // Continue without profile rather than failing
+            });
           } else {
             setProfile(null);
           }
@@ -80,43 +96,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Auth initialization error:', error);
         if (isMounted) {
           clearTimeout(loadingTimeout);
+          // Set safe defaults rather than failing
           setLoading(false);
+          setSession(null);
+          setUser(null);
+          setProfile(null);
         }
       }
     };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted) return;
-        
-        clearTimeout(loadingTimeout);
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Fetch user profile in the background
-          fetchUserProfile(session.user.id);
-        } else {
-          setProfile(null);
+    // Set up auth state listener with error handling
+    let subscription: any;
+    try {
+      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (!isMounted) return;
+          
+          try {
+            clearTimeout(loadingTimeout);
+            setSession(session);
+            setUser(session?.user ?? null);
+            
+            if (session?.user) {
+              // Fetch user profile in the background with error handling
+              fetchUserProfile(session.user.id).catch(error => {
+                console.error('Profile fetch error in auth state change:', error);
+              });
+            } else {
+              setProfile(null);
+            }
+            
+            setLoading(false);
+          } catch (error) {
+            console.error('Auth state change error:', error);
+            // Continue with safe defaults
+            setLoading(false);
+          }
         }
-        
+      );
+      subscription = authSubscription;
+    } catch (error) {
+      console.error('Auth listener setup error:', error);
+      // Initialize with safe defaults if listener fails
+      if (isMounted) {
+        clearTimeout(loadingTimeout);
         setLoading(false);
+        setSession(null);
+        setUser(null);
+        setProfile(null);
       }
-    );
+    }
 
     // Initialize auth
     initializeAuth();
 
     return () => {
       isMounted = false;
-      subscription.unsubscribe();
+      if (subscription) {
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          console.error('Error unsubscribing from auth:', error);
+        }
+      }
       clearTimeout(loadingTimeout);
     };
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      if (!userId || typeof window === 'undefined') {
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -131,6 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // Don't fail the entire auth flow if profile fetch fails
     }
   };
 
