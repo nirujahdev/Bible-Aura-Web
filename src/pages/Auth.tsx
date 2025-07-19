@@ -248,7 +248,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden">
       {/* Left Side - Features Showcase (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
         <div className="flex flex-col items-center justify-center p-8 text-gray-800 w-full">
@@ -385,17 +385,16 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Authentication Forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-3 sm:p-4 lg:p-8">
-        <div className="w-full">
-
-          <Card className="shadow-xl bg-white/95 backdrop-blur-sm border-white/20">
-            <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
-              <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Welcome</CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md mx-auto">
+          <Card className="shadow-xl bg-white/95 backdrop-blur-sm border-white/20 w-full">
+            <CardHeader className="text-center pb-4 px-4 sm:px-6">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">Welcome</CardTitle>
+              <CardDescription className="text-sm sm:text-base text-gray-600">
                 Sign in to your account or create a new one
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 sm:px-6 pb-6">
               {authError && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertCircle className="h-4 w-4" />
@@ -403,19 +402,19 @@ export default function Auth() {
                 </Alert>
               )}
               <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-primary/10 border border-primary/20 h-11">
-                  <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-white text-sm">
+                <TabsList className="grid w-full grid-cols-3 bg-primary/10 border border-primary/20 h-12 mb-6">
+                  <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm font-medium">
                     Sign In
                   </TabsTrigger>
-                  <TabsTrigger value="magic" className="data-[state=active]:bg-primary data-[state=active]:text-white text-sm">
+                  <TabsTrigger value="magic" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm font-medium">
                     Magic Link
                   </TabsTrigger>
-                  <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-white text-sm">
+                  <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm font-medium">
                     Sign Up
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="signin" className="space-y-4 mt-4">
+                <TabsContent value="signin" className="space-y-4 mt-0">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="signin-email" className="text-primary font-medium">Email</Label>
@@ -501,7 +500,7 @@ export default function Auth() {
                   </Button>
                 </TabsContent>
                 
-                <TabsContent value="magic" className="space-y-4 mt-4">
+                <TabsContent value="magic" className="space-y-4 mt-0">
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
                       <span className="text-sm text-primary font-medium">AI-Powered Login</span>
@@ -554,7 +553,7 @@ export default function Auth() {
                   </form>
                 </TabsContent>
                 
-                <TabsContent value="signup" className="space-y-4 mt-4">
+                <TabsContent value="signup" className="space-y-4 mt-0">
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
                       <img 
