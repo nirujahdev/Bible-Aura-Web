@@ -240,7 +240,7 @@ const Dashboard = () => {
             <BibleStudyWidget />
             <AIChatWidget />
             <JournalWidget />
-            
+            <PrayerWidget />
             <ReadingProgressWidget />
             
             {/* Quick Create Widget */}
