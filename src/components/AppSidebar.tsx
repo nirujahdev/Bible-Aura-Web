@@ -372,7 +372,20 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar className="border-r border-gray-200 bg-white">
+    <>
+      {/* Always visible menu trigger when collapsed */}
+      {!isExpanded && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          className="fixed top-4 left-4 z-50 h-12 w-12 p-0 bg-white border shadow-md hover:bg-gray-50 rounded-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600" />
+        </Button>
+      )}
+      
+      <Sidebar className="border-r border-gray-200 bg-white">
       {/* Desktop Header */}
       <SidebarHeader className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3 justify-between">
@@ -507,5 +520,6 @@ export function AppSidebar() {
         )}
       </SidebarFooter>
     </Sidebar>
+    </>
   )
 }

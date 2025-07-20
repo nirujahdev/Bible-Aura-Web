@@ -28,9 +28,10 @@ import {
 // Rich Text Editor (will be dynamically imported)
 const ReactQuill = React.lazy(() => import('react-quill'));
 
-// Enhanced Sermon Generation with Biblical and Theological Knowledge
-const OPENROUTER_API_KEY = "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";
+// Enhanced Sermon Generation with DeepSeek R1 Reasoning Model
+const DEEPSEEK_API_KEY = "sk-50e2e8a01cc440c3bf61641eee6aa2a6";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const DEEPSEEK_MODEL = "deepseek/deepseek-r1";
 
 // Christian theology database
 const CHRISTIAN_THEOLOGICAL_KNOWLEDGE = {
@@ -183,23 +184,23 @@ Format your response as JSON with these keys:
 - additionalScriptures: Array of relevant verse references`;
 };
 
-// Call OpenRouter API for sermon generation
+// Call DeepSeek R1 API for sermon generation
 const callSermonGenerationAPI = async (prompt: string): Promise<string> => {
   try {
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
         "HTTP-Referer": "https://bible-aura.app",
         "X-Title": "Bible Aura - Sermon Generator",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        "model": "moonshotai/kimi-k2:free",
+        "model": DEEPSEEK_MODEL,
         "messages": [
           {
             "role": "system",
-            "content": "You are a master Christian theologian and preacher with deep knowledge of Scripture, church history, and contemporary Christian authors. Generate biblically faithful, theologically sound, and practically relevant sermons."
+            "content": "You are a master Christian theologian and preacher with deep knowledge of Scripture, church history, and contemporary Christian authors. Generate biblically faithful, theologically sound, and practically relevant sermons using advanced reasoning capabilities."
           },
           {
             "role": "user",
@@ -207,7 +208,7 @@ const callSermonGenerationAPI = async (prompt: string): Promise<string> => {
           }
         ],
         "temperature": 0.8,
-        "max_tokens": 2000
+        "max_tokens": 3000
       })
     });
 

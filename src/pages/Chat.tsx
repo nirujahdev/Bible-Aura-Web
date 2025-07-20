@@ -12,24 +12,12 @@ import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/rateLimiter';
 import OpenAI from 'openai';
 
-// Multi-Model API Configuration
-const API_CONFIGS = [
-  {
-    apiKey: "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",
-    model: "tngtech/deepseek-r1t2-chimera:free",
-    name: "DeepSeek R1T2 Chimera"
-  },
-  {
-    apiKey: "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",
-    model: "moonshotai/kimi-k2:free",
-    name: "MoonshotAI Kimi K2"
-  },
-  {
-    apiKey: "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",
-    model: "moonshotai/kimi-k2:free",
-    name: "MoonshotAI Kimi K2 (Backup)"
-  }
-];
+// DeepSeek R1 Reasoning Model Configuration
+const API_CONFIG = {
+  apiKey: "sk-50e2e8a01cc440c3bf61641eee6aa2a6",
+  model: "deepseek/deepseek-r1",
+  name: "DeepSeek R1 Reasoning Model"
+};
 
 interface Message {
   id: string;
@@ -90,61 +78,44 @@ const BIBLICAL_PROMPTS = [
   "Find Bible verses for encouragement"
 ];
 
-// Function to get next available API configuration
-let currentApiIndex = 0;
-const getNextApiConfig = () => {
-  const config = API_CONFIGS[currentApiIndex];
-  currentApiIndex = (currentApiIndex + 1) % API_CONFIGS.length;
-  return config;
-};
-
-// Function to call OpenRouter API with load balancing
+// Function to call DeepSeek R1 API
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
-  let lastError = null;
-  
-  // Try each API configuration
-  for (let attempt = 0; attempt < API_CONFIGS.length; attempt++) {
-    const config = getNextApiConfig();
-    
-    try {
-      const openai = new OpenAI({
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: config.apiKey,
-        defaultHeaders: {
-          "HTTP-Referer": "https://bible-aura.app",
-          "X-Title": "✦Bible Aura - AI Biblical Insights",
+  try {
+    const openai = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: API_CONFIG.apiKey,
+      defaultHeaders: {
+        "HTTP-Referer": "https://bible-aura.app",
+        "X-Title": "Bible Aura - AI Biblical Insights",
+      },
+    });
+
+    const completion = await openai.chat.completions.create({
+      model: API_CONFIG.model,
+      messages: [
+        {
+          role: "system",
+          content: BIBLICAL_SYSTEM_PROMPT
         },
-      });
+        ...messages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }))
+      ],
+      temperature: 0.7,
+      max_tokens: 2000
+    });
 
-      const completion = await openai.chat.completions.create({
-        model: config.model,
-        messages: [
-          {
-            role: "system",
-            content: BIBLICAL_SYSTEM_PROMPT
-          },
-          ...messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        ],
-        temperature: 0.7,
-        max_tokens: 1500
-      });
-
-      const response = completion.choices[0]?.message?.content;
-      if (response) {
-        return { content: response, model: config.name };
-      }
-    } catch (error) {
-      console.error(`Error with ${config.name}:`, error);
-      lastError = error;
-      continue; // Try next API
+    const response = completion.choices[0]?.message?.content;
+    if (response) {
+      return { content: response, model: API_CONFIG.name };
+    } else {
+      throw new Error('No response from DeepSeek R1 model');
     }
+  } catch (error) {
+    console.error(`Error with ${API_CONFIG.name}:`, error);
+    throw error;
   }
-  
-  // If all APIs failed, throw the last error
-  throw lastError || new Error('All AI models are currently unavailable');
 };
 
 export default function Chat() {
