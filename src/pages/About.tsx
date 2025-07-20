@@ -260,15 +260,36 @@ const About = () => {
               </div>
               
               <div className="text-sm">
-                <span>&copy; 2024 ✦Bible Aura. All rights reserved. Developed by </span>
-                <a 
-                  href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
-                >
-                  Benaiah Nicholas Nimal
-                </a>
+                {/* Mobile/Tablet: Two lines */}
+                <div className="lg:hidden">
+                  <div className="mb-2">
+                    <span>&copy; 2024 ✦Bible Aura. All rights reserved.</span>
+                  </div>
+                  <div>
+                    <span>Developed by </span>
+                    <a 
+                      href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
+                    >
+                      Benaiah Nicholas Nimal
+                    </a>
+                  </div>
+                </div>
+                
+                {/* Desktop/Laptop: One line */}
+                <div className="hidden lg:block">
+                  <span>&copy; 2024 ✦Bible Aura. All rights reserved. Developed by </span>
+                  <a 
+                    href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
+                  >
+                    Benaiah Nicholas Nimal
+                  </a>
+                </div>
               </div>
             </div>
           </div>

@@ -29,8 +29,8 @@ const isFromEmailLink = typeof window !== 'undefined' &&
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: typeof window !== 'undefined' ? localStorage : undefined,
-    persistSession: isFromEmailLink, // Only persist sessions from email links
-    autoRefreshToken: isFromEmailLink, // Only auto-refresh for email link sessions
+    persistSession: true, // Always persist sessions for better UX
+    autoRefreshToken: true, // Always auto-refresh tokens
     detectSessionInUrl: true, // Always detect email URLs
     flowType: 'pkce'
   },

@@ -66,89 +66,91 @@ const Landing = () => {
       </section>
 
       {/* Transform Section */}
-      <section className="py-24 bg-gray-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="flex items-center justify-center mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-px bg-orange-500"></div>
-                <Zap className="h-6 w-6 text-orange-500" />
-                <div className="w-12 h-px bg-orange-500"></div>
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gray-50">
+        <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12 sm:mb-14 md:mb-16">
+              <div className="flex items-center justify-center mb-4 sm:mb-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="w-8 sm:w-10 md:w-12 h-px bg-orange-500"></div>
+                  <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+                  <div className="w-8 sm:w-10 md:w-12 h-px bg-orange-500"></div>
+                </div>
               </div>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Transform Your
-            </h2>
-            <h3 className="text-4xl md:text-5xl font-bold text-orange-500 mb-8">
-              Bible Study Experience
-            </h3>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Grow deeper in your faith with Bible Aura's AI-powered spiritual tools and biblical insights.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {/* Smart Analysis */}
-            <Card className="text-center border-0 shadow-lg bg-orange-50 hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="pb-4">
-                <div className="mx-auto mb-4 p-4 bg-orange-500 rounded-full w-fit">
-                  <Sparkles className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl text-gray-900">Smart Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Get instant insights and context for any Bible verse
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* AI Companion */}
-            <Card className="text-center border-0 shadow-lg bg-blue-50 hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="pb-4">
-                <div className="mx-auto mb-4 p-4 bg-blue-500 rounded-full w-fit">
-                  <MessageCircle className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl text-gray-900">AI Companion</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Chat with our AI for spiritual guidance and questions
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Study Tools */}
-            <Card className="text-center border-0 shadow-lg bg-purple-50 hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="pb-4">
-                <div className="mx-auto mb-4 p-4 bg-purple-500 rounded-full w-fit">
-                  <BookOpen className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl text-gray-900">Study Tools</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Access comprehensive Bible study resources
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* CTA Section */}
-          <div className="text-center px-2 sm:px-0">
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 text-white">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 leading-tight">
-                Transform Your Spiritual Life with AI-Powered Insights
+              <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+                Transform Your
+              </h2>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-orange-500 mb-6 sm:mb-8">
+                Bible Study Experience
               </h3>
-              <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto opacity-90 leading-relaxed px-2 sm:px-0">
-                Start your spiritual transformation today with AI-powered biblical insights and community support.
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+                Grow deeper in your faith with Bible Aura's AI-powered spiritual tools and biblical insights.
               </p>
-              <Button asChild size="lg" className="bg-white text-orange-600 hover:bg-white/90 font-bold px-6 sm:px-8 md:px-10 py-4 sm:py-6 text-base sm:text-lg md:text-xl transition-all duration-300 hover:scale-105">
-                <Link to="/auth">
-                  <Zap className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-orange-600" />
-                  START YOUR JOURNEY
-                </Link>
-              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-14 md:mb-16">
+              {/* Smart Analysis */}
+              <Card className="text-center border-0 shadow-lg bg-orange-50 hover:shadow-xl transition-shadow duration-300">
+                <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
+                  <div className="mx-auto mb-3 sm:mb-4 p-3 sm:p-4 bg-orange-500 rounded-full w-fit">
+                    <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl text-gray-900">Smart Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 sm:px-6">
+                  <p className="text-sm sm:text-base text-gray-600">
+                    Get instant insights and context for any Bible verse
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* AI Companion */}
+              <Card className="text-center border-0 shadow-lg bg-blue-50 hover:shadow-xl transition-shadow duration-300">
+                <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
+                  <div className="mx-auto mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-500 rounded-full w-fit">
+                    <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl text-gray-900">AI Companion</CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 sm:px-6">
+                  <p className="text-sm sm:text-base text-gray-600">
+                    Chat with our AI for spiritual guidance and questions
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Study Tools */}
+              <Card className="text-center border-0 shadow-lg bg-purple-50 hover:shadow-xl transition-shadow duration-300">
+                <CardHeader className="pb-4">
+                  <div className="mx-auto mb-4 p-4 bg-purple-500 rounded-full w-fit">
+                    <BookOpen className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl text-gray-900">Study Tools</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">
+                    Access comprehensive Bible study resources
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* CTA Section */}
+            <div className="text-center px-2 sm:px-0">
+              <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-12 text-white">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 leading-tight">
+                  Transform Your Spiritual Life with AI-Powered Insights
+                </h3>
+                <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto opacity-90 leading-relaxed px-2 sm:px-0">
+                  Start your spiritual transformation today with AI-powered biblical insights and community support.
+                </p>
+                <Button asChild size="lg" className="bg-white text-orange-600 hover:bg-white/90 font-bold px-6 sm:px-8 md:px-10 py-4 sm:py-6 text-base sm:text-lg md:text-xl transition-all duration-300 hover:scale-105">
+                  <Link to="/auth">
+                    <Zap className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-orange-600" />
+                    START YOUR JOURNEY
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -388,11 +390,27 @@ const Landing = () => {
               </div>
               
               <div className="text-sm order-1 md:order-2 leading-relaxed">
-                <div className="mb-2">
-                  <span>&copy; 2024 ✦Bible Aura. All rights reserved.</span>
+                {/* Mobile/Tablet: Two lines */}
+                <div className="lg:hidden">
+                  <div className="mb-2">
+                    <span>&copy; 2024 ✦Bible Aura. All rights reserved.</span>
+                  </div>
+                  <div>
+                    <span>Developed by </span>
+                    <a 
+                      href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
+                    >
+                      Benaiah Nicholas Nimal
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <span>Developed by </span>
+                
+                {/* Desktop/Laptop: One line */}
+                <div className="hidden lg:block">
+                  <span>&copy; 2024 ✦Bible Aura. All rights reserved. Developed by </span>
                   <a 
                     href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
                     target="_blank" 

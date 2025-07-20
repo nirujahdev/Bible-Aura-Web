@@ -220,24 +220,11 @@ export default function Auth() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary via-primary/90 to-primary/80 flex items-center justify-center">
-        <div className="text-center space-y-8">
-          <div className="relative mx-auto">
-            <img 
-              src="/✦Bible Aura.svg" 
-              alt="Bible Aura" 
-              className="h-32 w-32 mx-auto drop-shadow-2xl"
-            />
-          </div>
-          <div className="space-y-4">
-            <h1 className="text-5xl font-bold text-white">
-              ✦ Bible Aura
-            </h1>
-            <p className="text-xl text-white/90">
-              AI-Powered Biblical Insight
-            </p>
-            <div className="text-white/70 text-lg">
+        <div className="text-center space-y-6">
+          <div className="space-y-3">
+            <p className="text-lg text-white/90">
               Loading your account...
-            </div>
+            </p>
           </div>
           <div className="flex justify-center">
             <div className="h-8 w-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -251,32 +238,23 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden">
       {/* Left Side - Features Showcase (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
-        <div className="flex flex-col items-center justify-center p-8 text-gray-800 w-full">
-          {/* Logo Section */}
-          <div className="mb-8">
-            <div className="text-center">
-              <div className="h-32 w-32 mx-auto mb-4 flex items-center justify-center">
-                <span className="text-5xl font-bold text-primary">✦Bible Aura</span>
-              </div>
-              <h1 className="text-4xl font-bold text-primary mb-2">
-                ✦ Bible Aura
-              </h1>
-              <p className="text-lg text-gray-600 font-medium">
-                AI-Powered Biblical Insight
-              </p>
-            </div>
+        <div className="flex flex-col items-center justify-center p-6 text-gray-800 w-full">
+          {/* Bible Aura Branding */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-primary mb-2">✦Bible Aura</h1>
+            <p className="text-lg text-gray-600 font-medium">AI-Powered Biblical Insights</p>
           </div>
 
           {/* Enhanced Features Showcase */}
-          <div className="w-full">
-            <div key={currentFeature} className="relative bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200 shadow-xl transition-all duration-700 transform hover:scale-[1.02] overflow-hidden">
+          <div className="w-full mb-6">
+            <div key={currentFeature} className="relative bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200 shadow-xl transition-all duration-700 transform hover:scale-[1.02] overflow-hidden">
               {/* Animated background decoration */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-primary/5 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-full -translate-y-12 translate-x-12"></div>
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-primary/5 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
               
               <div className="relative z-10">
-                <div className="flex items-start gap-5 mb-5">
-                  <div className={`p-4 rounded-2xl shadow-lg bg-gradient-to-br ${
+                <div className="flex items-start gap-4 mb-4">
+                  <div className={`p-3 rounded-2xl shadow-lg bg-gradient-to-br ${
                     currentFeature === 0 ? 'from-blue-500 to-indigo-600' :
                     currentFeature === 1 ? 'from-purple-500 to-pink-600' :
                     currentFeature === 2 ? 'from-green-500 to-emerald-600' :
@@ -286,24 +264,24 @@ export default function Auth() {
                   } transform rotate-3 hover:rotate-0 transition-transform duration-300`}>
                     {(() => {
                       const IconComponent = features[currentFeature].icon;
-                      return <IconComponent className="h-8 w-8 text-white" />;
+                      return <IconComponent className="h-6 w-6 text-white" />;
                     })()}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text">
                       {features[currentFeature].title}
                     </h3>
-                    <div className="h-1 w-12 bg-gradient-to-r from-primary to-primary/50 rounded-full"></div>
+                    <div className="h-1 w-10 bg-gradient-to-r from-primary to-primary/50 rounded-full"></div>
                   </div>
                 </div>
-                <p className="text-gray-600 leading-relaxed text-lg">
+                <p className="text-gray-600 leading-relaxed">
                   {features[currentFeature].description}
                 </p>
               </div>
             </div>
 
             {/* Enhanced Feature Indicators */}
-            <div className="flex justify-center gap-3 mt-8">
+            <div className="flex justify-center gap-2 mt-6">
               {features.map((_, index) => (
                 <button
                   key={index}
@@ -314,13 +292,13 @@ export default function Auth() {
                       : 'hover:scale-105'
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                  <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
                     index === currentFeature 
                       ? 'bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/25' 
                       : 'bg-gray-300 hover:bg-primary/50'
                   }`}></div>
                   {index === currentFeature && (
-                    <div className="absolute inset-0 w-4 h-4 rounded-full bg-primary animate-ping opacity-25"></div>
+                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-primary animate-ping opacity-25"></div>
                   )}
                 </button>
               ))}
@@ -328,40 +306,40 @@ export default function Auth() {
           </div>
 
           {/* Enhanced Features Section */}
-          <div className="mt-8 w-full">
+          <div className="w-full">
             <div className="grid grid-cols-3 gap-3">
               {/* AI Insights */}
               <div className="group cursor-pointer transform transition-all duration-300 hover:scale-105">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-300 border border-blue-100">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow duration-300 border border-blue-100">
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg">
-                      <Brain className="h-5 w-5 text-white" />
+                      <Brain className="h-4 w-4 text-white" />
                     </div>
-                    <div className="text-sm font-semibold text-gray-800">AI Insights</div>
+                    <div className="text-xs font-semibold text-gray-800">AI Insights</div>
                   </div>
                 </div>
               </div>
 
               {/* All in one Bible */}
               <div className="group cursor-pointer transform transition-all duration-300 hover:scale-105">
-                <div className="bg-gradient-to-br from-orange-50 to-red-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-300 border border-orange-100">
+                <div className="bg-gradient-to-br from-orange-50 to-red-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow duration-300 border border-orange-100">
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg shadow-lg">
-                      <Book className="h-5 w-5 text-white" />
+                      <Book className="h-4 w-4 text-white" />
                     </div>
-                    <div className="text-sm font-semibold text-gray-800">All in one Bible</div>
+                    <div className="text-xs font-semibold text-gray-800">All in one Bible</div>
                   </div>
                 </div>
               </div>
 
               {/* AI Chat */}
               <div className="group cursor-pointer transform transition-all duration-300 hover:scale-105">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-300 border border-green-100">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow duration-300 border border-green-100">
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg shadow-lg">
-                      <MessageCircle className="h-5 w-5 text-white" />
+                      <MessageCircle className="h-4 w-4 text-white" />
                     </div>
-                    <div className="text-sm font-semibold text-gray-800">AI Chat</div>
+                    <div className="text-xs font-semibold text-gray-800">AI Chat</div>
                   </div>
                 </div>
               </div>
@@ -370,14 +348,14 @@ export default function Auth() {
             {/* Connecting line with sparkles */}
             <div className="flex items-center justify-center mt-4 space-x-2">
               <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent flex-1"></div>
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <Sparkles className="h-3 w-3 text-primary animate-pulse" />
               <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent flex-1"></div>
             </div>
           </div>
 
           {/* Developer Credit */}
-          <div className="mt-auto pt-6 text-center">
-            <p className="text-gray-500 text-sm">
+          <div className="mt-6 text-center">
+            <p className="text-gray-500 text-xs">
               Developed By Benaiah Nicholas Nimal
             </p>
           </div>
@@ -385,39 +363,39 @@ export default function Auth() {
       </div>
 
       {/* Right Side - Authentication Forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-3 sm:p-4 lg:p-6">
         <div className="w-full max-w-md mx-auto">
           <Card className="shadow-xl bg-white/95 backdrop-blur-sm border-white/20 w-full">
-            <CardHeader className="text-center pb-4 px-4 sm:px-6">
-              <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">Welcome</CardTitle>
-              <CardDescription className="text-sm sm:text-base text-gray-600">
+            <CardHeader className="text-center pb-3 px-4 sm:px-6">
+              <CardTitle className="text-lg sm:text-xl font-semibold text-primary">Welcome</CardTitle>
+              <CardDescription className="text-sm text-gray-600">
                 Sign in to your account or create a new one
               </CardDescription>
             </CardHeader>
-            <CardContent className="px-4 sm:px-6 pb-6">
+            <CardContent className="px-4 sm:px-6 pb-4">
               {authError && (
-                <Alert variant="destructive" className="mb-4">
+                <Alert variant="destructive" className="mb-3">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{authError}</AlertDescription>
                 </Alert>
               )}
               <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-primary/10 border border-primary/20 h-12 mb-6">
-                  <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm font-medium">
+                <TabsList className="grid w-full grid-cols-3 bg-primary/10 border border-primary/20 h-10 mb-4">
+                  <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs font-medium">
                     Sign In
                   </TabsTrigger>
-                  <TabsTrigger value="magic" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm font-medium">
+                  <TabsTrigger value="magic" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs font-medium">
                     Magic Link
                   </TabsTrigger>
-                  <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm font-medium">
+                  <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs font-medium">
                     Sign Up
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="signin" className="space-y-4 mt-0">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email" className="text-primary font-medium">Email</Label>
+                <TabsContent value="signin" className="space-y-3 mt-0">
+                  <form onSubmit={handleSignIn} className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="signin-email" className="text-primary font-medium text-sm">Email</Label>
                       <Input
                         id="signin-email"
                         name="email"
@@ -425,11 +403,11 @@ export default function Auth() {
                         placeholder="Enter your email"
                         required
                         disabled={isSubmitting}
-                        className="border-primary/30 focus:border-primary focus:ring-primary h-11"
+                        className="border-primary/30 focus:border-primary focus:ring-primary h-9"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-password" className="text-primary font-medium">Password</Label>
+                    <div className="space-y-1">
+                      <Label htmlFor="signin-password" className="text-primary font-medium text-sm">Password</Label>
                       <div className="relative">
                         <Input
                           id="signin-password"
@@ -438,13 +416,13 @@ export default function Auth() {
                           placeholder="Enter your password"
                           required
                           disabled={isSubmitting}
-                          className="border-primary/30 focus:border-primary focus:ring-primary h-11 pr-11"
+                          className="border-primary/30 focus:border-primary focus:ring-primary h-9 pr-10"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-11 px-3 hover:bg-transparent text-primary"
+                          className="absolute right-0 top-0 h-9 px-2 hover:bg-transparent text-primary"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -501,11 +479,6 @@ export default function Auth() {
                 </TabsContent>
                 
                 <TabsContent value="magic" className="space-y-4 mt-0">
-                  <div className="text-center mb-4">
-                    <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
-                      <span className="text-sm text-primary font-medium">AI-Powered Login</span>
-                    </div>
-                  </div>
                   <form onSubmit={handleMagicLink} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="magic-email" className="text-primary font-medium">Email</Label>
@@ -554,20 +527,6 @@ export default function Auth() {
                 </TabsContent>
                 
                 <TabsContent value="signup" className="space-y-4 mt-0">
-                  <div className="text-center mb-4">
-                    <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
-                      <img 
-                        src="/✦Bible Aura secondary.svg" 
-                        alt="AI Oracle" 
-                        className="h-6 w-6"
-                      />
-                      <span className="text-sm text-primary font-medium">AI-Enhanced Signup</span>
-                      <Sparkles className="h-4 w-4 text-primary" />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Begin your faith journey with AI-powered biblical insights
-                    </p>
-                  </div>
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="signup-name" className="text-primary font-medium">Name</Label>

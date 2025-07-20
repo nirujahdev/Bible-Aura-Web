@@ -2,19 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Clock, ArrowLeft, MessageCircle, Globe, Instagram, Home, Info, Crown, Heart, LogIn, UserPlus, Menu, X, Sparkles } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ArrowLeft, MessageCircle, Globe, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
+import { GlobalNavigation } from "@/components/GlobalNavigation";
 
 const Contact = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
 
   const contactMethods = [
     {
@@ -73,171 +65,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-background w-full max-w-none">
       {/* Enhanced Floating Curved Navigation */}
-      <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full px-4">
-        <div className="bg-white/95 backdrop-blur-xl rounded-full shadow-2xl border border-white/20 px-6 lg:px-12 py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] lg:min-w-[800px]">
-          {/* Glowing border effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-          
-          <div className="relative flex items-center justify-between">
-            {/* Desktop Layout */}
-            <div className="hidden lg:flex items-center justify-between w-full">
-              {/* Left - Logo */}
-              <div className="flex items-center">
-                <span className="text-xl font-divine text-primary whitespace-nowrap font-bold">✦Bible Aura</span>
-              </div>
-
-              {/* Center - Navigation Items */}
-              <div className="flex items-center space-x-2">
-                <a 
-                  href="/" 
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Home className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Home</span>
-                </a>
-
-                <Link 
-                  to="/about"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Info className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">About</span>
-                </Link>
-
-                <Link 
-                  to="/contact"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Phone className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Contact</span>
-                </Link>
-
-                                  <Link 
-                    to="/careers"
-                    className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                  >
-                    <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                    <span className="text-sm font-semibold whitespace-nowrap">Careers</span>
-                  </Link>
-
-                <Link 
-                  to="/funding"
-                  className="group relative flex items-center space-x-2 px-6 py-3 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-110 active:scale-95"
-                >
-                  <Heart className="h-4 w-4 transition-all duration-500 group-hover:scale-125 group-hover:rotate-12" />
-                  <span className="text-sm font-semibold whitespace-nowrap">Support Us</span>
-                </Link>
-            </div>
-            
-              {/* Right - Auth Button */}
-              <div className="flex items-center">
-                <Link to="/auth">
-                  <button className="group flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-500 hover:shadow-xl hover:shadow-orange-300/30 hover:scale-110 active:scale-95">
-                    <div className="flex items-center space-x-1">
-                      <LogIn className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
-                      <UserPlus className="h-4 w-4 transition-transform duration-500 group-hover:scale-125" />
-                    </div>
-                    <span className="text-sm font-semibold whitespace-nowrap">Sign In/Up</span>
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Mobile Layout */}
-            <div className="lg:hidden flex items-center justify-center w-full relative">
-              {/* Logo - Centered */}
-              <div className="flex items-center">
-                <span className="text-lg sm:text-xl font-divine text-primary font-bold">✦Bible Aura</span>
-              </div>
-
-              {/* Mobile Menu Button - Absolute Right */}
-              <button
-                onClick={toggleMobileMenu}
-                className="absolute right-0 h-9 w-9 sm:h-10 sm:w-10 p-0 hover:bg-primary/10 rounded-full flex items-center justify-center transition-colors z-10"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                ) : (
-                  <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 mt-3 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/30 overflow-hidden z-40 mx-2 sm:mx-4">
-            <div className="py-3 sm:py-4">
-              {/* Navigation Items */}
-              <Link
-                to="/"
-                onClick={closeMobileMenu}
-                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
-              >
-                <Home className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-base sm:text-lg">Home</span>
-              </Link>
-              
-              <Link
-                to="/about"
-                onClick={closeMobileMenu}
-                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
-              >
-                <Info className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-base sm:text-lg">About</span>
-              </Link>
-              
-              <Link
-                to="/contact"
-                onClick={closeMobileMenu}
-                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
-              >
-                <Phone className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-base sm:text-lg">Contact</span>
-              </Link>
-              
-              <Link
-                to="/careers"
-                onClick={closeMobileMenu}
-                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
-              >
-                <Crown className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-base sm:text-lg">Careers</span>
-              </Link>
-              
-              <Link
-                to="/funding"
-                onClick={closeMobileMenu}
-                className="flex items-center space-x-4 px-5 sm:px-6 py-3 sm:py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-[1.02] rounded-lg mx-2"
-              >
-                <Heart className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-base sm:text-lg">Support Us</span>
-              </Link>
-              
-              
-              <div className="border-t border-gray-200/60 mt-3 sm:mt-4 pt-3 sm:pt-4 px-3 sm:px-4 space-y-3 sm:space-y-4">
-                <Link
-                  to="/auth"
-                  onClick={closeMobileMenu}
-                  className="flex items-center justify-center space-x-2 w-full px-4 sm:px-5 py-3 border-2 border-primary/20 text-primary rounded-xl hover:bg-primary hover:text-white transition-all duration-300 text-base sm:text-lg font-semibold hover:scale-[1.02] mx-1"
-                >
-                  <LogIn className="h-5 w-5" />
-                  <span>Sign In</span>
-                </Link>
-                <Link
-                  to="/auth"
-                  onClick={closeMobileMenu}
-                  className="flex items-center justify-center space-x-2 w-full px-4 sm:px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white rounded-xl hover:from-primary/90 hover:to-primary/80 transition-all duration-300 text-base sm:text-lg font-semibold hover:scale-[1.02] shadow-lg mx-1"
-                >
-                  <UserPlus className="h-5 w-5" />
-                  <span>Get Started</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
+             <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
       <div className="w-full px-4 sm:px-6 lg:px-12 py-16 pt-32">
@@ -385,15 +213,36 @@ const Contact = () => {
               </div>
               
               <div className="text-sm">
-                <span>&copy; 2024 ✦Bible Aura. All rights reserved. Developed by </span>
-                <a 
-                  href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
-                >
-                  Benaiah Nicholas Nimal
-                </a>
+                {/* Mobile/Tablet: Two lines */}
+                <div className="lg:hidden">
+                  <div className="mb-2">
+                    <span>&copy; 2024 ✦Bible Aura. All rights reserved.</span>
+                  </div>
+                  <div>
+                    <span>Developed by </span>
+                    <a 
+                      href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
+                    >
+                      Benaiah Nicholas Nimal
+                    </a>
+                  </div>
+                </div>
+                
+                {/* Desktop/Laptop: One line */}
+                <div className="hidden lg:block">
+                  <span>&copy; 2024 ✦Bible Aura. All rights reserved. Developed by </span>
+                  <a 
+                    href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
+                  >
+                    Benaiah Nicholas Nimal
+                  </a>
+                </div>
               </div>
             </div>
           </div>
