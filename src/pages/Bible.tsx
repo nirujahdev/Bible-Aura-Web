@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, Star, Book, Sparkles, Globe, Languages, StickyNote, Brain, Palette, MessageCircle } from 'lucide-react';
+import { Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, Star, Book, Sparkles, Globe, Languages, StickyNote, Brain, Palette, MessageCircle, BookOpen } from 'lucide-react';
 import { ModernHeader } from '@/components/ModernHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,20 +61,47 @@ export default function Bible() {
 
   const loadBooks = async () => {
     setBooksLoading(true);
+    
     try {
-      const booksData = await bibleApi.getBooks(selectedTranslation);
-      setBooks(booksData);
-      if (booksData.length > 0) {
-        // Try to find John, otherwise use first book
-        const johnBook = booksData.find(book => book.id.toUpperCase() === 'JHN' || book.name.toLowerCase().includes('john'));
-        setSelectedBook(johnBook || booksData[0]);
-        setSelectedChapter(johnBook ? 3 : 1); // Start with John 3 for the famous verse
+      // First, load books from local static data for immediate UI response
+      const staticBooks = bibleApi.getStaticBooks(selectedTranslation);
+      if (staticBooks.length > 0) {
+        setBooks(staticBooks);
+        // Find John and set it as default
+        const johnBook = staticBooks.find(book => book.id.toUpperCase() === 'JHN' || book.name.toLowerCase().includes('john'));
+        setSelectedBook(johnBook || staticBooks[0]);
+        setSelectedChapter(johnBook ? 3 : 1);
+        setBooksLoading(false);
+        
+        toast({
+          title: "📖 Books Loaded",
+          description: `${staticBooks.length} Bible books ready`,
+        });
       }
+      
+      // Then fetch from API in the background for enhanced data
+      const booksData = await bibleApi.fetchBooks(selectedTranslation);
+      if (booksData.length > 0) {
+        setBooks(booksData);
+        console.log('✅ Enhanced book data loaded from API');
+      }
+      
     } catch (error) {
       console.error('Error loading books:', error);
+      
+      // Final fallback to static data
+      const fallbackBooks = bibleApi.getStaticBooks(selectedTranslation);
+      setBooks(fallbackBooks);
+      
+      if (fallbackBooks.length > 0) {
+        const johnBook = fallbackBooks.find(book => book.id.toUpperCase() === 'JHN' || book.name.toLowerCase().includes('john'));
+        setSelectedBook(johnBook || fallbackBooks[0]);
+        setSelectedChapter(johnBook ? 3 : 1);
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to load Bible books",
+        title: "📚 Offline Mode",
+        description: "Using cached Bible data. Some features may be limited.",
         variant: "destructive",
       });
     } finally {
@@ -206,9 +233,11 @@ export default function Bible() {
   const navigateChapter = (direction: 'prev' | 'next') => {
     if (!selectedBook) return;
 
+    const maxChapters = selectedBook.chaptersCount || selectedBook.chapters.length || 1;
+    
     if (direction === 'prev' && selectedChapter > 1) {
       setSelectedChapter(selectedChapter - 1);
-    } else if (direction === 'next' && selectedChapter < selectedBook.chapters) {
+    } else if (direction === 'next' && selectedChapter < maxChapters) {
       setSelectedChapter(selectedChapter + 1);
     }
   };
@@ -270,7 +299,8 @@ export default function Bible() {
     
     setLoading(true);
     try {
-      const searchResults = await bibleApi.searchVerses(searchQuery, selectedTranslation, 20);
+      // Use the new searchBibleVerses method that returns BibleVerse[]
+      const searchResults = await bibleApi.searchBibleVerses(selectedTranslation, searchQuery, 20);
       setVerses(searchResults);
       // Clear book/chapter selection when showing search results
       setSelectedBook(null);
@@ -299,202 +329,213 @@ export default function Bible() {
   const currentTranslation = BIBLE_TRANSLATIONS.find(t => t.id === selectedTranslation);
 
   return (
-    <div className="h-screen bg-background overflow-hidden flex flex-col">
+    <div className="bible-full-layout min-h-screen bg-background flex flex-col">
       {/* Modern Guest User Header */}
       {!user && (
         <ModernHeader variant="default" showDismiss={true} />
       )}
 
-      {/* Compact Header - NOT STICKY */}
-      <div className="bg-aura-gradient text-white p-3 border-b flex-shrink-0">
-        <div className="w-full">
-          <div className="flex items-center gap-2">
-            <Book className="h-5 w-5" />
-            <h1 className="text-xl font-divine">Sacred Scripture</h1>
-            <Sparkles className="h-4 w-4" />
+      {/* Full-Width Header */}
+      <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
+        <div className="max-w-full mx-auto">
+          <div className="flex items-center gap-3">
+            <Book className="h-6 w-6" />
+            <h1 className="text-2xl font-divine">Sacred Scripture</h1>
+            <Sparkles className="h-5 w-5" />
           </div>
         </div>
       </div>
 
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-auto">
-        <div className="w-full px-2 sm:px-4 py-2 sm:py-4">
-          {/* Compact Language & Translation Controls */}
-          <Card className="mb-3 sm:mb-4">
-            <CardContent className="p-3 sm:p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                {/* Language Selection */}
-                <div>
-                  <label className="text-xs font-medium mb-1 flex items-center gap-1">
-                    <Languages className="h-3 w-3" />
-                    Language
-                  </label>
-                  <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="h-9 sm:h-8 text-sm">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {uniqueLanguages.map(language => (
-                        <SelectItem key={language} value={language}>
-                          {language}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+      {/* Main Content - Full Width Layout */}
+      <div className="flex-1 flex flex-col lg:flex-row">
+        {/* Sidebar Controls - Responsive */}
+                 <div className="bible-sidebar w-full lg:w-80 xl:w-96 bg-muted/30 border-b lg:border-b-0 lg:border-r p-4 space-y-4">
+          {/* Language & Translation Controls */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Languages className="h-4 w-4" />
+                Language & Translation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Language Selection */}
+              <div>
+                <label className="text-xs font-medium mb-2 block">Language</label>
+                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {uniqueLanguages.map(language => (
+                      <SelectItem key={language} value={language}>
+                        {language}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {/* Translation Selection */}
-                <div>
-                  <label className="text-xs font-medium mb-1 block">Translation</label>
-                  <Select value={selectedTranslation} onValueChange={handleTranslationChange}>
-                    <SelectTrigger className="h-9 sm:h-8 text-sm">
-                      <SelectValue placeholder="Select translation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTranslations.map(translation => (
-                        <SelectItem key={translation.id} value={translation.id}>
-                          {translation.abbreviation} - {translation.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Translation Selection */}
+              <div>
+                <label className="text-xs font-medium mb-2 block">Translation</label>
+                <Select value={selectedTranslation} onValueChange={handleTranslationChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select translation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTranslations.map(translation => (
+                      <SelectItem key={translation.id} value={translation.id}>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{translation.abbreviation}</span>
+                          <span className="text-xs text-muted-foreground">{translation.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
 
           {/* Search Section */}
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <div className="flex gap-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Search Verses
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
                 <Input
-                  placeholder="Search verses... (e.g., 'love', 'John 3:16', 'salvation')"
+                  placeholder="Search verses... (e.g., 'love', 'John 3:16')"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="flex-1"
+                  className="w-full"
                 />
-                <Button onClick={handleSearch} disabled={loading}>
-                  <Search className="h-4 w-4" />
+                <Button onClick={handleSearch} disabled={loading} className="w-full">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search Scripture
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Book and Chapter Selection */}
-          <Card className="mb-4">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex flex-wrap gap-3">
-                <div className="flex-1 min-w-[200px]">
-                  <label className="text-xs font-medium mb-1 block">Book</label>
-                  <Select
-                    value={selectedBook?.id || ''}
-                    onValueChange={(bookId) => {
-                      const book = books.find(b => b.id === bookId);
-                      if (book) {
-                        setSelectedBook(book);
-                        setSelectedChapter(1);
-                      }
-                    }}
-                    disabled={booksLoading}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue placeholder={booksLoading ? "Loading books..." : "Select book"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {oldTestamentBooks.length > 0 && (
-                        <div className="p-2">
-                          <h4 className="font-medium text-xs text-muted-foreground mb-1">Old Testament</h4>
-                          {oldTestamentBooks.map(book => (
-                            <SelectItem key={book.id} value={book.id}>
-                              {book.name}
-                            </SelectItem>
-                          ))}
-                        </div>
-                      )}
-                      {newTestamentBooks.length > 0 && (
-                        <div className="p-2 border-t">
-                          <h4 className="font-medium text-xs text-muted-foreground mb-1">New Testament</h4>
-                          {newTestamentBooks.map(book => (
-                            <SelectItem key={book.id} value={book.id}>
-                              {book.name}
-                            </SelectItem>
-                          ))}
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Book & Chapter
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Book Selection */}
+              <div>
+                <label className="text-xs font-medium mb-2 block">Book</label>
+                <Select
+                  value={selectedBook?.id || ''}
+                  onValueChange={(bookId) => {
+                    const book = books.find(b => b.id === bookId);
+                    if (book) {
+                      setSelectedBook(book);
+                      setSelectedChapter(1);
+                    }
+                  }}
+                  disabled={booksLoading}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={booksLoading ? "Loading books..." : "Select book"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-80">
+                    {oldTestamentBooks.length > 0 && (
+                      <div className="p-2">
+                        <h4 className="font-medium text-xs text-muted-foreground mb-1">Old Testament</h4>
+                        {oldTestamentBooks.map(book => (
+                          <SelectItem key={book.id} value={book.id}>
+                            {book.name}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
+                    {newTestamentBooks.length > 0 && (
+                      <div className="p-2 border-t">
+                        <h4 className="font-medium text-xs text-muted-foreground mb-1">New Testament</h4>
+                        {newTestamentBooks.map(book => (
+                          <SelectItem key={book.id} value={book.id}>
+                            {book.name}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="min-w-[100px]">
-                  <label className="text-xs font-medium mb-1 block">Chapter</label>
-                  <Select
-                    value={selectedChapter.toString()}
-                    onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}
-                    disabled={!selectedBook}
-                  >
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedBook && Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map(chapter => (
-                        <SelectItem key={chapter} value={chapter.toString()}>
-                          Chapter {chapter}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Chapter Selection */}
+              <div>
+                <label className="text-xs font-medium mb-2 block">Chapter</label>
+                <Select
+                  value={selectedChapter.toString()}
+                  onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}
+                  disabled={!selectedBook}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select chapter" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {selectedBook && Array.from({ length: selectedBook.chaptersCount || selectedBook.chapters.length || 1 }, (_, i) => i + 1).map(chapter => (
+                      <SelectItem key={chapter} value={chapter.toString()}>
+                        Chapter {chapter}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Chapter Navigation */}
               {selectedBook && (
-                <div className="flex items-center justify-between">
+                <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigateChapter('prev')}
                     disabled={selectedChapter <= 1}
-                    className="h-8"
+                    className="flex-1"
                   >
-                    <ChevronLeft className="h-3 w-3 mr-1" />
+                    <ChevronLeft className="h-4 w-4 mr-1" />
                     Previous
                   </Button>
-                  
-                  <div className="text-center">
-                    <h2 className="text-lg font-semibold">
-                      {selectedBook.name} {selectedChapter}
-                    </h2>
-                    <Badge variant="secondary" className="text-xs">
-                      {currentTranslation?.abbreviation || selectedTranslation}
-                    </Badge>
-                  </div>
-                  
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigateChapter('next')}
-                    disabled={selectedChapter >= selectedBook.chapters}
-                    className="h-8"
+                    disabled={selectedChapter >= (selectedBook.chaptersCount || selectedBook.chapters.length || 1)}
+                    className="flex-1"
                   >
                     Next
-                    <ChevronRight className="h-3 w-3 ml-1" />
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
               )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Chapter Content with Enhanced Features */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">
+        {/* Main Content Area - Full Width */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Chapter Header */}
+          <div className="bg-white border-b p-4 flex-shrink-0">
+            <div className="max-w-full">
+              <h2 className="text-xl lg:text-2xl font-bold text-primary">
                 {selectedBook ? (
                   <>
                     {selectedBook.name} Chapter {selectedChapter}
                     {currentTranslation && (
-                      <span className="text-sm font-normal text-muted-foreground ml-2">
-                        ({currentTranslation.abbreviation})
+                      <span className="text-base font-normal text-muted-foreground ml-3">
+                        ({currentTranslation.abbreviation} - {currentTranslation.name})
                       </span>
                     )}
                   </>
@@ -502,24 +543,44 @@ export default function Bible() {
                   <>
                     Search Results for "{searchQuery}"
                     {currentTranslation && (
-                      <span className="text-sm font-normal text-muted-foreground ml-2">
+                      <span className="text-base font-normal text-muted-foreground ml-3">
                         ({currentTranslation.abbreviation})
                       </span>
                     )}
                   </>
                 ) : (
-                  "Select a book and chapter"
+                  "Select a book and chapter to begin reading"
                 )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h2>
+              
+              {/* Verse Count & Info */}
+              {verses.length > 0 && (
+                <div className="flex items-center gap-4 mt-2">
+                  <Badge variant="secondary" className="text-sm">
+                    {verses.length} verses
+                  </Badge>
+                  {currentTranslation && (
+                    <Badge variant="outline" className="text-sm">
+                      {currentTranslation.language}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Verses Content - Scrollable Full Width */}
+                     <div className="bible-content-area bible-scrollable flex-1 overflow-auto">
+             <div className="max-w-full p-4 lg:p-6">
               {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  <span className="ml-2">Loading verses...</span>
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-lg text-muted-foreground">Loading verses...</p>
+                  </div>
                 </div>
               ) : verses.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {verses.map((verse) => {
                     const verseKey = verse.id;
                     const isBookmarked = bookmarks.has(verseKey);
@@ -528,30 +589,42 @@ export default function Bible() {
                     return (
                       <div
                         key={verseKey}
-                        className={`group p-3 rounded-lg border hover:shadow-sm ${
+                        className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
                           highlight ? `${getHighlightClasses(verseKey)} border-2` : 
-                          isBookmarked ? 'border-primary bg-primary/5' : 'border-transparent hover:border-border hover:bg-muted/30'
+                          isBookmarked ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/30 hover:bg-muted/20'
                         }`}
                       >
-                        <div className="flex items-start gap-3">
-                          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full min-w-[1.5rem] text-center flex-shrink-0">
+                        <div className="flex items-start gap-4">
+                          <span className="text-sm font-bold text-primary bg-primary/10 px-3 py-2 rounded-full min-w-[2.5rem] text-center flex-shrink-0">
                             {verse.verse}
                           </span>
-                          <p className="flex-1 leading-relaxed text-sm">
-                            {verse.text}
-                          </p>
+                          <div className="flex-1">
+                                                         <p className="bible-verse-text text-base lg:text-lg leading-relaxed text-foreground font-medium">
+                               {verse.text}
+                             </p>
+                            
+                            {/* Show reference for search results */}
+                            {!selectedBook && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className="text-sm">
+                                  {verse.reference}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
                           
                           {/* Enhanced Action Buttons */}
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                     <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             {/* Bookmark */}
                             {user && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => toggleBookmark(verse)}
-                                className={`h-6 w-6 p-0 ${isBookmarked ? 'text-primary' : ''}`}
+                                className={`h-8 w-8 p-0 ${isBookmarked ? 'text-primary bg-primary/10' : ''}`}
+                                title="Bookmark verse"
                               >
-                                <Bookmark className={`h-3 w-3 ${isBookmarked ? 'fill-current' : ''}`} />
+                                <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                               </Button>
                             )}
                             
@@ -578,9 +651,10 @@ export default function Bible() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => openNoteModal(verse)}
-                              className="h-6 w-6 p-0"
+                              className="h-8 w-8 p-0"
+                              title="Add note"
                             >
-                              <StickyNote className="h-3 w-3" />
+                              <StickyNote className="h-4 w-4" />
                             </Button>
                             
                             {/* AI Analysis */}
@@ -588,46 +662,39 @@ export default function Bible() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => openAiModal(verse)}
-                              className="h-6 w-6 p-0"
+                              className="h-8 w-8 p-0"
+                              title="AI analysis"
                             >
-                              <Brain className="h-3 w-3" />
+                              <Brain className="h-4 w-4" />
                             </Button>
                             
                             {/* Share */}
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="h-6 w-6 p-0"
+                              className="h-8 w-8 p-0"
                               onClick={() => {
                                 navigator.clipboard.writeText(`${verse.reference} - ${verse.text}`);
                                 toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
                               }}
+                              title="Copy verse"
                             >
-                              <Share className="h-3 w-3" />
+                              <Share className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                         
-                        {/* Show reference for search results */}
-                        {!selectedBook && (
-                          <div className="ml-8 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {verse.reference}
-                            </Badge>
-                          </div>
-                        )}
-                        
                         {/* Highlight/Favorite Indicators */}
                         {(highlight || isBookmarked) && (
-                          <div className="flex items-center gap-1 mt-2 ml-8">
+                          <div className="flex items-center gap-2 mt-3">
                             {highlight && (
-                              <Badge variant="outline" className="text-xs">
-                                {highlight.category}
+                              <Badge variant="secondary" className="text-xs">
+                                Highlighted
                               </Badge>
                             )}
                             {isBookmarked && (
                               <Badge variant="outline" className="text-xs">
-                                <Bookmark className="h-2 w-2 mr-1 fill-current" />
+                                <Star className="h-3 w-3 mr-1 fill-current" />
                                 Bookmarked
                               </Badge>
                             )}
@@ -638,23 +705,23 @@ export default function Bible() {
                   })}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Book className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  {searchQuery ? (
-                    <>
-                      <p>No verses found for "{searchQuery}"</p>
-                      <p className="text-xs">Try searching with different keywords or phrases.</p>
-                    </>
-                  ) : (
-                    <>
-                      <p>No verses available for this chapter.</p>
-                      <p className="text-xs">Try selecting a different translation or chapter.</p>
-                    </>
-                  )}
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center max-w-md">
+                    <BookOpen className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
+                    <h3 className="text-xl font-semibold text-foreground mb-3">
+                      {selectedBook ? "No verses available for this chapter" : "Select a book and chapter"}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {selectedBook 
+                        ? "Try selecting a different translation or chapter." 
+                        : "Choose a book from the sidebar to start reading Scripture, or use the search function to find specific verses."
+                      }
+                    </p>
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 

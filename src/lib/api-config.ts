@@ -1,12 +1,12 @@
-// ✦ Bible Aura - DeepSeek R1 Reasoning Model Configuration
+// ✦ Bible Aura - DeepSeek Direct API Configuration
 // Centralized API configuration for consistent usage across the application
 
 export const DEEPSEEK_CONFIG = {
-  // DeepSeek R1 Reasoning Model - Primary AI for all biblical insights
-  apiKey: "sk-50e2e8a01cc440c3bf61641eee6aa2a6",
-  model: "deepseek/deepseek-r1",
-  name: "DeepSeek R1 Reasoning Model",
-  baseURL: "https://openrouter.ai/api/v1",
+  // DeepSeek Direct API - Primary AI for all biblical insights
+  apiKey: "sk-50e2e8a01cc440c3bf61641eee6aa2a6", // Your DeepSeek API key
+  model: "deepseek-chat", // DeepSeek's chat model
+  name: "DeepSeek AI",
+  baseURL: "https://api.deepseek.com/v1", // DeepSeek's direct API
   
   // Default parameters for biblical content
   defaultParams: {
@@ -16,8 +16,7 @@ export const DEEPSEEK_CONFIG = {
 
   // Request headers
   headers: {
-    "HTTP-Referer": "https://bible-aura.app",
-    "X-Title": "Bible Aura - AI Biblical Insights",
+    "User-Agent": "Bible-Aura/1.0",
     "Content-Type": "application/json"
   }
 };

@@ -10,8 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/rateLimiter';
-import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT, createBiblicalAIRequest, createAPIFetch } from '@/lib/api-config';
-import OpenAI from 'openai';
+import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT } from '@/lib/api-config';
 
 interface Message {
   id: string;
@@ -41,44 +40,90 @@ const BIBLICAL_PROMPTS = [
   "Find Bible verses for encouragement"
 ];
 
-// Function to call DeepSeek R1 API
+// Function to call DeepSeek Direct API
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
   try {
-    const openai = new OpenAI({
-      baseURL: DEEPSEEK_CONFIG.baseURL,
-      apiKey: DEEPSEEK_CONFIG.apiKey,
-      defaultHeaders: {
-        "HTTP-Referer": "https://bible-aura.app",
-        "X-Title": "Bible Aura - AI Biblical Insights",
-      },
-    });
-
-    const completion = await openai.chat.completions.create({
+    console.log('🤖 Calling DeepSeek Direct API with config:', {
       model: DEEPSEEK_CONFIG.model,
-      messages: [
-        {
-          role: "system",
-          content: BIBLICAL_SYSTEM_PROMPT
-        },
-        ...messages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }))
-      ],
-      temperature: 0.7,
-      max_tokens: 2000
+      baseURL: DEEPSEEK_CONFIG.baseURL,
+      hasApiKey: !!DEEPSEEK_CONFIG.apiKey,
+      messageCount: messages.length
     });
 
-    const response = completion.choices[0]?.message?.content;
-    if (response) {
-      return { content: response, model: DEEPSEEK_CONFIG.name };
-    } else {
-      throw new Error('No response from DeepSeek R1 model');
+    // Use direct fetch instead of OpenAI client for DeepSeek API
+    const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${DEEPSEEK_CONFIG.apiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Bible-Aura/1.0'
+      },
+      body: JSON.stringify({
+        model: DEEPSEEK_CONFIG.model,
+        messages: [
+          {
+            role: "system",
+            content: BIBLICAL_SYSTEM_PROMPT
+          },
+          ...messages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`DeepSeek API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
     }
-  } catch (error) {
-    console.error(`Error with ${DEEPSEEK_CONFIG.name}:`, error);
-    throw error;
+
+    const completion = await response.json();
+
+    console.log('✅ DeepSeek AI Response received:', {
+      choices: completion.choices?.length,
+      model: completion.model,
+      usage: completion.usage
+    });
+
+    const aiResponse = completion.choices?.[0]?.message?.content;
+    if (aiResponse) {
+      return { content: aiResponse, model: DEEPSEEK_CONFIG.name };
+    } else {
+      throw new Error('No response from DeepSeek model');
+    }
+  } catch (error: any) {
+    console.error(`❌ Error with ${DEEPSEEK_CONFIG.name}:`, {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      type: error.type
+    });
+    
+    // Provide specific error messages based on error type
+    if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+      throw new Error('DeepSeek API authentication failed. Please check your API key.');
+    } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+      throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+    } else if (error.message.includes('402') || error.message.includes('insufficient')) {
+      throw new Error('Insufficient credits. Please check your DeepSeek account.');
+    } else if (error.code === 'NETWORK_ERROR' || error.message.includes('fetch')) {
+      throw new Error('Network connection failed. Please check your internet connection.');
+    } else {
+      throw new Error(`DeepSeek AI service error: ${error.message || 'Unknown error occurred'}`);
+    }
   }
+};
+
+// Helper function to limit messages to last 10
+const limitMessagesToLast10 = (messages: Message[]): Message[] => {
+  if (messages.length <= 10) {
+    return messages;
+  }
+  // Keep the last 10 messages
+  return messages.slice(-10);
 };
 
 export default function Chat() {
@@ -218,13 +263,17 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Prepare conversation history for AI
-      const conversationHistory = [...messages, userMessage].map(msg => ({
+      // Prepare conversation history for AI (limit to last 10 for optimal performance)
+      const fullHistory = [...messages, userMessage];
+      const limitedHistory = limitMessagesToLast10(fullHistory);
+      const conversationHistory = limitedHistory.map(msg => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content
       }));
 
-      // Call biblical AI with load balancing
+      console.log(`🧠 Sending ${conversationHistory.length} messages to AI (limited from ${fullHistory.length} total)`);
+
+      // Call biblical AI with optimized conversation history
       const aiResponse = await callBiblicalAI(conversationHistory);
 
       const aiMessage: Message = {
@@ -238,17 +287,30 @@ export default function Chat() {
       const updatedMessages = [...messages, userMessage, aiMessage];
       setMessages(updatedMessages);
 
-      // Update conversation in database
+      // Limit to last 10 messages for database storage (saves space and improves performance)
+      const limitedMessages = limitMessagesToLast10(updatedMessages);
+
+      // Update conversation in database with only last 10 messages
       const { error } = await supabase
         .from('ai_conversations')
         .update({
-          messages: updatedMessages as any,
+          messages: limitedMessages as any,
           title: conversation.title === 'New Biblical Conversation' 
             ? userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : '')
             : conversation.title,
           updated_at: new Date().toISOString()
         })
         .eq('id', conversation.id);
+
+      console.log(`💾 Saved ${limitedMessages.length} messages to database (limited from ${updatedMessages.length} total)`);
+
+      // Notify user about message limiting for long conversations
+      if (updatedMessages.length > 10 && updatedMessages.length % 5 === 0) {
+        toast({
+          title: "📚 Conversation History",
+          description: `Keeping last 10 messages for optimal performance. Your current session shows all ${updatedMessages.length} messages.`,
+        });
+      }
 
       if (error) throw error;
 

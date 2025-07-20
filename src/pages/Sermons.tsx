@@ -28,10 +28,8 @@ import {
 // Rich Text Editor (will be dynamically imported)
 const ReactQuill = React.lazy(() => import('react-quill'));
 
-// Enhanced Sermon Generation with DeepSeek R1 Reasoning Model
-const DEEPSEEK_API_KEY = "sk-50e2e8a01cc440c3bf61641eee6aa2a6";
-const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEEPSEEK_MODEL = "deepseek/deepseek-r1";
+// Enhanced Sermon Generation with DeepSeek Direct API
+import { DEEPSEEK_CONFIG } from '@/lib/api-config';
 
 // Christian theology database
 const CHRISTIAN_THEOLOGICAL_KNOWLEDGE = {
@@ -184,19 +182,18 @@ Format your response as JSON with these keys:
 - additionalScriptures: Array of relevant verse references`;
 };
 
-// Call DeepSeek R1 API for sermon generation
+// Call DeepSeek Direct API for sermon generation
 const callSermonGenerationAPI = async (prompt: string): Promise<string> => {
   try {
-    const response = await fetch(OPENROUTER_API_URL, {
+    const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/chat/completions`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-        "HTTP-Referer": "https://bible-aura.app",
-        "X-Title": "Bible Aura - Sermon Generator",
+        "Authorization": `Bearer ${DEEPSEEK_CONFIG.apiKey}`,
+        "User-Agent": "Bible-Aura/1.0",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        "model": DEEPSEEK_MODEL,
+        "model": DEEPSEEK_CONFIG.model,
         "messages": [
           {
             "role": "system",
@@ -659,16 +656,42 @@ const Sermons = () => {
     }
   };
 
-  const searchBibleVerses = async () => {
+  const searchBibleVerses = async (scripture: string, topic: string): Promise<string[]> => {
+    try {
+      const verses: string[] = [];
+      
+      // Search for topic-related verses using the corrected method
+      if (topic) {
+        const searchResults = await bibleApi.searchBibleVerses('de4e12af7f28f599-02', topic, 5); // Use KJV bible ID
+        searchResults.forEach(verse => {
+          verses.push(`"${verse.text}" (${verse.reference})`);
+        });
+      }
+      
+      // If specific scripture reference is provided, try to find it
+      if (scripture) {
+        const searchResults = await bibleApi.searchBibleVerses('de4e12af7f28f599-02', scripture, 3);
+        searchResults.forEach(verse => {
+          verses.push(`"${verse.text}" (${verse.reference})`);
+        });
+      }
+      
+      return verses.slice(0, 8); // Limit to 8 most relevant verses
+    } catch (error) {
+      console.error('Error searching verses:', error);
+      return [];
+    }
+  };
+
+  const searchVerseResults = async () => {
     if (!verseQuery.trim()) return;
 
     try {
       // Use real Bible API for verse search
-      const bibleApi = (await import('@/lib/bible-api')).default;
-      const results = await bibleApi.searchVerses(verseQuery, selectedTranslation || 'kjv', 10);
+      const searchResults = await bibleApi.searchBibleVerses('de4e12af7f28f599-02', verseQuery, 10);
       
       // Convert to expected format
-      const verses: BibleVerse[] = results.map(verse => ({
+      const verses: BibleVerse[] = searchResults.map(verse => ({
         reference: verse.reference,
         text: verse.text,
         translation: selectedTranslation || 'kjv'

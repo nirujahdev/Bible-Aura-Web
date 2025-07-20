@@ -25,6 +25,9 @@ export interface BibleBook {
   name: string;
   nameLong: string;
   chapters: BibleChapterSummary[];
+  testament?: 'Old' | 'New'; // Add testament property
+  chaptersCount?: number; // Add chapter count for easier access
+  category?: string; // Add category property
 }
 
 export interface BibleChapterSummary {
@@ -472,7 +475,7 @@ class BibleApiService {
     if (cached) return cached;
 
     try {
-      const response = await this.makeRequest<{ data: BibleVerse }>(`/bibles/${bibleId}/verses/${verseId}`);
+      const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/verses/${verseId}`);
       const verse = response.data;
       
       if (verse) {
@@ -483,7 +486,7 @@ class BibleApiService {
           bookId: verse.bookId || verseId.split('.')[0],
           chapter: parseInt(verseId.split('.')[1]) || 1,
           verse: parseInt(verseId.split('.')[2]) || 1,
-          text: this.cleanVerseText(verse.content || ''),
+          text: this.cleanVerseText(verse.content || verse.text || ''),
           reference: verse.reference || verseId,
           bibleId
         };
@@ -522,6 +525,36 @@ class BibleApiService {
         verseCount: 0,
         verses: []
       };
+    }
+  }
+
+  // Search verses and return as BibleVerse array
+  async searchBibleVerses(bibleId: string, query: string, limit = 20, offset = 0): Promise<BibleVerse[]> {
+    try {
+      const searchResult = await this.searchVerses(bibleId, query, limit, offset);
+      
+      // Convert search result verses to BibleVerse format
+      const verses: BibleVerse[] = searchResult.verses.map(verse => {
+        const chapterVerse = verse.id.split('.').slice(-1)[0] || '1'; // Extract verse number
+        const chapter = verse.chapterId ? parseInt(verse.chapterId.split('.')[1]) || 1 : 1;
+        
+        return {
+          id: verse.id,
+          orgId: verse.orgId,
+          book: verse.bookId,
+          bookId: verse.bookId,
+          chapter: chapter,
+          verse: parseInt(chapterVerse) || 1,
+          text: verse.text,
+          reference: verse.reference,
+          bibleId: bibleId
+        };
+      });
+      
+      return verses;
+    } catch (error) {
+      console.error(`Error searching Bible verses:`, error);
+      return [];
     }
   }
 
@@ -640,6 +673,68 @@ class BibleApiService {
       size: this.cache.size,
       keys: Array.from(this.cache.keys())
     };
+  }
+
+  // Public wrapper methods for easier usage
+  async fetchChapter(bookId: string, chapter: number, bibleId: string): Promise<BibleVerse[]> {
+    try {
+      // Construct chapter ID based on API format
+      const chapterId = `${bookId}.${chapter}`;
+      const verses = await this.getVerses(bibleId, chapterId);
+      return verses;
+    } catch (error) {
+      console.error(`Error fetching chapter ${chapter} of book ${bookId}:`, error);
+      return [];
+    }
+  }
+
+  // Public wrapper for getBooks with better error handling
+  async fetchBooks(bibleId: string): Promise<BibleBook[]> {
+    try {
+      return await this.getBooks(bibleId);
+    } catch (error) {
+      console.error(`Error fetching books for bible ${bibleId}:`, error);
+      // Return static book list as fallback
+      return BIBLE_BOOKS.map(book => ({
+        id: book.id,
+        bibleId: bibleId,
+        abbreviation: book.name,
+        name: book.name,
+        nameLong: book.nameLong || book.name,
+        chapters: [] // Will be populated when needed
+      }));
+    }
+  }
+
+  // Get static book list for immediate loading with proper properties
+  getStaticBooks(bibleId: string): BibleBook[] {
+    return BIBLE_BOOKS.map(book => ({
+      id: book.id,
+      bibleId: bibleId,
+      abbreviation: book.name,
+      name: book.name,
+      nameLong: book.nameLong || book.name,
+      chapters: [], // Will be populated when needed
+      testament: book.testament as 'Old' | 'New',
+      chaptersCount: this.getChapterCount(book.id),
+      category: book.category
+    }));
+  }
+
+  // Get chapter count for a book (static data)
+  private getChapterCount(bookId: string): number {
+    const chapterCounts: Record<string, number> = {
+      'GEN': 50, 'EXO': 40, 'LEV': 27, 'NUM': 36, 'DEU': 34, 'JOS': 24, 'JDG': 21, 'RUT': 4,
+      '1SA': 31, '2SA': 24, '1KI': 22, '2KI': 25, '1CH': 29, '2CH': 36, 'EZR': 10, 'NEH': 13,
+      'EST': 10, 'JOB': 42, 'PSA': 150, 'PRO': 31, 'ECC': 12, 'SNG': 8, 'ISA': 66, 'JER': 52,
+      'LAM': 5, 'EZK': 48, 'DAN': 12, 'HOS': 14, 'JOL': 3, 'AMO': 9, 'OBA': 1, 'JON': 4,
+      'MIC': 7, 'NAM': 3, 'HAB': 3, 'ZEP': 3, 'HAG': 2, 'ZEC': 14, 'MAL': 4,
+      'MAT': 28, 'MRK': 16, 'LUK': 24, 'JHN': 21, 'ACT': 28, 'ROM': 16, '1CO': 16, '2CO': 13,
+      'GAL': 6, 'EPH': 6, 'PHP': 4, 'COL': 4, '1TH': 5, '2TH': 3, '1TI': 6, '2TI': 4,
+      'TIT': 3, 'PHM': 1, 'HEB': 13, 'JAS': 5, '1PE': 5, '2PE': 3, '1JN': 5, '2JN': 1,
+      '3JN': 1, 'JUD': 1, 'REV': 22
+    };
+    return chapterCounts[bookId] || 1;
   }
 }
 
