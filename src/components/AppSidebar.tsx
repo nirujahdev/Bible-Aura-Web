@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useAuth } from "@/hooks/useAuth"
-import { useSidebar } from "@/hooks/useSidebar"
+import { useSidebar } from "@/components/ui/sidebar"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { Database } from "@/integrations/supabase/types"
@@ -399,7 +399,8 @@ function MobileNavigation({ navigation, user, profile, signOut }: { navigation: 
 export function AppSidebar() {
   const location = useLocation()
   const { user, profile, signOut } = useAuth()
-  const { isExpanded, toggle, expand, collapse } = useSidebar()
+  const { state, toggleSidebar, setOpen } = useSidebar()
+  const isExpanded = state === "expanded"
   const isMobile = useIsMobile()
   
   // Choose navigation based on authentication status
@@ -408,7 +409,7 @@ export function AppSidebar() {
   // Handle hover to expand sidebar
   const handleMouseEnter = () => {
     if (!isExpanded) {
-      expand();
+      setOpen(true);
     }
   };
 
@@ -454,7 +455,7 @@ export function AppSidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={toggle}
+                          onClick={toggleSidebar}
             className="h-9 w-9 p-0 hover:bg-orange-100 flex-shrink-0 border border-orange-200/50"
           >
             {isExpanded ? <X className="h-5 w-5 text-orange-600" /> : <Menu className="h-5 w-5 text-orange-600" />}
