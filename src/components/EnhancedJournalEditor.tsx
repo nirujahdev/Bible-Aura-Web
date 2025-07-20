@@ -274,13 +274,13 @@ export function EnhancedJournalEditor({
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer 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',
+          'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
           'HTTP-Referer': 'https://bible-aura.app',
           'X-Title': '✦Bible Aura - Journal AI',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'moonshotai/kimi-k2:free',
+          model: 'deepseek/deepseek-r1',
           messages: [
             {
               role: 'system',

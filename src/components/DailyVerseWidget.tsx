@@ -20,7 +20,7 @@ import {
   PenTool
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import bibleApi from '@/lib/bible-api';
+import { bibleApi } from '@/lib/bible-api';
 
 interface DailyVerse {
   id: string;
@@ -51,14 +51,14 @@ const generateDailyVerse = async (): Promise<VerseOfDay> => {
   const todayTheme = themes[new Date().getDate() % themes.length];
   
   try {
-    // First, get a random verse from Bible API
-    const books = await bibleApi.getBooks('kjv');
-    const randomBook = books[Math.floor(Math.random() * books.length)];
-    const randomChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
-    const verses = await bibleApi.fetchChapter(randomBook.id, randomChapter, 'kjv');
-    const randomVerse = verses[Math.floor(Math.random() * verses.length)];
+    // Get a random verse from the API.Bible service
+    const randomVerse = await bibleApi.getRandomVerse('de4e12af7f28f599-02'); // KJV
     
-    // Generate AI context using our multi-model system
+    if (!randomVerse) {
+      throw new Error('Failed to fetch verse from API');
+    }
+
+    // Generate AI context using DeepSeek R1
     const contextPrompt = `Provide a thoughtful, encouraging daily devotional context for this Bible verse, focusing on the theme of "${todayTheme}":
 
 Verse: "${randomVerse.text}" - ${randomVerse.reference}
@@ -71,17 +71,17 @@ Write a 2-3 sentence reflection that:
 
 Keep it personal, uplifting, and actionable. Base everything strictly on biblical truth.`;
 
-    // Use our existing OpenAI setup from Chat.tsx
+    // Use DeepSeek R1 for AI context
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer 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',
+        'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
         'HTTP-Referer': 'https://bible-aura.app',
         'X-Title': '✦Bible Aura - Daily Verse',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'moonshotai/kimi-k2:free',
+        model: 'deepseek/deepseek-r1',
         messages: [
           {
             role: 'system',
@@ -114,23 +114,13 @@ Keep it personal, uplifting, and actionable. Base everything strictly on biblica
   } catch (error) {
     console.error('Error generating daily verse:', error);
     
-    // Fallback verses for different themes
-    const fallbackVerses = {
-      'Faith and Trust': {
-        text: 'Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.',
-        reference: 'Proverbs 3:5-6',
-        context: 'When life feels uncertain, God calls us to trust Him completely. Today, surrender your worries and lean into His perfect wisdom and timing.',
-        theme: 'Faith and Trust'
-      },
-      'Love and Compassion': {
-        text: 'And now these three remain: faith, hope and love. But the greatest of these is love.',
-        reference: '1 Corinthians 13:13',
-        context: 'Love is the greatest gift we can give and receive. Let God\'s love flow through you today in every interaction and relationship.',
-        theme: 'Love and Compassion'
-      }
+    // Fallback to a well-known verse
+    return {
+      text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
+      reference: "Proverbs 3:5-6",
+      context: `God calls us to trust Him completely. Today, surrender your worries and lean into His perfect wisdom and timing. ${todayTheme} comes through trusting in His plan for your life.`,
+      theme: todayTheme
     };
-    
-    return fallbackVerses[todayTheme as keyof typeof fallbackVerses] || fallbackVerses['Faith and Trust'];
   }
 };
 
@@ -288,18 +278,21 @@ export function DailyVerseWidget() {
 
   if (loading) {
     return (
-      <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-orange-800 flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Daily Verse
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 animate-pulse">
-            <div className="h-4 bg-orange-200 rounded w-3/4"></div>
-            <div className="h-3 bg-orange-100 rounded w-1/2"></div>
-            <div className="h-16 bg-orange-100 rounded"></div>
+      <Card className="overflow-hidden bg-gradient-to-br from-orange-50 via-white to-amber-50 border-0 shadow-lg">
+        <CardContent className="p-8">
+          <div className="space-y-6 animate-pulse">
+            <div className="flex justify-between items-center">
+              <div className="h-8 bg-orange-200 rounded-lg w-48"></div>
+              <div className="h-6 bg-orange-100 rounded-full w-20"></div>
+            </div>
+            <div className="h-6 bg-orange-200 rounded-lg w-32"></div>
+            <div className="space-y-3">
+              <div className="h-5 bg-gray-200 rounded w-full"></div>
+              <div className="h-5 bg-gray-200 rounded w-5/6"></div>
+              <div className="h-5 bg-gray-200 rounded w-4/6"></div>
+            </div>
+            <div className="h-16 bg-gray-100 rounded-xl"></div>
+            <div className="h-12 bg-orange-200 rounded-xl"></div>
           </div>
         </CardContent>
       </Card>
@@ -309,100 +302,118 @@ export function DailyVerseWidget() {
   if (!dailyVerse) return null;
 
   return (
-    <Card className="enhanced-card border-orange-200/60 bg-gradient-to-br from-orange-50/80 to-amber-50/80 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02]">
-      <CardHeader className="pb-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-orange-800 flex items-center gap-3 text-xl font-bold">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <BookOpen className="h-6 w-6 text-orange-600" />
+    <Card className="overflow-hidden bg-gradient-to-br from-orange-50 via-white to-amber-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Header Section */}
+      <div className="relative px-8 pt-8 pb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl shadow-md">
+              <BookOpen className="h-6 w-6 text-white" />
             </div>
-            <span>Today's Verse</span>
-            <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" />
-          </CardTitle>
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                Today's Verse
+                <Sparkles className="h-5 w-5 text-amber-500" />
+              </h3>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-orange-600 border-orange-300 bg-white/60 backdrop-blur-sm px-3 py-1">
-              <Calendar className="h-3 w-3 mr-2" />
-              {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </Badge>
+            <div className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-medium border border-orange-200">
+              📅 {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </div>
           </div>
         </div>
-        <Badge className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 w-fit px-4 py-2 rounded-full font-medium">
-          🎯 {dailyVerse.theme}
-        </Badge>
-      </CardHeader>
 
-      <CardContent className="space-y-6 pb-6">
-        {/* Bible Verse */}
-        <div className="relative bg-gradient-to-r from-white/80 to-orange-50/80 rounded-xl p-6 border border-orange-100/50">
-          <Quote className="h-8 w-8 text-orange-300 absolute -top-2 -left-2 bg-white rounded-full p-1 shadow-md" />
-          <blockquote className="text-gray-800 font-medium leading-relaxed pl-4 pr-2 text-lg">
-            "{dailyVerse.text}"
-          </blockquote>
-          <cite className="text-orange-600 font-semibold text-base mt-4 block pl-4 border-l-4 border-orange-300">
-            — {dailyVerse.reference}
-          </cite>
+        {/* Theme Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded-full text-sm font-medium border border-purple-200 shadow-sm">
+          🎯 {dailyVerse.theme}
+        </div>
+      </div>
+
+      <CardContent className="px-8 pb-8 space-y-8">
+        {/* Bible Verse Section */}
+        <div className="relative">
+          {/* Large Quote Mark */}
+          <div className="absolute -top-4 -left-2 text-6xl text-orange-200 font-serif">"</div>
+          
+          <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-100 shadow-sm">
+            <blockquote className="text-xl leading-relaxed text-gray-800 font-medium mb-6 pl-6">
+              {dailyVerse.text}
+            </blockquote>
+            
+            <div className="flex items-center gap-3 pl-6">
+              <div className="w-1 h-8 bg-gradient-to-b from-orange-400 to-amber-500 rounded-full"></div>
+              <cite className="text-orange-600 font-semibold text-lg">
+                {dailyVerse.reference}
+              </cite>
+            </div>
+          </div>
         </div>
 
-        <Separator className="bg-gradient-to-r from-transparent via-orange-200 to-transparent h-px" />
-
-        {/* AI Context */}
-        <div className="bg-gradient-to-br from-white/80 to-blue-50/40 rounded-xl p-5 border border-blue-100/50 shadow-sm">
+        {/* AI Insights Section */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Sparkles className="h-5 w-5 text-blue-600" />
+            <div className="p-2.5 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <span className="text-base font-semibold text-blue-700">AI Spiritual Insights</span>
+            <h4 className="text-lg font-semibold text-blue-800">AI Spiritual Insights</h4>
           </div>
           <p className="text-gray-700 leading-relaxed text-base">
             {dailyVerse.context}
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="btn-group pt-2">
+        {/* Primary Action Button */}
+        <div className="space-y-4">
           <Button
             onClick={addToJournal}
             size="lg"
-            className="gradient-primary hover:shadow-lg text-white flex-1 font-semibold py-3 rounded-xl transition-all duration-300 hover:scale-105"
+            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
           >
-            <PenTool className="h-5 w-5 mr-2" />
+            <PenTool className="h-5 w-5 mr-3" />
             Add to Journal
           </Button>
-          
-          <Button
-            onClick={copyVerse}
-            variant="outline"
-            size="lg"
-            className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:shadow-md px-4 py-3 rounded-xl transition-all duration-300"
-          >
-            <Copy className="h-5 w-5" />
-          </Button>
-          
-          <Button
-            onClick={refreshVerse}
-            variant="outline"
-            size="lg"
-            className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:shadow-md px-4 py-3 rounded-xl transition-all duration-300"
-            disabled={loading}
-          >
-            <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-          </Button>
+
+          {/* Secondary Actions */}
+          <div className="flex gap-3">
+            <Button
+              onClick={copyVerse}
+              variant="outline"
+              size="lg"
+              className="flex-1 border-gray-200 hover:bg-gray-50 py-3 rounded-xl transition-all duration-200"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copy
+            </Button>
+            
+            <Button
+              onClick={refreshVerse}
+              variant="outline"
+              size="lg"
+              className="flex-1 border-gray-200 hover:bg-gray-50 py-3 rounded-xl transition-all duration-200"
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
-        {/* Additional Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-orange-100">
+        {/* Bottom Navigation */}
+        <div className="flex items-center justify-between pt-6 border-t border-gray-100">
           <Link 
             to="/bible" 
-            className="flex items-center gap-2 text-orange-600 hover:text-orange-800 font-medium transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-orange-50"
+            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium transition-colors duration-200 px-4 py-2.5 rounded-xl hover:bg-orange-50 group"
           >
-            <BookOpen className="h-4 w-4" />
+            <BookOpen className="h-4 w-4 group-hover:scale-110 transition-transform" />
             Read More Scripture
           </Link>
+          
           <Link 
             to="/chat" 
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-blue-50"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 px-4 py-2.5 rounded-xl hover:bg-blue-50 group"
           >
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform" />
             Ask AI About This Verse
           </Link>
         </div>

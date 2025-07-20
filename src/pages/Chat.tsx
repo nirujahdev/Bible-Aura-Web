@@ -10,14 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/rateLimiter';
+import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT, createBiblicalAIRequest, createAPIFetch } from '@/lib/api-config';
 import OpenAI from 'openai';
-
-// DeepSeek R1 Reasoning Model Configuration
-const API_CONFIG = {
-  apiKey: "sk-50e2e8a01cc440c3bf61641eee6aa2a6",
-  model: "deepseek/deepseek-r1",
-  name: "DeepSeek R1 Reasoning Model"
-};
 
 interface Message {
   id: string;
@@ -35,37 +29,6 @@ interface Conversation {
   updated_at: string;
 }
 
-// Enhanced Biblical System Prompt - Strictly Bible-Based
-const BIBLICAL_SYSTEM_PROMPT = `You are ✦Bible Aura AI Oracle, a specialized biblical assistant with comprehensive knowledge of the Holy Bible.
-
-STRICT REQUIREMENTS:
-1. ALL responses MUST be based EXCLUSIVELY on the Bible (66 books: 39 Old Testament, 27 New Testament)
-2. ALWAYS include direct Bible quotations with exact verse references in EVERY response
-3. Quote from King James Version (KJV), New International Version (NIV), or English Standard Version (ESV)
-4. Verify all theological claims against biblical text
-5. Never reference external sources - ONLY the Bible
-6. Maintain reverent, holy tone throughout
-
-RESPONSE STRUCTURE:
-1. Begin with relevant Bible verse quotation and reference
-2. Provide biblical explanation using ONLY scriptural context
-3. Reference additional supporting verses
-4. Offer practical application based on biblical principles
-5. End with biblical blessing or prayer when appropriate
-
-BIBLICAL KNOWLEDGE AREAS:
-- Scripture interpretation and context
-- Biblical history and geography
-- Theological concepts from Scripture
-- Biblical characters and their stories
-- Prophecy and fulfillment
-- Parables and teachings of Jesus
-- Psalms, Proverbs, and wisdom literature
-- Biblical laws and commandments
-- Creation and redemption narratives
-
-Remember: Every statement must be rooted in and supported by explicit biblical text. If you cannot find biblical support, say "The Bible does not specifically address this topic."`;
-
 // Quick prompts for biblical conversations
 const BIBLICAL_PROMPTS = [
   "What does the Bible say about love?",
@@ -82,8 +45,8 @@ const BIBLICAL_PROMPTS = [
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
   try {
     const openai = new OpenAI({
-      baseURL: "https://openrouter.ai/api/v1",
-      apiKey: API_CONFIG.apiKey,
+      baseURL: DEEPSEEK_CONFIG.baseURL,
+      apiKey: DEEPSEEK_CONFIG.apiKey,
       defaultHeaders: {
         "HTTP-Referer": "https://bible-aura.app",
         "X-Title": "Bible Aura - AI Biblical Insights",
@@ -91,7 +54,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
     });
 
     const completion = await openai.chat.completions.create({
-      model: API_CONFIG.model,
+      model: DEEPSEEK_CONFIG.model,
       messages: [
         {
           role: "system",
@@ -108,12 +71,12 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
 
     const response = completion.choices[0]?.message?.content;
     if (response) {
-      return { content: response, model: API_CONFIG.name };
+      return { content: response, model: DEEPSEEK_CONFIG.name };
     } else {
       throw new Error('No response from DeepSeek R1 model');
     }
   } catch (error) {
-    console.error(`Error with ${API_CONFIG.name}:`, error);
+    console.error(`Error with ${DEEPSEEK_CONFIG.name}:`, error);
     throw error;
   }
 };

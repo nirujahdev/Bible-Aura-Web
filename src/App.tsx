@@ -36,6 +36,7 @@ import VerseDemo from "./pages/VerseDemo";
 
 // Component imports
 import { AppSidebar } from "./components/AppSidebar";
+import { BibleApiTest } from "./components/BibleApiTest";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Component to handle layout based on route
@@ -83,6 +84,7 @@ function AppLayout() {
             <Routes>
               <Route path="/header-demo" element={<HeaderDemo />} />
               <Route path="/verse-demo" element={<VerseDemo />} />
+              <Route path="/bible-api-test" element={<BibleApiTest />} />
               
               {/* Protected Routes */}
               <Route path="/dashboard" element={

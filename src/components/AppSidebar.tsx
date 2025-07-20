@@ -22,7 +22,7 @@ interface NavigationItem {
   title: string;
   url: string;
   icon: LucideIcon;
-  description: string;
+  description?: string;
   requiresAuth?: boolean;
 }
 
@@ -31,202 +31,110 @@ interface NavigationGroup {
   items: NavigationItem[];
 }
 
-// Define guest navigation (features available without login)
-const guestNavigation: NavigationGroup[] = [
+// Define all navigation items in a flat structure (no groups)
+const allNavigationItems: NavigationItem[] = [
+  // Core Features
   {
-    title: "Explore",
-    items: [
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-        description: "Your spiritual dashboard"
-      },
-      {
-        title: "Read Bible",
-        url: "/bible",
-        icon: Book,
-        description: "Browse scripture"
-      },
-      {
-        title: "Songs",
-        url: "/songs",
-        icon: Music,
-        description: "Worship music"
-      },
-      {
-        title: "Bible Q&A",
-        url: "/bible-qa",
-        icon: HelpCircle,
-        description: "Questions & answers"
-      },
-      {
-        title: "Characters",
-        url: "/bible-characters",
-        icon: Users,
-        description: "Biblical figures"
-      }
-    ]
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: Home,
   },
   {
-    title: "Advanced Study",
-    items: [
-      {
-        title: "Topical Study",
-        url: "/topical-study",
-        icon: BookOpen,
-        description: "500+ theological topics"
-      },
-      {
-        title: "Sermon Library",
-        url: "/sermon-library", 
-        icon: Mic,
-        description: "Famous preacher sermons"
-      },
-      {
-        title: "Parables Study",
-        url: "/parables-study",
-        icon: TreePine,
-        description: "Interactive parable database"
-      },
-    ]
+    title: "Bible",
+    url: "/bible",
+    icon: Book,
   },
   {
-    title: "Features",
-    items: [
-      {
-        title: "AI Chat",
-        url: "/chat",
-        icon: MessageCircle,
-        description: "Ask questions",
-        requiresAuth: true
-      },
-      {
-        title: "Journal",
-        url: "/journal",
-        icon: FileText,
-        description: "Personal notes",
-        requiresAuth: true
-      },
-      {
-        title: "Sermons",
-        url: "/sermons",
-        icon: Headphones,
-        description: "Listen & learn",
-        requiresAuth: true
-      },
-      {
-        title: "Favorites",
-        url: "/favorites",
-        icon: Heart,
-        description: "Saved content",
-        requiresAuth: true
-      }
-    ]
-  }
-]
+    title: "AI Chat",
+    url: "/chat",
+    icon: MessageCircle,
+  },
+  
+  // Discovery Features
+  {
+    title: "Songs",
+    url: "/songs",
+    icon: Music,
+  },
+  {
+    title: "Bible Q&A",
+    url: "/bible-qa",
+    icon: HelpCircle,
+  },
+  {
+    title: "Characters",
+    url: "/bible-characters",
+    icon: Users,
+  },
+  {
+    title: "Sermons",
+    url: "/sermons",
+    icon: Headphones,
+  },
+  
+  // Advanced Study
+  {
+    title: "Topical Study",
+    url: "/topical-study",
+    icon: BookOpen,
+  },
+  {
+    title: "Sermon Library",
+    url: "/sermon-library", 
+    icon: Mic,
+  },
+  {
+    title: "Parables Study",
+    url: "/parables-study",
+    icon: TreePine,
+  },
+  
+  // Personal Features
+  {
+    title: "Favorites",
+    url: "/favorites",
+    icon: Heart,
+  },
+  {
+    title: "Journal",
+    url: "/journal",
+    icon: FileText,
+  },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: User,
+  },
+];
 
-// Define authenticated user navigation (full features)
-const authenticatedNavigation: NavigationGroup[] = [
+// Guest navigation (limited features)
+const guestNavigationItems: NavigationItem[] = [
   {
-    title: "Core",
-    items: [
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-        description: "Your home"
-      },
-      {
-        title: "Bible",
-        url: "/bible",
-        icon: Book,
-        description: "Read scripture"
-      },
-      {
-        title: "AI Chat",
-        url: "/chat",
-        icon: MessageCircle,
-        description: "Ask questions"
-      },
-    ]
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: Home,
   },
   {
-    title: "Discovery",
-    items: [
-      {
-        title: "Songs",
-        url: "/songs",
-        icon: Music,
-        description: "Worship music"
-      },
-      {
-        title: "Bible Q&A",
-        url: "/bible-qa",
-        icon: HelpCircle,
-        description: "Questions & answers"
-      },
-      {
-        title: "Characters",
-        url: "/bible-characters",
-        icon: Users,
-        description: "Biblical figures"
-      },
-      {
-        title: "Sermons",
-        url: "/sermons",
-        icon: Headphones,
-        description: "Listen & learn"
-      },
-    ]
+    title: "Songs",
+    url: "/songs",
+    icon: Music,
   },
   {
-    title: "Advanced Study",
-    items: [
-      {
-        title: "Topical Study",
-        url: "/topical-study",
-        icon: BookOpen,
-        description: "500+ theological topics"
-      },
-      {
-        title: "Sermon Library",
-        url: "/sermon-library", 
-        icon: Mic,
-        description: "Famous preacher sermons"
-      },
-      {
-        title: "Parables Study",
-        url: "/parables-study",
-        icon: TreePine,
-        description: "Interactive parable database"
-      },
-    ]
+    title: "Bible Q&A",
+    url: "/bible-qa",
+    icon: HelpCircle,
   },
   {
-    title: "Personal",
-    items: [
-      {
-        title: "Favorites",
-        url: "/favorites",
-        icon: Heart,
-        description: "Your saved content"
-      },
-      {
-        title: "Journal",
-        url: "/journal",
-        icon: FileText,
-        description: "Your notes"
-      },
-      {
-        title: "Profile",
-        url: "/profile",
-        icon: User,
-        description: "Your account"
-      },
-    ]
+    title: "Characters",
+    url: "/bible-characters",
+    icon: Users,
   },
-]
+  {
+    title: "Sermons",
+    url: "/sermons",
+    icon: Headphones,
+  },
+];
 
 // Mobile Navigation Component - Simplified
 function MobileNavigation({ navigation, user, profile, signOut }: { navigation: NavigationGroup[], user: SupabaseUser | null, profile: Profile | null, signOut: () => void }) {
@@ -364,39 +272,39 @@ export function AppSidebar() {
   const isMobile = useIsMobile()
   
   // Choose navigation based on authentication status
-  const navigation = user ? authenticatedNavigation : guestNavigation
+  const navigationItems = user ? allNavigationItems : guestNavigationItems
 
   // Return mobile navigation for mobile devices
   if (isMobile) {
-    return <MobileNavigation navigation={navigation} user={user} profile={profile} signOut={signOut} />
+    return <MobileNavigation navigation={[{title: "Menu", items: navigationItems}]} user={user} profile={profile} signOut={signOut} />
   }
 
   return (
     <>
-      {/* Always visible menu trigger when collapsed */}
+      {/* Always visible menu trigger when collapsed - Enhanced visibility */}
       {!isExpanded && (
         <Button
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-50 h-12 w-12 p-0 bg-white border shadow-md hover:bg-gray-50 rounded-lg"
+          className="fixed top-6 left-6 z-[9999] h-14 w-14 p-0 bg-white border-2 border-gray-300 shadow-lg hover:bg-gray-50 hover:border-primary rounded-xl transition-all duration-200"
         >
-          <Menu className="h-6 w-6 text-gray-600" />
+          <Menu className="h-7 w-7 text-gray-700" />
         </Button>
       )}
       
       <Sidebar className="border-r border-gray-200 bg-white">
-      {/* Desktop Header */}
-      <SidebarHeader className="p-4 border-b border-gray-200">
+      {/* Desktop Header with Orange Background */}
+      <SidebarHeader className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-amber-500 text-white">
         <div className="flex items-center gap-3 justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 flex items-center justify-center bg-primary/10 rounded-lg">
-              <span className="text-2xl font-bold text-primary">✦</span>
+          <div className="flex items-center gap-3 flex-1 justify-center">
+            <div className="h-12 w-12 flex items-center justify-center bg-white/20 rounded-lg">
+              <span className="text-2xl font-bold text-white">✦</span>
             </div>
             {isExpanded && (
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">Bible Aura</h1>
-                <p className="text-sm text-gray-600">AI Biblical Insights</p>
+              <div className="text-center">
+                <h1 className="text-xl font-bold text-white">Bible Aura</h1>
+                <p className="text-sm text-white/90">AI Biblical Insights</p>
               </div>
             )}
           </div>
@@ -404,64 +312,47 @@ export function AppSidebar() {
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 hover:bg-white/20 text-white"
           >
             {isExpanded ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </Button>
         </div>
       </SidebarHeader>
 
-      {/* Desktop Content */}
+      {/* Desktop Content - Flat Menu */}
       <SidebarContent className="px-4 py-4">
-        {navigation.map((group) => (
-          <SidebarGroup key={group.title} className="mb-6">
-            {isExpanded && (
-              <SidebarGroupLabel className="text-sm font-semibold text-gray-700 mb-3">
-                {group.title}
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={location.pathname === item.url}
-                      className={`hover:bg-gray-100 rounded-lg p-3 ${
-                        !isExpanded ? 'justify-center' : ''
-                      } ${
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {navigationItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === item.url}
+                    className={`hover:bg-gray-100 rounded-lg p-3 ${
+                      !isExpanded ? 'justify-center' : ''
+                    } ${
+                      location.pathname === item.url 
+                        ? 'bg-blue-50 border border-blue-200 text-blue-700' 
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    <Link to={item.url} className="flex items-center gap-3 w-full">
+                      <item.icon className={`h-5 w-5 flex-shrink-0 ${
                         location.pathname === item.url 
-                          ? 'bg-blue-50 border border-blue-200 text-blue-700' 
-                          : 'text-gray-700'
-                      }`}
-                    >
-                      <Link to={item.url} className="flex items-center gap-3 w-full">
-                        <item.icon className={`h-5 w-5 ${
-                          location.pathname === item.url 
-                            ? 'text-blue-600' 
-                            : 'text-gray-600'
-                        }`} />
-                        {isExpanded && (
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm flex items-center gap-2">
-                              <span className="truncate">{item.title}</span>
-                              {!user && item.requiresAuth && (
-                                <Star className="h-3 w-3 text-amber-500" />
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-500 truncate">
-                              {item.description}
-                            </div>
-                          </div>
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                          ? 'text-blue-600' 
+                          : 'text-gray-600'
+                      }`} />
+                      {isExpanded && (
+                        <span className="font-medium text-sm truncate">{item.title}</span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       {/* Desktop Footer */}
