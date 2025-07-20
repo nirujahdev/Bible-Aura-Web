@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
-import { SidebarProvider } from "./components/ui/sidebar";
+import { SidebarProvider } from "./hooks/useSidebar";
 import { Sparkles, Star, Heart } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 
