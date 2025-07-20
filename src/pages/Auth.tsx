@@ -125,9 +125,9 @@ export default function Auth() {
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Show success message and manual navigation option
+        // Auto-redirect to dashboard on successful login
         setAuthError(null);
-        // Don't auto-redirect, let user choose
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -162,9 +162,9 @@ export default function Auth() {
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Show success message and manual navigation option
+        // Auto-redirect to dashboard on successful signup
         setAuthError(null);
-        // Don't auto-redirect, let user choose
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -437,20 +437,6 @@ export default function Auth() {
                       <LogIn className="h-4 w-4 mr-2" />
                       {isSubmitting ? "Signing in..." : "Sign In"}
                     </Button>
-                    
-                    {user && !authError && (
-                      <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                        <p className="text-green-800 text-sm font-medium mb-3">✅ Successfully signed in!</p>
-                        <Button 
-                          asChild 
-                          className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Link to="/dashboard">
-                            Go to Dashboard
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
                   </form>
                   
                   <div className="relative my-4">
