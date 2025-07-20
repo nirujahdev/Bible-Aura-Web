@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,7 @@ import {
 
 export default function Auth() {
   const { user, signIn, signInWithMagicLink, signInWithGoogle, signUp, loading } = useAuth();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [currentTab, setCurrentTab] = useState("signin");
@@ -89,7 +90,7 @@ export default function Auth() {
 
 
 
-  // Redirect to dashboard only if user came from email link
+  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (user && !loading) {
       const isFromEmailLink = window.location.hash.includes('access_token') || 
@@ -99,12 +100,10 @@ export default function Auth() {
                              window.location.search.includes('type=email_change') ||
                              window.location.search.includes('type=signup');
       
-      if (isFromEmailLink) {
-        // Auto-redirect to dashboard for email links
-        window.location.href = '/dashboard';
-      }
+      // Always redirect authenticated users to dashboard
+      navigate('/dashboard', { replace: true });
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -127,7 +126,7 @@ export default function Auth() {
       } else {
         // Auto-redirect to dashboard on successful login
         setAuthError(null);
-        window.location.href = '/dashboard';
+        navigate('/dashboard', { replace: true });
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -164,7 +163,7 @@ export default function Auth() {
       } else {
         // Auto-redirect to dashboard on successful signup
         setAuthError(null);
-        window.location.href = '/dashboard';
+        navigate('/dashboard', { replace: true });
       }
     } catch (error) {
       console.error('Sign up error:', error);
