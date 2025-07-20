@@ -33,6 +33,7 @@ export default function Auth() {
   const [currentTab, setCurrentTab] = useState("signin");
   const [currentFeature, setCurrentFeature] = useState(0);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isMagicLinkAuth, setIsMagicLinkAuth] = useState(false);
 
   // Features data for showcase
   const features = [
@@ -90,20 +91,45 @@ export default function Auth() {
 
 
 
-  // Redirect authenticated users to dashboard
+  // Check if this is a magic link authentication on mount
   useEffect(() => {
-    if (user && !loading) {
-      const isFromEmailLink = window.location.hash.includes('access_token') || 
-                             window.location.hash.includes('refresh_token') ||
-                             window.location.search.includes('token_hash') ||
-                             window.location.search.includes('type=recovery') ||
-                             window.location.search.includes('type=email_change') ||
-                             window.location.search.includes('type=signup');
-      
-      // Always redirect authenticated users to dashboard
-      navigate('/dashboard', { replace: true });
+    const urlHash = window.location.hash;
+    const urlSearch = window.location.search;
+    
+    const isFromEmailLink = urlHash.includes('access_token') || 
+                           urlHash.includes('refresh_token') ||
+                           urlSearch.includes('token_hash') ||
+                           urlSearch.includes('type=recovery') ||
+                           urlSearch.includes('type=email_change') ||
+                           urlSearch.includes('type=signup');
+    
+    // Check for authentication errors in URL
+    const hasError = urlHash.includes('error=') || urlSearch.includes('error=');
+    
+    if (hasError) {
+      const errorMatch = (urlHash + urlSearch).match(/error=([^&]+)/);
+      const errorDesc = (urlHash + urlSearch).match(/error_description=([^&]+)/);
+      const errorMessage = errorDesc ? decodeURIComponent(errorDesc[1]) : 'Authentication failed';
+      console.log('Magic link error detected:', errorMessage);
+      setAuthError(errorMessage);
+    } else if (isFromEmailLink) {
+      console.log('Magic link detected');
+      setIsMagicLinkAuth(true);
     }
-  }, [user, loading, navigate]);
+  }, []);
+
+  // Handle authentication redirects
+  useEffect(() => {
+    if (!loading && user) {
+      console.log('User authenticated, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    } else if (!loading && isMagicLinkAuth && !user) {
+      // Magic link failed to authenticate
+      console.log('Magic link authentication failed');
+      setAuthError('Magic link authentication failed. Please try again.');
+      setIsMagicLinkAuth(false);
+    }
+  }, [user, loading, navigate, isMagicLinkAuth]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
