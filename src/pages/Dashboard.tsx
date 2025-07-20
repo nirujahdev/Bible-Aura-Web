@@ -36,6 +36,8 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { DebugConsole } from "@/components/DebugConsole";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Dashboard = () => {
   const { profile, user } = useAuth();
@@ -166,7 +168,9 @@ const Dashboard = () => {
       <div className="w-full px-4 sm:px-6 py-6 lg:py-8">
         {/* Daily Verse Section - Full Width */}
         <div className="mb-12">
-          <DailyVerseWidget />
+          <ErrorBoundary>
+            <DailyVerseWidget />
+          </ErrorBoundary>
         </div>
         
         {/* Overview Stats */}
@@ -237,11 +241,21 @@ const Dashboard = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <BibleStudyWidget />
-            <AIChatWidget />
-            <JournalWidget />
-            <PrayerWidget />
-            <ReadingProgressWidget />
+            <ErrorBoundary>
+              <BibleStudyWidget />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <AIChatWidget />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <JournalWidget />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <PrayerWidget />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <ReadingProgressWidget />
+            </ErrorBoundary>
             
             {/* Quick Create Widget */}
             <Card className="h-full border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100/50">
@@ -420,6 +434,9 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      
+      {/* Debug Console for Development */}
+      {process.env.NODE_ENV === 'development' && <DebugConsole />}
     </div>
   );
 };
