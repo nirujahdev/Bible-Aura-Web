@@ -6,7 +6,7 @@ import {
   BibleStudyWidget, 
   AIChatWidget, 
   JournalWidget, 
- 
+  PrayerWidget,
   ReadingProgressWidget 
 } from "@/components/FeatureWidgets";
 import { DailyVerseWidget } from "@/components/DailyVerseWidget";
