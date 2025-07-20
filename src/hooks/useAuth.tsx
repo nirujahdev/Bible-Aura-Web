@@ -245,6 +245,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
+      console.log('Google OAuth setup required:');
+      console.log('1. Configure Google Cloud Console OAuth 2.0 Client');
+      console.log('2. Add redirect URI: https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback');
+      console.log('3. Enable Google provider in Supabase Dashboard');
+      console.log('4. Add Client ID and Secret to Supabase');
+      
       const redirectUrl = `${window.location.origin}/auth`;
       
       const { error } = await supabase.auth.signInWithOAuth({
@@ -257,9 +263,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         toast({
           title: "Google sign in failed",
-          description: error.message,
+          description: `${error.message}. Google OAuth requires setup - check console for instructions.`,
           variant: "destructive",
         });
+        console.error('Google OAuth error:', error);
       }
 
       return { error };
