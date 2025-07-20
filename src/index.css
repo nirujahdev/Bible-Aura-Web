@@ -12,7 +12,7 @@
 AI-Powered Biblical Insight
 Primary: #f85700 (Vibrant Orange)
 Typography: Montserrat (300-900)
-Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
+Simple, Clean Design Philosophy
 */
 
 @layer base {
@@ -298,105 +298,29 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
     @apply bg-aura-gradient rounded-full hover:shadow-aura-glow;
   }
 
-  /* Spiritual Animations - Simplified and Subtle */
-  .animate-entrance {
-    animation: sacred-fade-in 0.4s ease-out;
+  /* Simple Hover Effects */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
   }
 
-  .animate-divine-hover {
-    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-md;
-  }
-
-  .animate-celestial-float {
-    animation: celestial-float 8s ease-in-out infinite;
-  }
-
-  .animate-sacred-pulse {
-    animation: divine-pulse 4s ease-in-out infinite;
-  }
-
-  /* Holy Gradient Text */
-  .gradient-text {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary via-orange-500 to-primary;
-    animation: spiritual-gradient 3s ease infinite;
-    background-size: 400% 400%;
-  }
-
-  /* Divine Backdrop */
-  .backdrop-divine {
-    backdrop-filter: blur(20px) saturate(180%);
-    background: rgba(248, 87, 0, 0.05);
-    border: 1px solid rgba(248, 87, 0, 0.1);
-  }
-
-  /* Sacred Glow Effect */
-  .glow-sacred {
-    filter: drop-shadow(0 0 10px rgba(248, 87, 0, 0.5));
-  }
-
-  .glow-sacred:hover {
-    filter: drop-shadow(0 0 20px rgba(248, 87, 0, 0.8));
-  }
-
-  /* Celestial Border Animation */
-  .border-celestial {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .border-celestial::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 2px;
-    background: linear-gradient(45deg, #f85700, #ff7f39, #f85700);
-    border-radius: inherit;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: xor;
-    animation: aura-rotate 3s linear infinite;
+  .simple-fade {
+    @apply transition-opacity duration-300;
   }
 }
 
 @layer utilities {
-  /* Typography Utilities */
-  .font-divine {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-  }
-
-  .font-sacred {
-    font-family: 'Montserrat', sans-serif;
+  /* Simple Typography */
+  .font-semibold {
     font-weight: 600;
   }
 
-  .font-holy {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
+  .font-bold {
+    font-weight: 700;
   }
 
-  /* Animation Utilities - Simplified */
-  .transition-divine {
-    transition-property: transform, box-shadow, filter, opacity;
-    transition-duration: 200ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Enhanced Shadow Effects */
-  .shadow-3xl {
-    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
-  /* Custom Gradient Borders */
-  .border-gradient-to-r {
-    border-image: linear-gradient(to right, hsl(var(--aura-orange-light)), hsl(var(--aura-orange))) 1;
-  }
-
-  .transition-sacred {
-    transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
-
-  .transition-celestial {
-    transition: all 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  /* Simple Transitions */
+  .transition-base {
+    @apply transition-all duration-200 ease-in-out;
   }
 
   /* Hover Effects - Simplified */
@@ -755,3 +679,57 @@ Animation Philosophy: Spiritual Glow, Divine Interaction, Sacred Transitions
 .delay-900 { animation-delay: 900ms; }
 .delay-1000 { animation-delay: 1000ms; }
 .delay-1100 { animation-delay: 1100ms; }
+
+/* Simplified Animation Utilities */
+@layer utilities {
+  .btn-group {
+    @apply flex flex-col sm:flex-row gap-3 lg:gap-4;
+  }
+
+  .text-spacing {
+    @apply space-y-2 sm:space-y-3;
+  }
+
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary via-primary-600 to-primary-700;
+  }
+
+  .card-hover {
+    @apply hover:shadow-md;
+  }
+
+  /* Simplified loading spinner */
+  .loading-spinner {
+    @apply border-2 border-gray-200 border-t-primary rounded-full;
+  }
+}
+
+/* Minimal Essential Animations Only */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation Classes - Essential Only */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}

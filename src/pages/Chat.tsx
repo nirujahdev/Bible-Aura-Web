@@ -444,177 +444,158 @@ export default function Chat() {
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="bg-primary text-white p-4 border-b flex-shrink-0">
-        <div className="w-full">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-full">
-                <span className="text-sm font-bold text-primary">✦AI</span>
-              </div>
-              <h1 className="text-2xl font-bold">
-                Biblical AI Oracle
-              </h1>
-            </div>
-            <p className="text-base sm:text-lg text-white/90">
-              Biblical wisdom through <span className="font-semibold">AI-powered scriptural insights</span>
-            </p>
+      {/* Simple Header */}
+      <div className="bg-primary text-white p-4 border-b">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 flex items-center justify-center bg-white/20 rounded-lg">
+            <span className="text-lg font-bold">✦</span>
           </div>
+          <h1 className="text-xl font-semibold">AI Biblical Assistant</h1>
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-full p-4">
-          {/* Conversations Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="h-full">
-              <CardHeader className="border-b p-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-primary text-base">
-                    <MessageCircle className="h-5 w-5" />
-                    Conversations
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    onClick={createNewConversation}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Book className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <div className="p-4 space-y-2">
-                    {conversations.length === 0 ? (
-                      <div className="text-center text-muted-foreground text-sm py-8">
-                        Your biblical conversations will appear here
-                      </div>
-                    ) : (
-                      conversations.map((conv) => (
-                        <Button
-                          key={conv.id}
-                          variant={currentConversation?.id === conv.id ? "default" : "ghost"}
-                          className="w-full justify-start text-left h-auto p-3"
-                          onClick={() => selectConversation(conv)}
-                        >
-                          <div className="truncate">
-                            <div className="font-medium text-sm">{conv.title}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(conv.updated_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </Button>
-                      ))
-                    )}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Conversations Sidebar - Hidden on mobile */}
+        <div className="hidden lg:flex lg:w-80 border-r bg-gray-50">
+          <div className="flex flex-col w-full">
+            <div className="p-4 border-b">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-gray-800">Conversations</h2>
+                <Button
+                  size="sm"
+                  onClick={createNewConversation}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Book className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-4 space-y-2">
+                {conversations.length === 0 ? (
+                  <div className="text-center text-muted-foreground text-sm py-8">
+                    Your conversations will appear here
                   </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+                ) : (
+                  conversations.map((conv) => (
+                    <Button
+                      key={conv.id}
+                      variant={currentConversation?.id === conv.id ? "default" : "ghost"}
+                      className="w-full justify-start text-left h-auto p-3"
+                      onClick={() => selectConversation(conv)}
+                    >
+                      <div className="truncate">
+                        <div className="font-medium text-sm">{conv.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(conv.updated_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </Button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
           </div>
+        </div>
 
-          {/* Main Chat Area */}
-          <div className="lg:col-span-3">
-            <Card className="h-full flex flex-col">
-              <CardHeader className="border-b flex-shrink-0">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                                      <div className="h-6 w-6 flex items-center justify-center bg-primary/10 rounded-full">
-                    <span className="text-xs font-bold text-primary">✦</span>
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex flex-col h-full">
+            {/* Chat Header - Mobile/Desktop */}
+            <div className="border-b p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-lg">
+                    <span className="text-sm font-bold text-primary">✦</span>
                   </div>
-                    Biblical Conversation
-                  </CardTitle>
-                  <div className="text-sm text-muted-foreground">
-                    Multi-Model AI • Bible-Based Responses
+                  <h2 className="font-semibold text-gray-800">Biblical Conversation</h2>
+                </div>
+                <div className="text-sm text-muted-foreground hidden sm:block">
+                  Multi-Model AI • Bible-Based Responses
+                </div>
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+              {messages.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="relative mx-auto w-24 h-24 mb-6">
+                    <div className="w-full h-full flex items-center justify-center bg-primary/10 rounded-lg">
+                      <span className="text-2xl font-bold text-primary">✦AI</span>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-primary mb-3">
+                    Welcome to Biblical AI Oracle
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
+                  </p>
+                  
+                  {/* Quick Prompts */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                    {BIBLICAL_PROMPTS.map((prompt, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        className="text-left justify-start"
+                        onClick={() => setInput(prompt)}
+                      >
+                        <Book className="h-4 w-4 mr-2" />
+                        {prompt}
+                      </Button>
+                    ))}
                   </div>
                 </div>
-              </CardHeader>
-
-              <CardContent className="flex flex-col flex-1 p-0 min-h-0">
-                {/* Messages Area */}
-                <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
-                  {messages.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="relative mx-auto w-24 h-24 mb-6">
-                        <div className="w-full h-full flex items-center justify-center bg-primary/10 rounded-lg">
-                          <span className="text-2xl font-bold text-primary">✦AI</span>
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-semibold text-primary mb-3">
-                        Welcome to Biblical AI Oracle
-                      </h3>
-                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                        Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
-                      </p>
-                      
-                      {/* Quick Prompts */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                        {BIBLICAL_PROMPTS.map((prompt, index) => (
-                          <Button
-                            key={index}
-                            variant="outline"
-                            className="text-left justify-start"
-                            onClick={() => setInput(prompt)}
-                          >
-                            <Book className="h-4 w-4 mr-2" />
-                            {prompt}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {messages.map(renderMessage)}
-                      {isLoading && (
-                        <div className="flex justify-start">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src="" alt="Bible Aura AI" />
-                              <AvatarFallback className="bg-primary text-white">
-                                <Bot className="h-5 w-5" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="bg-white dark:bg-gray-800 border rounded-2xl p-4">
-                              <div className="flex items-center gap-2">
-                                <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
-                                <span className="text-sm text-muted-foreground">Seeking biblical wisdom...</span>
-                              </div>
-                            </div>
+              ) : (
+                <div className="space-y-4">
+                  {messages.map(renderMessage)}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src="" alt="Bible Aura AI" />
+                          <AvatarFallback className="bg-primary text-white">
+                            <Bot className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="bg-white dark:bg-gray-800 border rounded-2xl p-4">
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            <span className="text-sm text-muted-foreground">Seeking biblical wisdom...</span>
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
-                </ScrollArea>
-
-                {/* Input Area */}
-                <div className="border-t p-4 bg-gray-50 dark:bg-gray-800/50 flex-shrink-0">
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1">
-                      <Input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Ask your biblical question..."
-                        disabled={isLoading}
-                        className="min-h-[44px] bg-white"
-                      />
-                    </div>
-                    <Button
-                      onClick={sendMessage}
-                      disabled={!input.trim() || isLoading}
-                      className="min-h-[44px] px-4 bg-primary hover:bg-primary/90 flex-shrink-0"
-                    >
-                      {isLoading ? (
-                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </ScrollArea>
+
+            {/* Input Area */}
+            <div className="border-t p-4 bg-gray-50">
+              <div className="flex gap-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask your biblical question..."
+                  disabled={isLoading}
+                  className="flex-1 bg-white"
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || isLoading}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {isLoading ? (
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

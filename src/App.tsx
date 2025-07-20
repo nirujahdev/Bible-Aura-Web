@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { Sparkles, Star, Heart } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { queryClient } from "./lib/queryClient";
 
 // Page imports
 import Landing from "./pages/Landing";
@@ -161,12 +164,16 @@ function AppLayout() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AppLayout />
-          <Toaster />
-        </Router>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router>
+            <AppLayout />
+            <Toaster />
+          </Router>
+        </AuthProvider>
+        {/* React Query DevTools - only shows in development */}
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
