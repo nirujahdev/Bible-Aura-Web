@@ -96,6 +96,8 @@ export default function Auth() {
     const urlHash = window.location.hash;
     const urlSearch = window.location.search;
     
+    console.log('Auth page loaded with:', { urlHash, urlSearch });
+    
     const isFromEmailLink = urlHash.includes('access_token') || 
                            urlHash.includes('refresh_token') ||
                            urlSearch.includes('token_hash') ||
@@ -113,21 +115,30 @@ export default function Auth() {
       console.log('Magic link error detected:', errorMessage);
       setAuthError(errorMessage);
     } else if (isFromEmailLink) {
-      console.log('Magic link detected');
+      console.log('Magic link detected, setting flag');
       setIsMagicLinkAuth(true);
+    } else {
+      console.log('Regular auth page visit');
     }
   }, []);
 
   // Handle authentication redirects
   useEffect(() => {
+    console.log('Auth state:', { user: !!user, loading, isMagicLinkAuth });
+    
     if (!loading && user) {
-      console.log('User authenticated, redirecting to dashboard');
+      console.log('User authenticated successfully, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     } else if (!loading && isMagicLinkAuth && !user) {
-      // Magic link failed to authenticate
-      console.log('Magic link authentication failed');
-      setAuthError('Magic link authentication failed. Please try again.');
-      setIsMagicLinkAuth(false);
+      // Magic link failed to authenticate - wait a bit longer
+      console.log('Magic link detected but user not authenticated yet, waiting...');
+      setTimeout(() => {
+        if (!user) {
+          console.log('Magic link authentication failed after timeout');
+          setAuthError('Magic link authentication failed. Please try again or sign in manually.');
+          setIsMagicLinkAuth(false);
+        }
+      }, 3000); // Wait 3 seconds for authentication to complete
     }
   }, [user, loading, navigate, isMagicLinkAuth]);
 
@@ -242,14 +253,19 @@ export default function Auth() {
     }
   };
 
-  if (loading) {
+  if (loading || isMagicLinkAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary via-primary/90 to-primary/80 flex items-center justify-center">
         <div className="text-center space-y-6">
           <div className="space-y-3">
             <p className="text-lg text-white/90">
-              Loading your account...
+              {isMagicLinkAuth ? 'Authenticating with magic link...' : 'Loading your account...'}
             </p>
+            {isMagicLinkAuth && (
+              <p className="text-sm text-white/70">
+                Please wait while we verify your magic link
+              </p>
+            )}
           </div>
           <div className="flex justify-center">
             <div className="h-8 w-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
