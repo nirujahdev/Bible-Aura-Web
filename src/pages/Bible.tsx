@@ -219,7 +219,7 @@ export default function Bible() {
     setSelectedVerse({
       id: verse.id,
       text: verse.text,
-      reference: verse.reference
+      reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
     });
     setNoteModalOpen(true);
   };
@@ -228,7 +228,7 @@ export default function Bible() {
     setSelectedVerse({
       id: verse.id,
       text: verse.text,
-      reference: verse.reference
+      reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
     });
     setAiModalOpen(true);
   };
@@ -315,18 +315,17 @@ export default function Bible() {
       <div className="flex-1 flex flex-col lg:flex-row">
         {/* Sidebar Controls - Responsive */}
                  <div className="bible-sidebar w-full lg:w-80 xl:w-96 bg-muted/30 border-b lg:border-b-0 lg:border-r p-4 space-y-4">
-          {/* Language & Translation Controls */}
+          {/* Language Selection */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Languages className="h-4 w-4" />
-                Language & Translation
+                Bible Language
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Language Selection */}
+            <CardContent>
               <div>
-                <label className="text-xs font-medium mb-2 block">Language</label>
+                <label className="text-xs font-medium mb-2 block">Select Language & Translation</label>
                 <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select language" />
@@ -334,26 +333,11 @@ export default function Bible() {
                   <SelectContent>
                     {LANGUAGES.map(language => (
                       <SelectItem key={language.value} value={language.value}>
-                        {language.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Translation Selection */}
-              <div>
-                <label className="text-xs font-medium mb-2 block">Translation</label>
-                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select translation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(language => (
-                      <SelectItem key={language.value} value={language.value}>
                         <div className="flex flex-col items-start">
                           <span className="font-medium">{language.label}</span>
-                          <span className="text-xs text-muted-foreground">({language.label})</span>
+                          <span className="text-xs text-muted-foreground">
+                            {language.value === 'english' ? 'King James Version' : 'Tamil Bible'}
+                          </span>
                         </div>
                       </SelectItem>
                     ))}
@@ -451,7 +435,7 @@ export default function Bible() {
                     <SelectValue placeholder="Select chapter" />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
-                    {selectedBook && Array.from({ length: selectedBook.chaptersCount || selectedBook.chapters.length || 1 }, (_, i) => i + 1).map(chapter => (
+                    {selectedBook && Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map(chapter => (
                       <SelectItem key={chapter} value={chapter.toString()}>
                         Chapter {chapter}
                       </SelectItem>
@@ -477,7 +461,7 @@ export default function Bible() {
                     variant="outline"
                     size="sm"
                     onClick={() => navigateChapter('next')}
-                    disabled={selectedChapter >= (selectedBook.chaptersCount || selectedBook.chapters.length || 1)}
+                    disabled={selectedChapter >= (selectedBook.chapters || 1)}
                     className="flex-1"
                   >
                     Next
@@ -837,28 +821,30 @@ export default function Bible() {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
 
-      {/* Modals */}
-      {selectedVerse && (
-        <>
-          <NoteTaking
-            verseId={selectedVerse.id}
-            verseText={selectedVerse.text}
-            verseReference={selectedVerse.reference}
-            isOpen={noteModalOpen}
-            onClose={() => setNoteModalOpen(false)}
-          />
-          
-          <AIAnalysis
-            verseId={selectedVerse.id}
-            verseText={selectedVerse.text}
-            verseReference={selectedVerse.reference}
-            isOpen={aiModalOpen}
-            onClose={() => setAiModalOpen(false)}
-          />
-        </>
-      )}
-    </div>
+          {/* Modals */}
+          {selectedVerse && (
+            <>
+              <NoteTaking
+                verseId={selectedVerse.id}
+                verseText={selectedVerse.text}
+                verseReference={selectedVerse.reference}
+                isOpen={noteModalOpen}
+                onClose={() => setNoteModalOpen(false)}
+              />
+              
+              <AIAnalysis
+                verseId={selectedVerse.id}
+                verseText={selectedVerse.text}
+                verseReference={selectedVerse.reference}
+                isOpen={aiModalOpen}
+                onClose={() => setAiModalOpen(false)}
+              />
+            </>
+          )}
+        </div>
     </PageLayout>
   );
 }
