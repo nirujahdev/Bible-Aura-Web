@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, BookOpen, MessageCircle, Zap, Star, Users, Heart, ChevronDown, ChevronUp, Quote } from "lucide-react";
+import { Sparkles, BookOpen, MessageCircle, Zap, Heart, ChevronDown, ChevronUp, Bot, Library, Users, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import heroSpiritual from "@/assets/hero-spiritual.jpg";
@@ -9,57 +9,34 @@ import { useState } from "react";
 const Landing = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Bible Study Leader",
-      content: "Bible Aura has revolutionized how I prepare for our weekly Bible studies. The AI insights help me understand complex passages and provide deeper context for our discussions.",
-      rating: 5
-    },
-    {
-      name: "Pastor Michael Rodriguez",
-      role: "Youth Pastor",
-      content: "This tool has been incredible for sermon preparation. The AI companion helps me find relevant verses and provides fresh perspectives on familiar passages.",
-      rating: 5
-    },
-    {
-      name: "Emily Chen",
-      role: "Seminary Student",
-      content: "As someone studying theology, Bible Aura's advanced study features and cross-references have been invaluable for my research and coursework.",
-      rating: 5
-    },
-    {
-      name: "David Thompson",
-      role: "New Believer",
-      content: "I was intimidated by Bible study as a new Christian, but Bible Aura's AI chat makes it easy to ask questions and get clear, biblical answers.",
-      rating: 5
-    }
-  ];
-
   const howItWorksSteps = [
     {
       step: "1",
-      title: "Sign Up Free",
-      description: "Create your free account in seconds and start your spiritual journey with Bible Aura.",
-      icon: "🚀"
+      title: "AI-Powered Insights",
+      description: "Get instant biblical insights and contextual explanations powered by advanced AI technology that understands Scripture.",
+      icon: Bot,
+      gradient: "from-blue-500 to-purple-600"
     },
     {
       step: "2", 
-      title: "Explore Scripture",
-      description: "Read, search, and study the Bible with our comprehensive tools and multiple translations.",
-      icon: "📖"
+      title: "Complete Bible Access",
+      description: "Access multiple Bible translations, search verses, and explore cross-references with our comprehensive biblical database.",
+      icon: BookOpen,
+      gradient: "from-green-500 to-teal-600"
     },
     {
       step: "3",
-      title: "Get AI Insights",
-      description: "Ask questions, get explanations, and receive personalized spiritual guidance from our AI companion.",
-      icon: "🤖"
+      title: "Study Resources",
+      description: "Utilize extensive study materials, commentaries, and theological resources to deepen your understanding.",
+      icon: Library,
+      gradient: "from-orange-500 to-red-600"
     },
     {
       step: "4",
-      title: "Grow in Faith",
-      description: "Track your progress, journal your thoughts, and deepen your relationship with God.",
-      icon: "🌱"
+      title: "Community & Growth",
+      description: "Connect with other believers, track your spiritual journey, and grow in faith through personalized tools.",
+      icon: Users,
+      gradient: "from-purple-500 to-pink-600"
     }
   ];
 
@@ -240,10 +217,79 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-gradient-to-br from-gray-50 via-white to-blue-50 relative overflow-hidden">
+      {/* How Bible Aura Works - Vertical Roadmap */}
+      <section className="py-24 bg-gradient-to-b from-gray-900 via-gray-800 to-black relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              How Bible Aura Works
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Your spiritual journey made simple through our powerful platform
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            {/* Vertical Roadmap */}
+            <div className="relative">
+              {/* Vertical Line */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-500 via-purple-500 to-orange-500 rounded-full shadow-lg shadow-blue-500/20"></div>
+              
+              {howItWorksSteps.map((step, index) => {
+                const IconComponent = step.icon;
+                const isEven = index % 2 === 0;
+                
+                return (
+                  <div key={index} className={`relative flex items-center mb-20 ${isEven ? 'justify-start' : 'justify-end'}`}>
+                    {/* Step Card */}
+                    <div className={`w-5/12 ${isEven ? 'pr-12' : 'pl-12'}`}>
+                      <Card className={`p-8 bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 ${isEven ? 'text-right' : 'text-left'}`}>
+                        <CardContent className="p-0">
+                          <div className={`flex items-center gap-4 mb-6 ${isEven ? 'flex-row-reverse' : 'flex-row'}`}>
+                            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${step.gradient} p-4 shadow-lg shadow-white/20`}>
+                              <IconComponent className="w-full h-full text-white filter drop-shadow-lg" />
+                            </div>
+                            <div className="text-6xl font-bold text-gray-600/30">
+                              {step.step}
+                            </div>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-4">
+                            {step.title}
+                          </h3>
+                          <p className="text-gray-300 text-lg leading-relaxed">
+                            {step.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Central Icon with Glow */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2 w-20 h-20 z-10">
+                      <div className={`w-full h-full rounded-full bg-gradient-to-r ${step.gradient} p-4 shadow-2xl shadow-white/30 border-4 border-white/20 backdrop-blur-sm animate-pulse`}>
+                        <IconComponent className="w-full h-full text-white filter drop-shadow-2xl" />
+                      </div>
+                      {/* Glow Effect */}
+                      <div className={`absolute inset-0 w-full h-full rounded-full bg-gradient-to-r ${step.gradient} opacity-20 blur-xl animate-ping`}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Made more visible */}
+      <section className="py-24 bg-white relative overflow-hidden">
         {/* Animated Background Elements */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-5">
           <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
           <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full animate-bounce"></div>
           <div className="absolute bottom-20 left-1/3 w-28 h-28 bg-gradient-to-br from-green-400 to-blue-400 rounded-full animate-pulse delay-1000"></div>
@@ -251,27 +297,27 @@ const Landing = () => {
         </div>
 
         <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-20 animate-fade-in">
-            <div className="inline-flex items-center justify-center p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mb-6 animate-bounce">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center justify-center p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mb-6">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-orange-600 to-purple-600 bg-clip-text text-transparent mb-6 animate-slide-up">
+            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-orange-600 to-purple-600 bg-clip-text text-transparent mb-6">
               Bible Aura Features
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-purple-500 mx-auto mb-6 rounded-full animate-slide-up delay-200"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto animate-slide-up delay-300">
+            <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-purple-500 mx-auto mb-6 rounded-full"></div>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Discover all the powerful tools and features designed to enhance your spiritual journey with cutting-edge AI technology
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8 px-2 sm:px-0">
             {/* Bible Study */}
-            <div className="animate-slide-up delay-100 group h-full">
+            <div className="group h-full">
               <Card className="h-full flex flex-col p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border-2 border-blue-100 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-1 hover:border-blue-300 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-indigo-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-gradient-to-br from-blue-300/20 to-indigo-300/20 rounded-full transform translate-x-12 sm:translate-x-16 -translate-y-12 sm:-translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
                 <CardHeader className="pb-3 sm:pb-4 relative z-10 flex-shrink-0">
                   <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2 sm:gap-3 group-hover:text-blue-700 transition-colors">
-                    <span className="text-2xl sm:text-3xl md:text-4xl animate-pulse">📖</span>
+                    <span className="text-2xl sm:text-3xl md:text-4xl">📖</span>
                     <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Bible Study</span>
                   </CardTitle>
                   <p className="text-gray-600 mt-2 text-sm sm:text-base">Comprehensive biblical study tools</p>
@@ -279,7 +325,7 @@ const Landing = () => {
                 <CardContent className="flex-grow relative z-10">
                   <div className="text-sm text-gray-700 space-y-2 sm:space-y-3">
                     {["Bible Reading", "Verse Search", "Cross References", "Multiple Translations", "Verse Analysis", "Topical Study"].map((feature, index) => (
-                      <div key={feature} className={`flex items-center gap-2 sm:gap-3 opacity-0 animate-slide-in-left hover:bg-blue-50 p-1.5 sm:p-2 rounded-lg transition-colors`} style={{animationDelay: `${(index * 100) + 600}ms`, animationFillMode: 'forwards'}}>
+                      <div key={feature} className={`flex items-center gap-2 sm:gap-3 opacity-100 hover:bg-blue-50 p-1.5 sm:p-2 rounded-lg transition-colors`}>
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse flex-shrink-0"></div>
                         <p className="hover:text-blue-600 transition-colors text-xs sm:text-sm">{feature}</p>
                       </div>
@@ -290,12 +336,12 @@ const Landing = () => {
             </div>
 
             {/* AI Features */}
-            <div className="animate-slide-up delay-200 group h-full">
+            <div className="group h-full">
               <Card className="h-full flex flex-col p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border-2 border-purple-100 shadow-xl bg-gradient-to-br from-purple-50 to-pink-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-1 hover:border-purple-300 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-pink-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-gradient-to-br from-purple-300/20 to-pink-300/20 rounded-full transform translate-x-12 sm:translate-x-16 -translate-y-12 sm:-translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
                 <CardHeader className="pb-3 sm:pb-4 relative z-10 flex-shrink-0">
                   <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2 sm:gap-3 group-hover:text-purple-700 transition-colors">
-                    <span className="text-2xl sm:text-3xl md:text-4xl animate-bounce">🤖</span>
+                    <span className="text-2xl sm:text-3xl md:text-4xl">🤖</span>
                     <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">AI Features</span>
                   </CardTitle>
                   <p className="text-gray-600 mt-2 text-sm sm:text-base">AI-powered spiritual insights</p>
@@ -303,7 +349,7 @@ const Landing = () => {
                 <CardContent className="flex-grow relative z-10">
                   <div className="text-sm text-gray-700 space-y-2 sm:space-y-3">
                     {["AI Chat Oracle", "Biblical Q&A", "AI Analysis", "Scripture Insights", "Contextual Explanations", "Smart Recommendations"].map((feature, index) => (
-                      <div key={feature} className={`flex items-center gap-2 sm:gap-3 opacity-0 animate-slide-in-left hover:bg-purple-50 p-1.5 sm:p-2 rounded-lg transition-colors`} style={{animationDelay: `${(index * 100) + 700}ms`, animationFillMode: 'forwards'}}>
+                      <div key={feature} className={`flex items-center gap-2 sm:gap-3 opacity-100 hover:bg-purple-50 p-1.5 sm:p-2 rounded-lg transition-colors`}>
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse flex-shrink-0"></div>
                         <p className="hover:text-purple-600 transition-colors text-xs sm:text-sm">{feature}</p>
                       </div>
@@ -314,12 +360,12 @@ const Landing = () => {
             </div>
 
             {/* Personal Tools */}
-            <div className="animate-slide-up delay-300 group h-full">
+            <div className="group h-full">
               <Card className="h-full flex flex-col p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border-2 border-green-100 shadow-xl bg-gradient-to-br from-green-50 to-emerald-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-1 hover:border-green-300 group-hover:bg-gradient-to-br group-hover:from-green-100 group-hover:to-emerald-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-gradient-to-br from-green-300/20 to-emerald-300/20 rounded-full transform translate-x-12 sm:translate-x-16 -translate-y-12 sm:-translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
                 <CardHeader className="pb-3 sm:pb-4 relative z-10 flex-shrink-0">
                   <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2 sm:gap-3 group-hover:text-green-700 transition-colors">
-                    <span className="text-2xl sm:text-3xl md:text-4xl animate-spin-slow">🛠</span>
+                    <span className="text-2xl sm:text-3xl md:text-4xl">🛠</span>
                     <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Personal Tools</span>
                   </CardTitle>
                   <p className="text-gray-600 mt-2 text-sm sm:text-base">Personalized spiritual journey</p>
@@ -327,7 +373,7 @@ const Landing = () => {
                 <CardContent className="flex-grow relative z-10">
                   <div className="text-sm text-gray-700 space-y-2 sm:space-y-3">
                     {["Journal", "Favorites", "Bookmarks", "Notes", "Reading Progress", "Profile"].map((feature, index) => (
-                      <div key={feature} className={`flex items-center gap-2 sm:gap-3 opacity-0 animate-slide-in-left hover:bg-green-50 p-1.5 sm:p-2 rounded-lg transition-colors`} style={{animationDelay: `${(index * 100) + 800}ms`, animationFillMode: 'forwards'}}>
+                      <div key={feature} className={`flex items-center gap-2 sm:gap-3 opacity-100 hover:bg-green-50 p-1.5 sm:p-2 rounded-lg transition-colors`}>
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full animate-pulse flex-shrink-0"></div>
                         <p className="hover:text-green-600 transition-colors text-xs sm:text-sm">{feature}</p>
                       </div>
@@ -338,12 +384,12 @@ const Landing = () => {
             </div>
 
             {/* Learning Resources */}
-            <div className="animate-slide-up delay-400 group h-full">
+            <div className="group h-full">
               <Card className="h-full flex flex-col p-8 rounded-3xl border-2 border-orange-100 shadow-xl bg-gradient-to-br from-orange-50 to-amber-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-1 hover:border-orange-300 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-300/20 to-amber-300/20 rounded-full transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
                 <CardHeader className="pb-4 relative z-10 flex-shrink-0">
                   <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3 group-hover:text-orange-700 transition-colors">
-                    <span className="text-4xl animate-bounce delay-200">📚</span>
+                    <span className="text-4xl">📚</span>
                     <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">Learning Resources</span>
                   </CardTitle>
                   <p className="text-gray-600 mt-2">Rich spiritual content library</p>
@@ -351,7 +397,7 @@ const Landing = () => {
                 <CardContent className="flex-grow relative z-10">
                   <div className="text-sm text-gray-700 space-y-3">
                     {["Sermon Library", "Sermons", "Songs", "Study Plans", "Daily Verses", "Bible Characters"].map((feature, index) => (
-                      <div key={feature} className={`flex items-center gap-3 opacity-0 animate-slide-in-left hover:bg-orange-50 p-2 rounded-lg transition-colors`} style={{animationDelay: `${(index * 100) + 900}ms`, animationFillMode: 'forwards'}}>
+                      <div key={feature} className={`flex items-center gap-3 opacity-100 hover:bg-orange-50 p-2 rounded-lg transition-colors`}>
                         <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full animate-pulse"></div>
                         <p className="hover:text-orange-600 transition-colors">{feature}</p>
                       </div>
@@ -362,12 +408,12 @@ const Landing = () => {
             </div>
 
             {/* Advanced Study */}
-            <div className="animate-slide-up delay-500 group h-full">
+            <div className="group h-full">
               <Card className="h-full flex flex-col p-8 rounded-3xl border-2 border-indigo-100 shadow-xl bg-gradient-to-br from-indigo-50 to-blue-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-1 hover:border-indigo-300 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-blue-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-300/20 to-blue-300/20 rounded-full transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
                 <CardHeader className="pb-4 relative z-10 flex-shrink-0">
                   <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3 group-hover:text-indigo-700 transition-colors">
-                    <span className="text-4xl animate-pulse delay-300">📘</span>
+                    <span className="text-4xl">📘</span>
                     <span className="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">Advanced Study</span>
                   </CardTitle>
                   <p className="text-gray-600 mt-2">Deep theological exploration</p>
@@ -375,7 +421,7 @@ const Landing = () => {
                 <CardContent className="flex-grow relative z-10">
                   <div className="text-sm text-gray-700 space-y-3">
                     {["Hebrew/Greek Words", "Historical Context", "Theological Topics", "Commentary Access", "Parable Studies", "Cross References"].map((feature, index) => (
-                      <div key={feature} className={`flex items-center gap-3 opacity-0 animate-slide-in-left hover:bg-indigo-50 p-2 rounded-lg transition-colors`} style={{animationDelay: `${(index * 100) + 1000}ms`, animationFillMode: 'forwards'}}>
+                      <div key={feature} className={`flex items-center gap-3 opacity-100 hover:bg-indigo-50 p-2 rounded-lg transition-colors`}>
                         <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full animate-pulse"></div>
                         <p className="hover:text-indigo-600 transition-colors">{feature}</p>
                       </div>
@@ -386,12 +432,12 @@ const Landing = () => {
             </div>
 
             {/* Content Creation */}
-            <div className="animate-slide-up delay-600 group h-full">
+            <div className="group h-full">
               <Card className="h-full flex flex-col p-8 rounded-3xl border-2 border-pink-100 shadow-xl bg-gradient-to-br from-pink-50 to-rose-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-1 hover:border-pink-300 group-hover:bg-gradient-to-br group-hover:from-pink-100 group-hover:to-rose-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-300/20 to-rose-300/20 rounded-full transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700"></div>
                 <CardHeader className="pb-4 relative z-10 flex-shrink-0">
                   <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-3 group-hover:text-pink-700 transition-colors">
-                    <span className="text-4xl animate-bounce delay-400">✍️</span>
+                    <span className="text-4xl">✍️</span>
                     <span className="bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Content Creation</span>
                   </CardTitle>
                   <p className="text-gray-600 mt-2">Create and share spiritual content</p>
@@ -399,7 +445,7 @@ const Landing = () => {
                 <CardContent className="flex-grow relative z-10">
                   <div className="text-sm text-gray-700 space-y-3">
                     {["Sermon Preparation", "Study Notes", "Personal Reflections", "Prayer Writing", "Teaching Materials", "Ministry Resources"].map((feature, index) => (
-                      <div key={feature} className={`flex items-center gap-3 opacity-0 animate-slide-in-left hover:bg-pink-50 p-2 rounded-lg transition-colors`} style={{animationDelay: `${(index * 100) + 1100}ms`, animationFillMode: 'forwards'}}>
+                      <div key={feature} className={`flex items-center gap-3 opacity-100 hover:bg-pink-50 p-2 rounded-lg transition-colors`}>
                         <div className="w-2 h-2 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full animate-pulse"></div>
                         <p className="hover:text-pink-600 transition-colors">{feature}</p>
                       </div>
@@ -412,138 +458,61 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-24 bg-white">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              How Bible Aura Works
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Start your spiritual journey in just a few simple steps
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {howItWorksSteps.map((step, index) => (
-              <div key={index} className="text-center group">
-                <div className="relative mb-6">
-                  {/* Step number background */}
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    {step.step}
-                  </div>
-                  {/* Icon overlay */}
-                  <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-orange-200">
-                    <span className="text-2xl">{step.icon}</span>
-                  </div>
-                  {/* Connecting line (except for last item) */}
-                  {index < howItWorksSteps.length - 1 && (
-                    <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-orange-300 to-gray-300"></div>
-                  )}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.description}</p>
-              </div>
-            ))}
-          </div>
+      {/* Enhanced FAQ Section */}
+      <section className="py-24 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
-      </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mb-6">
-              <Users className="h-6 w-6 text-white" />
+            <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-8 shadow-lg shadow-blue-500/25">
+              <MessageCircle className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Trusted by Believers Worldwide
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              See how Bible Aura is helping Christians grow in their faith journey
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border-0 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-0">
-                  <div className="flex items-start gap-4 mb-4">
-                    <Quote className="h-8 w-8 text-blue-500 flex-shrink-0 mt-1" />
-                    <div className="flex-1">
-                      <p className="text-gray-700 leading-relaxed mb-4 italic">
-                        "{testimonial.content}"
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                          <div className="text-sm text-gray-600">{testimonial.role}</div>
-                        </div>
-                        <div className="flex gap-1">
-                          {[...Array(testimonial.rating)].map((_, i) => (
-                            <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">10,000+</div>
-              <div className="text-gray-600 font-medium">Active Users</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">50,000+</div>
-              <div className="text-gray-600 font-medium">Bible Questions Answered</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">25+</div>
-              <div className="text-gray-600 font-medium">Bible Translations</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-24 bg-gray-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto mb-6 rounded-full shadow-lg shadow-blue-400/50"></div>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Get answers to common questions about Bible Aura
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto">
             {faqs.map((faq, index) => (
-              <Card key={index} className="mb-4 border-0 shadow-md hover:shadow-lg transition-shadow">
-                <CardHeader 
-                  className="cursor-pointer"
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                >
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-left text-gray-900">{faq.question}</CardTitle>
-                    {openFaq === index ? (
-                      <ChevronUp className="h-5 w-5 text-gray-500" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-gray-500" />
-                    )}
+              <div key={index} className="mb-4">
+                <Card className={`border-0 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-[1.02] ${openFaq === index ? 'shadow-2xl shadow-blue-500/20 bg-white/10' : 'shadow-lg'}`}>
+                  <CardHeader 
+                    className="cursor-pointer p-6"
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-left text-white font-semibold pr-4">
+                        {faq.question}
+                      </CardTitle>
+                      <div className={`p-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}>
+                        {openFaq === index ? (
+                          <ChevronUp className="h-5 w-5 text-white" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-white" />
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <CardContent className="pt-0 pb-6 px-6">
+                      <div className="border-t border-white/10 pt-4">
+                        <p className="text-gray-300 leading-relaxed text-base">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </CardContent>
                   </div>
-                </CardHeader>
-                {openFaq === index && (
-                  <CardContent className="pt-0">
-                    <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
-                  </CardContent>
-                )}
-              </Card>
+                </Card>
+              </div>
             ))}
           </div>
         </div>
