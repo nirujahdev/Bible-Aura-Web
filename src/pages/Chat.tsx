@@ -390,7 +390,7 @@ export default function Chat() {
         {isAI && (
           <div className="flex-shrink-0">
             <Avatar className="h-10 w-10">
-                                  <AvatarImage src="" alt="Bible Aura AI" />
+                                  <AvatarImage src="" alt="✦ Bible Aura AI" />
               <AvatarFallback className="bg-primary text-white">
                 <Bot className="h-5 w-5" />
               </AvatarFallback>
@@ -448,9 +448,9 @@ export default function Chat() {
       <div className="h-screen bg-background flex flex-col items-center justify-center p-8">
         <div className="text-center space-y-6 max-w-md">
           <MessageCircle className="h-16 w-16 text-primary mx-auto" />
-          <h1 className="text-3xl font-bold text-primary">Biblical AI Oracle</h1>
+          <h1 className="text-3xl font-bold text-primary">✦ Bible Aura AI Oracle</h1>
           <p className="text-muted-foreground text-lg">
-            Discover biblical wisdom through AI-powered scriptural insights
+            Discover biblical wisdom through Bible Aura AI-powered scriptural insights
           </p>
           <p className="text-sm text-muted-foreground">
             Please sign in to start your biblical conversation
@@ -481,12 +481,12 @@ export default function Chat() {
               <span className="text-lg font-bold">✦</span>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg sm:text-xl font-semibold">Biblical AI Oracle</h1>
+              <h1 className="text-lg sm:text-xl font-semibold">✦ Bible Aura AI Oracle</h1>
               <p className="text-xs text-white/80 hidden sm:block">Ask anything about Scripture</p>
             </div>
           </div>
           <div className="text-xs text-white/80 hidden md:block">
-            Powered by DeepSeek AI
+            Powered by Bible Aura AI
           </div>
         </div>
       </div>
@@ -559,11 +559,11 @@ export default function Chat() {
                 <div className="text-center py-12">
                   <div className="relative mx-auto w-24 h-24 mb-6">
                     <div className="w-full h-full flex items-center justify-center bg-primary/10 rounded-lg">
-                      <span className="text-2xl font-bold text-primary">✦AI</span>
+                      <span className="text-2xl font-bold text-primary">✦</span>
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-primary mb-3">
-                    Welcome to Biblical AI Oracle
+                    Welcome to ✦ Bible Aura AI Oracle
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                     Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
@@ -591,7 +591,7 @@ export default function Chat() {
                     <div className="flex justify-start">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src="" alt="Bible Aura AI" />
+                          <AvatarImage src="" alt="✦ Bible Aura AI" />
                           <AvatarFallback className="bg-primary text-white">
                             <Bot className="h-5 w-5" />
                           </AvatarFallback>

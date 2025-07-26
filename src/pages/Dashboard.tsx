@@ -189,7 +189,7 @@ const Dashboard = () => {
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-purple-600 mb-1">47</div>
-              <div className="text-sm text-gray-600">AI Insights</div>
+                              <div className="text-sm text-gray-600">✦ Bible Aura AI Insights</div>
             </CardContent>
           </Card>
         </div>
@@ -204,8 +204,8 @@ const Dashboard = () => {
               {widgetsLoaded ? <BibleStudyWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
             </WidgetErrorBoundary>
             
-            {/* AI Chat Widget */}
-            <WidgetErrorBoundary widgetName="AI Chat" fallbackMessage="Unable to load AI chat history.">
+            {/* Bible Aura AI Chat Widget */}
+            <WidgetErrorBoundary widgetName="Bible Aura AI Chat" fallbackMessage="Unable to load Bible Aura AI chat history.">
               {widgetsLoaded ? <AIChatWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
             </WidgetErrorBoundary>
             
@@ -243,7 +243,7 @@ const Dashboard = () => {
                 <Link to="/chat">
                   <Button variant="outline" className="w-full justify-start hover:bg-gray-50">
                     <MessageCircle className="mr-2 h-4 w-4" />
-                    Start AI Chat
+                                          Start ✦ Bible Aura AI Chat
                   </Button>
                 </Link>
                 <Link to="/bible">

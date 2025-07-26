@@ -14,7 +14,7 @@ const About = () => {
     {
       icon: Brain,
       title: "Innovation",
-      description: "We leverage cutting-edge AI technology to make biblical insights more accessible and meaningful."
+      description: "We leverage cutting-edge Bible Aura AI technology to make biblical insights more accessible and meaningful."
     },
     {
       icon: Users,
@@ -70,7 +70,7 @@ const About = () => {
               </h2>
               <p className="text-lg text-gray-600 mb-6">
                 Bible Aura was born from a simple belief: that everyone should have access to deep, meaningful biblical insights. 
-                We combine cutting-edge AI technology with timeless biblical wisdom to create a platform that serves believers 
+                We combine cutting-edge Bible Aura AI technology with timeless biblical wisdom to create a platform that serves believers 
                 at every stage of their spiritual journey.
               </p>
               <p className="text-lg text-gray-600 mb-6">
@@ -80,7 +80,7 @@ const About = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-yellow-500" />
-                  <span className="text-sm font-medium">AI-Powered Insights</span>
+                  <span className="text-sm font-medium">✦ Bible Aura AI-Powered Insights</span>
         </div>
                 <div className="flex items-center gap-2">
                   <Crown className="h-5 w-5 text-purple-500" />
@@ -208,7 +208,7 @@ const About = () => {
                 ✦Bible Aura
               </h3>
               <p className="text-gray-400 text-base">
-                AI-Powered Biblical Insight
+                ✦ Bible Aura AI-Powered Biblical Insight
               </p>
             </div>
             

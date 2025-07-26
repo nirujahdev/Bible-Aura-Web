@@ -190,8 +190,9 @@ export function AIChatWidget() {
     <Card className="h-full border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100/50">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-purple-800">
+          <span className="text-purple-600">✦</span>
           <MessageCircle className="h-5 w-5" />
-          AI Assistant
+          Bible Aura AI Assistant
           <Badge variant="secondary" className="ml-auto">
             {totalQuestions} questions
           </Badge>

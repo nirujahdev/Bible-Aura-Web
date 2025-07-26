@@ -412,6 +412,39 @@ export type Database = {
           },
         ]
       }
+      verse_highlights: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          id: string
+          is_favorite: boolean
+          updated_at: string
+          user_id: string
+          verse_id: string
+        }
+        Insert: {
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          updated_at?: string
+          user_id: string
+          verse_id: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          updated_at?: string
+          user_id?: string
+          verse_id?: string
+        }
+        Relationships: []
+      }
       daily_verses: {
         Row: {
           ai_context: string

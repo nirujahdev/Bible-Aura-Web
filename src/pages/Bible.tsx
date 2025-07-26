@@ -149,32 +149,40 @@ export default function Bible() {
   };
 
   const loadHighlights = async () => {
-    // Use local storage for highlights for now
     if (!user) return;
     
     try {
-      const stored = localStorage.getItem(`highlights_${user.id}`);
-      if (stored) {
-        const parsedData = JSON.parse(stored) as [string, VerseHighlight][];
-        const highlightMap = new Map<string, VerseHighlight>(parsedData);
-        setHighlights(highlightMap);
-      }
+      const { data, error } = await supabase
+        .from('verse_highlights')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      const highlightMap = new Map<string, VerseHighlight>();
+      data?.forEach(highlight => {
+        highlightMap.set(highlight.verse_id, highlight as VerseHighlight);
+      });
+      setHighlights(highlightMap);
     } catch (error) {
       console.error('Error loading highlights:', error);
     }
   };
 
   const loadFavorites = async () => {
-    // Use local storage for favorites for now
     if (!user) return;
     
     try {
-      const stored = localStorage.getItem(`favorites_${user.id}`);
-      if (stored) {
-        const parsedData = JSON.parse(stored) as string[];
-        const favoriteSet = new Set<string>(parsedData);
-        setFavorites(favoriteSet);
-      }
+      const { data, error } = await supabase
+        .from('verse_highlights')
+        .select('verse_id')
+        .eq('user_id', user.id)
+        .eq('is_favorite', true);
+      
+      if (error) throw error;
+      
+      const favoriteSet = new Set<string>(data?.map(item => item.verse_id) || []);
+      setFavorites(favoriteSet);
     } catch (error) {
       console.error('Error loading favorites:', error);
     }
@@ -264,16 +272,37 @@ export default function Bible() {
     const isFavorite = favorites.has(verseId);
 
     try {
-      const newFavorites = new Set(favorites);
       if (isFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('verse_highlights')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('verse_id', verseId);
+        
+        if (error) throw error;
+        
+        const newFavorites = new Set(favorites);
         newFavorites.delete(verseId);
+        setFavorites(newFavorites);
       } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('verse_highlights')
+          .upsert({
+            user_id: user.id,
+            verse_id: verseId,
+            color: 'yellow',
+            category: 'favorite',
+            is_favorite: true
+          });
+        
+        if (error) throw error;
+        
+        const newFavorites = new Set(favorites);
         newFavorites.add(verseId);
+        setFavorites(newFavorites);
       }
-      setFavorites(newFavorites);
-      
-      // Save to localStorage
-      localStorage.setItem(`favorites_${user.id}`, JSON.stringify([...newFavorites]));
 
       toast({
         title: isFavorite ? "Removed from Favorites" : "Added to Favorites",
@@ -300,22 +329,23 @@ export default function Bible() {
     }
 
     try {
-      const newHighlights = new Map(highlights);
-      const highlight: VerseHighlight = {
-        id: verse.id,
-        verse_id: verse.id,
-        color: color as any,
-        category: 'study',
-        is_favorite: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      newHighlights.set(verse.id, highlight);
-      setHighlights(newHighlights);
+      const { data, error } = await supabase
+        .from('verse_highlights')
+        .upsert({
+          user_id: user.id,
+          verse_id: verse.id,
+          color: color as any,
+          category: 'study',
+          is_favorite: false
+        })
+        .select()
+        .single();
 
-      // Save to localStorage
-      localStorage.setItem(`highlights_${user.id}`, JSON.stringify([...newHighlights.entries()]));
+      if (error) throw error;
+
+      const newHighlights = new Map(highlights);
+      newHighlights.set(verse.id, data as VerseHighlight);
+      setHighlights(newHighlights);
 
       toast({
         title: "Verse Highlighted",
@@ -646,7 +676,7 @@ export default function Bible() {
                                   size="sm"
                                   onClick={() => openAiModal(verse)}
                                   className="h-8 w-8 p-0"
-                                  title="AI Analysis"
+                                  title="✦ Bible Aura AI Analysis"
                                 >
                                   <Brain className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                                 </Button>

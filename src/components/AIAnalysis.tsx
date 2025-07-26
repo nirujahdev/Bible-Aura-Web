@@ -232,8 +232,9 @@ export function AIAnalysis({ verseId, verseText, verseReference, isOpen, onClose
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
+                <span className="text-primary">✦</span>
                 <Sparkles className="h-5 w-5 text-primary" />
-                AI Analysis for {verseReference}
+                Bible Aura AI Analysis for {verseReference}
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1 italic">
                 "{verseText.substring(0, 120)}..."
