@@ -35,9 +35,6 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-toast',
             '@radix-ui/react-accordion',
             '@radix-ui/react-avatar',
-            '@radix-ui/react-button',
-            '@radix-ui/react-card',
-            '@radix-ui/react-input',
             '@radix-ui/react-label'
           ],
           'supabase': ['@supabase/supabase-js'],
@@ -53,14 +50,7 @@ export default defineConfig(({ mode }) => ({
     // Set chunk size warning limit
     chunkSizeWarningLimit: 500,
     // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-        pure_funcs: mode === 'production' ? ['console.log'] : []
-      }
-    },
+    minify: 'esbuild',
     // Enable source maps for production debugging (can be disabled for smaller builds)
     sourcemap: mode !== 'production',
     // Optimize CSS

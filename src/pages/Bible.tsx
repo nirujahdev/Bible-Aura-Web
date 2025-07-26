@@ -702,7 +702,6 @@ export default function Bible() {
                   </div>
                 </div>
               )}
-            </div>
           </div>
         </div>
       </div>
