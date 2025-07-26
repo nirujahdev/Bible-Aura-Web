@@ -97,9 +97,9 @@ export function BibleStudyWidget() {
   };
 
   return (
-    <Card className="h-full border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50">
+    <Card className="h-full border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100/50">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-blue-800">
+        <CardTitle className="flex items-center gap-2 text-orange-800">
           <BookOpen className="h-5 w-5" />
           Bible Study
           <Badge variant="secondary" className="ml-auto">
@@ -111,38 +111,38 @@ export function BibleStudyWidget() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center p-3 bg-white/60 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{bookmarks.length}</div>
-            <div className="text-xs text-blue-600/70">Bookmarks</div>
+            <div className="text-2xl font-bold text-orange-600">{bookmarks.length}</div>
+            <div className="text-xs text-orange-600/70">Bookmarks</div>
           </div>
           <div className="text-center p-3 bg-white/60 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">4</div>
-            <div className="text-xs text-blue-600/70">Translations</div>
+            <div className="text-2xl font-bold text-orange-600">4</div>
+            <div className="text-xs text-orange-600/70">Translations</div>
           </div>
         </div>
 
         {/* Recent Bookmarks */}
         {bookmarks.length > 0 ? (
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-blue-800">Recent Bookmarks</h4>
+            <h4 className="text-sm font-semibold text-orange-800">Recent Bookmarks</h4>
             {bookmarks.slice(0, 2).map((bookmark: BookmarkData) => (
               <div key={bookmark.id} className="p-2 bg-white/60 rounded-lg text-xs">
-                <div className="font-semibold text-blue-700">
+                <div className="font-semibold text-orange-700">
                   {bookmark.bible_verses?.bible_books?.name} {bookmark.bible_verses?.chapter}:{bookmark.bible_verses?.verse}
                 </div>
-                <div className="text-blue-600/70 line-clamp-2">
+                <div className="text-orange-600/70 line-clamp-2">
                   {bookmark.bible_verses?.text_esv?.slice(0, 80)}...
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center text-blue-600/70 text-sm py-4">
+          <div className="text-center text-orange-600/70 text-sm py-4">
             No bookmarks yet. Start reading to save verses!
           </div>
         )}
 
         <Link to="/bible">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+          <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
             <BookOpen className="mr-2 h-4 w-4" />
             Open Bible
           </Button>

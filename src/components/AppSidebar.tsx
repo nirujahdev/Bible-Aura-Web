@@ -367,8 +367,8 @@ export function AppSidebar() {
                         !shouldShowExpanded ? 'justify-center w-12 h-12' : ''
                       } ${
                         location.pathname === item.url 
-                          ? 'bg-blue-50 border border-blue-200 text-blue-700' 
-                          : 'text-gray-700'
+                                                  ? 'bg-orange-50 border border-orange-200 text-orange-700' 
+                        : 'text-gray-700'
                       }`}
                       tooltip={!shouldShowExpanded ? item.title : undefined}
                     >
@@ -377,7 +377,7 @@ export function AppSidebar() {
                           <>
                             <item.icon className={`h-5 w-5 flex-shrink-0 ${
                               location.pathname === item.url 
-                                ? 'text-blue-600' 
+                                ? 'text-orange-600' 
                                 : 'text-gray-600'
                             }`} />
                             <span className="font-medium text-sm truncate">{item.title}</span>
@@ -386,7 +386,7 @@ export function AppSidebar() {
                           <div className="relative flex items-center justify-center" title={item.title}>
                             <item.icon className={`h-5 w-5 ${
                               location.pathname === item.url 
-                                ? 'text-blue-600' 
+                                ? 'text-orange-600' 
                                 : 'text-gray-600'
                             }`} />
                           </div>

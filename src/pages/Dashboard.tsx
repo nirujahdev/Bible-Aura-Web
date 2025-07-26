@@ -176,7 +176,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">{profile?.reading_streak || 0}</div>
+              <div className="text-2xl font-bold text-orange-600 mb-1">{profile?.reading_streak || 0}</div>
               <div className="text-sm text-gray-600">Day Streak</div>
             </CardContent>
           </Card>

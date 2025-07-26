@@ -4,11 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Star, Book, Sparkles, Globe, Languages, StickyNote, Brain, 
-  Palette, MessageCircle, BookOpen, Filter, Highlighter, Plus
+  Palette, MessageCircle, BookOpen
 } from 'lucide-react';
 import { ModernHeader } from '@/components/ModernHeader';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,10 +46,10 @@ const LANGUAGES = [
 const HIGHLIGHT_COLORS = [
   { value: 'yellow', label: 'Yellow', class: 'bg-yellow-200 hover:bg-yellow-300' },
   { value: 'green', label: 'Green', class: 'bg-green-200 hover:bg-green-300' },
-  { value: 'blue', label: 'Blue', class: 'bg-blue-200 hover:bg-blue-300' },
+  { value: 'orange', label: 'Orange', class: 'bg-orange-200 hover:bg-orange-300' },
   { value: 'purple', label: 'Purple', class: 'bg-purple-200 hover:bg-purple-300' },
   { value: 'pink', label: 'Pink', class: 'bg-pink-200 hover:bg-pink-300' },
-  { value: 'orange', label: 'Orange', class: 'bg-orange-200 hover:bg-orange-300' },
+  { value: 'red', label: 'Red', class: 'bg-red-200 hover:bg-red-300' }
 ];
 
 export default function Bible() {
@@ -62,12 +61,10 @@ export default function Bible() {
   const [selectedChapter, setSelectedChapter] = useState(1);
   const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
   const [searchQuery, setSearchQuery] = useState('');
-  const [wordSearchQuery, setWordSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
   const [booksLoading, setBooksLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [wordSearchLoading, setWordSearchLoading] = useState(false);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [highlights, setHighlights] = useState<Map<string, VerseHighlight>>(new Map());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -195,6 +192,22 @@ export default function Bible() {
     try {
       const results = await searchVerses(searchQuery, selectedLanguage);
       setSearchResults(results);
+      
+      // Clear current verses to show search results
+      setVerses([]);
+      setSelectedBook(null);
+      
+      if (results.length === 0) {
+        toast({
+          title: "No Results",
+          description: "No verses found matching your search",
+        });
+      } else {
+        toast({
+          title: "Search Complete",
+          description: `Found ${results.length} verses`,
+        });
+      }
     } catch (error) {
       console.error('Error searching verses:', error);
       toast({
@@ -204,25 +217,6 @@ export default function Bible() {
       });
     } finally {
       setSearchLoading(false);
-    }
-  };
-
-  const handleWordSearch = async () => {
-    if (!wordSearchQuery.trim()) return;
-    
-    setWordSearchLoading(true);
-    try {
-      const results = await searchVerses(wordSearchQuery, selectedLanguage);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Error searching words:', error);
-      toast({
-        title: "Word Search Error",
-        description: "Failed to search Bible words. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setWordSearchLoading(false);
     }
   };
 
@@ -368,10 +362,9 @@ export default function Bible() {
     const colorMap: Record<string, string> = {
       yellow: 'bg-yellow-200 border-yellow-300',
       green: 'bg-green-200 border-green-300',
-      blue: 'bg-blue-200 border-blue-300',
+      orange: 'bg-orange-200 border-orange-300',
       purple: 'bg-purple-200 border-purple-300',
       pink: 'bg-pink-200 border-pink-300',
-      orange: 'bg-orange-200 border-orange-300',
       red: 'bg-red-200 border-red-300',
       gray: 'bg-gray-200 border-gray-300',
     };
@@ -381,29 +374,100 @@ export default function Bible() {
 
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
   const newTestamentBooks = books.filter(book => book.testament === 'new');
+  const currentTranslation = LANGUAGES.find(t => t.value === selectedLanguage);
 
   return (
     <PageLayout padding="none" maxWidth="full">
-      <div className="min-h-screen bg-background">
+      <div className="bible-full-layout min-h-screen bg-background flex flex-col">
         {/* Modern Guest User Header */}
         {!user && (
           <ModernHeader variant="default" showDismiss={true} />
         )}
 
-        {/* Top Header with Book Selection */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 shadow-lg">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row items-center gap-4">
-              {/* Title */}
-              <div className="flex items-center gap-3">
-                <Book className="h-6 w-6" />
-                <h1 className="text-2xl font-bold">Bible Aura</h1>
-                <Sparkles className="h-5 w-5" />
-              </div>
+        {/* Full-Width Header */}
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 border-b flex-shrink-0">
+          <div className="max-w-full mx-auto">
+            <div className="flex items-center gap-3">
+              <Book className="h-6 w-6" />
+              <h1 className="text-2xl font-divine">Sacred Scripture</h1>
+              <Sparkles className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
 
-              {/* Book Selection */}
-              <div className="flex flex-col lg:flex-row items-center gap-4 flex-1">
-                <div className="flex items-center gap-2">
+        {/* Main Content - Sidebar Layout */}
+        <div className="flex-1 flex flex-col lg:flex-row">
+          {/* Sidebar Controls - Responsive */}
+          <div className="bible-sidebar w-full lg:w-80 xl:w-96 bg-muted/30 border-b lg:border-b-0 lg:border-r p-4 space-y-4">
+            {/* Language Selection */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Languages className="h-4 w-4" />
+                  Bible Language
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <label className="text-xs font-medium mb-2 block">Select Language & Translation</label>
+                  <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map(language => (
+                        <SelectItem key={language.value} value={language.value}>
+                          <div className="flex flex-col items-start">
+                            <span className="font-medium">{language.label}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {language.value === 'english' ? 'King James Version' : 'Tamil Bible'}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Search Section */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Search className="h-4 w-4" />
+                  Search Verses
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Search verses... (e.g., 'love', 'John 3:16')"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    className="w-full"
+                  />
+                  <Button onClick={handleSearch} disabled={searchLoading} className="w-full bg-orange-500 hover:bg-orange-600">
+                    <Search className="h-4 w-4 mr-2" />
+                    {searchLoading ? 'Searching...' : 'Search Scripture'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Book and Chapter Selection */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Book & Chapter
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Book Selection */}
+                <div>
+                  <label className="text-xs font-medium mb-2 block">Book</label>
                   <Select 
                     value={selectedBook?.name || ''} 
                     onValueChange={(bookName) => {
@@ -411,35 +475,49 @@ export default function Bible() {
                       if (book) {
                         setSelectedBook(book);
                         setSelectedChapter(1);
+                        setSearchResults([]);
                       }
                     }}
                     disabled={booksLoading}
                   >
-                    <SelectTrigger className="w-48 bg-white text-gray-900">
-                      <SelectValue placeholder="Select Book" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select book" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      <div className="p-2 text-xs font-semibold text-gray-500">Old Testament</div>
-                      {oldTestamentBooks.map(book => (
-                        <SelectItem key={book.id} value={book.name}>
-                          {book.name}
-                        </SelectItem>
-                      ))}
-                      <div className="p-2 text-xs font-semibold text-gray-500">New Testament</div>
-                      {newTestamentBooks.map(book => (
-                        <SelectItem key={book.id} value={book.name}>
-                          {book.name}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="max-h-80">
+                      {oldTestamentBooks.length > 0 && (
+                        <div className="p-2">
+                          <h4 className="font-medium text-xs text-muted-foreground mb-1">Old Testament</h4>
+                          {oldTestamentBooks.map(book => (
+                            <SelectItem key={book.name} value={book.name}>
+                              {book.name}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      )}
+                      {newTestamentBooks.length > 0 && (
+                        <div className="p-2 border-t">
+                          <h4 className="font-medium text-xs text-muted-foreground mb-1">New Testament</h4>
+                          {newTestamentBooks.map(book => (
+                            <SelectItem key={book.name} value={book.name}>
+                              {book.name}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
+                </div>
 
+                {/* Chapter Selection */}
+                <div>
+                  <label className="text-xs font-medium mb-2 block">Chapter</label>
                   <Select 
                     value={selectedChapter.toString()} 
                     onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}
+                    disabled={!selectedBook}
                   >
-                    <SelectTrigger className="w-32 bg-white text-gray-900">
-                      <SelectValue placeholder="Chapter" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select chapter" />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       {selectedBook && Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map(chapter => (
@@ -451,191 +529,134 @@ export default function Bible() {
                   </Select>
                 </div>
 
-                {/* Language Selection */}
-                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-48 bg-white text-gray-900">
-                    <SelectValue placeholder="Language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(language => (
-                      <SelectItem key={language.value} value={language.value}>
-                        {language.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
                 {/* Chapter Navigation */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigateChapter('prev')}
-                    disabled={selectedChapter <= 1}
-                    className="bg-white text-gray-900 hover:bg-gray-100"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigateChapter('next')}
-                    disabled={selectedChapter >= (selectedBook?.chapters || 1)}
-                    className="bg-white text-gray-900 hover:bg-gray-100"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                {selectedBook && (
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateChapter('prev')}
+                      disabled={selectedChapter <= 1}
+                      className="flex-1"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateChapter('next')}
+                      disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                      className="flex-1"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content Area - Full Width */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Chapter Header */}
+            <div className="bg-white border-b p-4 flex-shrink-0">
+              <div className="max-w-full">
+                <h2 className="text-xl lg:text-2xl font-bold text-orange-600">
+                  {selectedBook ? (
+                    <>
+                      {selectedBook.name} Chapter {selectedChapter}
+                      {currentTranslation && (
+                        <span className="text-base font-normal text-muted-foreground ml-3">
+                          ({currentTranslation.label})
+                        </span>
+                      )}
+                    </>
+                  ) : searchResults.length > 0 ? (
+                    <>
+                      Search Results for "{searchQuery}"
+                      {currentTranslation && (
+                        <span className="text-base font-normal text-muted-foreground ml-3">
+                          ({currentTranslation.label})
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    "Select a book and chapter to begin reading"
+                  )}
+                </h2>
+
+                {/* Verse Count & Info */}
+                {(verses.length > 0 || searchResults.length > 0) && (
+                  <div className="flex items-center gap-4 mt-2">
+                    <Badge variant="secondary" className="text-sm">
+                      {searchResults.length > 0 ? searchResults.length : verses.length} verses
+                    </Badge>
+                    {currentTranslation && (
+                      <Badge variant="outline" className="text-sm">
+                        {currentTranslation.label}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Search Sidebar */}
-            <div className="lg:col-span-1 space-y-4">
-              <Tabs defaultValue="verse-search" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="verse-search">Verse Search</TabsTrigger>
-                  <TabsTrigger value="word-search">Word Search</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="verse-search" className="space-y-4">
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Search className="h-4 w-4" />
-                        Search Verses
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Input
-                        placeholder="Search verses..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                      />
-                      <Button 
-                        onClick={handleSearch} 
-                        disabled={searchLoading} 
-                        className="w-full"
-                      >
-                        {searchLoading ? 'Searching...' : 'Search Verses'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="word-search" className="space-y-4">
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Filter className="h-4 w-4" />
-                        Bible Word Search
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Input
-                        placeholder="Search Bible words..."
-                        value={wordSearchQuery}
-                        onChange={(e) => setWordSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleWordSearch()}
-                      />
-                      <Button 
-                        onClick={handleWordSearch} 
-                        disabled={wordSearchLoading} 
-                        className="w-full"
-                      >
-                        {wordSearchLoading ? 'Searching...' : 'Search Words'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Search Results ({searchResults.length})</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 max-h-96 overflow-y-auto">
-                    {searchResults.map((result) => (
-                      <div
-                        key={result.id}
-                        className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
-                        onClick={() => {
-                          const book = books.find(b => b.name === result.book_name);
-                          if (book) {
-                            setSelectedBook(book);
-                            setSelectedChapter(result.chapter);
-                          }
-                        }}
-                      >
-                        <div className="font-medium text-sm text-blue-600 mb-1">
-                          {result.book_name} {result.chapter}:{result.verse}
-                        </div>
-                        <div className="text-sm text-gray-700 line-clamp-3">
-                          {result.text}
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Bible Content */}
-            <div className="lg:col-span-3">
-              <Card>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      {selectedBook?.name} Chapter {selectedChapter}
-                      <Badge variant="outline" className="ml-2">
-                        {selectedLanguage === 'english' ? 'KJV' : 'Tamil'}
-                      </Badge>
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">
-                        {verses.length} verses
-                      </span>
+            {/* Verses Content - Scrollable Full Width */}
+            <div className="bible-content-area bible-scrollable flex-1 overflow-auto">
+              <div className="max-w-full p-4 lg:p-6">
+                {loading || searchLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">
+                        {searchLoading ? 'Searching...' : 'Loading verses...'}
+                      </p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="flex items-center justify-center py-20">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p className="text-gray-600">Loading...</p>
-                      </div>
+                ) : searchResults.length > 0 ? (
+                  // Search Results Display
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold text-foreground mb-2">
+                        Search Results
+                      </h2>
+                      <p className="text-muted-foreground">
+                        Found {searchResults.length} verses for "{searchQuery}" in {selectedLanguage === 'english' ? 'English' : 'Tamil'}
+                      </p>
                     </div>
-                  ) : verses.length > 0 ? (
+                    
                     <div className="space-y-4">
-                      {verses.map((verse) => (
-                        <div
-                          key={verse.id}
-                          className={`group p-4 rounded-lg border transition-all duration-200 hover:shadow-sm ${
-                            getHighlightClasses(verse.id)
-                          }`}
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="flex-1">
-                              <div className="mb-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {verse.verse}
-                                </Badge>
+                      {searchResults.map((verse) => {
+                        const verseKey = verse.id;
+                        const isBookmarked = bookmarks.has(verseKey);
+                        const highlight = highlights.get(verseKey);
+                        const isFavorite = favorites.has(verseKey);
+                        
+                        return (
+                          <div
+                            key={verseKey}
+                            className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                              highlight ? `border-2 ${getHighlightClasses(verseKey)}` : 
+                              isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
+                            }`}
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="flex-1">
+                                <div className="mb-2">
+                                  <Badge variant="outline" className="text-sm">
+                                    {verse.book_name} {verse.chapter}:{verse.verse}
+                                  </Badge>
+                                </div>
+                                <p className="bible-verse-text text-base lg:text-lg leading-relaxed text-foreground font-medium">
+                                  {verse.text}
+                                </p>
                               </div>
-                              <p className="text-base leading-relaxed text-gray-800 mb-3">
-                                {verse.text}
-                              </p>
                               
-                              {/* Verse Actions */}
-                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              {/* Action Buttons */}
+                              <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                {/* Favorite */}
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -643,7 +664,7 @@ export default function Bible() {
                                   className="h-8 w-8 p-0"
                                 >
                                   <Heart className={`h-4 w-4 ${
-                                    favorites.has(verse.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                                    isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
                                   }`} />
                                 </Button>
 
@@ -660,47 +681,184 @@ export default function Bible() {
                                     />
                                   ))}
                                 </div>
-
-                                <Button
-                                  variant="ghost"
+                                
+                                {/* Notes */}
+                                <Button 
+                                  variant="ghost" 
                                   size="sm"
                                   onClick={() => openNoteModal(verse)}
                                   className="h-8 w-8 p-0"
-                                  title="Add Note"
+                                  title="Add note"
                                 >
-                                  <StickyNote className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                  <StickyNote className="h-4 w-4" />
                                 </Button>
 
-                                <Button
-                                  variant="ghost"
+                                {/* Bible Aura AI Analysis */}
+                                <Button 
+                                  variant="ghost" 
                                   size="sm"
                                   onClick={() => openAiModal(verse)}
                                   className="h-8 w-8 p-0"
                                   title="✦ Bible Aura AI Analysis"
                                 >
-                                  <Brain className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                                  <Brain className="h-4 w-4" />
+                                </Button>
+                                
+                                {/* Share */}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => {
+                                    const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+                                    navigator.clipboard.writeText(`${reference} - ${verse.text}`);
+                                    toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
+                                  }}
+                                  title="Copy verse"
+                                >
+                                  <Share className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-center py-20">
-                      <div className="text-center">
-                        <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">
-                          {searchQuery ? 
-                            `No verses found matching "${searchQuery}". Try a different search term.` :
-                            'Choose a Bible book to start reading, or search for specific verses.'
+                    
+                    <div className="mt-6 text-center">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setSearchResults([]);
+                          setSearchQuery('');
+                          if (selectedBook) {
+                            loadChapter();
                           }
-                        </p>
-                      </div>
+                        }}
+                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                      >
+                        Back to Chapter View
+                      </Button>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </div>
+                ) : verses.length > 0 ? (
+                  // Chapter Display
+                  <div>
+                    {/* Verses Grid */}
+                    <div className="space-y-4">
+                      {verses.map((verse) => {
+                        const verseKey = verse.id;
+                        const isBookmarked = bookmarks.has(verseKey);
+                        const highlight = highlights.get(verseKey);
+                        const isFavorite = favorites.has(verseKey);
+                        
+                        return (
+                          <div
+                            key={verseKey}
+                            className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                              highlight ? `border-2 ${getHighlightClasses(verseKey)}` : 
+                              isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
+                            }`}
+                          >
+                            <div className="flex items-start gap-4">
+                              <span className="text-sm font-bold text-orange-600 bg-orange-100 px-3 py-2 rounded-full min-w-[2.5rem] text-center flex-shrink-0">
+                                {verse.verse}
+                              </span>
+                              <div className="flex-1">
+                                <p className="bible-verse-text text-base lg:text-lg leading-relaxed text-foreground font-medium">
+                                  {verse.text}
+                                </p>
+                              </div>
+                              
+                              {/* Action Buttons */}
+                              <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                {/* Favorite */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleFavorite(verse)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Heart className={`h-4 w-4 ${
+                                    isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                                  }`} />
+                                </Button>
+
+                                {/* Highlight Options */}
+                                <div className="flex items-center gap-1">
+                                  {HIGHLIGHT_COLORS.map((color) => (
+                                    <Button
+                                      key={color.value}
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => highlightVerse(verse, color.value)}
+                                      className={`h-6 w-6 p-0 rounded-full ${color.class}`}
+                                      title={`Highlight with ${color.label}`}
+                                    />
+                                  ))}
+                                </div>
+                                
+                                {/* Notes */}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => openNoteModal(verse)}
+                                  className="h-8 w-8 p-0"
+                                  title="Add note"
+                                >
+                                  <StickyNote className="h-4 w-4" />
+                                </Button>
+
+                                {/* Bible Aura AI Analysis */}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => openAiModal(verse)}
+                                  className="h-8 w-8 p-0"
+                                  title="✦ Bible Aura AI Analysis"
+                                >
+                                  <Brain className="h-4 w-4" />
+                                </Button>
+                                
+                                {/* Share */}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => {
+                                    const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+                                    navigator.clipboard.writeText(`${reference} - ${verse.text}`);
+                                    toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
+                                  }}
+                                  title="Copy verse"
+                                >
+                                  <Share className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  // Empty State
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {searchQuery ? 'No verses found' : 'Select a book to begin'}
+                      </h3>
+                      <p className="text-muted-foreground max-w-md">
+                        {searchQuery ? 
+                          `No verses found matching "${searchQuery}". Try a different search term.` :
+                          'Choose a Bible book from the sidebar to start reading, or search for specific verses.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
