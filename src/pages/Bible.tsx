@@ -44,7 +44,6 @@ export default function Bible() {
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
   const [booksLoading, setBooksLoading] = useState(true);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [noteModalOpen, setNoteModalOpen] = useState(false);
@@ -71,15 +70,6 @@ export default function Bible() {
     try {
       const booksData = await getAllBooks();
       setBooks(booksData);
-      
-      // Set default book to John chapter 3
-      const johnBook = booksData.find(book => 
-        book.name.toLowerCase().includes('john') && !book.name.includes('1') && !book.name.includes('2') && !book.name.includes('3')
-      );
-      if (johnBook && !selectedBook) {
-        setSelectedBook(johnBook);
-        setSelectedChapter(3);
-      }
     } catch (error) {
       console.error('Error loading books:', error);
       toast({
@@ -145,14 +135,9 @@ export default function Bible() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
-    setSearchLoading(true);
     try {
       const results = await searchVerses(searchQuery, selectedLanguage);
       setSearchResults(results);
-      
-      // Clear current verses to show search results
-      setVerses([]);
-      setSelectedBook(null);
       
       if (results.length === 0) {
         toast({
@@ -172,8 +157,6 @@ export default function Bible() {
         description: "Failed to search verses. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setSearchLoading(false);
     }
   };
 
@@ -378,7 +361,7 @@ export default function Bible() {
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   className="flex-1"
                 />
-                <Button onClick={handleSearch} disabled={searchLoading} className="bg-orange-500 hover:bg-orange-600">
+                <Button onClick={handleSearch} className="bg-orange-500 hover:bg-orange-600">
                   <Search className="h-4 w-4" />
                 </Button>
               </div>
@@ -482,16 +465,7 @@ export default function Bible() {
         {/* Verses Content - Scrollable Full Width */}
         <div className="bible-content-area bible-scrollable flex-1 overflow-auto">
           <div className="max-w-7xl mx-auto p-4 lg:p-6">
-              {loading || searchLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">
-                      {searchLoading ? 'Searching...' : 'Loading verses...'}
-                    </p>
-                  </div>
-                </div>
-              ) : searchResults.length > 0 ? (
+              {searchResults.length > 0 ? (
                 // Search Results Display
                 <div>
                   <div className="mb-6">
@@ -512,18 +486,27 @@ export default function Bible() {
                       return (
                         <div
                           key={verseKey}
-                          className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                            isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
+                          className={`bible-verse-card group p-6 rounded-xl border transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${
+                            isBookmarked ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md' : 'border-gray-200 hover:border-orange-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-orange-50'
                           }`}
                         >
-                          <div className="flex items-start gap-4">
+                          <div className="flex items-start gap-5">
+                            <div className="verse-number-container">
+                              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl font-bold text-white shadow-lg ${
+                                parseInt(verse.verse.toString()) >= 12 && parseInt(verse.verse.toString()) <= 14 
+                                  ? 'bg-gradient-to-br from-amber-500 to-orange-600 ring-2 ring-amber-300' 
+                                  : 'bg-gradient-to-br from-orange-500 to-red-500'
+                              }`}>
+                                {verse.verse}
+                              </span>
+                            </div>
                             <div className="flex-1">
-                              <div className="mb-2">
-                                <Badge variant="outline" className="text-sm">
+                              <div className="mb-3">
+                                <Badge variant="outline" className="text-sm font-medium bg-gray-100 text-gray-700 border-gray-300">
                                   {verse.book_name} {verse.chapter}:{verse.verse}
                                 </Badge>
                               </div>
-                              <p className="bible-verse-text text-xs leading-relaxed text-foreground font-medium">
+                              <p className="bible-verse-text text-base leading-relaxed text-gray-800 font-medium tracking-wide">
                                 {verse.text}
                               </p>
                             </div>
@@ -591,13 +574,10 @@ export default function Bible() {
                       onClick={() => {
                         setSearchResults([]);
                         setSearchQuery('');
-                        if (selectedBook) {
-                          loadChapter();
-                        }
                       }}
                       className="border-orange-300 text-orange-600 hover:bg-orange-50"
                     >
-                      Back to Chapter View
+                      Clear Search
                     </Button>
                   </div>
                 </div>
@@ -614,16 +594,22 @@ export default function Bible() {
                       return (
                         <div
                           key={verseKey}
-                          className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                            isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
+                          className={`bible-verse-card group p-6 rounded-xl border transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${
+                            isBookmarked ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md' : 'border-gray-200 hover:border-orange-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-orange-50'
                           }`}
                         >
-                          <div className="flex items-start gap-4">
-                            <span className="text-sm font-bold text-orange-600 bg-orange-100 px-3 py-2 rounded-full min-w-[2.5rem] text-center flex-shrink-0">
-                              {verse.verse}
-                            </span>
+                          <div className="flex items-start gap-5">
+                            <div className="verse-number-container">
+                              <span className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl font-bold text-white shadow-lg ${
+                                parseInt(verse.verse.toString()) >= 12 && parseInt(verse.verse.toString()) <= 14 
+                                  ? 'bg-gradient-to-br from-amber-500 to-orange-600 ring-2 ring-amber-300' 
+                                  : 'bg-gradient-to-br from-orange-500 to-red-500'
+                              }`}>
+                                {verse.verse}
+                              </span>
+                            </div>
                             <div className="flex-1">
-                              <p className="bible-verse-text text-xs leading-relaxed text-foreground font-medium">
+                              <p className="bible-verse-text text-base leading-relaxed text-gray-800 font-medium tracking-wide">
                                 {verse.text}
                               </p>
                             </div>
