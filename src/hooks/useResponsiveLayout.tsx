@@ -41,7 +41,7 @@ export function useResponsiveLayout(options: UseResponsiveLayoutOptions = {}) {
       return (
         'ontouchstart' in window ||
         navigator.maxTouchPoints > 0 ||
-        // @ts-ignore
+        // @ts-expect-error - msMaxTouchPoints is IE-specific property
         navigator.msMaxTouchPoints > 0
       );
     };

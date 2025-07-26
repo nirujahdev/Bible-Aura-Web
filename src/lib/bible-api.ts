@@ -272,7 +272,7 @@ export const BIBLE_BOOKS = [
 ];
 
 class BibleApiService {
-  private cache = new Map<string, { data: any; timestamp: number; expires: number }>();
+  private cache = new Map<string, { data: unknown; timestamp: number; expires: number }>();
   private readonly cacheTimeout = 30 * 60 * 1000; // 30 minutes
   private readonly maxRetries = 3;
   private readonly retryDelay = 1000;
@@ -321,7 +321,7 @@ class BibleApiService {
     return null;
   }
 
-  private setCachedData(key: string, data: any, customTimeout?: number): void {
+  private setCachedData(key: string, data: unknown, customTimeout?: number): void {
     const timeout = customTimeout || this.cacheTimeout;
     this.cache.set(key, {
       data,
@@ -448,7 +448,7 @@ class BibleApiService {
 
     try {
       const response = await this.makeRequest<{ data: BibleVerse[] }>(`/bibles/${bibleId}/chapters/${chapterId}/verses`);
-      const verses = (response.data || []).map((verse: any) => ({
+              const verses = (response.data || []).map((verse: any) => ({
         id: verse.id,
         orgId: verse.orgId || verse.id,
         book: verse.bookId || chapterId.split('.')[0],
@@ -475,7 +475,7 @@ class BibleApiService {
     if (cached) return cached;
 
     try {
-      const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/verses/${verseId}`);
+              const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/verses/${verseId}`);
       const verse = response.data;
       
       if (verse) {
@@ -565,7 +565,7 @@ class BibleApiService {
     if (cached) return cached;
 
     try {
-      const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/passages/${passageId}`);
+              const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/passages/${passageId}`);
       const passage = response.data;
       
       if (passage) {

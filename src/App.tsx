@@ -78,9 +78,10 @@ function AppLayout() {
       ) : (
         // Sidebar layout for app pages
         <SidebarProvider>
-          <div className="flex h-screen relative z-10">
+          <div className="flex h-screen relative z-10 bg-gray-50/30">
             <AppSidebar />
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-auto bg-transparent w-full">
+              <div className="w-full min-h-full relative">
             <Routes>
               <Route path="/header-demo" element={<HeaderDemo />} />
               <Route path="/verse-demo" element={<VerseDemo />} />
@@ -155,6 +156,7 @@ function AppLayout() {
               
               <Route path="*" element={<NotFound />} />
             </Routes>
+              </div>
           </main>
         </div>
         </SidebarProvider>

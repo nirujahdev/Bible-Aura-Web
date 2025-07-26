@@ -183,10 +183,10 @@ const ParablesDatabase = () => {
 
       if (error) throw error;
       setParables(data || []);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error loading parables",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to load parables',
         variant: "destructive",
       });
     } finally {
@@ -210,7 +210,7 @@ const ParablesDatabase = () => {
         progressMap[progress.parable_id] = progress;
       });
       setStudyProgress(progressMap);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching study progress:', error);
     }
   };
@@ -225,7 +225,7 @@ const ParablesDatabase = () => {
 
       if (error) throw error;
       setInterpretations(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching interpretations:', error);
     }
   };
@@ -259,10 +259,10 @@ const ParablesDatabase = () => {
         title: "Progress updated",
         description: `Parable marked as ${status.replace('_', ' ')}`
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error updating progress",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to update progress',
         variant: "destructive",
       });
     }
@@ -363,10 +363,11 @@ const ParablesDatabase = () => {
           return a.main_theme.localeCompare(b.main_theme);
         case 'period':
           return a.ministry_period.localeCompare(b.ministry_period);
-        case 'progress':
+        case 'progress': {
           const aProgress = studyProgress[a.id]?.status || 'not_started';
           const bProgress = studyProgress[b.id]?.status || 'not_started';
           return aProgress.localeCompare(bProgress);
+        }
         default:
           return a.title.localeCompare(b.title);
       }

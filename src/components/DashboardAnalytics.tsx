@@ -52,6 +52,28 @@ interface AnalyticsData {
   }>;
 }
 
+interface ConversationData {
+  id: string;
+  messages: Array<{ role: string; content: string; timestamp?: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface JournalEntryData {
+  id: string;
+  content: string;
+  created_at: string;
+  mood?: string;
+  tags?: string[];
+}
+
+interface PrayerData {
+  id: string;
+  status: 'active' | 'answered' | 'archived';
+  created_at: string;
+  answered_at?: string;
+}
+
 export function DashboardAnalytics() {
   const { user, profile } = useAuth();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -91,21 +113,21 @@ export function DashboardAnalytics() {
 
       // Process conversations data
       const conversations = conversationsResult.status === 'fulfilled' ? conversationsResult.value.data || [] : [];
-      const totalQuestions = conversations.reduce((acc: number, conv: any) => {
+      const totalQuestions = conversations.reduce((acc: number, conv: ConversationData) => {
         const messages = conv.messages || [];
-        return acc + messages.filter((msg: any) => msg.role === 'user').length;
+        return acc + messages.filter((msg) => msg.role === 'user').length;
       }, 0);
 
       // Process journal data
       const journalEntries = journalResult.status === 'fulfilled' ? journalResult.value.data || [] : [];
-      const totalWords = journalEntries.reduce((acc: number, entry: any) => {
+      const totalWords = journalEntries.reduce((acc: number, entry: JournalEntryData) => {
         return acc + (entry.content?.split(' ').length || 0);
       }, 0);
 
       // Process prayer data
       const prayers = prayersResult.status === 'fulfilled' ? prayersResult.value.data || [] : [];
-      const answered = prayers.filter((p: any) => p.status === 'answered').length;
-      const active = prayers.filter((p: any) => p.status === 'active').length;
+      const answered = prayers.filter((p) => p.status === 'answered').length;
+      const active = prayers.filter((p) => p.status === 'active').length;
 
       // Calculate achievements
       const achievements = calculateAchievements({

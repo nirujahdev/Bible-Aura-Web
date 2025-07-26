@@ -41,7 +41,7 @@ export function usePWA(): PWAState & PWAActions {
   const isStandalone = useState(() => {
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
-      // @ts-ignore
+      // @ts-expect-error - standalone is a Safari-specific property
       window.navigator.standalone === true ||
       document.referrer.includes('android-app://')
     );

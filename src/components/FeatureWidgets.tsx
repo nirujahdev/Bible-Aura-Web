@@ -18,6 +18,44 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
+interface BookmarkData {
+  id: string;
+  bible_verses?: {
+    bible_books?: {
+      name: string;
+    };
+    chapter: number;
+    verse: number;
+    text_esv?: string;
+  };
+  created_at: string;
+}
+
+interface ConversationData {
+  id: string;
+  title: string;
+  messages: Array<{ role: string; content: string; timestamp?: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface JournalEntryData {
+  id: string;
+  title: string;
+  content: string;
+  mood: string;
+  created_at: string;
+}
+
+interface PrayerData {
+  id: string;
+  title: string;
+  status: 'active' | 'answered';
+  created_at: string;
+  answered_at?: string;
+  content?: string;
+}
+
 // Bible Study Widget
 export function BibleStudyWidget() {
   const { user } = useAuth();
@@ -86,7 +124,7 @@ export function BibleStudyWidget() {
         {bookmarks.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-sm font-semibold text-blue-800">Recent Bookmarks</h4>
-            {bookmarks.slice(0, 2).map((bookmark: any) => (
+            {bookmarks.slice(0, 2).map((bookmark: BookmarkData) => (
               <div key={bookmark.id} className="p-2 bg-white/60 rounded-lg text-xs">
                 <div className="font-semibold text-blue-700">
                   {bookmark.bible_verses?.bible_books?.name} {bookmark.bible_verses?.chapter}:{bookmark.bible_verses?.verse}
@@ -137,9 +175,9 @@ export function AIChatWidget() {
 
       setConversations(convData || []);
       
-      const totalQuestionCount = convData?.reduce((acc: number, conv: any) => {
+      const totalQuestionCount = convData?.reduce((acc: number, conv: ConversationData) => {
         const messages = conv.messages || [];
-        return acc + messages.filter((msg: any) => msg.role === 'user').length;
+        return acc + messages.filter((msg) => msg.role === 'user').length;
       }, 0) || 0;
       
       setTotalQuestions(totalQuestionCount);
@@ -176,12 +214,12 @@ export function AIChatWidget() {
         {conversations.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-sm font-semibold text-purple-800">Recent Chats</h4>
-            {conversations.slice(0, 2).map((conv: any) => (
+            {conversations.slice(0, 2).map((conv: ConversationData) => (
               <div key={conv.id} className="p-2 bg-white/60 rounded-lg text-xs">
-                <div className="font-semibold text-purple-700">
-                  {conv.title || 'Untitled Chat'}
+                <div className="font-semibold text-green-700 line-clamp-1">
+                  {conv.title || 'Untitled Conversation'}
                 </div>
-                <div className="text-purple-600/70">
+                <div className="text-green-600/70 text-xs">
                   {new Date(conv.created_at).toLocaleDateString()}
                 </div>
               </div>
@@ -226,6 +264,12 @@ export function JournalWidget() {
         .limit(3);
 
       setEntries(entriesData || []);
+      
+      // Calculate total words
+      const totalWords = entriesData?.reduce((acc: number, entry: JournalEntryData) => {
+        return acc + (entry.content?.split(' ').length || 0);
+      }, 0) || 0;
+
       setTotalEntries(entriesData?.length || 0);
     } catch (error) {
       console.error('Error fetching journal data:', error);
@@ -262,18 +306,13 @@ export function JournalWidget() {
         {entries.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-sm font-semibold text-green-800">Recent Entries</h4>
-            {entries.slice(0, 2).map((entry: any) => (
+            {entries.slice(0, 2).map((entry: JournalEntryData) => (
               <div key={entry.id} className="p-2 bg-white/60 rounded-lg text-xs">
-                <div className="font-semibold text-green-700 flex items-center gap-2">
-                  {entry.title || 'Untitled Entry'}
-                  {entry.mood && (
-                    <Badge variant="outline" className="text-xs">
-                      {entry.mood}
-                    </Badge>
-                  )}
+                <div className="text-purple-600/70 text-xs mb-1">
+                  {new Date(entry.created_at).toLocaleDateString()}
                 </div>
-                <div className="text-green-600/70 line-clamp-2">
-                  {entry.content?.slice(0, 60)}...
+                <div className="text-purple-700 line-clamp-2">
+                  {entry.content?.slice(0, 80)}...
                 </div>
               </div>
             ))}
@@ -356,19 +395,22 @@ export function PrayerWidget() {
         {prayers.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-sm font-semibold text-amber-800">Recent Requests</h4>
-            {prayers.slice(0, 2).map((prayer: any) => (
+            {prayers.slice(0, 2).map((prayer: PrayerData) => (
               <div key={prayer.id} className="p-2 bg-white/60 rounded-lg text-xs">
-                <div className="font-semibold text-amber-700 flex items-center gap-2">
-                  {prayer.title}
-                  <Badge 
-                    variant={prayer.status === 'answered' ? 'default' : 'secondary'} 
-                    className="text-xs"
-                  >
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    prayer.status === 'answered' ? 'bg-green-100 text-green-700' :
+                    prayer.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
                     {prayer.status}
-                  </Badge>
+                  </span>
+                  <span className="text-orange-600/70 text-xs">
+                    {new Date(prayer.created_at).toLocaleDateString()}
+                  </span>
                 </div>
-                <div className="text-amber-600/70">
-                  {new Date(prayer.created_at).toLocaleDateString()}
+                <div className="text-orange-700 line-clamp-2">
+                  {prayer.content?.slice(0, 60)}...
                 </div>
               </div>
             ))}

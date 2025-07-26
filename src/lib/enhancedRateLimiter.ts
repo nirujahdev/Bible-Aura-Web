@@ -185,49 +185,50 @@ export class EnhancedRateLimiter {
   }
 }
 
-// Create enhanced rate limiter instances with different tiers
+// Create enhanced rate limiter instances with biblical messaging
 export const aiChatRateLimiter = new EnhancedRateLimiter({
-  maxRequests: 10, // Increased from 5
-  windowMs: 60000, // 1 minute
-  burstLimit: 3, // Allow 3 quick requests
-  errorMessage: 'AI chat rate limit exceeded. Please wait before sending another message.'
+  maxRequests: 15, // Generous for biblical study (15 per minute)
+  windowMs: 60000, // 1 minute window
+  burstLimit: 5, // Allow thoughtful follow-up questions
+  errorMessage: '🕊️ Please slow down and take time to meditate on the previous biblical wisdom. "Be still, and know that I am God" (Psalm 46:10)'
 });
 
 export const bibleApiRateLimiter = new EnhancedRateLimiter({
-  maxRequests: 50, // Higher limit for Bible content
+  maxRequests: 100, // Higher limit for Bible verse lookups
   windowMs: 60000, // 1 minute
-  burstLimit: 10, // Allow quick browsing
-  errorMessage: 'Bible API rate limit exceeded. Please slow down your requests.'
+  burstLimit: 20, // Allow quick scripture browsing
+  errorMessage: '📖 Too many scripture requests. Let God\'s Word speak to your heart before seeking more. "Man shall not live by bread alone, but by every word that comes from the mouth of God" (Matthew 4:4)'
 });
 
 export const dailyVerseRateLimiter = new EnhancedRateLimiter({
-  maxRequests: 5, // Limited since it's daily content
+  maxRequests: 8, // Allow multiple daily verse requests
   windowMs: 300000, // 5 minutes
-  burstLimit: 2,
-  errorMessage: 'Daily verse generation limit reached. Please try again in a few minutes.'
+  burstLimit: 3,
+  errorMessage: '✨ Daily verse limit reached. Use this time to reflect on God\'s goodness. "This is the day that the Lord has made; let us rejoice and be glad in it" (Psalm 118:24)'
 });
 
 export const guestRateLimiter = new EnhancedRateLimiter({
-  maxRequests: 3, // Stricter for guests
+  maxRequests: 5, // More generous for guests to encourage engagement
   windowMs: 300000, // 5 minutes
-  burstLimit: 1,
-  errorMessage: 'Guest usage limit reached. Please sign in for higher limits.'
+  burstLimit: 2,
+  errorMessage: '🙏 Guest usage limit reached. Sign in to unlock more biblical insights and continue your spiritual journey!'
 });
 
-// Premium user configurations
+// Premium user configurations with biblical encouragement
 export const premiumConfigs = {
   aiChat: {
-    maxRequests: 50,
+    maxRequests: 60, // Higher limit for deep biblical study
     windowMs: 60000,
-    burstLimit: 10,
+    burstLimit: 15, // Allow extensive Q&A sessions
     priority: 'high' as const,
-    errorMessage: 'Premium AI chat limit exceeded. Please wait a moment.'
+    errorMessage: '👑 Premium biblical wisdom limit reached. Take a moment to pray and reflect on God\'s Word. "Ask, and it will be given to you; seek, and you will find" (Matthew 7:7)'
   },
   bibleApi: {
-    maxRequests: 200,
+    maxRequests: 300, // Generous scripture access
     windowMs: 60000,
-    burstLimit: 50,
-    priority: 'high' as const
+    burstLimit: 75,
+    priority: 'high' as const,
+    errorMessage: '📚 Premium scripture access limit reached. "The grass withers, the flower fades, but the word of our God will stand forever" (Isaiah 40:8)'
   }
 };
 

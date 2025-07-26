@@ -14,6 +14,7 @@ import bibleApi, { BibleBook, BibleVerse, BibleTranslation, BIBLE_TRANSLATIONS }
 import { NoteTaking } from '@/components/NoteTaking';
 import { AIAnalysis } from '@/components/AIAnalysis';
 import { HighlightSystem } from '@/components/HighlightSystem';
+import { PageLayout } from '@/components/PageLayout';
 
 interface VerseHighlight {
   id: string;
@@ -329,6 +330,7 @@ export default function Bible() {
   const currentTranslation = BIBLE_TRANSLATIONS.find(t => t.id === selectedTranslation);
 
   return (
+    <PageLayout padding="none" maxWidth="full">
     <div className="bible-full-layout min-h-screen bg-background flex flex-col">
       {/* Modern Guest User Header */}
       {!user && (
@@ -746,5 +748,6 @@ export default function Bible() {
         </>
       )}
     </div>
+    </PageLayout>
   );
 }

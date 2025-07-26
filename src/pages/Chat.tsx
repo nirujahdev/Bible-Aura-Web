@@ -9,8 +9,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-import { aiChatRateLimiter, getUserIdentifier } from '@/lib/rateLimiter';
+import { aiChatRateLimiter, getUserIdentifier } from '@/lib/enhancedRateLimiter';
 import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT } from '@/lib/api-config';
+import { PageLayout } from '@/components/PageLayout';
 
 interface Message {
   id: string;
@@ -30,33 +31,41 @@ interface Conversation {
 
 // Quick prompts for biblical conversations
 const BIBLICAL_PROMPTS = [
-  "What does the Bible say about love?",
-  "Explain this Bible verse to me",
-  "Find verses about forgiveness",
-  "What did Jesus teach about prayer?",
-  "Show me Bible verses about hope",
-  "Explain the meaning of this parable",
-  "What does Scripture say about faith?",
-  "Find Bible verses for encouragement"
+  "What does the Bible say about love and relationships?",
+  "Help me understand this Bible verse",
+  "Show me verses about God's forgiveness",
+  "What did Jesus teach about prayer and worship?",
+  "Find Bible verses about hope in difficult times",
+  "Explain the meaning of Jesus' parables",
+  "What does Scripture say about faith and trust?",
+  "Give me encouraging Bible verses for today",
+  "How do I find God's will for my life?",
+  "What does the Bible say about anxiety and worry?",
+  "Help me understand salvation through Scripture",
+  "Show me verses about God's promises"
 ];
 
-// Function to call DeepSeek Direct API
+// Function to call DeepSeek Direct API with enhanced biblical focus
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
   try {
-    console.log('🤖 Calling DeepSeek Direct API with config:', {
+    console.log('🤖 Calling DeepSeek Biblical AI:', {
       model: DEEPSEEK_CONFIG.model,
       baseURL: DEEPSEEK_CONFIG.baseURL,
       hasApiKey: !!DEEPSEEK_CONFIG.apiKey,
       messageCount: messages.length
     });
 
-    // Use direct fetch instead of OpenAI client for DeepSeek API
+    // Enhanced request with timeout and retry logic
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${DEEPSEEK_CONFIG.apiKey}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'Bible-Aura/1.0'
+        'User-Agent': 'Bible-Aura/1.0',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         model: DEEPSEEK_CONFIG.model,
@@ -71,48 +80,71 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
           }))
         ],
         temperature: 0.7,
-        max_tokens: 2000
-      })
+        max_tokens: 2000,
+        stream: false,
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.1
+      }),
+      signal: controller.signal
     });
 
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`DeepSeek API error: ${response.status} - ${errorData.error?.message || response.statusText}`);
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: { message: response.statusText } };
+      }
+      
+      const errorMessage = errorData?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(`DeepSeek API error: ${errorMessage}`);
     }
 
     const completion = await response.json();
 
-    console.log('✅ DeepSeek AI Response received:', {
+    console.log('✅ DeepSeek Biblical Response:', {
       choices: completion.choices?.length,
       model: completion.model,
-      usage: completion.usage
+      usage: completion.usage,
+      responseLength: completion.choices?.[0]?.message?.content?.length
     });
 
     const aiResponse = completion.choices?.[0]?.message?.content;
-    if (aiResponse) {
-      return { content: aiResponse, model: DEEPSEEK_CONFIG.name };
+    if (aiResponse && aiResponse.trim()) {
+      return { 
+        content: aiResponse.trim(), 
+        model: `${DEEPSEEK_CONFIG.name} (Biblical Mode)`,
+        usage: completion.usage
+      };
     } else {
-      throw new Error('No response from DeepSeek model');
+      throw new Error('Empty response from DeepSeek model');
     }
   } catch (error: any) {
-    console.error(`❌ Error with ${DEEPSEEK_CONFIG.name}:`, {
+    console.error(`❌ DeepSeek Biblical AI Error:`, {
       message: error.message,
+      name: error.name,
       status: error.status,
-      code: error.code,
-      type: error.type
+      code: error.code
     });
     
-    // Provide specific error messages based on error type
-    if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-      throw new Error('DeepSeek API authentication failed. Please check your API key.');
+    // Enhanced error handling with biblical encouragement
+    if (error.name === 'AbortError') {
+      throw new Error('🕐 Request timeout - The AI service is taking longer than expected. Please try again with a shorter question.');
+    } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+      throw new Error('🔐 Authentication failed - Please check the DeepSeek API configuration.');
     } else if (error.message.includes('429') || error.message.includes('rate limit')) {
-      throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+      throw new Error('⏳ Rate limit exceeded - Please wait a moment before asking another question. "Be still, and know that I am God" (Psalm 46:10)');
     } else if (error.message.includes('402') || error.message.includes('insufficient')) {
-      throw new Error('Insufficient credits. Please check your DeepSeek account.');
-    } else if (error.code === 'NETWORK_ERROR' || error.message.includes('fetch')) {
-      throw new Error('Network connection failed. Please check your internet connection.');
+      throw new Error('💳 Insufficient credits - Please check your DeepSeek account balance.');
+    } else if (error.message.includes('fetch') || error.message.includes('network')) {
+      throw new Error('🌐 Network connection failed - Please check your internet connection and try again.');
+    } else if (error.message.includes('parse') || error.message.includes('JSON')) {
+      throw new Error('📋 Response format error - The AI service returned an unexpected response. Please try again.');
     } else {
-      throw new Error(`DeepSeek AI service error: ${error.message || 'Unknown error occurred'}`);
+      throw new Error(`🤖 AI service error: ${error.message || 'An unexpected error occurred. Please try rephrasing your question.'}`);
     }
   }
 };
@@ -439,14 +471,23 @@ export default function Chat() {
   }
 
   return (
+    <PageLayout padding="none" maxWidth="full">
     <div className="h-screen bg-background flex flex-col">
-      {/* Simple Header */}
-      <div className="bg-primary text-white p-4 border-b">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 flex items-center justify-center bg-white/20 rounded-lg">
-            <span className="text-lg font-bold">✦</span>
+      {/* Enhanced Mobile-First Header */}
+      <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-4 border-b shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 flex items-center justify-center bg-white/20 rounded-lg backdrop-blur-sm">
+              <span className="text-lg font-bold">✦</span>
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-lg sm:text-xl font-semibold">Biblical AI Oracle</h1>
+              <p className="text-xs text-white/80 hidden sm:block">Ask anything about Scripture</p>
+            </div>
           </div>
-          <h1 className="text-xl font-semibold">AI Biblical Assistant</h1>
+          <div className="text-xs text-white/80 hidden md:block">
+            Powered by DeepSeek AI
+          </div>
         </div>
       </div>
 
@@ -596,5 +637,6 @@ export default function Chat() {
         </div>
       </div>
     </div>
+    </PageLayout>
   );
 }

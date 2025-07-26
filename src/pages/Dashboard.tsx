@@ -47,6 +47,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { DebugConsole } from "@/components/DebugConsole";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { PageLayout } from "@/components/PageLayout";
 
 const Dashboard = () => {
   const { profile, user } = useAuth();
@@ -114,7 +115,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PageLayout padding="none" maxWidth="full">
       {/* Header Banner with Orange Background and Centered Content */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -259,7 +260,7 @@ const Dashboard = () => {
       
       {/* Debug Console for Development */}
       {process.env.NODE_ENV === 'development' && <DebugConsole />}
-    </div>
+    </PageLayout>
   );
 };
 

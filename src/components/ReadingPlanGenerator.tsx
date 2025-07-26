@@ -208,7 +208,12 @@ const ReadingPlanGenerator = ({ onPlanCreated }: ReadingPlanGeneratorProps) => {
     if (!selectedPlan) return [];
 
     const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const totalChapters = selectedPlan.books.reduce((sum: number, book: any) => sum + book.chapters, 0);
+    interface Book {
+      name: string;
+      chapters: number;
+    }
+    
+    const totalChapters = selectedPlan.books.reduce((sum: number, book: Book) => sum + book.chapters, 0);
     const chaptersPerDay = Math.ceil(totalChapters / totalDays);
 
     const dailyReadings = [];

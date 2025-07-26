@@ -7,9 +7,9 @@ export const queryClient = new QueryClient({
       // Global query defaults
       staleTime: 5 * 60 * 1000, // 5 minutes - data is fresh for 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes - cache time (previously cacheTime)
-      retry: (failureCount, error: any) => {
-        // Only retry on network errors, not on 4xx errors
-        if (error?.status >= 400 && error?.status < 500) {
+          retry: (failureCount, error: any) => {
+      // Only retry on network errors, not on 4xx errors
+      if (error?.status >= 400 && error?.status < 500) {
           return false;
         }
         return failureCount < 3;

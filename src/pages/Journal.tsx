@@ -344,7 +344,7 @@ const Journal = () => {
          .sort((a, b) => new Date(b.entry_date || b.created_at).getTime() - new Date(a.entry_date || a.created_at).getTime());
        
        let streak = 0;
-       let currentDate = new Date();
+       const currentDate = new Date();
        currentDate.setHours(0, 0, 0, 0);
        
        for (const entry of sortedEntries) {

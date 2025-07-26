@@ -14,7 +14,7 @@ interface ReadingPlan {
   name: string;
   description: string;
   duration_days: number;
-  plan_data: any;
+  plan_data: unknown;
 }
 
 interface UserProgress {
@@ -110,7 +110,7 @@ const ReadingProgress = () => {
       const updatedCompletedDays = [...(userProgress.completed_days || []), day];
       const isCurrentDay = day === userProgress.current_day;
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         completed_days: updatedCompletedDays,
         last_read_at: new Date().toISOString()
       };
