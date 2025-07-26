@@ -275,460 +275,458 @@ export default function Bible() {
 
   return (
     <PageLayout padding="none" maxWidth="full">
-      <div className="bible-full-layout min-h-screen bg-background flex flex-col">
-        {/* Modern Guest User Header */}
-        {!user && (
-          <ModernHeader variant="default" showDismiss={true} />
-        )}
+      {/* Modern Guest User Header */}
+      {!user && (
+        <ModernHeader variant="default" showDismiss={true} />
+      )}
 
-        {/* Full-Width Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 border-b flex-shrink-0">
-          <div className="max-w-full mx-auto">
-            <div className="flex items-center gap-3">
-              <Book className="h-6 w-6" />
-              <h1 className="text-2xl font-divine">Sacred Scripture</h1>
-              <Sparkles className="h-5 w-5" />
-            </div>
+      {/* Full-Width Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 border-b flex-shrink-0">
+        <div className="max-w-full mx-auto">
+          <div className="flex items-center gap-3">
+            <Book className="h-6 w-6" />
+            <h1 className="text-2xl font-divine">Sacred Scripture</h1>
+            <Sparkles className="h-5 w-5" />
           </div>
         </div>
+      </div>
 
-        {/* Top Controls Section - Below Header */}
-        <div className="bg-white border-b p-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Language Selection */}
-              <div>
-                <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                  <Languages className="h-4 w-4" />
-                  Bible Language
-                </label>
-                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(language => (
-                      <SelectItem key={language.value} value={language.value}>
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">{language.label}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {language.value === 'english' ? 'King James Version' : 'Tamil Bible'}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Book Selection */}
-              <div>
-                <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Select Book
-                </label>
-                <Select 
-                  value={selectedBook?.name || ''} 
-                  onValueChange={(bookName) => {
-                    const book = books.find(b => b.name === bookName);
-                    if (book) {
-                      setSelectedBook(book);
-                      setSelectedChapter(1);
-                      setSearchResults([]);
-                    }
-                  }}
-                  disabled={booksLoading}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select book" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {booksLoading ? (
-                      <SelectItem value="loading" disabled>Loading books...</SelectItem>
-                    ) : (
-                      <>
-                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Old Testament</div>
-                        {oldTestamentBooks.map(book => (
-                          <SelectItem key={book.id} value={book.name}>
-                            {book.name}
-                          </SelectItem>
-                        ))}
-                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">New Testament</div>
-                        {newTestamentBooks.map(book => (
-                          <SelectItem key={book.id} value={book.name}>
-                            {book.name}
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Search */}
-              <div>
-                <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                  <Search className="h-4 w-4" />
-                  Search Verses
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Search verses..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleSearch} disabled={searchLoading} className="bg-orange-500 hover:bg-orange-600">
-                    <Search className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+      {/* Top Controls Section - Below Header */}
+      <div className="bg-white border-b p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Language Selection */}
+            <div>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                <Languages className="h-4 w-4" />
+                Bible Language
+              </label>
+              <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map(language => (
+                    <SelectItem key={language.value} value={language.value}>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{language.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {language.value === 'english' ? 'King James Version' : 'Tamil Bible'}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
-        </div>
 
-        {/* Chapter Navigation - Below Controls */}
-        {selectedBook && (
-          <div className="bg-gray-50 border-b p-4">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <label className="text-sm font-medium">Chapter:</label>
-                <Select 
-                  value={selectedChapter.toString()} 
-                  onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map(chapter => (
-                      <SelectItem key={chapter} value={chapter.toString()}>
-                        Chapter {chapter}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateChapter('prev')}
-                  disabled={selectedChapter <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateChapter('next')}
-                  disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Chapter Header */}
-          <div className="bg-white border-b p-4 flex-shrink-0">
-            <div className="max-w-7xl mx-auto">
-              <h2 className="text-xl lg:text-2xl font-bold text-orange-600">
-                {selectedBook ? (
-                  <>
-                    {selectedBook.name} Chapter {selectedChapter}
-                    {currentTranslation && (
-                      <span className="text-base font-normal text-muted-foreground ml-3">
-                        ({currentTranslation.label})
-                      </span>
-                    )}
-                  </>
-                ) : searchResults.length > 0 ? (
-                  <>
-                    Search Results for "{searchQuery}"
-                    {currentTranslation && (
-                      <span className="text-base font-normal text-muted-foreground ml-3">
-                        ({currentTranslation.label})
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  "Select a book and chapter to begin reading"
-                )}
-              </h2>
-
-              {/* Verse Count & Info */}
-              {(verses.length > 0 || searchResults.length > 0) && (
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge variant="secondary" className="text-sm">
-                    {searchResults.length > 0 ? searchResults.length : verses.length} verses
-                  </Badge>
-                  {currentTranslation && (
-                    <Badge variant="outline" className="text-sm">
-                      {currentTranslation.label}
-                    </Badge>
+            {/* Book Selection */}
+            <div>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Select Book
+              </label>
+              <Select 
+                value={selectedBook?.name || ''} 
+                onValueChange={(bookName) => {
+                  const book = books.find(b => b.name === bookName);
+                  if (book) {
+                    setSelectedBook(book);
+                    setSelectedChapter(1);
+                    setSearchResults([]);
+                  }
+                }}
+                disabled={booksLoading}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select book" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {booksLoading ? (
+                    <SelectItem value="loading" disabled>Loading books...</SelectItem>
+                  ) : (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Old Testament</div>
+                      {oldTestamentBooks.map(book => (
+                        <SelectItem key={book.id} value={book.name}>
+                          {book.name}
+                        </SelectItem>
+                      ))}
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground mt-2">New Testament</div>
+                      {newTestamentBooks.map(book => (
+                        <SelectItem key={book.id} value={book.name}>
+                          {book.name}
+                        </SelectItem>
+                      ))}
+                    </>
                   )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Search */}
+            <div>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Search Verses
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search verses..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="flex-1"
+                />
+                <Button onClick={handleSearch} disabled={searchLoading} className="bg-orange-500 hover:bg-orange-600">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Chapter Navigation - Below Controls */}
+      {selectedBook && (
+        <div className="bg-gray-50 border-b p-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium">Chapter:</label>
+              <Select 
+                value={selectedChapter.toString()} 
+                onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map(chapter => (
+                    <SelectItem key={chapter} value={chapter.toString()}>
+                      Chapter {chapter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateChapter('prev')}
+                disabled={selectedChapter <= 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateChapter('next')}
+                disabled={selectedChapter >= (selectedBook.chapters || 1)}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Chapter Header */}
+        <div className="bg-white border-b p-4 flex-shrink-0">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-xl lg:text-2xl font-bold text-orange-600">
+              {selectedBook ? (
+                <>
+                  {selectedBook.name} Chapter {selectedChapter}
+                  {currentTranslation && (
+                    <span className="text-base font-normal text-muted-foreground ml-3">
+                      ({currentTranslation.label})
+                    </span>
+                  )}
+                </>
+              ) : searchResults.length > 0 ? (
+                <>
+                  Search Results for "{searchQuery}"
+                  {currentTranslation && (
+                    <span className="text-base font-normal text-muted-foreground ml-3">
+                      ({currentTranslation.label})
+                    </span>
+                  )}
+                </>
+              ) : (
+                "Select a book and chapter to begin reading"
+              )}
+            </h2>
+
+            {/* Verse Count & Info */}
+            {(verses.length > 0 || searchResults.length > 0) && (
+              <div className="flex items-center gap-4 mt-2">
+                <Badge variant="secondary" className="text-sm">
+                  {searchResults.length > 0 ? searchResults.length : verses.length} verses
+                </Badge>
+                {currentTranslation && (
+                  <Badge variant="outline" className="text-sm">
+                    {currentTranslation.label}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Verses Content - Scrollable Full Width */}
+        <div className="bible-content-area bible-scrollable flex-1 overflow-auto">
+          <div className="max-w-7xl mx-auto p-4 lg:p-6">
+              {loading || searchLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      {searchLoading ? 'Searching...' : 'Loading verses...'}
+                    </p>
+                  </div>
+                </div>
+              ) : searchResults.length > 0 ? (
+                // Search Results Display
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-foreground mb-2">
+                      Search Results
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Found {searchResults.length} verses for "{searchQuery}" in {selectedLanguage === 'english' ? 'English' : 'Tamil'}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {searchResults.map((verse) => {
+                      const verseKey = verse.id;
+                      const isBookmarked = bookmarks.has(verseKey);
+                      const isFavorite = favorites.has(verseKey);
+                      
+                      return (
+                        <div
+                          key={verseKey}
+                          className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                            isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="flex-1">
+                              <div className="mb-2">
+                                <Badge variant="outline" className="text-sm">
+                                  {verse.book_name} {verse.chapter}:{verse.verse}
+                                </Badge>
+                              </div>
+                              <p className="bible-verse-text text-xs leading-relaxed text-foreground font-medium">
+                                {verse.text}
+                              </p>
+                            </div>
+                            
+                            {/* Action Buttons */}
+                            <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              {/* Favorite */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleFavorite(verse)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Heart className={`h-4 w-4 ${
+                                  isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                                }`} />
+                              </Button>
+
+                              {/* Notes */}
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => openNoteModal(verse)}
+                                className="h-8 w-8 p-0"
+                                title="Add note"
+                              >
+                                <StickyNote className="h-4 w-4" />
+                              </Button>
+
+                              {/* Bible Aura AI Analysis */}
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => openAiModal(verse)}
+                                className="h-8 w-8 p-0"
+                                title="✦ Bible Aura AI Analysis"
+                              >
+                                <Brain className="h-4 w-4" />
+                              </Button>
+                              
+                              {/* Share */}
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+                                  navigator.clipboard.writeText(`${reference} - ${verse.text}`);
+                                  toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
+                                }}
+                                title="Copy verse"
+                              >
+                                <Share className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="mt-6 text-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setSearchResults([]);
+                        setSearchQuery('');
+                        if (selectedBook) {
+                          loadChapter();
+                        }
+                      }}
+                      className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                    >
+                      Back to Chapter View
+                    </Button>
+                  </div>
+                </div>
+              ) : verses.length > 0 ? (
+                // Chapter Display
+                <div>
+                  {/* Verses Grid */}
+                  <div className="space-y-4">
+                    {verses.map((verse) => {
+                      const verseKey = verse.id;
+                      const isBookmarked = bookmarks.has(verseKey);
+                      const isFavorite = favorites.has(verseKey);
+                      
+                      return (
+                        <div
+                          key={verseKey}
+                          className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                            isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <span className="text-sm font-bold text-orange-600 bg-orange-100 px-3 py-2 rounded-full min-w-[2.5rem] text-center flex-shrink-0">
+                              {verse.verse}
+                            </span>
+                            <div className="flex-1">
+                              <p className="bible-verse-text text-xs leading-relaxed text-foreground font-medium">
+                                {verse.text}
+                              </p>
+                            </div>
+                            
+                            {/* Action Buttons */}
+                            <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              {/* Favorite */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleFavorite(verse)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Heart className={`h-4 w-4 ${
+                                  isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                                }`} />
+                              </Button>
+
+                              {/* Notes */}
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => openNoteModal(verse)}
+                                className="h-8 w-8 p-0"
+                                title="Add note"
+                              >
+                                <StickyNote className="h-4 w-4" />
+                              </Button>
+
+                              {/* Bible Aura AI Analysis */}
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => openAiModal(verse)}
+                                className="h-8 w-8 p-0"
+                                title="✦ Bible Aura AI Analysis"
+                              >
+                                <Brain className="h-4 w-4" />
+                              </Button>
+                              
+                              {/* Share */}
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+                                  navigator.clipboard.writeText(`${reference} - ${verse.text}`);
+                                  toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
+                                }}
+                                title="Copy verse"
+                              >
+                                <Share className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                // Empty State
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      {searchQuery ? 'No verses found' : 'Select a book to begin'}
+                    </h3>
+                    <p className="text-muted-foreground max-w-md">
+                      {searchQuery ? 
+                        `No verses found matching "${searchQuery}". Try a different search term.` :
+                        'Choose a Bible book from the sidebar to start reading, or search for specific verses.'
+                      }
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
           </div>
-
-          {/* Verses Content - Scrollable Full Width */}
-          <div className="bible-content-area bible-scrollable flex-1 overflow-auto">
-            <div className="max-w-7xl mx-auto p-4 lg:p-6">
-                {loading || searchLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                      <p className="text-muted-foreground">
-                        {searchLoading ? 'Searching...' : 'Loading verses...'}
-                      </p>
-                    </div>
-                  </div>
-                ) : searchResults.length > 0 ? (
-                  // Search Results Display
-                  <div>
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold text-foreground mb-2">
-                        Search Results
-                      </h2>
-                      <p className="text-muted-foreground">
-                        Found {searchResults.length} verses for "{searchQuery}" in {selectedLanguage === 'english' ? 'English' : 'Tamil'}
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {searchResults.map((verse) => {
-                        const verseKey = verse.id;
-                        const isBookmarked = bookmarks.has(verseKey);
-                        const isFavorite = favorites.has(verseKey);
-                        
-                        return (
-                          <div
-                            key={verseKey}
-                            className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                              isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
-                            }`}
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="flex-1">
-                                <div className="mb-2">
-                                  <Badge variant="outline" className="text-sm">
-                                    {verse.book_name} {verse.chapter}:{verse.verse}
-                                  </Badge>
-                                </div>
-                                <p className="bible-verse-text text-xs leading-relaxed text-foreground font-medium">
-                                  {verse.text}
-                                </p>
-                              </div>
-                              
-                              {/* Action Buttons */}
-                              <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                {/* Favorite */}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleFavorite(verse)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Heart className={`h-4 w-4 ${
-                                    isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
-                                  }`} />
-                                </Button>
-
-                                {/* Notes */}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => openNoteModal(verse)}
-                                  className="h-8 w-8 p-0"
-                                  title="Add note"
-                                >
-                                  <StickyNote className="h-4 w-4" />
-                                </Button>
-
-                                {/* Bible Aura AI Analysis */}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => openAiModal(verse)}
-                                  className="h-8 w-8 p-0"
-                                  title="✦ Bible Aura AI Analysis"
-                                >
-                                  <Brain className="h-4 w-4" />
-                                </Button>
-                                
-                                {/* Share */}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => {
-                                    const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
-                                    navigator.clipboard.writeText(`${reference} - ${verse.text}`);
-                                    toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
-                                  }}
-                                  title="Copy verse"
-                                >
-                                  <Share className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    <div className="mt-6 text-center">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setSearchResults([]);
-                          setSearchQuery('');
-                          if (selectedBook) {
-                            loadChapter();
-                          }
-                        }}
-                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                      >
-                        Back to Chapter View
-                      </Button>
-                    </div>
-                  </div>
-                ) : verses.length > 0 ? (
-                  // Chapter Display
-                  <div>
-                    {/* Verses Grid */}
-                    <div className="space-y-4">
-                      {verses.map((verse) => {
-                        const verseKey = verse.id;
-                        const isBookmarked = bookmarks.has(verseKey);
-                        const isFavorite = favorites.has(verseKey);
-                        
-                        return (
-                          <div
-                            key={verseKey}
-                            className={`bible-verse-card group p-4 lg:p-5 rounded-lg border transition-all duration-200 hover:shadow-md ${
-                              isBookmarked ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-orange-300 hover:bg-muted/20'
-                            }`}
-                          >
-                            <div className="flex items-start gap-4">
-                              <span className="text-sm font-bold text-orange-600 bg-orange-100 px-3 py-2 rounded-full min-w-[2.5rem] text-center flex-shrink-0">
-                                {verse.verse}
-                              </span>
-                              <div className="flex-1">
-                                <p className="bible-verse-text text-xs leading-relaxed text-foreground font-medium">
-                                  {verse.text}
-                                </p>
-                              </div>
-                              
-                              {/* Action Buttons */}
-                              <div className="bible-verse-actions flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                {/* Favorite */}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleFavorite(verse)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Heart className={`h-4 w-4 ${
-                                    isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
-                                  }`} />
-                                </Button>
-
-                                {/* Notes */}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => openNoteModal(verse)}
-                                  className="h-8 w-8 p-0"
-                                  title="Add note"
-                                >
-                                  <StickyNote className="h-4 w-4" />
-                                </Button>
-
-                                {/* Bible Aura AI Analysis */}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => openAiModal(verse)}
-                                  className="h-8 w-8 p-0"
-                                  title="✦ Bible Aura AI Analysis"
-                                >
-                                  <Brain className="h-4 w-4" />
-                                </Button>
-                                
-                                {/* Share */}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => {
-                                    const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
-                                    navigator.clipboard.writeText(`${reference} - ${verse.text}`);
-                                    toast({ title: "Copied to clipboard", description: "Verse copied successfully" });
-                                  }}
-                                  title="Copy verse"
-                                >
-                                  <Share className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  // Empty State
-                  <div className="flex items-center justify-center py-20">
-                    <div className="text-center">
-                      <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">
-                        {searchQuery ? 'No verses found' : 'Select a book to begin'}
-                      </h3>
-                      <p className="text-muted-foreground max-w-md">
-                        {searchQuery ? 
-                          `No verses found matching "${searchQuery}". Try a different search term.` :
-                          'Choose a Bible book from the sidebar to start reading, or search for specific verses.'
-                        }
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* Modals */}
-        {selectedVerse && (
-          <>
-            <NoteTaking
-              verseId={selectedVerse.id}
-              verseText={selectedVerse.text}
-              verseReference={selectedVerse.reference}
-              isOpen={noteModalOpen}
-              onClose={() => setNoteModalOpen(false)}
-            />
-            
-            <AIAnalysis
-              verseId={selectedVerse.id}
-              verseText={selectedVerse.text}
-              verseReference={selectedVerse.reference}
-              isOpen={aiModalOpen}
-              onClose={() => setAiModalOpen(false)}
-            />
-          </>
-        )}
       </div>
+
+      {/* Modals */}
+      {selectedVerse && (
+        <>
+          <NoteTaking
+            verseId={selectedVerse.id}
+            verseText={selectedVerse.text}
+            verseReference={selectedVerse.reference}
+            isOpen={noteModalOpen}
+            onClose={() => setNoteModalOpen(false)}
+          />
+          
+          <AIAnalysis
+            verseId={selectedVerse.id}
+            verseText={selectedVerse.text}
+            verseReference={selectedVerse.reference}
+            isOpen={aiModalOpen}
+            onClose={() => setAiModalOpen(false)}
+          />
+        </>
+      )}
     </PageLayout>
   );
 }
