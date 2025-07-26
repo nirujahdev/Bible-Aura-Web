@@ -7,34 +7,36 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import { Sparkles, Star, Heart } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { queryClient } from "./lib/queryClient";
+import { Suspense, lazy } from "react";
+import LoadingScreen from "./components/LoadingScreen";
 
-// Page imports
-import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Bible from "./pages/Bible";
-import Chat from "./pages/Chat";
-import Journal from "./pages/Journal";
-import Profile from "./pages/Profile";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import BibleQA from "./pages/BibleQA";
-import BibleCharacters from "./pages/BibleCharacters";
-import ParablesStudy from "./pages/ParablesStudy";
-import TopicalStudy from "./pages/TopicalStudy";
-import SermonLibrary from "./pages/SermonLibrary";
-import Sermons from "./pages/Sermons";
-import Songs from "./pages/Songs";
-import Favorites from "./pages/Favorites";
-import Funding from "./pages/Funding";
-import Careers from "./pages/Careers";
-import HeaderDemo from "./pages/HeaderDemo";
-import VerseDemo from "./pages/VerseDemo";
+// Lazy load all page components for better performance
+const Landing = lazy(() => import("./pages/Landing"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Bible = lazy(() => import("./pages/Bible"));
+const Chat = lazy(() => import("./pages/Chat"));
+const Journal = lazy(() => import("./pages/Journal"));
+const Profile = lazy(() => import("./pages/Profile"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const BibleQA = lazy(() => import("./pages/BibleQA"));
+const BibleCharacters = lazy(() => import("./pages/BibleCharacters"));
+const ParablesStudy = lazy(() => import("./pages/ParablesStudy"));
+const TopicalStudy = lazy(() => import("./pages/TopicalStudy"));
+const SermonLibrary = lazy(() => import("./pages/SermonLibrary"));
+const Sermons = lazy(() => import("./pages/Sermons"));
+const Songs = lazy(() => import("./pages/Songs"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const Funding = lazy(() => import("./pages/Funding"));
+const Careers = lazy(() => import("./pages/Careers"));
+const HeaderDemo = lazy(() => import("./pages/HeaderDemo"));
+const VerseDemo = lazy(() => import("./pages/VerseDemo"));
 
-// Component imports
+// Component imports (keep these as regular imports since they're critical)
 import { AppSidebar } from "./components/AppSidebar";
 import { BibleApiTest } from "./components/BibleApiTest";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -63,17 +65,19 @@ function AppLayout() {
       {isFullScreen ? (
         // Full-screen layout for landing and static pages
         <main className="relative z-10">
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/funding" element={<Funding />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/funding" element={<Funding />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </main>
       ) : (
         // Sidebar layout for app pages
@@ -82,80 +86,82 @@ function AppLayout() {
             <AppSidebar />
             <main className="flex-1 overflow-auto bg-transparent w-full">
               <div className="w-full min-h-full relative">
-            <Routes>
-              <Route path="/header-demo" element={<HeaderDemo />} />
-              <Route path="/verse-demo" element={<VerseDemo />} />
-              <Route path="/bible-api-test" element={<BibleApiTest />} />
-              
-              {/* Protected Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/bible" element={
-                <ProtectedRoute>
-                  <Bible />
-                </ProtectedRoute>
-              } />
-              <Route path="/chat" element={
-                <ProtectedRoute>
-                  <Chat />
-                </ProtectedRoute>
-              } />
-              <Route path="/journal" element={
-                <ProtectedRoute>
-                  <Journal />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-              <Route path="/bible-qa" element={
-                <ProtectedRoute>
-                  <BibleQA />
-                </ProtectedRoute>
-              } />
-              <Route path="/bible-characters" element={
-                <ProtectedRoute>
-                  <BibleCharacters />
-                </ProtectedRoute>
-              } />
-              <Route path="/parables" element={
-                <ProtectedRoute>
-                  <ParablesStudy />
-                </ProtectedRoute>
-              } />
-              <Route path="/topical-study" element={
-                <ProtectedRoute>
-                  <TopicalStudy />
-                </ProtectedRoute>
-              } />
-              <Route path="/sermon-library" element={
-                <ProtectedRoute>
-                  <SermonLibrary />
-                </ProtectedRoute>
-              } />
-              <Route path="/sermons" element={
-                <ProtectedRoute>
-                  <Sermons />
-                </ProtectedRoute>
-              } />
-              <Route path="/songs" element={
-                <ProtectedRoute>
-                  <Songs />
-                </ProtectedRoute>
-              } />
-              <Route path="/favorites" element={
-                <ProtectedRoute>
-                  <Favorites />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                <Suspense fallback={<LoadingScreen />}>
+                  <Routes>
+                    <Route path="/header-demo" element={<HeaderDemo />} />
+                    <Route path="/verse-demo" element={<VerseDemo />} />
+                    <Route path="/bible-api-test" element={<BibleApiTest />} />
+                    
+                    {/* Protected Routes */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/bible" element={
+                      <ProtectedRoute>
+                        <Bible />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/chat" element={
+                      <ProtectedRoute>
+                        <Chat />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/journal" element={
+                      <ProtectedRoute>
+                        <Journal />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/bible-qa" element={
+                      <ProtectedRoute>
+                        <BibleQA />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/bible-characters" element={
+                      <ProtectedRoute>
+                        <BibleCharacters />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/parables" element={
+                      <ProtectedRoute>
+                        <ParablesStudy />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/topical-study" element={
+                      <ProtectedRoute>
+                        <TopicalStudy />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/sermon-library" element={
+                      <ProtectedRoute>
+                        <SermonLibrary />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/sermons" element={
+                      <ProtectedRoute>
+                        <Sermons />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/songs" element={
+                      <ProtectedRoute>
+                        <Songs />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/favorites" element={
+                      <ProtectedRoute>
+                        <Favorites />
+                      </ProtectedRoute>
+                    } />
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </div>
           </main>
         </div>

@@ -27,28 +27,13 @@ interface Conversation {
   messages: Message[];
   created_at: string;
   updated_at: string;
+  user_id: string;
 }
-
-// Quick prompts for biblical conversations
-const BIBLICAL_PROMPTS = [
-  "What does the Bible say about love and relationships?",
-  "Help me understand this Bible verse",
-  "Show me verses about God's forgiveness",
-  "What did Jesus teach about prayer and worship?",
-  "Find Bible verses about hope in difficult times",
-  "Explain the meaning of Jesus' parables",
-  "What does Scripture say about faith and trust?",
-  "Give me encouraging Bible verses for today",
-  "How do I find God's will for my life?",
-  "What does the Bible say about anxiety and worry?",
-  "Help me understand salvation through Scripture",
-  "Show me verses about God's promises"
-];
 
 // Function to call DeepSeek Direct API with enhanced biblical focus
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
   try {
-    console.log('🤖 Calling DeepSeek Biblical AI:', {
+    console.log('🤖 Calling Biblical AI:', {
       model: DEEPSEEK_CONFIG.model,
       baseURL: DEEPSEEK_CONFIG.baseURL,
       hasApiKey: !!DEEPSEEK_CONFIG.apiKey,
@@ -79,12 +64,9 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
             content: msg.content
           }))
         ],
-        temperature: 0.7,
         max_tokens: 2000,
-        stream: false,
-        top_p: 0.9,
-        frequency_penalty: 0.1,
-        presence_penalty: 0.1
+        temperature: 0.7,
+        stream: false
       }),
       signal: controller.signal
     });
@@ -92,69 +74,33 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = { error: { message: response.statusText } };
-      }
-      
-      const errorMessage = errorData?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-      throw new Error(`DeepSeek API error: ${errorMessage}`);
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
-    const completion = await response.json();
-
-    console.log('✅ DeepSeek Biblical Response:', {
-      choices: completion.choices?.length,
-      model: completion.model,
-      usage: completion.usage,
-      responseLength: completion.choices?.[0]?.message?.content?.length
-    });
-
-    const aiResponse = completion.choices?.[0]?.message?.content;
-    if (aiResponse && aiResponse.trim()) {
-      return { 
-        content: aiResponse.trim(), 
-        model: `${DEEPSEEK_CONFIG.name} (Biblical Mode)`,
-        usage: completion.usage
-      };
-    } else {
-      throw new Error('Empty response from DeepSeek model');
-    }
-  } catch (error: any) {
-    console.error(`❌ DeepSeek Biblical AI Error:`, {
-      message: error.message,
-      name: error.name,
-      status: error.status,
-      code: error.code
-    });
+    const data = await response.json();
     
-    // Enhanced error handling with biblical encouragement
-    if (error.name === 'AbortError') {
-      throw new Error('🕐 Request timeout - The AI service is taking longer than expected. Please try again with a shorter question.');
-    } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-      throw new Error('🔐 Authentication failed - Please check the DeepSeek API configuration.');
-    } else if (error.message.includes('429') || error.message.includes('rate limit')) {
-      throw new Error('⏳ Rate limit exceeded - Please wait a moment before asking another question. "Be still, and know that I am God" (Psalm 46:10)');
-    } else if (error.message.includes('402') || error.message.includes('insufficient')) {
-      throw new Error('💳 Insufficient credits - Please check your DeepSeek account balance.');
-    } else if (error.message.includes('fetch') || error.message.includes('network')) {
-      throw new Error('🌐 Network connection failed - Please check your internet connection and try again.');
-    } else if (error.message.includes('parse') || error.message.includes('JSON')) {
-      throw new Error('📋 Response format error - The AI service returned an unexpected response. Please try again.');
-    } else {
-      throw new Error(`🤖 AI service error: ${error.message || 'An unexpected error occurred. Please try rephrasing your question.'}`);
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid API response structure');
     }
+
+    return {
+      content: data.choices[0].message.content,
+      model: data.model || DEEPSEEK_CONFIG.model
+    };
+
+  } catch (error: any) {
+    console.error('❌ Biblical AI Error:', error);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    
+    throw new Error(`Unable to connect: ${error.message}`);
   }
 };
 
-// Helper function to limit messages to last 10
+// Helper function to limit conversation to last 10 messages for performance
 const limitMessagesToLast10 = (messages: Message[]): Message[] => {
-  if (messages.length <= 10) {
-    return messages;
-  }
-  // Keep the last 10 messages
   return messages.slice(-10);
 };
 
@@ -448,9 +394,9 @@ export default function Chat() {
       <div className="h-screen bg-background flex flex-col items-center justify-center p-8">
         <div className="text-center space-y-6 max-w-md">
           <MessageCircle className="h-16 w-16 text-primary mx-auto" />
-          <h1 className="text-3xl font-bold text-primary">✦ Bible Aura AI Oracle</h1>
+          <h1 className="text-3xl font-bold text-primary">Bible Aura AI</h1>
           <p className="text-muted-foreground text-lg">
-            Discover biblical wisdom through Bible Aura AI-powered scriptural insights
+            Discover biblical wisdom through scriptural insights
           </p>
           <p className="text-sm text-muted-foreground">
             Please sign in to start your biblical conversation
@@ -472,16 +418,16 @@ export default function Chat() {
 
   return (
     <PageLayout padding="none" maxWidth="full">
-    <div className="h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col w-full">
       {/* Enhanced Mobile-First Header */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-4 border-b shadow-lg">
+      <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-4 border-b shadow-lg flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 flex items-center justify-center bg-white/20 rounded-lg backdrop-blur-sm">
               <span className="text-lg font-bold">✦</span>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg sm:text-xl font-semibold">✦ Bible Aura AI Oracle</h1>
+              <h1 className="text-lg sm:text-xl font-semibold">Bible Aura AI</h1>
               <p className="text-xs text-white/80 hidden sm:block">Ask anything about Scripture</p>
             </div>
           </div>
@@ -491,9 +437,9 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden w-full">
         {/* Conversations Sidebar - Hidden on mobile */}
-        <div className="hidden lg:flex lg:w-80 border-r bg-gray-50">
+        <div className="hidden lg:flex lg:w-72 xl:w-80 border-r bg-gray-50 flex-shrink-0">
           <div className="flex flex-col w-full">
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
@@ -536,25 +482,25 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex flex-col h-full">
+        <div className="flex-1 flex flex-col min-w-0 w-full">
+          <div className="flex flex-col h-full w-full">
             {/* Chat Header - Mobile/Desktop */}
-            <div className="border-b p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-lg">
+            <div className="border-b p-4 flex-shrink-0">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-lg flex-shrink-0">
                     <span className="text-sm font-bold text-primary">✦</span>
                   </div>
-                  <h2 className="font-semibold text-gray-800">Biblical Conversation</h2>
+                  <h2 className="font-semibold text-gray-800 truncate">Bible Aura AI</h2>
                 </div>
-                <div className="text-sm text-muted-foreground hidden sm:block">
-                  Multi-Model AI • Bible-Based Responses
+                <div className="text-sm text-muted-foreground hidden sm:block flex-shrink-0">
+                  Bible-Based Responses
                 </div>
               </div>
             </div>
 
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+            <ScrollArea className="flex-1 p-4 w-full" ref={scrollAreaRef}>
               {messages.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="relative mx-auto w-24 h-24 mb-6">
@@ -563,35 +509,20 @@ export default function Chat() {
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-primary mb-3">
-                    Welcome to ✦ Bible Aura AI Oracle
+                    Welcome to Bible Aura AI
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                     Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
                   </p>
-                  
-                  {/* Quick Prompts */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                    {BIBLICAL_PROMPTS.map((prompt, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        className="text-left justify-start"
-                        onClick={() => setInput(prompt)}
-                      >
-                        <Book className="h-4 w-4 mr-2" />
-                        {prompt}
-                      </Button>
-                    ))}
-                  </div>
                 </div>
-              ) : (
-                <div className="space-y-4">
+                              ) : (
+                <div className="space-y-4 max-w-4xl mx-auto w-full">
                   {messages.map(renderMessage)}
                   {isLoading && (
                     <div className="flex justify-start">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src="" alt="✦ Bible Aura AI" />
+                          <AvatarImage src="" alt="Bible Aura AI" />
                           <AvatarFallback className="bg-primary text-white">
                             <Bot className="h-5 w-5" />
                           </AvatarFallback>
@@ -610,20 +541,20 @@ export default function Chat() {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="border-t p-4 bg-gray-50">
-              <div className="flex gap-2">
+            <div className="border-t p-4 bg-gray-50 flex-shrink-0">
+              <div className="flex gap-2 w-full max-w-4xl mx-auto">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask your biblical question..."
                   disabled={isLoading}
-                  className="flex-1 bg-white"
+                  className="flex-1 bg-white min-w-0"
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={!input.trim() || isLoading}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-primary hover:bg-primary/90 flex-shrink-0"
                 >
                   {isLoading ? (
                     <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

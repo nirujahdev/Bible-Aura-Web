@@ -3,6 +3,75 @@ import App from './App.tsx'
 import './index.css'
 import LoadingScreen from './components/LoadingScreen.tsx'
 
+// Service Worker Registration for PWA
+const registerServiceWorker = async () => {
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      });
+      
+      console.log('Service Worker registered successfully:', registration.scope);
+      
+      // Handle updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New content is available, notify user
+              console.log('New content available! Please refresh.');
+              // You could show a toast or banner here
+            }
+          });
+        }
+      });
+      
+      // Register for background sync if supported
+      if ('sync' in window.ServiceWorkerRegistration.prototype) {
+        const swRegistration = await navigator.serviceWorker.ready;
+        // Background sync registration with proper typing
+        if ('sync' in swRegistration) {
+          await (swRegistration as any).sync.register('background-sync');
+          console.log('Background sync registered');
+        }
+      }
+      
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
+  }
+};
+
+// Register for push notifications (optional)
+const requestNotificationPermission = async () => {
+  if ('Notification' in window && 'serviceWorker' in navigator) {
+    const permission = await Notification.requestPermission();
+    console.log('Notification permission:', permission);
+  }
+};
+
+// PWA Install prompt handling
+const handlePWAInstall = () => {
+  let deferredPrompt: any;
+  
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    console.log('PWA install prompt available');
+    
+    // You could show a custom install button here
+    // and call deferredPrompt.prompt() when clicked
+  });
+  
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    deferredPrompt = null;
+  });
+};
+
 // Get root element with error handling
 const rootElement = document.getElementById("root");
 
@@ -22,6 +91,16 @@ try {
   if (initialLoader) {
     initialLoader.style.display = 'none';
   }
+  
+  // Initialize PWA features after render
+  registerServiceWorker();
+  handlePWAInstall();
+  
+  // Request notification permission after user interaction
+  document.addEventListener('click', () => {
+    requestNotificationPermission();
+  }, { once: true });
+  
 } catch (error) {
   console.error('Failed to render React app:', error);
   
