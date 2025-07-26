@@ -1,11 +1,95 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, BookOpen, MessageCircle, Zap } from "lucide-react";
+import { Sparkles, BookOpen, MessageCircle, Zap, Star, Users, Heart, ChevronDown, ChevronUp, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import heroSpiritual from "@/assets/hero-spiritual.jpg";
+import { useState } from "react";
 
 const Landing = () => {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const testimonials = [
+    {
+      name: "Sarah Johnson",
+      role: "Bible Study Leader",
+      content: "Bible Aura has revolutionized how I prepare for our weekly Bible studies. The AI insights help me understand complex passages and provide deeper context for our discussions.",
+      rating: 5
+    },
+    {
+      name: "Pastor Michael Rodriguez",
+      role: "Youth Pastor",
+      content: "This tool has been incredible for sermon preparation. The AI companion helps me find relevant verses and provides fresh perspectives on familiar passages.",
+      rating: 5
+    },
+    {
+      name: "Emily Chen",
+      role: "Seminary Student",
+      content: "As someone studying theology, Bible Aura's advanced study features and cross-references have been invaluable for my research and coursework.",
+      rating: 5
+    },
+    {
+      name: "David Thompson",
+      role: "New Believer",
+      content: "I was intimidated by Bible study as a new Christian, but Bible Aura's AI chat makes it easy to ask questions and get clear, biblical answers.",
+      rating: 5
+    }
+  ];
+
+  const howItWorksSteps = [
+    {
+      step: "1",
+      title: "Sign Up Free",
+      description: "Create your free account in seconds and start your spiritual journey with Bible Aura.",
+      icon: "🚀"
+    },
+    {
+      step: "2", 
+      title: "Explore Scripture",
+      description: "Read, search, and study the Bible with our comprehensive tools and multiple translations.",
+      icon: "📖"
+    },
+    {
+      step: "3",
+      title: "Get AI Insights",
+      description: "Ask questions, get explanations, and receive personalized spiritual guidance from our AI companion.",
+      icon: "🤖"
+    },
+    {
+      step: "4",
+      title: "Grow in Faith",
+      description: "Track your progress, journal your thoughts, and deepen your relationship with God.",
+      icon: "🌱"
+    }
+  ];
+
+  const faqs = [
+    {
+      question: "Is Bible Aura completely free to use?",
+      answer: "Yes! Bible Aura is completely free to use. We believe everyone should have access to powerful Bible study tools regardless of their financial situation. The platform is supported by donations from our community."
+    },
+    {
+      question: "How accurate are the AI-generated insights?",
+      answer: "Our AI is trained on theological resources and biblical scholarship to provide accurate, contextual insights. However, we always encourage users to study Scripture prayerfully and consult with spiritual mentors and pastors for important life decisions."
+    },
+    {
+      question: "Can I use Bible Aura offline?",
+      answer: "Bible Aura is a web-based platform that requires an internet connection for most features. However, you can download and save your notes, highlights, and favorite verses for offline reference."
+    },
+    {
+      question: "What Bible translations are available?",
+      answer: "We offer multiple popular translations including ESV, NIV, NASB, KJV, and many others. You can easily switch between translations while studying to compare different renderings of the text."
+    },
+    {
+      question: "Is my personal information and study data secure?",
+      answer: "Absolutely. We take your privacy seriously and use industry-standard encryption to protect your data. Your personal study notes, prayers, and journal entries are private and secure."
+    },
+    {
+      question: "Can I share my study notes with others?",
+      answer: "Yes! Bible Aura includes sharing features that allow you to share insights, notes, and favorite verses with friends, family, or your Bible study group while maintaining your privacy settings."
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Global Navigation */}
@@ -323,6 +407,174 @@ const Landing = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-24 bg-white">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              How Bible Aura Works
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Start your spiritual journey in just a few simple steps
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {howItWorksSteps.map((step, index) => (
+              <div key={index} className="text-center group">
+                <div className="relative mb-6">
+                  {/* Step number background */}
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    {step.step}
+                  </div>
+                  {/* Icon overlay */}
+                  <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-orange-200">
+                    <span className="text-2xl">{step.icon}</span>
+                  </div>
+                  {/* Connecting line (except for last item) */}
+                  {index < howItWorksSteps.length - 1 && (
+                    <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-orange-300 to-gray-300"></div>
+                  )}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mb-6">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Trusted by Believers Worldwide
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              See how Bible Aura is helping Christians grow in their faith journey
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border-0 bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-0">
+                  <div className="flex items-start gap-4 mb-4">
+                    <Quote className="h-8 w-8 text-blue-500 flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <p className="text-gray-700 leading-relaxed mb-4 italic">
+                        "{testimonial.content}"
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                          <div className="text-sm text-gray-600">{testimonial.role}</div>
+                        </div>
+                        <div className="flex gap-1">
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Stats */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">10,000+</div>
+              <div className="text-gray-600 font-medium">Active Users</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">50,000+</div>
+              <div className="text-gray-600 font-medium">Bible Questions Answered</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">25+</div>
+              <div className="text-gray-600 font-medium">Bible Translations</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-24 bg-gray-50">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Get answers to common questions about Bible Aura
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            {faqs.map((faq, index) => (
+              <Card key={index} className="mb-4 border-0 shadow-md hover:shadow-lg transition-shadow">
+                <CardHeader 
+                  className="cursor-pointer"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg text-left text-gray-900">{faq.question}</CardTitle>
+                    {openFaq === index ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
+                  </div>
+                </CardHeader>
+                {openFaq === index && (
+                  <CardContent className="pt-0">
+                    <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-24 bg-gradient-to-r from-orange-600 via-orange-500 to-yellow-500">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white">
+            <div className="inline-flex items-center justify-center p-3 bg-white/20 rounded-full mb-8">
+              <Heart className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Ready to Transform Your Bible Study?
+            </h2>
+            <p className="text-xl mb-8 max-w-3xl mx-auto opacity-90">
+              Join thousands of believers who are deepening their faith with AI-powered biblical insights. 
+              Start your journey today - completely free.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button asChild size="lg" className="bg-white text-orange-600 hover:bg-white/90 font-bold px-8 py-4 text-lg">
+                <Link to="/auth">
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Start Your Free Journey
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="border-white text-white bg-white/10 hover:bg-white hover:text-orange-600 font-bold px-8 py-4 text-lg backdrop-blur-sm">
+                <Link to="/about">
+                  Learn More About Us
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
