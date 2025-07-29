@@ -191,36 +191,36 @@ const Funding = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Choose Your Level of Support</h2>
-          <p className="text-center text-gray-600 mb-12">Support the ministry that serves thousands worldwide</p>
+        <div className="mb-8 sm:mb-12 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-4">Choose Your Plan</h2>
+          <p className="text-center text-gray-600 mb-8 sm:mb-12">All Bible resources are completely free</p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {plans.map((plan) => (
-              <Card key={plan.id} className={`relative hover:shadow-lg transition-all duration-300 ${plan.popular ? 'ring-2 ring-orange-500 scale-105' : ''} ${plan.borderColor}`}>
+              <Card key={plan.id} className={`relative hover:shadow-lg transition-all duration-300 ${plan.popular ? 'ring-2 ring-blue-500 scale-105' : ''} ${plan.borderColor}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-orange-500 text-white px-4 py-1">Most Popular</Badge>
+                    <Badge className="bg-blue-500 text-white px-3 py-1 text-xs sm:px-4 sm:text-sm">Most Popular</Badge>
                   </div>
                 )}
                 <CardHeader className="text-center pb-4">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${plan.color} text-white mb-4 mx-auto`}>
-                    <plan.icon className="h-8 w-8" />
+                  <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gradient-to-r ${plan.color} text-white mb-2 sm:mb-4 mx-auto`}>
+                    <plan.icon className="h-6 w-6 sm:h-7 w-7 lg:h-8 lg:w-8" />
                   </div>
-                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                  <div className="text-sm text-gray-500 mb-2">{plan.badge}</div>
-                  <div className="text-4xl font-bold text-gray-900">
-                    {plan.price === "0" ? "Free" : `${plan.price} ${plan.currency}`}
+                  <CardTitle className="text-xl sm:text-2xl font-bold">{plan.name}</CardTitle>
+                  <div className="text-xs sm:text-sm text-gray-500 mb-2">{plan.badge}</div>
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                    {plan.price === "0" ? "Free" : `${plan.price} LKR`}
                   </div>
-                  {plan.price !== "0" && <div className="text-gray-500">per {plan.period}</div>}
-                  <p className="text-sm text-gray-600 mt-2">{plan.description}</p>
+                  {plan.price !== "0" && <div className="text-sm text-gray-500">per {plan.period}</div>}
+                  <p className="text-xs sm:text-sm text-gray-600 mt-2">{plan.description}</p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-4 sm:px-6">
                   <Button 
-                    className={`w-full ${plan.popular ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
+                    className={`w-full ${plan.popular ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-900 hover:bg-gray-800'} text-white text-sm sm:text-base`}
                     onClick={() => setSelectedPlan(plan.id)}
                   >
-                    {plan.price === "0" ? "Get Started Free" : "Support This Ministry"}
+                    {plan.price === "0" ? "Get Started Free" : "Choose Plan"}
                   </Button>
                 </CardContent>
               </Card>
@@ -247,26 +247,26 @@ const Funding = () => {
                           <span className="text-sm text-gray-500">0 LKR</span>
                         </div>
                       </th>
-                      <th className="text-center py-4 px-6 font-semibold text-gray-900">
+                      <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-blue-50 rounded-t-lg">
                         <div className="flex flex-col items-center">
-                          <TreePine className="h-6 w-6 text-blue-600 mb-2" />
-                          <span>Supporter</span>
+                          <Star className="h-6 w-6 text-blue-600 mb-2" />
+                          <span>Pro</span>
                           <span className="text-sm text-gray-500">600 LKR</span>
+                          <Badge className="bg-blue-500 text-white text-xs mt-1">Popular</Badge>
                         </div>
                       </th>
-                      <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-orange-50 rounded-t-lg">
+                      <th className="text-center py-4 px-6 font-semibold text-gray-900">
                         <div className="flex flex-col items-center">
-                          <Mountain className="h-6 w-6 text-orange-600 mb-2" />
-                          <span>Partner</span>
-                          <span className="text-sm text-gray-500">1,800 LKR</span>
-                          <Badge className="bg-orange-500 text-white text-xs mt-1">Popular</Badge>
+                          <TreePine className="h-6 w-6 text-orange-600 mb-2" />
+                          <span>Supporter</span>
+                          <span className="text-sm text-gray-500">1,200 LKR</span>
                         </div>
                       </th>
                       <th className="text-center py-4 px-6 font-semibold text-gray-900">
                         <div className="flex flex-col items-center">
                           <Crown className="h-6 w-6 text-purple-600 mb-2" />
-                          <span>Champion</span>
-                          <span className="text-sm text-gray-500">4,000 LKR</span>
+                          <span>Partner</span>
+                          <span className="text-sm text-gray-500">2,400 LKR</span>
                         </div>
                       </th>
                     </tr>
