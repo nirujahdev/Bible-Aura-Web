@@ -41,7 +41,7 @@ const ReadingPlanGenerator = ({ onPlanCreated }: ReadingPlanGeneratorProps) => {
   ];
 
   const generateBibleReadingPlan = (planType: string, startDate: Date, endDate: Date, frequency: string) => {
-    const plans: Record<string, any> = {
+    const plans: Record<string, { books: Array<{ name: string; chapters: number }> }> = {
       'whole-bible': {
         books: [
           // Old Testament

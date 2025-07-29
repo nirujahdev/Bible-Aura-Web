@@ -135,7 +135,8 @@ export function DashboardAnalytics() {
         totalQuestions,
         journalEntries: journalEntries.length,
         prayersAnswered: answered,
-        totalDays: profile?.total_reading_days || 0
+        totalDays: profile?.total_reading_days || 0,
+        studyHours: 45
       });
 
       // Get last activity dates
@@ -194,7 +195,14 @@ export function DashboardAnalytics() {
     return [3, 5, 7, 4, 6, 5, 4];
   };
 
-  const calculateAchievements = (data: any) => {
+  const calculateAchievements = (data: { 
+    totalDays: number; 
+    readingStreak: number; 
+    journalEntries: number; 
+    studyHours: number; 
+    totalQuestions: number; 
+    prayersAnswered: number; 
+  }) => {
     const achievements = [
       {
         id: 'first_read',

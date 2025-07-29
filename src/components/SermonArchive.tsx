@@ -52,8 +52,8 @@ interface Sermon {
   occasion: string;
   duration_minutes: number | null;
   themes: string[];
-  theological_points: any;
-  rhetorical_analysis: any;
+  theological_points: string[];
+  rhetorical_analysis: { structure: string; techniques: string[] };
   historical_context: string;
   series_name: string | null;
   series_order: number | null;
@@ -184,7 +184,7 @@ const SermonArchive = () => {
 
       if (error) throw error;
       setSermons(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error loading sermons",
         description: error.message,
