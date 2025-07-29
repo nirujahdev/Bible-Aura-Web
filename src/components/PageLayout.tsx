@@ -39,7 +39,8 @@ export function PageLayout({
   return (
     <div className="min-h-screen bg-gray-50/30">
       <div className={cn(
-        'mx-auto w-full',
+        'w-full',
+        maxWidth !== 'full' && 'mx-auto',
         maxWidthClasses[maxWidth],
         paddingClasses[padding],
         className

@@ -476,12 +476,12 @@ export default function Chat() {
                   <h3 className="text-xl font-semibold text-primary mb-3">
                     ✦ Bible Aura AI
                   </h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  <p className="text-muted-foreground mb-6 text-center">
                     Ask me anything about Scripture
                   </p>
                   
                   {/* Quick Bible Verse Examples */}
-                  <div className="max-w-2xl mx-auto space-y-3 mb-6">
+                  <div className="w-full space-y-3 mb-6">
                     <p className="text-sm text-muted-foreground mb-4">
                       Try asking about specific Bible verses for detailed explanations:
                     </p>
@@ -537,12 +537,12 @@ export default function Chat() {
                     </div>
                   </div>
                   
-                  <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  <p className="text-xs text-muted-foreground text-center">
                     You can also ask general biblical questions or request explanations in English, Tamil, or Sinhala.
                   </p>
                 </div>
                               ) : (
-                <div className="space-y-4 max-w-4xl mx-auto w-full">
+                <div className="space-y-4 w-full">
                   {messages.map(renderMessage)}
                   {isLoading && (
                     <div className="flex justify-start">
@@ -568,7 +568,7 @@ export default function Chat() {
 
             {/* Input Area */}
             <div className="border-t p-3 sm:p-4 bg-gray-50 flex-shrink-0">
-              <div className="flex gap-2 w-full max-w-4xl mx-auto">
+              <div className="flex gap-2 w-full">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
