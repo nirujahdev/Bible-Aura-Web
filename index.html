@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="google-site-verification" content="sXivHJW38d2I7ni6jgSOg9OXYp6fIrhkVjoXsVPay1M" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <title>✦ Bible Aura • AI-Powered Biblical Insight</title>
+    <meta name="description" content="Experience divine biblical wisdom through AI-powered insights, spiritual guidance, and sacred study tools. Enhance your spiritual journey with Bible Aura." />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="author" content="Bible Aura" />
+
+    <meta property="og:title" content="✦ Bible Aura • AI-Powered Biblical Insight" />
+    <meta property="og:description" content="Experience divine biblical wisdom through AI-powered insights and spiritual guidance" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/placeholder.svg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@BibleAura" />
+    <meta name="twitter:image" content="/placeholder.svg" />
+    
+    <style>
+      /* Initial loading screen to prevent white flash */
+      #initial-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+      }
+      
+      .loader-content {
+        text-align: center;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      
+      .loader-logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      
+      .loader-title {
+        color: #f85700;
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+      }
+      
+      .loader-text {
+        color: #666;
+        font-size: 16px;
+        margin: 0;
+      }
+      
+      .loader-spinner {
+        margin-top: 20px;
+        width: 32px;
+        height: 32px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #f85700;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 20px auto 0;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <div id="initial-loader">
+      <div class="loader-content">
+        <h1 class="loader-title">✦Bible Aura</h1>
+        <p class="loader-text">AI-Powered Biblical Insight</p>
+        <div class="loader-spinner"></div>
+      </div>
+    </div>
+    
+    <div id="root"></div>
+    
+    <script>
+      // Quick loader removal for better performance
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          const loader = document.getElementById('initial-loader');
+          if (loader) {
+            loader.style.display = 'none';
+          }
+        }, 500);
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

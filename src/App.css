@@ -1,0 +1,131 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Full Screen Layout Optimization */
+.bible-full-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bible-sidebar {
+  overflow-y: auto;
+  max-height: calc(100vh - 80px);
+}
+
+.bible-content-area {
+  overflow-y: auto;
+  max-height: calc(100vh - 80px);
+}
+
+/* Responsive Typography */
+@media (min-width: 768px) {
+  .bible-verse-text {
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bible-verse-text {
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+}
+
+/* Smooth Transitions */
+.bible-verse-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.bible-verse-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Enhanced Scrollbars */
+.bible-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bible-scrollable::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.bible-scrollable::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.bible-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Mobile Optimization */
+@media (max-width: 1023px) {
+  .bible-sidebar {
+    max-height: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .bible-content-area {
+    max-height: calc(100vh - 200px);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .bible-sidebar {
+    display: none;
+  }
+  
+  .bible-verse-actions {
+    display: none;
+  }
+  
+  .bible-verse-text {
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+}
