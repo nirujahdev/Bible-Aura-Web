@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, Bot, User, Book, MessageCircle, LogIn, Languages, BookOpen } from 'lucide-react';
+import { Send, Bot, User, Book, MessageCircle, LogIn, Languages, BookOpen, X, StopCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,8 @@ import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/enhancedRateLimiter';
 import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT } from '@/lib/api-config';
 import { PageLayout } from '@/components/PageLayout';
+import { UnifiedHeader } from '@/components/UnifiedHeader';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { 
   parseVerseReference, 
   containsVerseReference, 
@@ -34,17 +36,10 @@ interface Message {
   isVerseExplanation?: boolean;
 }
 
-interface Conversation {
-  id: string;
-  title: string;
-  messages: Message[];
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+
 
 // Function to call DeepSeek Direct API with enhanced biblical focus
-const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>) => {
+const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>, abortController?: AbortController) => {
   try {
     console.log('🤖 Calling Biblical AI:', {
       model: DEEPSEEK_CONFIG.model,
@@ -54,7 +49,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
     });
 
     // Enhanced request with timeout and retry logic
-    const controller = new AbortController();
+    const controller = abortController || new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/chat/completions`, {
@@ -120,20 +115,15 @@ const limitMessagesToLast10 = (messages: Message[]): Message[] => {
 export default function Chat() {
   const { user, profile } = useAuth();
   const { toast } = useToast();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const layoutConfig = useResponsiveLayout();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('english');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Load conversations when user changes
-  useEffect(() => {
-    if (user) {
-      loadConversations();
-    }
-  }, [user]);
+
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -145,75 +135,17 @@ export default function Chat() {
     }
   }, [messages]);
 
-  const loadConversations = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
-      const formattedConversations = data?.map(conv => ({
-        ...conv,
-        messages: Array.isArray(conv.messages) ? (conv.messages as any[]).map((msg: any) => ({
-          id: msg.id || Date.now().toString(),
-          role: msg.role,
-          content: msg.content,
-          timestamp: typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp).toISOString(),
-          model: msg.model
-        })) : []
-      })) || [];
-
-      setConversations(formattedConversations);
-    } catch (error) {
-      console.error('Error loading conversations:', error);
-    }
-  };
-
-  const createNewConversation = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .insert({
-          user_id: user.id,
-          title: 'New Biblical Conversation',
-          messages: []
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const newConversation: Conversation = {
-        ...data,
-        messages: []
-      };
-
-      setConversations(prev => [newConversation, ...prev]);
-      setCurrentConversation(newConversation);
-      setMessages([]);
-    } catch (error) {
-      console.error('Error creating conversation:', error);
+  // Stop message function for aborting AI responses
+  const stopMessage = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
       toast({
-        title: "Error",
-        description: "Failed to create new conversation",
-        variant: "destructive",
+        title: "Message Stopped",
+        description: "AI response has been cancelled.",
       });
     }
-  };
-
-  const selectConversation = (conversation: Conversation) => {
-    setCurrentConversation(conversation);
-    setMessages(conversation.messages.map(msg => ({
-      ...msg,
-      timestamp: typeof msg.timestamp === 'string' ? msg.timestamp : new Date(msg.timestamp).toISOString()
-    })));
   };
 
   const sendMessage = async () => {
@@ -235,13 +167,8 @@ export default function Chat() {
       return;
     }
 
-    // If no current conversation, create one
-    let conversation = currentConversation;
-    if (!conversation) {
-      await createNewConversation();
-      conversation = currentConversation;
-      if (!conversation) return;
-    }
+    // Create AbortController for this request
+    abortControllerRef.current = new AbortController();
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -272,7 +199,7 @@ export default function Chat() {
           const biblePrompt = createBibleExplanationPrompt(verseData, selectedLanguage);
           
           // Call AI with Bible explanation prompt
-          aiResponse = await callBiblicalAI([{ role: 'user', content: biblePrompt }]);
+          aiResponse = await callBiblicalAI([{ role: 'user', content: biblePrompt }], abortControllerRef.current);
           
           // Parse structured response
           const parsedExplanation = parseAIExplanation(aiResponse.content, verseReference, selectedLanguage);
@@ -294,7 +221,7 @@ export default function Chat() {
           
           const fallbackPrompt = `The user asked about ${verseReference.book} ${verseReference.chapter}:${verseReference.verse}, but I couldn't find this verse in my local Bible database. Please provide a helpful response explaining that this verse reference might not be available or might be incorrectly formatted, and suggest they try a different format or verse. Respond in ${LANGUAGE_NAMES[selectedLanguage]}.`;
           
-          aiResponse = await callBiblicalAI([{ role: 'user', content: fallbackPrompt }]);
+          aiResponse = await callBiblicalAI([{ role: 'user', content: fallbackPrompt }], abortControllerRef.current);
           
           aiMessage = {
             id: (Date.now() + 1).toString(),
@@ -316,7 +243,7 @@ export default function Chat() {
         console.log(`🧠 Sending ${conversationHistory.length} messages to AI (limited from ${fullHistory.length} total)`);
 
         // Call biblical AI with optimized conversation history
-        aiResponse = await callBiblicalAI(conversationHistory);
+        aiResponse = await callBiblicalAI(conversationHistory, abortControllerRef.current);
 
         aiMessage = {
           id: (Date.now() + 1).toString(),
@@ -327,38 +254,9 @@ export default function Chat() {
         };
       }
 
+      // Update messages in state
       const updatedMessages = [...messages, userMessage, aiMessage];
       setMessages(updatedMessages);
-
-      // Limit to last 10 messages for database storage (saves space and improves performance)
-      const limitedMessages = limitMessagesToLast10(updatedMessages);
-
-      // Update conversation in database with only last 10 messages
-      const { error } = await supabase
-        .from('ai_conversations')
-        .update({
-          messages: limitedMessages as any,
-          title: conversation.title === 'New Biblical Conversation' 
-            ? userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : '')
-            : conversation.title,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', conversation.id);
-
-      console.log(`💾 Saved ${limitedMessages.length} messages to database (limited from ${updatedMessages.length} total)`);
-
-      // Notify user about message limiting for long conversations
-      if (updatedMessages.length > 10 && updatedMessages.length % 5 === 0) {
-        toast({
-          title: "📚 Conversation History",
-          description: `Keeping last 10 messages for optimal performance. Your current session shows all ${updatedMessages.length} messages.`,
-        });
-      }
-
-      if (error) throw error;
-
-      // Refresh conversations list
-      await loadConversations();
     } catch (error) {
       console.error('Error sending message:', error);
       
@@ -379,6 +277,7 @@ export default function Chat() {
       });
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -540,102 +439,30 @@ export default function Chat() {
   return (
     <PageLayout padding="none" maxWidth="full">
     <div className="min-h-screen bg-background flex flex-col w-full">
-      {/* Enhanced Mobile-First Header */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 text-white border-b shadow-lg sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center bg-white/20 rounded-lg backdrop-blur-sm">
-                <span className="text-sm sm:text-lg font-bold">✦</span>
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-base sm:text-lg lg:text-xl font-semibold">Bible Aura AI</h1>
-                <p className="text-xs text-white/80 hidden sm:block">Ask anything about Scripture</p>
-              </div>
-            </div>
-            <div className="text-xs text-white/80 hidden md:block">
-              Powered by Bible Aura AI
-            </div>
-          </div>
-        </div>
-      </div>
+      <UnifiedHeader
+        icon={MessageCircle}
+        title="✦Bible Aura AI"
+        subtitle="Ask me anything about Scripture. Bible-Based Response"
+      >
+        <Select value={selectedLanguage} onValueChange={(value: SupportedLanguage) => setSelectedLanguage(value)}>
+          <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="english">English</SelectItem>
+            <SelectItem value="tamil">Tamil</SelectItem>
+            <SelectItem value="sinhala">Sinhala</SelectItem>
+          </SelectContent>
+        </Select>
+      </UnifiedHeader>
 
       <div className="flex-1 flex overflow-hidden w-full">
-        {/* Conversations Sidebar - Hidden on mobile */}
-        <div className="hidden lg:flex lg:w-72 xl:w-80 border-r bg-gray-50 flex-shrink-0">
-          <div className="flex flex-col w-full">
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-gray-800">Conversations</h2>
-                <Button
-                  size="sm"
-                  onClick={createNewConversation}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  <Book className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <ScrollArea className="flex-1">
-              <div className="p-4 space-y-2">
-                {conversations.length === 0 ? (
-                  <div className="text-center text-muted-foreground text-sm py-8">
-                    Your conversations will appear here
-                  </div>
-                ) : (
-                  conversations.map((conv) => (
-                    <Button
-                      key={conv.id}
-                      variant={currentConversation?.id === conv.id ? "default" : "ghost"}
-                      className="w-full justify-start text-left h-auto p-3"
-                      onClick={() => selectConversation(conv)}
-                    >
-                      <div className="truncate">
-                        <div className="font-medium text-sm">{conv.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(conv.updated_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </Button>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
+
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0 w-full">
           <div className="flex flex-col h-full w-full">
-            {/* Chat Header - Mobile/Desktop */}
-            <div className="border-b p-4 flex-shrink-0">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-lg flex-shrink-0">
-                    <span className="text-sm font-bold text-primary">✦</span>
-                  </div>
-                  <h2 className="font-semibold text-gray-800 truncate">Bible Aura AI</h2>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="hidden sm:block text-sm text-muted-foreground">
-                    Bible-Based Responses
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Languages className="h-4 w-4 text-muted-foreground" />
-                    <Select value={selectedLanguage} onValueChange={(value: SupportedLanguage) => setSelectedLanguage(value)}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="tamil">Tamil</SelectItem>
-                        <SelectItem value="sinhala">Sinhala</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             {/* Messages Area */}
             <ScrollArea className="flex-1 p-4 w-full" ref={scrollAreaRef}>
@@ -647,10 +474,10 @@ export default function Chat() {
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-primary mb-3">
-                    Welcome to Bible Aura AI
+                    ✦Bible Aura AI
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
+                    Ask me anything about Scripture. Bible-Based Response
                   </p>
                   
                   {/* Quick Bible Verse Examples */}
@@ -658,12 +485,12 @@ export default function Chat() {
                     <p className="text-sm text-muted-foreground mb-4">
                       Try asking about specific Bible verses for detailed explanations:
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => useQuickPrompt("John 3:16")}
-                        className="text-left justify-start h-auto p-3"
+                        className="text-left justify-start h-auto p-2 sm:p-3 text-xs sm:text-sm"
                       >
                         <BookOpen className="h-4 w-4 mr-2 flex-shrink-0" />
                         <div>
@@ -729,7 +556,18 @@ export default function Chat() {
                         <div className="bg-white dark:bg-gray-800 border rounded-2xl p-4">
                           <div className="flex items-center gap-2">
                             <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm text-muted-foreground">Seeking biblical wisdom...</span>
+                            <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">AI is thinking...</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={stopMessage}
+                    className="h-6 px-2 text-xs"
+                  >
+                    <StopCircle className="h-3 w-3 mr-1" />
+                    Stop
+                  </Button>
+                </div>
                           </div>
                         </div>
                       </div>
@@ -740,7 +578,7 @@ export default function Chat() {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="border-t p-4 bg-gray-50 flex-shrink-0">
+            <div className="border-t p-3 sm:p-4 bg-gray-50 flex-shrink-0">
               <div className="flex gap-2 w-full max-w-4xl mx-auto">
                 <Input
                   value={input}
@@ -748,17 +586,27 @@ export default function Chat() {
                   onKeyPress={handleKeyPress}
                   placeholder="Ask your biblical question..."
                   disabled={isLoading}
-                  className="flex-1 bg-white min-w-0"
+                  className="flex-1 bg-white min-w-0 text-sm sm:text-base"
                 />
                 <Button
-                  onClick={sendMessage}
-                  disabled={!input.trim() || isLoading}
-                  className="bg-primary hover:bg-primary/90 flex-shrink-0"
+                  onClick={isLoading ? stopMessage : sendMessage}
+                  disabled={!isLoading && !input.trim()}
+                  className={`flex-shrink-0 p-3 sm:p-4 text-sm sm:text-base ${
+                    isLoading 
+                      ? 'bg-red-600 hover:bg-red-700' 
+                      : 'bg-primary hover:bg-primary/90'
+                  }`}
                 >
                   {isLoading ? (
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <>
+                      <StopCircle className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Stop</span>
+                    </>
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Send</span>
+                    </>
                   )}
                 </Button>
               </div>
