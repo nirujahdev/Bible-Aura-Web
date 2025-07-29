@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { bibleApi } from '@/lib/bible-api';
+import { billyGrahamDevotional } from '@/lib/billy-graham-devotional';
 
 interface DailyVerse {
   id: string;
@@ -37,10 +38,82 @@ interface VerseOfDay {
   reference: string;
   context: string;
   theme: string;
+  billyGrahamContent?: string; // Optional expanded content
 }
 
-// Enhanced Biblical AI function for daily verse generation
+// Enhanced function to get Billy Graham devotional with AI enhancement
 const generateDailyVerse = async (): Promise<VerseOfDay> => {
+  try {
+    // Get today's Billy Graham devotion
+    const devotion = await billyGrahamDevotional.getTodaysVerse();
+    
+    if (!devotion) {
+      return getFallbackVerse();
+    }
+
+    // Enhance the Billy Graham content with AI insights
+    const contextPrompt = `Based on this Billy Graham devotional content, provide a brief, encouraging summary that captures the essence of his teaching:
+
+Billy Graham's Teaching: "${devotion.devotional_content}"
+Scripture: "${devotion.verse_text}" - ${devotion.verse_reference}
+Theme: ${devotion.theme}
+
+Write 2-3 sentences that:
+1. Capture Billy Graham's key spiritual insight
+2. Make it personal and encouraging for today
+3. Connect it to practical Christian living
+4. Stay true to his evangelical message
+
+Keep it warm, biblical, and inspiring in Billy Graham's style.`;
+
+    // Use AI to enhance Billy Graham's content
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
+        'HTTP-Referer': 'https://bible-aura.app',
+        'X-Title': '✦Bible Aura - Billy Graham Daily Devotion',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek/deepseek-r1',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are helping to summarize Billy Graham\'s devotional teachings. Maintain his warm, evangelical, and encouraging tone while making the content accessible for daily inspiration.'
+          },
+          {
+            role: 'user',
+            content: contextPrompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 250
+      })
+    });
+
+    let enhancedContext = devotion.reflection;
+    
+    if (response.ok) {
+      const data = await response.json();
+      enhancedContext = data.choices[0]?.message?.content || devotion.reflection;
+    }
+
+    return {
+      text: devotion.verse_text,
+      reference: devotion.verse_reference,
+      context: enhancedContext,
+      theme: devotion.theme,
+      billyGrahamContent: devotion.devotional_content // Extra content for expansion
+    };
+  } catch (error) {
+    console.error('Error loading Billy Graham devotion:', error);
+    return getFallbackVerse();
+  }
+};
+
+// Fallback function for error cases
+const getFallbackVerse = (): VerseOfDay => {
   const themes = [
     'Faith and Trust', 'Love and Compassion', 'Hope and Encouragement', 
     'Peace and Rest', 'Wisdom and Guidance', 'Strength and Courage',
@@ -50,78 +123,12 @@ const generateDailyVerse = async (): Promise<VerseOfDay> => {
   
   const todayTheme = themes[new Date().getDate() % themes.length];
   
-  try {
-    // Get a random verse from the API.Bible service
-    const randomVerse = await bibleApi.getRandomVerse('de4e12af7f28f599-02'); // KJV
-    
-    if (!randomVerse) {
-      throw new Error('Failed to fetch verse from API');
-    }
-
-    // Generate AI context using DeepSeek R1
-    const contextPrompt = `Provide a thoughtful, encouraging daily devotional context for this Bible verse, focusing on the theme of "${todayTheme}":
-
-Verse: "${randomVerse.text}" - ${randomVerse.reference}
-
-Write a 2-3 sentence reflection that:
-1. Explains the verse in simple, practical terms
-2. Connects it to daily spiritual life
-3. Offers encouragement for today's journey
-4. Relates to the theme: ${todayTheme}
-
-Keep it personal, uplifting, and actionable. Base everything strictly on biblical truth.`;
-
-    // Use DeepSeek R1 for AI context
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
-        'HTTP-Referer': 'https://bible-aura.app',
-        'X-Title': '✦Bible Aura - Daily Verse',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'deepseek/deepseek-r1',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a biblical scholar providing daily devotional insights. Always base responses strictly on biblical truth and provide encouraging, practical application.'
-          },
-          {
-            role: 'user',
-            content: contextPrompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 300
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to generate AI context');
-    }
-
-    const data = await response.json();
-    const aiContext = data.choices[0]?.message?.content || 
-      `This verse reminds us of God's faithfulness and love. As we focus on ${todayTheme} today, let this scripture guide your heart and actions.`;
-
-    return {
-      text: randomVerse.text,
-      reference: randomVerse.reference,
-      context: aiContext,
-      theme: todayTheme
-    };
-  } catch (error) {
-    console.error('Error generating daily verse:', error);
-    
-    // Fallback to a well-known verse
-    return {
-      text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
-      reference: "Proverbs 3:5-6",
-      context: `God calls us to trust Him completely. Today, surrender your worries and lean into His perfect wisdom and timing. ${todayTheme} comes through trusting in His plan for your life.`,
-      theme: todayTheme
-    };
-  }
+  return {
+    text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
+    reference: "Proverbs 3:5-6",
+    context: `God calls us to trust Him completely. Today, surrender your worries and lean into His perfect wisdom and timing. This timeless truth reminds us that ${todayTheme} comes through trusting in His plan for your life.`,
+    theme: todayTheme
+  };
 };
 
 export function DailyVerseWidget() {
@@ -234,7 +241,7 @@ export function DailyVerseWidget() {
       setDailyVerse(newVerse);
       toast({
         title: "New verse generated",
-        description: "Your daily verse has been refreshed with AI insights",
+        description: "Your Billy Graham devotion has been refreshed",
       });
     } catch (error) {
       toast({
@@ -311,10 +318,15 @@ export function DailyVerseWidget() {
               <BookOpen className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                Today's Verse
-                <Sparkles className="h-5 w-5 text-amber-500" />
-              </h3>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  Today's Verse
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Billy Graham's "Living in Christ" Daily Devotional
+                </p>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -356,7 +368,7 @@ export function DailyVerseWidget() {
             <div className="p-2.5 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <h4 className="text-lg font-semibold text-blue-800">AI Spiritual Insights</h4>
+            <h4 className="text-lg font-semibold text-blue-800">Billy Graham's Teaching</h4>
           </div>
           <p className="text-gray-700 leading-relaxed text-base">
             {dailyVerse.context}

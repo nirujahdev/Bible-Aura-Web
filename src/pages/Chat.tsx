@@ -11,20 +11,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/enhancedRateLimiter';
-import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT } from '@/lib/api-config';
+import { 
+  AI_CONFIG, 
+  explainVerse,
+  extractVerseReference,
+  type SupportedLanguage,
+  type VerseExplanation 
+} from '@/lib/ai-bible-system';
 import { PageLayout } from '@/components/PageLayout';
 import { UnifiedHeader } from '@/components/UnifiedHeader';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-import { 
-  parseVerseReference, 
-  containsVerseReference, 
-  getVerseText, 
-  createBibleExplanationPrompt, 
-  parseAIExplanation,
-  SupportedLanguage,
-  LANGUAGE_NAMES,
-  VerseExplanation 
-} from '@/lib/verse-explanation';
 
 interface Message {
   id: string;
@@ -42,9 +38,9 @@ interface Message {
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>, abortController?: AbortController) => {
   try {
     console.log('🤖 Calling Biblical AI:', {
-      model: DEEPSEEK_CONFIG.model,
-      baseURL: DEEPSEEK_CONFIG.baseURL,
-      hasApiKey: !!DEEPSEEK_CONFIG.apiKey,
+      model: AI_CONFIG.model,
+      baseURL: AI_CONFIG.baseURL,
+      hasApiKey: !!AI_CONFIG.apiKey,
       messageCount: messages.length
     });
 
@@ -52,20 +48,20 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
     const controller = abortController || new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/chat/completions`, {
+    const response = await fetch(`${AI_CONFIG.baseURL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${DEEPSEEK_CONFIG.apiKey}`,
+        'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
         'Content-Type': 'application/json',
         'User-Agent': 'Bible-Aura/1.0',
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        model: DEEPSEEK_CONFIG.model,
+        model: AI_CONFIG.model,
         messages: [
           {
             role: "system",
-            content: BIBLICAL_SYSTEM_PROMPT
+            content: "You are Bible Aura AI, a specialized biblical assistant with comprehensive knowledge of Scripture. You MUST base ALL responses exclusively on biblical truth and passages. Always cite specific Bible verses with book, chapter, and verse references. Provide practical spiritual application rooted in Scripture."
           },
           ...messages.map(msg => ({
             role: msg.role,
@@ -93,7 +89,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
 
     return {
       content: data.choices[0].message.content,
-      model: data.model || DEEPSEEK_CONFIG.model
+      model: data.model || AI_CONFIG.model
     };
 
   } catch (error: any) {

@@ -29,7 +29,7 @@ import {
 const ReactQuill = React.lazy(() => import('react-quill'));
 
 // Enhanced Sermon Generation with DeepSeek Direct API
-import { DEEPSEEK_CONFIG } from '@/lib/api-config';
+import { AI_CONFIG } from '@/lib/ai-bible-system';
 
 // Christian theology database
 const CHRISTIAN_THEOLOGICAL_KNOWLEDGE = {
@@ -185,15 +185,15 @@ Format your response as JSON with these keys:
 // Call DeepSeek Direct API for sermon generation
 const callSermonGenerationAPI = async (prompt: string): Promise<string> => {
   try {
-    const response = await fetch(`${DEEPSEEK_CONFIG.baseURL}/chat/completions`, {
+    const response = await fetch(`${AI_CONFIG.baseURL}/chat/completions`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${DEEPSEEK_CONFIG.apiKey}`,
+        "Authorization": `Bearer ${AI_CONFIG.apiKey}`,
         "User-Agent": "Bible-Aura/1.0",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        "model": DEEPSEEK_CONFIG.model,
+        "model": AI_CONFIG.model,
         "messages": [
           {
             "role": "system",
