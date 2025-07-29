@@ -229,7 +229,6 @@ export default function Songs() {
             </Card>
           )}
         </div>
-      </div>
     </div>
   );
 } 

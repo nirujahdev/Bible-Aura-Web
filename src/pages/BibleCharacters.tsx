@@ -386,7 +386,6 @@ export default function BibleCharacters() {
             </Card>
           )}
         </div>
-      </div>
     </div>
   );
 } 
