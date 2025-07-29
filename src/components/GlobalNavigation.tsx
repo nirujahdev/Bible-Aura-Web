@@ -26,7 +26,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
     { href: "/about", label: "About", icon: Info },
     { href: "/contact", label: "Contact", icon: Phone },
     { href: "/careers", label: "Careers", icon: Crown },
-    { href: "/funding", label: "Support Us", icon: Heart },
+    { href: "/pricing", label: "Pricing", icon: Heart },
   ];
 
   if (variant === 'landing') {

@@ -192,7 +192,7 @@ const About = () => {
               <Link to="/auth">Get Started Today</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-primary">
-              <Link to="/funding">Support Our Mission</Link>
+              <Link to="/pricing">Support Our Mission</Link>
             </Button>
           </div>
               </div>

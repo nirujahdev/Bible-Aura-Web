@@ -1,7 +1,7 @@
 import { 
   Home, Book, MessageCircle, Music, HelpCircle, Users, Headphones, 
   BookOpen, Mic, TreePine, Heart, FileText, User, Menu, X, 
-  LucideIcon, Star, LogOut, LogIn
+  LucideIcon, Star, LogOut, LogIn, DollarSign
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -50,7 +50,7 @@ const allNavigationItems: NavigationItem[] = [
   {
     title: "Bible",
     url: "/bible",
-    icon: Book,
+    icon: BookOpen,
   },
   {
     title: "AI Chat",
@@ -112,6 +112,11 @@ const allNavigationItems: NavigationItem[] = [
     title: "Profile",
     url: "/profile",
     icon: User,
+  },
+  {
+    title: "Pricing",
+    url: "/pricing",
+    icon: DollarSign,
   },
 ];
 

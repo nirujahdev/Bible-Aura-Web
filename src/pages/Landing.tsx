@@ -101,7 +101,7 @@ const Landing = () => {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="border-white text-white bg-white/10 hover:bg-white hover:text-orange-600 font-bold px-4 sm:px-6 md:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 flex-1 sm:flex-none">
-                <Link to="/funding">
+                <Link to="/pricing">
                   Support Us
                 </Link>
               </Button>

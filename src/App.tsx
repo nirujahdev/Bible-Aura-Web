@@ -31,7 +31,7 @@ const SermonLibrary = lazy(() => import("./pages/SermonLibrary"));
 const Sermons = lazy(() => import("./pages/Sermons"));
 const Songs = lazy(() => import("./pages/Songs"));
 const Favorites = lazy(() => import("./pages/Favorites"));
-const Funding = lazy(() => import("./pages/Funding"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 const Careers = lazy(() => import("./pages/Careers"));
 const HeaderDemo = lazy(() => import("./pages/HeaderDemo"));
 const VerseDemo = lazy(() => import("./pages/VerseDemo"));
@@ -46,7 +46,7 @@ function AppLayout() {
   const location = useLocation();
   
   // Routes that should display without sidebar (full-screen)
-  const fullScreenRoutes = ["/", "/auth", "/about", "/contact", "/terms", "/privacy", "/funding", "/careers"];
+  const fullScreenRoutes = ["/", "/auth", "/about", "/contact", "/terms", "/privacy", "/pricing", "/careers"];
   const isFullScreen = fullScreenRoutes.includes(location.pathname);
 
   return (
@@ -73,7 +73,7 @@ function AppLayout() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
-              <Route path="/funding" element={<Funding />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
