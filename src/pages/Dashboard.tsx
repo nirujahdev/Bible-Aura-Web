@@ -6,7 +6,6 @@ import {
   BibleStudyWidget, 
   AIChatWidget, 
   JournalWidget, 
-  PrayerWidget,
   ReadingProgressWidget 
 } from "@/components/FeatureWidgets";
 import { DailyVerseWidget } from "@/components/DailyVerseWidget";
@@ -22,25 +21,8 @@ import { useSwipeNavigation } from "@/hooks/useTouchGestures";
 import { 
   Calendar, 
   BookOpen, 
-  Zap, 
-  Plus, 
-  TrendingUp, 
-  Activity, 
-  BarChart3, 
-  Star, 
   MessageCircle, 
-  FileText, 
-  Users, 
-  Music, 
-  Mic, 
-  Search,
-  Headphones,
-  HelpCircle,
-  Brain,
-  TreePine,
-  ArrowRight,
-  Settings,
-  Heart
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
@@ -165,16 +147,16 @@ const Dashboard = () => {
       </div>
 
       {/* Main Dashboard Content */}
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Daily Verse Section */}
-        <div className="mb-8">
+        <div className="mb-8 max-w-4xl mx-auto">
           <WidgetErrorBoundary widgetName="Daily Verse" fallbackMessage="Unable to load today's verse. Please try refreshing.">
             {widgetsLoaded ? <DailyVerseWidget /> : <DailyVerseSkeletonLoad />}
           </WidgetErrorBoundary>
         </div>
         
         {/* Essential Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 max-w-3xl mx-auto">
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 sm:p-6 text-center">
               <div className="text-xl sm:text-2xl font-bold text-orange-600 mb-1">{profile?.reading_streak || 0}</div>
@@ -197,9 +179,9 @@ const Dashboard = () => {
 
         {/* Main Features */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Your Dashboard</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">Your Daily Bible Experience</h2>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto">
             {/* Bible Study Widget */}
             <WidgetErrorBoundary widgetName="Bible Study" fallbackMessage="Unable to load Bible study progress.">
               {widgetsLoaded ? <BibleStudyWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
@@ -215,46 +197,10 @@ const Dashboard = () => {
               {widgetsLoaded ? <JournalWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
             </WidgetErrorBoundary>
             
-            {/* Prayer Widget */}
-            <WidgetErrorBoundary widgetName="Prayer" fallbackMessage="Unable to load prayer requests.">
-              {widgetsLoaded ? <PrayerWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
-            </WidgetErrorBoundary>
-            
             {/* Reading Progress Widget */}
             <WidgetErrorBoundary widgetName="Reading Progress" fallbackMessage="Unable to load your reading progress.">
               {widgetsLoaded ? <ReadingProgressWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
             </WidgetErrorBoundary>
-            
-            {/* Quick Create Widget */}
-            <Card className="h-full border-gray-200 hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-gray-800">
-                  <Plus className="h-5 w-5" />
-                  Quick Create
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Link to="/journal">
-                  <Button variant="outline" className="w-full justify-start hover:bg-gray-50">
-                    <FileText className="mr-2 h-4 w-4" />
-                    New Journal Entry
-                  </Button>
-                </Link>
-
-                <Link to="/chat">
-                  <Button variant="outline" className="w-full justify-start hover:bg-gray-50">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                                          Start ✦ Bible Aura AI Chat
-                  </Button>
-                </Link>
-                <Link to="/bible">
-                  <Button variant="outline" className="w-full justify-start hover:bg-gray-50">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Study Scripture
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
