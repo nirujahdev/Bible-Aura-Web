@@ -518,7 +518,7 @@ const TopicalBibleStudy = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-aura-gradient text-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-2">
             <Library className="h-5 w-5 sm:h-6 sm:w-6" />
             <h1 className="text-xl sm:text-2xl font-divine">Topical Bible Study</h1>
@@ -528,7 +528,7 @@ const TopicalBibleStudy = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Topics Sidebar */}
           <div className="lg:col-span-1 order-2 lg:order-1">

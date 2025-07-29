@@ -105,7 +105,7 @@ export default function Songs() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-aura-gradient text-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-2">
             <Music className="h-5 w-5 sm:h-6 sm:w-6" />
             <h1 className="text-xl sm:text-2xl font-divine">Worship Songs</h1>
@@ -116,7 +116,7 @@ export default function Songs() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
           {/* Search and Filter */}
           <Card className="mb-6">
             <CardContent className="p-4">

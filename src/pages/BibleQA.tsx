@@ -127,7 +127,7 @@ export default function BibleQA() {
           <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-white/30 rounded-full animate-ping delay-500"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             {/* Icon with glow effect */}
             <div className="flex items-center gap-4">
@@ -168,7 +168,7 @@ export default function BibleQA() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Search and Filter */}
         <Card className="mb-6 border-0 shadow-lg">
           <CardContent className="p-4 sm:p-6">

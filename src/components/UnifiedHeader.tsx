@@ -11,7 +11,7 @@ interface UnifiedHeaderProps {
 export function UnifiedHeader({ icon: Icon, title, subtitle, children }: UnifiedHeaderProps) {
   return (
     <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-b sticky top-0 z-10 backdrop-blur-md bg-opacity-95">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 h-14 sm:h-16 flex items-center">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 h-14 sm:h-16 flex items-center">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center bg-white/20 rounded-lg backdrop-blur-sm">

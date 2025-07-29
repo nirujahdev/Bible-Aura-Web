@@ -118,7 +118,7 @@ const Dashboard = () => {
     <PageLayout padding="none" maxWidth="full">
       {/* Header Banner with Orange Background and Centered Content */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             {/* Icon and Title */}
             <div className="flex items-center justify-center gap-4 mb-4">

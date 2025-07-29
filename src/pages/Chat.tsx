@@ -301,8 +301,8 @@ export default function Chat() {
           <div className="flex-shrink-0">
             <Avatar className="h-10 w-10">
               <AvatarImage src="" alt="✦ Bible Aura AI" />
-              <AvatarFallback className="bg-primary text-white">
-                {message.isVerseExplanation ? <BookOpen className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+              <AvatarFallback className="bg-transparent border-0">
+                {message.isVerseExplanation ? <BookOpen className="h-5 w-5 text-primary" /> : <span className="text-orange-500 text-lg font-bold">✦</span>}
               </AvatarFallback>
             </Avatar>
           </div>
@@ -441,8 +441,8 @@ export default function Chat() {
     <div className="min-h-screen bg-background flex flex-col w-full">
       <UnifiedHeader
         icon={MessageCircle}
-        title="✦Bible Aura AI"
-        subtitle="Ask me anything about Scripture. Bible-Based Response"
+        title="✦ Bible Aura AI"
+        subtitle="Ask me anything about Scripture"
       >
         <Select value={selectedLanguage} onValueChange={(value: SupportedLanguage) => setSelectedLanguage(value)}>
           <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
@@ -474,10 +474,10 @@ export default function Chat() {
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-primary mb-3">
-                    ✦Bible Aura AI
+                    ✦ Bible Aura AI
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Ask me anything about Scripture. Bible-Based Response
+                    Ask me anything about Scripture
                   </p>
                   
                   {/* Quick Bible Verse Examples */}
@@ -549,25 +549,14 @@ export default function Chat() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src="" alt="Bible Aura AI" />
-                          <AvatarFallback className="bg-primary text-white">
-                            <Bot className="h-5 w-5" />
+                          <AvatarFallback className="bg-transparent border-0">
+                            <span className="text-orange-500 text-lg font-bold">✦</span>
                           </AvatarFallback>
                         </Avatar>
                         <div className="bg-white dark:bg-gray-800 border rounded-2xl p-4">
                           <div className="flex items-center gap-2">
                             <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                            <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">AI is thinking...</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={stopMessage}
-                    className="h-6 px-2 text-xs"
-                  >
-                    <StopCircle className="h-3 w-3 mr-1" />
-                    Stop
-                  </Button>
-                </div>
+                            <span className="text-sm text-muted-foreground">Generating response...</span>
                           </div>
                         </div>
                       </div>
