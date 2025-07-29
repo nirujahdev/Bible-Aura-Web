@@ -13,10 +13,7 @@ import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/enhancedRateLimiter';
 import { 
   AI_CONFIG, 
-  explainVerse,
-  extractVerseReference,
-  type SupportedLanguage,
-  type VerseExplanation 
+  type SupportedLanguage
 } from '@/lib/ai-bible-system';
 import { PageLayout } from '@/components/PageLayout';
 import { UnifiedHeader } from '@/components/UnifiedHeader';
@@ -28,8 +25,6 @@ interface Message {
   content: string;
   timestamp: string;
   model?: string;
-  verseExplanation?: VerseExplanation;
-  isVerseExplanation?: boolean;
 }
 
 
@@ -54,7 +49,9 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
         'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
         'Content-Type': 'application/json',
         'User-Agent': 'Bible-Aura/1.0',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'HTTP-Referer': 'https://bible-aura.app',
+        'X-Title': '✦Bible Aura - AI Chat'
       },
       body: JSON.stringify({
         model: AI_CONFIG.model,
@@ -177,78 +174,27 @@ export default function Chat() {
     setInput('');
     setIsLoading(true);
 
-    try {
-      // Check if input contains a verse reference
-      const verseReference = parseVerseReference(input);
-      let aiResponse: any;
-      let aiMessage: Message;
+        try {
+      // Regular conversation - simplified approach
+      const fullHistory = [...messages, userMessage];
+      const limitedHistory = limitMessagesToLast10(fullHistory);
+      const conversationHistory = limitedHistory.map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content
+      }));
 
-      if (verseReference && verseReference.isValid) {
-        console.log('🔍 Bible verse detected:', verseReference);
-        
-        // Get verse text from local Bible
-        const bibleLanguage = selectedLanguage === 'sinhala' ? 'english' : selectedLanguage as 'english' | 'tamil';
-        const verseData = await getVerseText(verseReference, bibleLanguage);
-        
-        if (verseData) {
-          // Create specialized Bible explanation prompt
-          const biblePrompt = createBibleExplanationPrompt(verseData, selectedLanguage);
-          
-          // Call AI with Bible explanation prompt
-          aiResponse = await callBiblicalAI([{ role: 'user', content: biblePrompt }], abortControllerRef.current);
-          
-          // Parse structured response
-          const parsedExplanation = parseAIExplanation(aiResponse.content, verseReference, selectedLanguage);
-          
-          aiMessage = {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: aiResponse.content,
-            timestamp: new Date().toISOString(),
-            model: aiResponse.model,
-            isVerseExplanation: true,
-            verseExplanation: parsedExplanation
-          };
+      console.log(`🧠 Sending ${conversationHistory.length} messages to AI (limited from ${fullHistory.length} total)`);
 
-          console.log('✅ Bible verse explanation generated:', parsedExplanation);
-        } else {
-          // Verse not found, fall back to regular chat
-          console.log('❌ Verse not found, falling back to regular chat');
-          
-          const fallbackPrompt = `The user asked about ${verseReference.book} ${verseReference.chapter}:${verseReference.verse}, but I couldn't find this verse in my local Bible database. Please provide a helpful response explaining that this verse reference might not be available or might be incorrectly formatted, and suggest they try a different format or verse. Respond in ${LANGUAGE_NAMES[selectedLanguage]}.`;
-          
-          aiResponse = await callBiblicalAI([{ role: 'user', content: fallbackPrompt }], abortControllerRef.current);
-          
-          aiMessage = {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: aiResponse.content,
-            timestamp: new Date().toISOString(),
-            model: aiResponse.model
-          };
-        }
-      } else {
-        // Regular conversation - use existing logic
-        const fullHistory = [...messages, userMessage];
-        const limitedHistory = limitMessagesToLast10(fullHistory);
-        const conversationHistory = limitedHistory.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content
-        }));
+      // Call biblical AI with optimized conversation history
+      const aiResponse = await callBiblicalAI(conversationHistory, abortControllerRef.current);
 
-        console.log(`🧠 Sending ${conversationHistory.length} messages to AI (limited from ${fullHistory.length} total)`);
-
-        // Call biblical AI with optimized conversation history
-        aiResponse = await callBiblicalAI(conversationHistory, abortControllerRef.current);
-
-        aiMessage = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: aiResponse.content,
-          timestamp: new Date().toISOString(),
-          model: aiResponse.model
-        };
-      }
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: aiResponse.content,
+        timestamp: new Date().toISOString(),
+        model: aiResponse.model
+      };
 
       // Update messages in state
       const updatedMessages = [...messages, userMessage, aiMessage];
@@ -298,7 +244,7 @@ export default function Chat() {
             <Avatar className="h-10 w-10">
               <AvatarImage src="" alt="✦ Bible Aura AI" />
               <AvatarFallback className="bg-transparent border-0">
-                {message.isVerseExplanation ? <BookOpen className="h-5 w-5 text-primary" /> : <span className="text-orange-500 text-lg font-bold">✦</span>}
+                <span className="text-orange-500 text-lg font-bold">✦</span>
               </AvatarFallback>
             </Avatar>
           </div>
@@ -307,74 +253,19 @@ export default function Chat() {
         <div className={`max-w-[80%] ${isAI ? 'mr-auto' : 'ml-auto'}`}>
           <div className={`p-4 rounded-2xl ${
             isAI 
-              ? message.isVerseExplanation
-                ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700'
-                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+              ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
               : 'bg-primary text-white'
           }`}>
-            {/* Structured Bible Verse Explanation */}
-            {isAI && message.isVerseExplanation && message.verseExplanation ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">Bible Verse Explanation</span>
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                    {message.verseExplanation.language}
-                  </span>
-                </div>
-                
-                <div className="space-y-4">
-                  {/* Verse */}
-                  <div className="p-3 bg-white/80 dark:bg-gray-800/80 rounded-lg border-l-4 border-primary">
-                    <h4 className="font-semibold text-primary mb-1">Verse</h4>
-                    <p className="text-gray-800 dark:text-gray-200 italic">
-                      {message.verseExplanation.verse}
-                    </p>
-                  </div>
-                  
-                  {/* Historical Background */}
-                  {message.verseExplanation.historicalBackground && (
-                    <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Historical Background</h4>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {message.verseExplanation.historicalBackground}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* Theology */}
-                  {message.verseExplanation.theology && (
-                    <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Theology</h4>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {message.verseExplanation.theology}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* Explanation */}
-                  {message.verseExplanation.explanation && (
-                    <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Explanation</h4>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {message.verseExplanation.explanation}
-                      </p>
-                    </div>
-                  )}
-                </div>
+            {/* Regular Message Content */}
+            <div className="prose prose-sm max-w-none">
+              <div className={`whitespace-pre-wrap leading-relaxed ${
+                isAI 
+                  ? 'text-gray-800 dark:text-gray-200' 
+                  : 'text-white'
+              }`}>
+                {message.content}
               </div>
-            ) : (
-              /* Regular Message Content */
-              <div className="prose prose-sm max-w-none">
-                <div className={`whitespace-pre-wrap leading-relaxed ${
-                  isAI 
-                    ? 'text-gray-800 dark:text-gray-200' 
-                    : 'text-white'
-                }`}>
-                  {message.content}
-                </div>
-              </div>
-            )}
+            </div>
             
             <div className={`text-xs mt-3 flex justify-between items-center ${
               isAI 
