@@ -29,11 +29,15 @@ const registerServiceWorker = async () => {
       
       // Register for background sync if supported
       if ('sync' in window.ServiceWorkerRegistration.prototype) {
-        const swRegistration = await navigator.serviceWorker.ready;
-        // Background sync registration with proper typing
-        if ('sync' in swRegistration) {
-          await (swRegistration as any).sync.register('background-sync');
-          console.log('Background sync registered');
+        try {
+          const swRegistration = await navigator.serviceWorker.ready;
+          // Background sync registration with proper typing
+          if ('sync' in swRegistration) {
+            await (swRegistration as any).sync.register('background-sync');
+            console.log('Background sync registered');
+          }
+        } catch (syncError) {
+          console.warn('Background sync registration failed:', syncError);
         }
       }
       
@@ -92,14 +96,22 @@ try {
     initialLoader.style.display = 'none';
   }
   
-  // Initialize PWA features after render
-  registerServiceWorker();
-  handlePWAInstall();
+  // Initialize PWA features after render (safely)
+  try {
+    registerServiceWorker();
+    handlePWAInstall();
+  } catch (pwaError) {
+    console.warn('PWA initialization failed:', pwaError);
+  }
   
-  // Request notification permission after user interaction
-  document.addEventListener('click', () => {
-    requestNotificationPermission();
-  }, { once: true });
+  // Request notification permission after user interaction (safely)
+  try {
+    document.addEventListener('click', () => {
+      requestNotificationPermission();
+    }, { once: true });
+  } catch (eventError) {
+    console.warn('Event listener setup failed:', eventError);
+  }
   
 } catch (error) {
   console.error('Failed to render React app:', error);
