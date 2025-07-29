@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { PageLayout } from '@/components/PageLayout';
+import { UnifiedHeader } from '@/components/UnifiedHeader';
 
 interface QAItem {
   id: string;
@@ -114,56 +116,25 @@ export default function BibleQA() {
   };
 
   return (
+    <PageLayout padding="none" maxWidth="full">
     <div className="min-h-screen bg-gray-50">
-      {/* Unique Q&A Banner - Green Knowledge Theme */}
-      <div className="bg-gradient-to-br from-emerald-600/90 via-green-600/90 to-teal-700/90 text-white border-b sticky top-0 z-10 backdrop-blur-md bg-opacity-95 relative overflow-hidden">
-        {/* Decorative Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-36 translate-x-36 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full translate-y-48 -translate-x-48"></div>
-          <div className="absolute top-1/2 left-1/4 w-4 h-4 bg-white/20 rounded-full animate-ping delay-1000"></div>
-          <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-white/30 rounded-full animate-ping delay-500"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative z-10 h-14 sm:h-16 flex items-center">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-            {/* Icon with glow effect */}
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-white/30 rounded-2xl blur-md"></div>
-                <div className="relative p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
-                  <HelpCircle className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
-                  Bible Q&A
-                  <Lightbulb className="h-6 w-6 sm:h-7 sm:w-7 text-yellow-300 animate-pulse" />
-                </h1>
-                <p className="text-emerald-100 text-sm sm:text-base lg:text-lg mt-1 font-medium">
-                  Find answers to common biblical questions
-                </p>
-              </div>
-            </div>
-
-            {/* Stats badges */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:ml-auto">
-              <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <MessageCircle className="h-4 w-4" />
-                  <span>{filteredQA.length} Questions</span>
-                </div>
-              </div>
-              <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <BookOpen className="h-4 w-4" />
-                  <span>Expert Answers</span>
-                </div>
-              </div>
-            </div>
+      {/* Header */}
+      <UnifiedHeader 
+        icon={HelpCircle}
+        title="Bible Q&A"
+        subtitle="Find answers to common biblical questions"
+      >
+        <div className="flex items-center gap-4 text-sm text-white/80">
+          <div className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            <span>{filteredQA.length} Questions</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            <span>Expert Answers</span>
           </div>
         </div>
-      </div>
+      </UnifiedHeader>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -321,5 +292,6 @@ export default function BibleQA() {
           )}
       </div>
     </div>
+    </PageLayout>
   );
 } 

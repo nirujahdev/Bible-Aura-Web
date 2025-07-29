@@ -14,6 +14,7 @@ import {
   User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
   Calendar, Award, Target, TrendingUp, Save, Star, Sparkles 
 } from "lucide-react";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 
 interface UserProfile {
   id: string;
@@ -198,55 +199,23 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Unique Profile Banner - Blue Personal Theme */}
-      <div className="bg-gradient-to-br from-blue-600/90 via-cyan-600/90 to-teal-700/90 text-white border-b sticky top-0 z-10 backdrop-blur-md bg-opacity-95 relative overflow-hidden">
-        {/* Decorative Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-300/20 to-cyan-200/10 rounded-full -translate-y-32 translate-x-32 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-br from-teal-300/15 to-blue-400/10 rounded-full translate-y-40 -translate-x-40"></div>
-          <div className="absolute top-1/3 left-1/2 w-2 h-2 bg-cyan-300/70 rounded-full animate-ping delay-500"></div>
-          <div className="absolute bottom-1/4 right-1/3 w-3 h-3 bg-white/50 rounded-full animate-pulse delay-1000"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative z-10 h-14 sm:h-16 flex items-center">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-            {/* Profile Icon & Title */}
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-cyan-300/30 rounded-full blur-lg"></div>
-                <div className="relative p-4 bg-gradient-to-br from-cyan-400/20 to-blue-300/20 rounded-full backdrop-blur-sm border border-white/30">
-                  <User className="h-8 w-8 text-cyan-200" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
-                  My Profile
-                  <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 text-cyan-300 animate-pulse" />
-                </h1>
-                <p className="text-blue-100 text-sm sm:text-base lg:text-lg mt-1 font-medium">
-                  Manage your account and spiritual preferences
-                </p>
-              </div>
-            </div>
-
-            {/* Profile Stats */}
-            <div className="flex flex-wrap gap-3 sm:ml-auto">
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Calendar className="h-4 w-4 text-blue-200" />
-                  <span>{profile?.reading_streak || 0} Day Streak</span>
-                </div>
-              </div>
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Star className="h-4 w-4 text-cyan-300" />
-                  <span>Active Member</span>
-                </div>
-              </div>
-            </div>
+      {/* Header */}
+      <UnifiedHeader 
+        icon={User}
+        title="My Profile"
+        subtitle="Manage your account and spiritual preferences"
+      >
+        <div className="flex items-center gap-4 text-sm text-white/80">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>{profile?.reading_streak || 0} Day Streak</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            <span>Active Member</span>
           </div>
         </div>
-      </div>
+      </UnifiedHeader>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">

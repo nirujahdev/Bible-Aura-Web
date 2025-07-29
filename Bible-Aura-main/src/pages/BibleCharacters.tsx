@@ -17,6 +17,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { UnifiedHeader } from '@/components/UnifiedHeader';
 import { Link } from 'react-router-dom';
 
 interface BibleCharacter {
@@ -141,61 +142,27 @@ export default function BibleCharacters() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
-      {/* Unique Characters Banner - Purple Royal Theme */}
-      <div className="bg-gradient-to-br from-purple-700/90 via-indigo-700/90 to-blue-800/90 text-white border-b sticky top-0 z-10 backdrop-blur-md bg-opacity-95 relative overflow-hidden">
-        {/* Decorative Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-yellow-400/20 to-amber-300/10 rounded-full -translate-y-40 translate-x-40"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-br from-purple-300/20 to-pink-400/10 rounded-full translate-y-32 -translate-x-32"></div>
-          <div className="absolute top-1/4 left-1/3 w-3 h-3 bg-yellow-300/60 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-white/40 rounded-full animate-ping delay-700"></div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative z-10 h-14 sm:h-16 flex items-center">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-6 w-full">
-            {/* Main Title Section */}
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-yellow-400/30 rounded-3xl blur-lg"></div>
-                <div className="relative p-5 bg-gradient-to-br from-yellow-400/20 to-amber-300/20 rounded-3xl backdrop-blur-sm border border-white/30">
-                  <Crown className="h-10 w-10 text-yellow-300" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
-                  Bible Characters
-                  <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-amber-300" />
-                </h1>
-                <p className="text-purple-100 text-sm sm:text-base lg:text-lg mt-1 font-medium">
-                  Explore the lives and stories of biblical figures
-                </p>
-              </div>
-            </div>
-
-            {/* Character Stats */}
-            <div className="flex flex-wrap gap-3 lg:ml-auto">
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Users className="h-4 w-4 text-purple-200" />
-                  <span>{filteredCharacters.length} Characters</span>
-                </div>
-              </div>
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <BookOpen className="h-4 w-4 text-purple-200" />
-                  <span>Old & New Testament</span>
-                </div>
-              </div>
-              <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Star className="h-4 w-4 text-yellow-300" />
-                  <span>Life Stories</span>
-                </div>
-              </div>
-            </div>
+      {/* Header */}
+      <UnifiedHeader 
+        icon={Users}
+        title="Bible Characters"
+        subtitle="Explore the lives and stories of biblical figures"
+      >
+        <div className="flex items-center gap-4 text-sm text-white/80">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>{filteredCharacters.length} Characters</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            <span>Old & New Testament</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            <span>Life Stories</span>
           </div>
         </div>
-      </div>
+      </UnifiedHeader>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
