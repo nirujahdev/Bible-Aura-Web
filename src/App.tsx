@@ -33,10 +33,7 @@ const Songs = lazy(() => import("./pages/Songs"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Careers = lazy(() => import("./pages/Careers"));
-const HeaderDemo = lazy(() => import("./pages/HeaderDemo"));
-const VerseDemo = lazy(() => import("./pages/VerseDemo"));
-const StorageDemo = lazy(() => import("./pages/StorageDemo"));
-const BillyGrahamDemo = lazy(() => import("./pages/BillyGrahamDemo"));
+
 
 // Component imports (keep these as regular imports since they're critical)
 import { AppSidebar } from "./components/AppSidebar";
@@ -91,10 +88,7 @@ function AppLayout() {
               <div className="w-full min-h-full relative">
                 <Suspense fallback={<LoadingScreen />}>
                   <Routes>
-                    <Route path="/header-demo" element={<HeaderDemo />} />
-                    <Route path="/verse-demo" element={<VerseDemo />} />
-                    <Route path="/storage-demo" element={<StorageDemo />} />
-                    <Route path="/billy-graham-demo" element={<BillyGrahamDemo />} />
+
                     <Route path="/bible-api-test" element={<BibleApiTest />} />
                     
                     {/* Protected Routes */}
