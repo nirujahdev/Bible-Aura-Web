@@ -20,6 +20,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // Clear any cached navigation state that might cause issues
     try {
       sessionStorage.removeItem('navigation-state');
+      sessionStorage.removeItem('auth-redirect');
     } catch (error) {
       console.error('Error clearing navigation state:', error);
     }
@@ -32,6 +33,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <>{children}</>;
   } catch (error) {
     console.error('Error rendering protected route:', error);
+    // Clear potentially corrupted auth state
+    try {
+      sessionStorage.clear();
+    } catch (clearError) {
+      console.error('Error clearing session storage:', clearError);
+    }
     // Fallback to auth page if there's an error rendering the protected content
     return <Navigate to="/auth" replace />;
   }

@@ -122,23 +122,30 @@ export default function Auth() {
     }
   }, []);
 
-  // Handle authentication redirects
+  // Handle authentication redirects with better error handling
   useEffect(() => {
     console.log('Auth state:', { user: !!user, loading, isMagicLinkAuth });
     
     if (!loading && user) {
       console.log('User authenticated successfully, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    } else if (!loading && isMagicLinkAuth && !user) {
-      // Magic link failed to authenticate - wait a bit longer
-      console.log('Magic link detected but user not authenticated yet, waiting...');
+      // Add a small delay to ensure the auth state is fully stable
       setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100);
+    } else if (!loading && isMagicLinkAuth && !user) {
+      // Magic link detected but authentication not complete
+      console.log('Magic link detected but user not authenticated yet, waiting...');
+      const timeout = setTimeout(() => {
         if (!user) {
           console.log('Magic link authentication failed after timeout');
           setAuthError('Magic link authentication failed. Please try again or sign in manually.');
           setIsMagicLinkAuth(false);
+          // Clear URL parameters to prevent retry loops
+          window.history.replaceState({}, '', '/auth');
         }
-      }, 3000); // Wait 3 seconds for authentication to complete
+      }, 5000); // Wait 5 seconds for authentication to complete
+      
+      return () => clearTimeout(timeout);
     }
   }, [user, loading, navigate, isMagicLinkAuth]);
 
