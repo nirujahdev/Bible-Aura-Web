@@ -2,19 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  BibleStudyWidget, 
-  AIChatWidget, 
-  JournalWidget, 
-  ReadingProgressWidget 
-} from "@/components/FeatureWidgets";
 import { DailyVerseWidget } from "@/components/DailyVerseWidget";
 import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 import { 
   DashboardHeaderSkeleton,
-  DashboardStatsSkeleton,
-  DashboardWidgetsSkeleton,
-  DailyVerseSkeletonLoad
+  DashboardStatsSkeleton
 } from "@/components/ui/skeleton-extended";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useSwipeNavigation } from "@/hooks/useTouchGestures";
@@ -35,15 +27,13 @@ const Dashboard = () => {
   const { profile, user } = useAuth();
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [widgetsLoaded, setWidgetsLoaded] = useState(false);
 
   useEffect(() => {
     try {
-      // Simulate initial loading
+      // Minimal loading for essential content only
       const loadingTimer = setTimeout(() => {
         setIsLoading(false);
-        setTimeout(() => setWidgetsLoaded(true), 300);
-      }, 800);
+      }, 500);
 
       return () => {
         clearTimeout(loadingTimer);
@@ -87,10 +77,6 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-6">
           <DashboardHeaderSkeleton />
           <DashboardStatsSkeleton />
-          <div className="mb-12">
-            <DailyVerseSkeletonLoad />
-          </div>
-          <DashboardWidgetsSkeleton />
         </div>
       </div>
     );
@@ -151,7 +137,7 @@ const Dashboard = () => {
         {/* Daily Verse Section */}
         <div className="mb-8 max-w-4xl mx-auto">
           <WidgetErrorBoundary widgetName="Daily Verse" fallbackMessage="Unable to load today's verse. Please try refreshing.">
-            {widgetsLoaded ? <DailyVerseWidget /> : <DailyVerseSkeletonLoad />}
+            <DailyVerseWidget />
           </WidgetErrorBoundary>
         </div>
         
@@ -175,33 +161,6 @@ const Dashboard = () => {
               <div className="text-xs sm:text-sm text-gray-600">✦ Bible Aura AI Insights</div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Main Features */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Your Daily Bible Experience</h2>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto">
-            {/* Bible Study Widget */}
-            <WidgetErrorBoundary widgetName="Bible Study" fallbackMessage="Unable to load Bible study progress.">
-              {widgetsLoaded ? <BibleStudyWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
-            </WidgetErrorBoundary>
-            
-            {/* Bible Aura AI Chat Widget */}
-            <WidgetErrorBoundary widgetName="Bible Aura AI Chat" fallbackMessage="Unable to load Bible Aura AI chat history.">
-              {widgetsLoaded ? <AIChatWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
-            </WidgetErrorBoundary>
-            
-            {/* Journal Widget */}
-            <WidgetErrorBoundary widgetName="Journal" fallbackMessage="Unable to load journal entries.">
-              {widgetsLoaded ? <JournalWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
-            </WidgetErrorBoundary>
-            
-            {/* Reading Progress Widget */}
-            <WidgetErrorBoundary widgetName="Reading Progress" fallbackMessage="Unable to load your reading progress.">
-              {widgetsLoaded ? <ReadingProgressWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}
-            </WidgetErrorBoundary>
-          </div>
         </div>
       </div>
       
