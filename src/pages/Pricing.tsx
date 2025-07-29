@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Globe, Users, BookOpen, Star, Crown, Shield, CheckCircle, X, Sparkles, Brain, MessageCircle, Edit3, Bookmark, TreePine, Mountain, Sprout, ChevronRight, HelpCircle, PieChart, DollarSign } from "lucide-react";
+import { Heart, Globe, Users, BookOpen, Star, Crown, Shield, CheckCircle, X, Sparkles, Brain, MessageCircle, Edit3, Bookmark, TreePine, Mountain, Sprout, ChevronRight, HelpCircle, PieChart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { useState } from "react";
 
-const Pricing = () => {
+const Funding = () => {
   const [selectedPlan, setSelectedPlan] = useState("pro");
 
   // Pricing Plans
@@ -149,41 +149,41 @@ const Pricing = () => {
       <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 pt-20 sm:pt-24 lg:pt-32">
-        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Choose Your <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">Bible Study Plan</span>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-16 pt-32">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+            Supporting <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">Digital Bible Ministry</span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 mb-4">
-            All Resources Free - Only AI & Personal Features Have Limits
+          <p className="text-xl text-gray-600 mb-4">
+            Not for Profit, But for Purpose
           </p>
-          <div className="space-y-4 text-base sm:text-lg text-gray-600 max-w-4xl mx-auto">
+          <div className="space-y-4 text-lg text-gray-600 max-w-4xl mx-auto">
             <p>
-              Bible Aura provides all biblical resources completely free. 
-              Only advanced AI features, personal journals, and sermon tools require subscription.
+              Bible Aura exists to make deep Bible study accessible to everyone, everywhere. 
+              While our heart is to serve freely, certain features require ongoing costs to maintain.
             </p>
           </div>
         </div>
 
         {/* Mission Statement */}
-        <div className="mb-8 sm:mb-12 lg:mb-16">
+        <div className="mb-16">
           <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-            <CardContent className="p-4 sm:p-6 lg:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <CardContent className="p-8">
+              <div className="grid md:grid-cols-3 gap-8">
                 <div className="text-center">
-                  <Heart className="h-8 w-8 sm:h-10 w-10 lg:h-12 lg:w-12 text-blue-600 mx-auto mb-2 sm:mb-4" />
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Our Mission</h3>
-                  <p className="text-sm sm:text-base text-gray-600">Make deep Bible study accessible to everyone, everywhere</p>
+                  <Heart className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">🙏 Our Mission</h3>
+                  <p className="text-gray-600">Make deep Bible study accessible to everyone, everywhere</p>
                 </div>
                 <div className="text-center">
-                  <PieChart className="h-8 w-8 sm:h-10 w-10 lg:h-12 lg:w-12 text-green-600 mx-auto mb-2 sm:mb-4" />
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Why Subscription?</h3>
-                  <p className="text-sm sm:text-base text-gray-600">AI assistance and personal data storage require ongoing costs</p>
+                  <PieChart className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">💡 Why Subscription?</h3>
+                  <p className="text-gray-600">AI assistance and personal data storage require ongoing costs</p>
                 </div>
                 <div className="text-center">
-                  <Shield className="h-8 w-8 sm:h-10 w-10 lg:h-12 lg:w-12 text-purple-600 mx-auto mb-2 sm:mb-4" />
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Our Commitment</h3>
-                  <p className="text-sm sm:text-base text-gray-600">No profit margins - every rupee supports ministry</p>
+                  <Shield className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">🎯 Our Commitment</h3>
+                  <p className="text-gray-600">No profit margins - every rupee supports ministry</p>
                 </div>
               </div>
             </CardContent>
@@ -191,36 +191,36 @@ const Pricing = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-4">Choose Your Plan</h2>
-          <p className="text-center text-gray-600 mb-8 sm:mb-12">All Bible resources are completely free</p>
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Choose Your Level of Support</h2>
+          <p className="text-center text-gray-600 mb-12">Support the ministry that serves thousands worldwide</p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((plan) => (
-              <Card key={plan.id} className={`relative hover:shadow-lg transition-all duration-300 ${plan.popular ? 'ring-2 ring-blue-500 scale-105' : ''} ${plan.borderColor}`}>
+              <Card key={plan.id} className={`relative hover:shadow-lg transition-all duration-300 ${plan.popular ? 'ring-2 ring-orange-500 scale-105' : ''} ${plan.borderColor}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-500 text-white px-3 py-1 text-xs sm:px-4 sm:text-sm">Most Popular</Badge>
+                    <Badge className="bg-orange-500 text-white px-4 py-1">Most Popular</Badge>
                   </div>
                 )}
                 <CardHeader className="text-center pb-4">
-                  <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gradient-to-r ${plan.color} text-white mb-2 sm:mb-4 mx-auto`}>
-                    <plan.icon className="h-6 w-6 sm:h-7 w-7 lg:h-8 lg:w-8" />
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${plan.color} text-white mb-4 mx-auto`}>
+                    <plan.icon className="h-8 w-8" />
                   </div>
-                  <CardTitle className="text-xl sm:text-2xl font-bold">{plan.name}</CardTitle>
-                  <div className="text-xs sm:text-sm text-gray-500 mb-2">{plan.badge}</div>
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                  <div className="text-sm text-gray-500 mb-2">{plan.badge}</div>
+                  <div className="text-4xl font-bold text-gray-900">
                     {plan.price === "0" ? "Free" : `${plan.price} ${plan.currency}`}
                   </div>
-                  {plan.price !== "0" && <div className="text-sm text-gray-500">per {plan.period}</div>}
-                  <p className="text-xs sm:text-sm text-gray-600 mt-2">{plan.description}</p>
+                  {plan.price !== "0" && <div className="text-gray-500">per {plan.period}</div>}
+                  <p className="text-sm text-gray-600 mt-2">{plan.description}</p>
                 </CardHeader>
-                <CardContent className="px-4 sm:px-6">
+                <CardContent>
                   <Button 
-                    className={`w-full ${plan.popular ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-900 hover:bg-gray-800'} text-white text-sm sm:text-base`}
+                    className={`w-full ${plan.popular ? 'bg-orange-500 hover:bg-orange-600' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
                     onClick={() => setSelectedPlan(plan.id)}
                   >
-                    {plan.price === "0" ? "Get Started Free" : "Choose Plan"}
+                    {plan.price === "0" ? "Get Started Free" : "Support This Ministry"}
                   </Button>
                 </CardContent>
               </Card>
@@ -229,8 +229,8 @@ const Pricing = () => {
         </div>
 
         {/* Feature Comparison Table */}
-        <div className="mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8 sm:mb-12">Complete Features Comparison</h2>
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Complete Features Comparison</h2>
           
           <div className="overflow-x-auto">
             <div className="min-w-full">
@@ -247,26 +247,26 @@ const Pricing = () => {
                           <span className="text-sm text-gray-500">0 LKR</span>
                         </div>
                       </th>
-                      <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-blue-50 rounded-t-lg">
-                        <div className="flex flex-col items-center">
-                          <Star className="h-6 w-6 text-blue-600 mb-2" />
-                          <span>Pro</span>
-                          <span className="text-sm text-gray-500">600 LKR</span>
-                          <Badge className="bg-blue-500 text-white text-xs mt-1">Popular</Badge>
-                        </div>
-                      </th>
                       <th className="text-center py-4 px-6 font-semibold text-gray-900">
                         <div className="flex flex-col items-center">
-                          <TreePine className="h-6 w-6 text-orange-600 mb-2" />
+                          <TreePine className="h-6 w-6 text-blue-600 mb-2" />
                           <span>Supporter</span>
-                          <span className="text-sm text-gray-500">1,200 LKR</span>
+                          <span className="text-sm text-gray-500">600 LKR</span>
+                        </div>
+                      </th>
+                      <th className="text-center py-4 px-6 font-semibold text-gray-900 bg-orange-50 rounded-t-lg">
+                        <div className="flex flex-col items-center">
+                          <Mountain className="h-6 w-6 text-orange-600 mb-2" />
+                          <span>Partner</span>
+                          <span className="text-sm text-gray-500">1,800 LKR</span>
+                          <Badge className="bg-orange-500 text-white text-xs mt-1">Popular</Badge>
                         </div>
                       </th>
                       <th className="text-center py-4 px-6 font-semibold text-gray-900">
                         <div className="flex flex-col items-center">
                           <Crown className="h-6 w-6 text-purple-600 mb-2" />
-                          <span>Partner</span>
-                          <span className="text-sm text-gray-500">2,400 LKR</span>
+                          <span>Champion</span>
+                          <span className="text-sm text-gray-500">4,000 LKR</span>
                         </div>
                       </th>
                     </tr>
@@ -302,37 +302,89 @@ const Pricing = () => {
                 </table>
               </div>
 
-              {/* Mobile Cards */}
+              {/* Mobile Cards - Plan-based comparison */}
               <div className="lg:hidden space-y-6">
-                {featureCategories.map((category, categoryIndex) => (
-                  <Card key={categoryIndex}>
+                {plans.map((plan) => (
+                  <Card key={plan.id} className={`${plan.popular ? 'ring-2 ring-blue-500' : ''} ${plan.borderColor}`}>
                     <CardHeader>
-                      <CardTitle className="text-base sm:text-lg">{category.category}</CardTitle>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center`}>
+                            <plan.icon className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{plan.name}</CardTitle>
+                            <p className="text-sm text-gray-500">{plan.badge}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-gray-900">
+                            {plan.price === "0" ? "Free" : `${plan.price} LKR`}
+                          </div>
+                          {plan.price !== "0" && <div className="text-xs text-gray-500">per {plan.period}</div>}
+                        </div>
+                      </div>
+                      {plan.popular && (
+                        <Badge className="bg-blue-500 text-white w-fit">Most Popular</Badge>
+                      )}
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {category.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="border-b border-gray-100 pb-4 last:border-b-0">
-                          <div className="font-medium text-gray-900 mb-2 text-sm sm:text-base">{feature.name}</div>
-                          <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Free:</span>
-                              <span className="text-gray-700 text-right">{feature.free}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Pro:</span>
-                              <span className="text-blue-700 font-medium text-right">{feature.pro}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Supporter:</span>
-                              <span className="text-orange-700 text-right">{feature.supporter}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">Partner:</span>
-                              <span className="text-purple-700 font-medium text-right">{feature.partner}</span>
-                            </div>
+                    <CardContent className="space-y-6">
+                      {featureCategories.map((category, categoryIndex) => (
+                        <div key={categoryIndex}>
+                          <h4 className="font-semibold text-gray-900 mb-3 text-sm border-b border-gray-200 pb-2">
+                            {category.category}
+                          </h4>
+                          <div className="space-y-2">
+                            {category.features.map((feature, featureIndex) => {
+                              const planFeature = plan.id === "free" ? feature.free : 
+                                                 plan.id === "pro" ? feature.pro :
+                                                 plan.id === "supporter" ? feature.supporter : 
+                                                 feature.partner;
+                              
+                              const isLimited = planFeature.toLowerCase().includes('limited') || 
+                                              planFeature.includes('/month') || 
+                                              planFeature.toLowerCase().includes('basic');
+                              
+                              const isNotAvailable = planFeature.toLowerCase().includes('not available') ||
+                                                   planFeature.toLowerCase().includes('coming soon');
+                              
+                              return (
+                                <div key={featureIndex} className="flex items-start justify-between py-1">
+                                  <span className="text-sm text-gray-700 flex-1">{feature.name}</span>
+                                  <div className="flex items-center gap-2 ml-3">
+                                    {isNotAvailable ? (
+                                      <>
+                                        <X className="h-4 w-4 text-red-500" />
+                                        <span className="text-xs text-red-600">Not Available</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle className={`h-4 w-4 ${isLimited ? 'text-yellow-500' : 'text-green-500'}`} />
+                                        <span className={`text-xs font-medium ${
+                                          plan.id === "free" ? 'text-gray-700' :
+                                          plan.id === "pro" ? 'text-blue-700' :
+                                          plan.id === "supporter" ? 'text-orange-700' :
+                                          'text-purple-700'
+                                        }`}>
+                                          {planFeature}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       ))}
+                      <div className="pt-4 border-t border-gray-200">
+                        <Button 
+                          className={`w-full ${plan.popular ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
+                          onClick={() => setSelectedPlan(plan.id)}
+                        >
+                          {plan.price === "0" ? "Get Started Free" : "Choose Plan"}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -342,13 +394,13 @@ const Pricing = () => {
         </div>
 
         {/* Transparency Section */}
-        <div className="mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8 sm:mb-12">Where Your Support Goes</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Where Your Support Goes</h2>
+          <div className="grid lg:grid-cols-2 gap-8">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <PieChart className="h-5 w-5 sm:h-6 w-6 text-blue-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-6 w-6 text-blue-600" />
                   Cost Breakdown
                 </CardTitle>
               </CardHeader>
@@ -357,8 +409,8 @@ const Pricing = () => {
                   {costBreakdown.map((item, index) => (
                     <div key={index}>
                       <div className="flex justify-between mb-2">
-                        <span className="text-xs sm:text-sm font-medium text-gray-700">{item.category}</span>
-                        <span className="text-xs sm:text-sm font-bold text-gray-900">{item.percentage}%</span>
+                        <span className="text-sm font-medium text-gray-700">{item.category}</span>
+                        <span className="text-sm font-bold text-gray-900">{item.percentage}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.percentage}%` }}></div>
@@ -371,8 +423,8 @@ const Pricing = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Globe className="h-5 w-5 sm:h-6 w-6 text-green-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-6 w-6 text-green-600" />
                   Your Impact
                 </CardTitle>
               </CardHeader>
@@ -380,8 +432,8 @@ const Pricing = () => {
                 <div className="space-y-4">
                   {impact.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <CheckCircle className="h-4 w-4 sm:h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm text-gray-600">{item}</span>
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-600">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -390,47 +442,64 @@ const Pricing = () => {
           </div>
         </div>
 
+        {/* Financial Assistance */}
+        <div className="mb-16">
+          <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+            <CardContent className="p-8 text-center">
+              <Heart className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">💝 Financial Assistance Available</h3>
+              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                If cost is a barrier to your Bible study journey, please contact us about our scholarship program. 
+                No one should be prevented from growing in God's Word due to financial constraints.
+              </p>
+              <Button asChild variant="outline" className="border-green-500 text-green-700 hover:bg-green-50">
+                <Link to="/contact">Request Scholarship</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* FAQ Section */}
-        <div className="mb-8 sm:mb-12 lg:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8 sm:mb-12">Frequently Asked Questions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Frequently Asked Questions</h2>
+          <div className="grid md:grid-cols-2 gap-8">
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                  <HelpCircle className="h-4 w-4 sm:h-5 w-5 text-blue-600" />
-                  What's completely free?
+              <CardContent className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <HelpCircle className="h-5 w-5 text-blue-600" />
+                  Why not completely free?
                 </h4>
-                <p className="text-gray-600 text-xs sm:text-sm">All Bible resources, study tools, character guides, and basic features are completely free forever.</p>
+                <p className="text-gray-600 text-sm">AI processing, secure storage, and content licensing require ongoing costs. We keep basic features free for everyone.</p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                  <Shield className="h-4 w-4 sm:h-5 w-5 text-green-600" />
-                  What requires subscription?
+              <CardContent className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-green-600" />
+                  How is this different from commercial apps?
                 </h4>
-                <p className="text-gray-600 text-xs sm:text-sm">Only AI chat features, personal journals, and advanced sermon tools have usage limits that require subscription.</p>
+                <p className="text-gray-600 text-sm">We're a ministry, not a business. Every rupee supports the mission - no profit margins or shareholders.</p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                  <PieChart className="h-4 w-4 sm:h-5 w-5 text-purple-600" />
-                  Why these prices?
+              <CardContent className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <PieChart className="h-5 w-5 text-purple-600" />
+                  Can I see how my money is used?
                 </h4>
-                <p className="text-gray-600 text-xs sm:text-sm">Prices only cover AI processing costs, secure storage, and basic operations. No profit margins.</p>
+                <p className="text-gray-600 text-sm">Absolutely! We provide complete transparency with detailed cost breakdowns and impact reports.</p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4 sm:p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                  <Heart className="h-4 w-4 sm:h-5 w-5 text-red-600" />
-                  Can I cancel anytime?
+              <CardContent className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-red-600" />
+                  What if I can't afford it?
                 </h4>
-                <p className="text-gray-600 text-xs sm:text-sm">Yes! Cancel anytime and continue using all free Bible resources without any restrictions.</p>
+                <p className="text-gray-600 text-sm">Contact us about our scholarship program. We believe financial constraints shouldn't limit Bible study.</p>
               </CardContent>
             </Card>
           </div>
@@ -438,20 +507,21 @@ const Pricing = () => {
 
         {/* Final Call to Action */}
         <div className="text-center">
-          <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardContent className="p-6 sm:p-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Start Your Bible Study Journey</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto mb-6 text-sm sm:text-base">
-                Access all Bible resources for free. Upgrade only when you need advanced AI features or personal tools.
+          <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+            <CardContent className="p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Begin Your Partnership</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+                Join thousands worldwide in supporting accessible Bible study. 
+                Your partnership enables deep spiritual growth for believers everywhere.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 sm:px-8 py-3">
-                  <Heart className="mr-2 h-4 w-4 sm:h-5 w-5" />
-                  Start Free Now
+                <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3">
+                  <Heart className="mr-2 h-5 w-5" />
+                  Support This Ministry
                 </Button>
-                <Button size="lg" variant="outline" className="border-blue-200 hover:bg-blue-50" asChild>
+                <Button size="lg" variant="outline" className="border-orange-200 hover:bg-orange-50" asChild>
                   <Link to="/auth">
-                    Explore Features
+                    Start Free Trial
                   </Link>
                 </Button>
               </div>
@@ -461,33 +531,33 @@ const Pricing = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-8 sm:py-12 lg:py-16">
+      <footer className="bg-black text-white py-16">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-center md:text-left">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
             {/* Brand Section */}
             <div className="text-center md:text-left">
-              <h3 className="text-xl sm:text-2xl font-bold text-orange-400 mb-3">
+              <h3 className="text-2xl font-bold text-orange-400 mb-3">
                 ✦Bible Aura
               </h3>
-              <p className="text-gray-400 text-sm sm:text-base">
+              <p className="text-gray-400 text-base">
                 AI-Powered Biblical Insight
               </p>
             </div>
             
             {/* Menu Section */}
             <div className="text-center md:text-left">
-              <h4 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Menu</h4>
+              <h4 className="text-xl font-semibold text-white mb-6">Menu</h4>
               <nav className="space-y-3">
-                <Link to="/about" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base">
+                <Link to="/about" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   About
                 </Link>
-                <Link to="/careers" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base">
+                <Link to="/careers" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Careers
                 </Link>
-                <Link to="/dashboard" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base">
+                <Link to="/dashboard" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Dashboard
                 </Link>
-                <Link to="/auth" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base">
+                <Link to="/auth" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Sign In
                 </Link>
               </nav>
@@ -495,33 +565,33 @@ const Pricing = () => {
             
             {/* Contact Section */}
             <div className="text-center md:text-left">
-              <h4 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Contact</h4>
+              <h4 className="text-xl font-semibold text-white mb-6">Contact</h4>
               <div className="space-y-3">
-                <p className="text-gray-400 text-sm sm:text-base">@bible_aura.ai</p>
+                <p className="text-gray-400">@bible_aura.ai</p>
                 <a 
-                  href="mailto:bibleinsightai.contact@gmail.com" 
-                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base"
+                  href="mailto:bibleaura.contact@gmail.com" 
+                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
                 >
-                  bibleinsightai.contact@gmail.com
+                  bibleaura.contact@gmail.com
                 </a>
               </div>
             </div>
           </div>
 
           {/* Bottom Section */}
-          <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8">
+          <div className="border-t border-gray-800 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-gray-400">
               <div>
-                <Link to="/terms" className="hover:text-orange-400 transition-colors duration-300 text-xs sm:text-sm">
+                <Link to="/terms" className="hover:text-orange-400 transition-colors duration-300 text-sm">
                   Terms of Use
                 </Link>
                 <span className="mx-2">|</span>
-                <Link to="/privacy" className="hover:text-orange-400 transition-colors duration-300 text-xs sm:text-sm">
+                <Link to="/privacy" className="hover:text-orange-400 transition-colors duration-300 text-sm">
                   Privacy Policy
                 </Link>
               </div>
               
-              <div className="text-xs sm:text-sm">
+              <div className="text-sm">
                 {/* Mobile/Tablet: Two lines */}
                 <div className="lg:hidden">
                   <div className="mb-2">
@@ -561,4 +631,4 @@ const Pricing = () => {
   );
 };
 
-export default Pricing; 
+export default Funding; 

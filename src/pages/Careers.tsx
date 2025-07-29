@@ -42,7 +42,7 @@ Best regards,
 [Your Name]
 [Your Contact Info]`;
 
-    return `mailto:bibleinsightai.contact@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    return `mailto:bibleaura.contact@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const roles = [
@@ -242,7 +242,7 @@ Best regards,
               <span className="font-semibold">To apply: Click "Apply" under any role to email us with a pre-filled message.</span>
             </div>
             <p className="text-gray-600">
-              Email: <a href="mailto:bibleinsightai.contact@gmail.com" className="text-orange-600 hover:underline font-medium">bibleinsightai.contact@gmail.com</a>
+              Email: <a href="mailto:bibleaura.contact@gmail.com" className="text-orange-600 hover:underline font-medium">bibleaura.contact@gmail.com</a>
             </p>
           </div>
         </div>
@@ -406,10 +406,10 @@ Best regards,
               <div className="space-y-3">
                 <p className="text-gray-400">@bible_aura.ai</p>
                 <a 
-                  href="mailto:bibleinsightai.contact@gmail.com" 
+                  href="mailto:bibleaura.contact@gmail.com" 
                   className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
                 >
-                  bibleinsightai.contact@gmail.com
+                  bibleaura.contact@gmail.com
                 </a>
               </div>
             </div>

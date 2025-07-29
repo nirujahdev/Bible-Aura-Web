@@ -581,10 +581,10 @@ const Landing = () => {
               <div className="space-y-3">
                 <p className="text-gray-400">@bible_aura.ai</p>
                 <a 
-                  href="mailto:bibleinsightai.contact@gmail.com" 
-                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
-                >
-                  bibleinsightai.contact@gmail.com
+                                  href="mailto:bibleaura.contact@gmail.com" 
+                className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
+              >
+                bibleaura.contact@gmail.com
                 </a>
               </div>
             </div>

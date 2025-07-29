@@ -13,8 +13,8 @@ const Contact = () => {
       icon: Mail,
       title: "Email Us",
       description: "Send us a message anytime",
-      contact: "bibleinsightai.contact@gmail.com",
-      action: "mailto:bibleinsightai.contact@gmail.com",
+          contact: "bibleaura.contact@gmail.com",
+    action: "mailto:bibleaura.contact@gmail.com",
       color: "from-blue-500 to-blue-600"
     },
     {
@@ -90,10 +90,10 @@ const Contact = () => {
               <p className="text-gray-600 text-sm mb-4">Send us a message anytime</p>
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-4 shadow-sm">
                 <a 
-                  href="mailto:bibleinsightai.contact@gmail.com"
+                  href="mailto:bibleaura.contact@gmail.com"
                   className="text-blue-600 font-semibold hover:text-blue-700 transition-colors break-all"
                 >
-                  bibleinsightai.contact@gmail.com
+                  bibleaura.contact@gmail.com
                 </a>
               </div>
             </CardContent>
@@ -190,10 +190,10 @@ const Contact = () => {
               <div className="space-y-3">
                 <p className="text-gray-400">@bible_aura.ai</p>
                 <a 
-                  href="mailto:bibleinsightai.contact@gmail.com" 
-                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
-                >
-                  bibleinsightai.contact@gmail.com
+                                  href="mailto:bibleaura.contact@gmail.com" 
+                className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
+              >
+                bibleaura.contact@gmail.com
                 </a>
               </div>
             </div>
