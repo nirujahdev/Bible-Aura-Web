@@ -173,23 +173,23 @@ const Dashboard = () => {
         </div>
         
         {/* Essential Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-orange-600 mb-1">{profile?.reading_streak || 0}</div>
-              <div className="text-sm text-gray-600">Day Streak</div>
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-orange-600 mb-1">{profile?.reading_streak || 0}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Day Streak</div>
             </CardContent>
           </Card>
           <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-green-600 mb-1">12</div>
-              <div className="text-sm text-gray-600">Journal Entries</div>
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">12</div>
+              <div className="text-xs sm:text-sm text-gray-600">Journal Entries</div>
             </CardContent>
           </Card>
           <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-purple-600 mb-1">47</div>
-                              <div className="text-sm text-gray-600">✦ Bible Aura AI Insights</div>
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 mb-1">47</div>
+              <div className="text-xs sm:text-sm text-gray-600">✦ Bible Aura AI Insights</div>
             </CardContent>
           </Card>
         </div>
@@ -198,7 +198,7 @@ const Dashboard = () => {
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Your Dashboard</h2>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Bible Study Widget */}
             <WidgetErrorBoundary widgetName="Bible Study" fallbackMessage="Unable to load Bible study progress.">
               {widgetsLoaded ? <BibleStudyWidget /> : <div className="bg-gray-200 h-72 rounded-lg animate-pulse"></div>}

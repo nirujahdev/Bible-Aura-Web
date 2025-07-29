@@ -264,20 +264,20 @@ export default function Bible() {
       )}
 
       {/* Full-Width Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 border-b flex-shrink-0">
-        <div className="max-w-full mx-auto">
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-3">
-            <Book className="h-6 w-6" />
-            <h1 className="text-2xl font-divine">Sacred Scripture</h1>
-            <Sparkles className="h-5 w-5" />
+            <Book className="h-5 w-5 sm:h-6 sm:w-6" />
+            <h1 className="text-xl sm:text-2xl font-divine">Sacred Scripture</h1>
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
         </div>
       </div>
 
       {/* Top Controls Section - Below Header */}
-      <div className="bg-white border-b p-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Language Selection */}
             <div>
               <label className="text-sm font-medium mb-2 block flex items-center gap-2">

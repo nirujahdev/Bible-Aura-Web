@@ -515,24 +515,24 @@ const TopicalBibleStudy = () => {
   }
 
   return (
-    <div className="h-screen bg-background overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-aura-gradient text-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-2">
-            <Library className="h-6 w-6" />
-            <h1 className="text-2xl font-divine">Topical Bible Study</h1>
-            <Star className="h-5 w-5" />
+            <Library className="h-5 w-5 sm:h-6 sm:w-6" />
+            <h1 className="text-xl sm:text-2xl font-divine">Topical Bible Study</h1>
+            <Star className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <p className="text-white/80 mt-1">Explore 500+ theological topics with organized verse collections</p>
+          <p className="text-white/80 mt-1 text-sm sm:text-base">Explore 500+ theological topics with organized verse collections</p>
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Topics Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="h-full flex flex-col">
+          <div className="lg:col-span-1 order-2 lg:order-1">
+            <Card className="h-auto lg:sticky lg:top-24">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2">
                   <Tags className="h-5 w-5" />
@@ -567,7 +567,7 @@ const TopicalBibleStudy = () => {
                 </div>
               </CardHeader>
               
-              <CardContent className="flex-1 overflow-auto">
+              <CardContent className="max-h-[600px] lg:max-h-[calc(100vh-300px)] overflow-auto">
                 {/* Category Overview */}
                 <Accordion type="multiple" value={expandedCategories} onValueChange={setExpandedCategories}>
                   {mainCategories.map(category => {
@@ -579,8 +579,8 @@ const TopicalBibleStudy = () => {
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center gap-2">
                             <CategoryIcon className={`h-5 w-5 ${category.color}`} />
-                            <span>{category.name}</span>
-                            <Badge variant="secondary" className="ml-auto">
+                            <span className="text-sm sm:text-base">{category.name}</span>
+                            <Badge variant="secondary" className="ml-auto text-xs">
                               {categoryTopics.length}
                             </Badge>
                           </div>
@@ -599,36 +599,39 @@ const TopicalBibleStudy = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-1 lg:order-2">
             {selectedTopic ? (
-              <div className="h-full flex flex-col">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Topic Header */}
-                <Card className="mb-4">
+                <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Target className="h-5 w-5 text-orange-600" />
-                          {selectedTopic.name}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                          <Target className="h-5 w-5 text-orange-600 flex-shrink-0" />
+                          <span className="truncate">{selectedTopic.name}</span>
                         </CardTitle>
                         {selectedTopic.description && (
-                          <p className="text-muted-foreground mt-1">{selectedTopic.description}</p>
+                          <p className="text-muted-foreground mt-1 text-sm sm:text-base">{selectedTopic.description}</p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{selectedTopic.category}</Badge>
-                        <Badge variant="secondary">{filteredVerses.length} verses</Badge>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">{selectedTopic.category}</Badge>
+                        <Badge variant="secondary" className="text-xs">{filteredVerses.length} verses</Badge>
                         {user && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => toggleBookmark(selectedTopic.id)}
+                            className="flex-shrink-0"
                           >
                             {bookmarkedTopics.includes(selectedTopic.id) ? 
                               <BookmarkCheck className="h-4 w-4 mr-1 text-orange-600" /> :
                               <Bookmark className="h-4 w-4 mr-1" />
                             }
-                            {bookmarkedTopics.includes(selectedTopic.id) ? 'Bookmarked' : 'Bookmark'}
+                            <span className="hidden sm:inline">
+                              {bookmarkedTopics.includes(selectedTopic.id) ? 'Bookmarked' : 'Bookmark'}
+                            </span>
                           </Button>
                         )}
                       </div>
@@ -637,22 +640,28 @@ const TopicalBibleStudy = () => {
                 </Card>
 
                 {/* Content Tabs */}
-                <Card className="flex-1 overflow-hidden">
-                  <Tabs defaultValue="verses" className="h-full flex flex-col">
-                    <div className="border-b px-6 pt-4">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="verses">Verses ({filteredVerses.length})</TabsTrigger>
-                        <TabsTrigger value="cross-refs">Cross References ({crossReferences.length})</TabsTrigger>
-                        <TabsTrigger value="study-tools">Study Tools</TabsTrigger>
+                <Card>
+                  <Tabs defaultValue="verses" className="w-full">
+                    <div className="border-b px-4 sm:px-6 pt-4">
+                      <TabsList className="grid w-full grid-cols-3 h-auto">
+                        <TabsTrigger value="verses" className="text-xs sm:text-sm px-2 sm:px-4">
+                          <span className="hidden sm:inline">Verses </span>({filteredVerses.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="cross-refs" className="text-xs sm:text-sm px-2 sm:px-4">
+                          <span className="hidden sm:inline">Cross References </span>({crossReferences.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="study-tools" className="text-xs sm:text-sm px-2 sm:px-4">
+                          Study Tools
+                        </TabsTrigger>
                       </TabsList>
                     </div>
 
-                    <TabsContent value="verses" className="flex-1 overflow-hidden">
-                      <div className="p-6">
+                    <TabsContent value="verses" className="mt-0">
+                      <div className="p-4 sm:p-6">
                         {/* Verse Filters */}
-                        <div className="flex flex-wrap gap-3 mb-4">
+                        <div className="flex flex-col sm:flex-row gap-3 mb-4">
                           <Select value={selectedTranslation} onValueChange={setSelectedTranslation}>
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="w-full sm:w-32">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -664,7 +673,7 @@ const TopicalBibleStudy = () => {
                           </Select>
                           
                           <Select value={testamentFilter} onValueChange={setTestamentFilter}>
-                            <SelectTrigger className="w-40">
+                            <SelectTrigger className="w-full sm:w-40">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -674,10 +683,10 @@ const TopicalBibleStudy = () => {
                             </SelectContent>
                           </Select>
                           
-                          <div className="flex items-center gap-2">
-                            <label className="text-sm">Min Relevance:</label>
+                          <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <label className="text-sm whitespace-nowrap">Min Relevance:</label>
                             <Select value={relevanceFilter.toString()} onValueChange={(v) => setRelevanceFilter(parseInt(v))}>
-                              <SelectTrigger className="w-16">
+                              <SelectTrigger className="w-full sm:w-16">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -690,47 +699,61 @@ const TopicalBibleStudy = () => {
                         </div>
 
                         {/* Verses List */}
-                        <ScrollArea className="h-[calc(100vh-400px)]">
+                        <div className="max-h-[600px] lg:max-h-[calc(100vh-500px)] overflow-auto">
                           <div className="space-y-4">
-                            {filteredVerses.map(renderVerseCard)}
+                            {filteredVerses.length > 0 ? (
+                              filteredVerses.map(renderVerseCard)
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                                <p>No verses found matching your criteria.</p>
+                              </div>
+                            )}
                           </div>
-                        </ScrollArea>
+                        </div>
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="cross-refs" className="flex-1 overflow-auto">
-                      <div className="p-6">
+                    <TabsContent value="cross-refs" className="mt-0">
+                      <div className="p-4 sm:p-6">
                         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                           <Network className="h-5 w-5" />
                           Related Topics
                         </h3>
                         
-                        <div className="grid gap-3">
-                          {crossReferences.map(crossRef => (
-                            <Card 
-                              key={crossRef.id} 
-                              className="p-4 cursor-pointer hover:shadow-md transition-shadow"
-                              onClick={() => handleTopicSelect(crossRef.related_topic)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="font-medium">{crossRef.related_topic.name}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {crossRef.related_topic.description}
-                                  </p>
+                        <div className="space-y-3 max-h-[600px] lg:max-h-[calc(100vh-500px)] overflow-auto">
+                          {crossReferences.length > 0 ? (
+                            crossReferences.map(crossRef => (
+                              <Card 
+                                key={crossRef.id} 
+                                className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => handleTopicSelect(crossRef.related_topic)}
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-medium truncate">{crossRef.related_topic.name}</h4>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                      {crossRef.related_topic.description}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Badge variant="outline" className="capitalize text-xs">
+                                      {crossRef.relationship_type}
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {crossRef.strength}/10
+                                    </Badge>
+                                    <ArrowRight className="h-4 w-4" />
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="capitalize">
-                                    {crossRef.relationship_type}
-                                  </Badge>
-                                  <Badge variant="secondary">
-                                    {crossRef.strength}/10
-                                  </Badge>
-                                  <ArrowRight className="h-4 w-4" />
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
+                              </Card>
+                            ))
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <Network className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p>No cross-references found for this topic.</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </TabsContent>

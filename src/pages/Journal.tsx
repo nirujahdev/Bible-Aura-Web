@@ -1,190 +1,102 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  BookOpen, Plus, Edit3, Trash2, Heart, Search, Calendar as CalendarIcon, 
-  FileText, Star, Bold, Italic, List, AlignLeft, Save, Share2, 
-  Download, Upload, Settings, Bell, Sun, Moon, ZoomIn, ZoomOut,
-  Printer, Filter, Tag, Clock, Bookmark, Eye, EyeOff, Copy,
-  Archive, RefreshCw, CheckCircle, Circle, Flame, Target,
-  PenTool, Hash, Layers, Globe, Lock, Users, CloudDownload,
-  Timer, Calendar as CalIcon, Quote, LinkIcon, Type, Palette,
-  Sparkles
+  BookOpen, Plus, Edit3, Trash2, Search, FileText, 
+  Save, Calendar, Quote, X, ChevronDown
 } from "lucide-react";
-import { AutoVerseTooltip } from "@/components/VerseTooltip";
-import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
+import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
 
 interface JournalEntry {
   id: string;
-  title: string | null;
+  title: string;
   content: string;
-  mood: string | null;
-  spiritual_state: string | null;
-  verse_references: string[] | null;
-  tags?: string[];
-  is_private?: boolean;
-  shared_with?: string[];
-  formatted_content?: any;
+  verse_reference?: string;
+  verse_text?: string;
+  mood?: string;
   entry_date?: string;
-  word_count?: number;
-  reading_time?: number;
   created_at: string;
   updated_at: string;
 }
 
-interface JournalSettings {
-  fontSize: number;
-  darkMode: boolean;
-  autoSave: boolean;
-  dailyReminder: boolean;
-  reminderTime: string;
-  defaultPrivacy: boolean;
-  showWordCount: boolean;
+interface BibleBook {
+  id: string;
+  name: string;
+  chapters: number;
+  testament: string;
+}
+
+interface BibleVerse {
+  id: string;
+  chapter: number;
+  verse: number;
+  text: string;
+  book_name: string;
 }
 
 const Journal = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const editorRef = useRef<HTMLTextAreaElement>(null);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
   
   // Core state
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
-  const [currentEntry, setCurrentEntry] = useState<Partial<JournalEntry>>({
-    title: "",
-    content: "",
-    mood: null,
-    spiritual_state: null,
-    verse_references: [],
-    tags: [],
-    is_private: true,
-    entry_date: new Date().toISOString().split('T')[0]
-  });
-  
-  // UI state
-  const [showEntryDialog, setShowEntryDialog] = useState(false);
-  const [showEnhancedEditor, setShowEnhancedEditor] = useState(false);
-  const [showVerseSearch, setShowVerseSearch] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [autoSaving, setAutoSaving] = useState(false);
   
-  // Editor state
-  const [editorSettings, setEditorSettings] = useState<JournalSettings>({
-    fontSize: 14,
-    darkMode: false,
-    autoSave: true,
-    dailyReminder: true,
-    reminderTime: "20:00",
-    defaultPrivacy: true,
-    showWordCount: true
-  });
+  // Entry dialog state
+  const [showEntryDialog, setShowEntryDialog] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [entryTitle, setEntryTitle] = useState("");
+  const [entryContent, setEntryContent] = useState("");
+  const [entryMood, setEntryMood] = useState("");
   
-  // Verse search state
-  const [verseSearchQuery, setVerseSearchQuery] = useState("");
-  const [verseResults, setVerseResults] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
-  // Statistics state
-  const [streakCount, setStreakCount] = useState(0);
-  const [totalEntries, setTotalEntries] = useState(0);
-  const [totalWords, setTotalWords] = useState(0);
-  const [popularTags, setPopularTags] = useState<Array<{tag: string, count: number}>>([]);
+  // Bible integration state
+  const [showVerseSelector, setShowVerseSelector] = useState(false);
+  const [bibleBooks, setBibleBooks] = useState<BibleBook[]>([]);
+  const [selectedBook, setSelectedBook] = useState<BibleBook | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState(1);
+  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
+  const [chapterVerses, setChapterVerses] = useState<BibleVerse[]>([]);
+  const [selectedVerse, setSelectedVerse] = useState<BibleVerse | null>(null);
 
-  // Predefined data
+  // Stats
+  const totalEntries = entries.length;
+  const totalWords = entries.reduce((sum, entry) => sum + entry.content.split(' ').length, 0);
+
   const moods = [
-    { value: "joyful", label: "😊 Joyful", color: "bg-yellow-100 text-yellow-800" },
-    { value: "peaceful", label: "😌 Peaceful", color: "bg-blue-100 text-blue-800" },
-    { value: "grateful", label: "🙏 Grateful", color: "bg-green-100 text-green-800" },
-    { value: "contemplative", label: "🤔 Contemplative", color: "bg-purple-100 text-purple-800" },
-    { value: "challenged", label: "😰 Challenged", color: "bg-orange-100 text-orange-800" },
-    { value: "hopeful", label: "✨ Hopeful", color: "bg-pink-100 text-pink-800" },
-    { value: "struggling", label: "😔 Struggling", color: "bg-gray-100 text-gray-800" },
-    { value: "blessed", label: "🙌 Blessed", color: "bg-indigo-100 text-indigo-800" },
-    { value: "reflective", label: "💭 Reflective", color: "bg-teal-100 text-teal-800" }
+    { value: "joyful", label: "😊 Joyful" },
+    { value: "peaceful", label: "😌 Peaceful" },
+    { value: "grateful", label: "🙏 Grateful" },
+    { value: "contemplative", label: "🤔 Contemplative" },
+    { value: "hopeful", label: "✨ Hopeful" },
+    { value: "blessed", label: "🙌 Blessed" }
   ];
 
-  const spiritualStates = [
-    "Growing closer to God", "Seeking guidance", "Feeling blessed", "In prayer",
-    "Learning patience", "Finding peace", "Trusting God's plan", "Feeling distant",
-    "Questioning", "Experiencing breakthrough", "Walking in faith", "Serving others",
-    "Studying scripture", "Worshiping", "Fasting", "Meditating", "Celebrating"
+  const languages = [
+    { value: 'english', label: 'English (KJV)' },
+    { value: 'tamil', label: 'Tamil' }
   ];
 
-  const commonTags = [
-    "prayer", "gratitude", "struggle", "growth", "worship", "bible-study",
-    "faith", "family", "work", "health", "relationships", "decisions",
-    "dreams", "goals", "testimony", "breakthrough", "healing", "wisdom"
-  ];
-
-  // URL parameter handling for daily verse integration
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isDailyVerse = urlParams.get('daily_verse');
-    const preContent = urlParams.get('content');
-    const theme = urlParams.get('theme');
-
-    if (isDailyVerse && preContent) {
-      setCurrentEntry(prev => ({
-        ...prev,
-        content: decodeURIComponent(preContent),
-        tags: theme ? [theme] : [],
-        title: `Daily Reflection - ${new Date().toLocaleDateString()}`
-      }));
-      setShowEnhancedEditor(true);
-      
-      // Clean URL
-      window.history.replaceState({}, '', '/journal');
-    }
-  }, []);
-
-  // Load data on component mount
   useEffect(() => {
     if (user) {
       loadEntries();
-      loadUserSettings();
-      calculateStatistics();
+      loadBibleBooks();
     }
   }, [user]);
 
-  // Auto-save functionality
   useEffect(() => {
-    if (editorSettings.autoSave && currentEntry.content && isEditing) {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-      
-      autoSaveTimeoutRef.current = setTimeout(() => {
-        handleAutoSave();
-      }, 3000);
+    if (selectedBook) {
+      loadChapterVerses();
     }
-
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, [currentEntry.content, editorSettings.autoSave, isEditing]);
+  }, [selectedBook, selectedChapter, selectedLanguage]);
 
   const loadEntries = async () => {
     if (!user) return;
@@ -195,23 +107,10 @@ const Journal = () => {
         .from('journal_entries')
         .select('*')
         .eq('user_id', user.id)
-        .order('entry_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-             // Transform database entries to match interface
-       const transformedEntries = (data || []).map((entry: any) => ({
-         ...entry,
-         tags: entry.tags || [],
-         is_private: entry.is_private ?? true,
-         shared_with: entry.shared_with || [],
-         formatted_content: entry.formatted_content || null,
-         entry_date: entry.entry_date || entry.created_at.split('T')[0],
-         word_count: entry.word_count || 0,
-         reading_time: entry.reading_time || 0
-       }));
-       
-       setEntries(transformedEntries);
+      setEntries(data || []);
     } catch (error) {
       console.error('Error loading entries:', error);
       toast({
@@ -224,62 +123,80 @@ const Journal = () => {
     }
   };
 
-  const handleSaveEntry = async (entry: any) => {
-    if (!user) return;
+  const loadBibleBooks = async () => {
+    try {
+      const books = await getAllBooks();
+      setBibleBooks(books);
+    } catch (error) {
+      console.error('Error loading Bible books:', error);
+    }
+  };
+
+  const loadChapterVerses = async () => {
+    if (!selectedBook) return;
+    
+    try {
+      const verses = await getChapterVerses(selectedBook.name, selectedChapter, selectedLanguage);
+      setChapterVerses(verses);
+    } catch (error) {
+      console.error('Error loading verses:', error);
+    }
+  };
+
+  const handleSaveEntry = async () => {
+    if (!user || !entryTitle.trim() || !entryContent.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in both title and content",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
     try {
-      const entryToSave = {
-        ...entry,
+      const entryData = {
         user_id: user.id,
-        word_count: entry.word_count || 0,
-        reading_time: entry.reading_time || 0,
+        title: entryTitle.trim(),
+        content: entryContent.trim(),
+        mood: entryMood || null,
+        verse_reference: selectedVerse ? `${selectedVerse.book_name} ${selectedVerse.chapter}:${selectedVerse.verse}` : null,
+        verse_text: selectedVerse?.text || null,
+        entry_date: new Date().toISOString().split('T')[0],
         updated_at: new Date().toISOString()
       };
 
-      if (selectedEntry?.id) {
+      if (editingEntry) {
         // Update existing entry
         const { error } = await supabase
           .from('journal_entries')
-          .update(entryToSave)
-          .eq('id', selectedEntry.id);
+          .update(entryData)
+          .eq('id', editingEntry.id);
 
         if (error) throw error;
         
         toast({
           title: "Entry updated",
-          description: "Your journal entry has been updated successfully",
+          description: "Your journal entry has been saved successfully",
         });
       } else {
         // Create new entry
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('journal_entries')
-          .insert([entryToSave]);
+          .insert(entryData)
+          .select()
+          .single();
 
         if (error) throw error;
         
         toast({
-          title: "Entry saved",
-          description: "Your journal entry has been saved successfully",
+          title: "Entry created",
+          description: "Your new journal entry has been saved",
         });
       }
 
-      // Refresh entries list
-      await loadEntries();
-      
-      // Close editor
-      setShowEnhancedEditor(false);
-      setSelectedEntry(null);
-      setCurrentEntry({
-        title: "",
-        content: "",
-        mood: null,
-        spiritual_state: null,
-        verse_references: [],
-        tags: [],
-        is_private: true,
-        entry_date: new Date().toISOString().split('T')[0]
-      });
+      closeEntryDialog();
+      loadEntries();
     } catch (error) {
       console.error('Error saving entry:', error);
       toast({
@@ -292,127 +209,7 @@ const Journal = () => {
     }
   };
 
-  const handleAutoSave = async () => {
-    if (!user || !currentEntry.content || !selectedEntry?.id) return;
-    
-    setAutoSaving(true);
-    try {
-      const { error } = await supabase
-        .from('journal_entries')
-        .update({
-          content: currentEntry.content,
-          title: currentEntry.title,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedEntry.id);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-    } finally {
-      setAutoSaving(false);
-    }
-  };
-
-  const loadUserSettings = async () => {
-    // Load user preferences from localStorage or database
-    const savedSettings = localStorage.getItem('journalSettings');
-    if (savedSettings) {
-      setEditorSettings(JSON.parse(savedSettings));
-    }
-  };
-
-  const calculateStatistics = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-             const entries: any[] = data || [];
-       setTotalEntries(entries.length);
-       
-       const totalWords = entries.reduce((sum, entry) => sum + (entry.word_count || 0), 0);
-       setTotalWords(totalWords);
-       
-       // Calculate streak
-       const sortedEntries = entries
-         .sort((a, b) => new Date(b.entry_date || b.created_at).getTime() - new Date(a.entry_date || a.created_at).getTime());
-       
-       let streak = 0;
-       const currentDate = new Date();
-       currentDate.setHours(0, 0, 0, 0);
-       
-       for (const entry of sortedEntries) {
-         const entryDate = new Date(entry.entry_date || entry.created_at);
-         entryDate.setHours(0, 0, 0, 0);
-         
-         if (entryDate.getTime() === currentDate.getTime()) {
-           streak++;
-           currentDate.setDate(currentDate.getDate() - 1);
-         } else {
-           break;
-         }
-       }
-       
-       setStreakCount(streak);
-       
-       // Calculate popular tags
-       const tagCounts: Record<string, number> = {};
-       entries.forEach((entry: any) => {
-         const tags = entry.tags || [];
-         tags.forEach((tag: string) => {
-           tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-         });
-       });
-      
-      const sortedTags = Object.entries(tagCounts)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10)
-        .map(([tag, count]) => ({ tag, count }));
-      
-      setPopularTags(sortedTags);
-    } catch (error) {
-      console.error('Error calculating statistics:', error);
-    }
-  };
-
-  const openEnhancedEditor = (entry?: JournalEntry) => {
-    if (entry) {
-      setSelectedEntry(entry);
-      setCurrentEntry({
-        title: entry.title || "",
-        content: entry.content,
-        mood: entry.mood,
-        spiritual_state: entry.spiritual_state,
-        verse_references: entry.verse_references || [],
-        tags: entry.tags || [],
-        is_private: entry.is_private,
-        entry_date: entry.entry_date
-      });
-      setIsEditing(true);
-    } else {
-      setSelectedEntry(null);
-      setCurrentEntry({
-        title: "",
-        content: "",
-        mood: null,
-        spiritual_state: null,
-        verse_references: [],
-        tags: [],
-        is_private: true,
-        entry_date: new Date().toISOString().split('T')[0]
-      });
-      setIsEditing(false);
-    }
-    setShowEnhancedEditor(true);
-  };
-
-  const deleteEntry = async (entryId: string) => {
+  const handleDeleteEntry = async (entryId: string) => {
     if (!user) return;
     
     try {
@@ -429,7 +226,7 @@ const Journal = () => {
         description: "Your journal entry has been deleted",
       });
       
-      await loadEntries();
+      loadEntries();
     } catch (error) {
       console.error('Error deleting entry:', error);
       toast({
@@ -440,232 +237,402 @@ const Journal = () => {
     }
   };
 
-  if (showEnhancedEditor) {
+  const openEntryDialog = (entry?: JournalEntry) => {
+    if (entry) {
+      setEditingEntry(entry);
+      setEntryTitle(entry.title);
+      setEntryContent(entry.content);
+      setEntryMood(entry.mood || "");
+      if (entry.verse_text) {
+        // Parse existing verse reference if available
+        setSelectedVerse({
+          id: 'existing',
+          chapter: 0,
+          verse: 0,
+          text: entry.verse_text,
+          book_name: entry.verse_reference?.split(' ')[0] || ''
+        });
+      }
+    } else {
+      setEditingEntry(null);
+      setEntryTitle("");
+      setEntryContent("");
+      setEntryMood("");
+      setSelectedVerse(null);
+    }
+    setShowEntryDialog(true);
+  };
+
+  const closeEntryDialog = () => {
+    setShowEntryDialog(false);
+    setEditingEntry(null);
+    setEntryTitle("");
+    setEntryContent("");
+    setEntryMood("");
+    setSelectedVerse(null);
+    setShowVerseSelector(false);
+  };
+
+  const filteredEntries = entries.filter(entry =>
+    entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    entry.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (!user) {
     return (
-      <EnhancedJournalEditor
-        initialEntry={currentEntry}
-        onSave={handleSaveEntry}
-        onCancel={() => {
-          setShowEnhancedEditor(false);
-          setSelectedEntry(null);
-        }}
-        isEditing={isEditing}
-      />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">Sign In Required</h2>
+            <p className="text-muted-foreground">
+              Please sign in to access your spiritual journal.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
       {/* Header */}
-      <div className="gradient-primary text-white relative overflow-hidden">
+      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white border-b sticky top-0 z-10 relative overflow-hidden">
         {/* Background decorative elements */}
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
+        </div>
         
-        <div className="container relative z-10 section-spacing-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="text-spacing">
+            <div>
               <div className="flex items-center gap-4 mb-3">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-2xl">
-                    <FileText className="h-10 w-10" />
-                  </div>
+                <div className="p-3 bg-white/20 rounded-2xl">
+                  <FileText className="h-8 w-8 sm:h-10 sm:w-10" />
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
                   My Spiritual Journal
                 </h1>
-                <div className="flex items-center gap-2">
-                  {streakCount >= 7 && <span className="text-3xl animate-bounce">🔥</span>}
-                  {streakCount >= 30 && <span className="text-3xl animate-pulse">⭐</span>}
-                </div>
               </div>
-              <p className="text-white/90 text-lg sm:text-xl font-medium">
-                Document your spiritual journey with AI-powered insights
+              <p className="text-white/90 text-base sm:text-lg font-medium">
+                Document your spiritual journey and reflections
               </p>
-              <div className="flex flex-wrap items-center gap-6 text-base text-white/80 pt-2">
+              <div className="flex flex-wrap items-center gap-6 text-sm sm:text-base text-white/80 pt-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">📊</span>
+                  <span className="text-lg">📊</span>
                   <span>{totalEntries} entries</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">📝</span>
+                  <span className="text-lg">📝</span>
                   <span>{totalWords.toLocaleString()} words</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🔥</span>
-                  <span>{streakCount} day streak</span>
                 </div>
               </div>
             </div>
 
-            <div className="btn-group">
-              <Button 
-                onClick={() => openEnhancedEditor()}
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 rounded-xl"
-              >
-                <PenTool className="mr-3 h-6 w-6" />
-                New Entry
-              </Button>
-              <Button 
-                onClick={() => openEnhancedEditor()}
-                size="lg" 
-                variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-primary font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 rounded-xl"
-              >
-                <Sparkles className="mr-3 h-6 w-6" />
-                Enhanced Editor
-              </Button>
-            </div>
+            <Button 
+              onClick={() => openEntryDialog()}
+              size="lg" 
+              className="bg-white text-indigo-600 hover:bg-white/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-6 sm:px-8 py-3 sm:py-4 rounded-xl"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              New Entry
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-6 lg:py-8">
-        {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Search your journal entries by title, content, or tags..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-primary shadow-sm"
-              />
-            </div>
-            <div className="btn-group-sm">
-              <Select value={viewMode} onValueChange={(value: any) => setViewMode(value)}>
-                <SelectTrigger className="w-40 h-12 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="list">📋 List View</SelectItem>
-                  <SelectItem value="grid">📱 Grid View</SelectItem>
-                  <SelectItem value="calendar">📅 Calendar</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowSettings(true)}
-                className="h-12 px-4 rounded-xl border-gray-200 hover:bg-gray-50"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Search */}
+        <div className="mb-8">
+          <div className="relative max-w-md">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Search your journal entries..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-indigo-500 shadow-sm"
+            />
           </div>
         </div>
 
-        {/* Entries Grid */}
+        {/* Entries */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your journal entries...</p>
           </div>
-        ) : entries.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No journal entries yet</h3>
-              <p className="text-gray-600 mb-4">Start documenting your spiritual journey today</p>
-              <Button onClick={() => openEnhancedEditor()}>
-                <PenTool className="mr-2 h-4 w-4" />
-                Write Your First Entry
-              </Button>
-            </CardContent>
-          </Card>
-                 ) : (
-           <div className={`grid gap-6 ${
-             viewMode === 'grid' 
-               ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-               : 'grid-cols-1 w-full'
-           }`}>
-             {entries
-               .filter(entry => 
-                 !searchQuery || 
-                 entry.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                 entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                 entry.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-               )
-               .map((entry) => (
-                 <Card key={entry.id} className="enhanced-card hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-                   <CardHeader className="pb-4">
-                     <div className="flex items-start justify-between gap-4">
-                       <div className="flex-1 min-w-0">
-                         <CardTitle className="text-xl line-clamp-2 text-gray-800 mb-3">
-                           {entry.title || 'Untitled Entry'}
-                         </CardTitle>
-                         <div className="flex flex-wrap items-center gap-3 text-sm">
-                           <div className="flex items-center gap-2 text-gray-600">
-                             <Calendar className="h-4 w-4" />
-                             <span>{new Date(entry.entry_date || entry.created_at).toLocaleDateString()}</span>
-                           </div>
-                           {entry.mood && (
-                             <Badge className={`${
-                               moods.find(m => m.value === entry.mood)?.color || 'bg-gray-100 text-gray-800'
-                             } font-medium`}>
-                               {moods.find(m => m.value === entry.mood)?.label}
-                             </Badge>
-                           )}
-                         </div>
-                       </div>
-                       <div className="btn-group-sm">
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => openEnhancedEditor(entry)}
-                           className="hover:bg-blue-50 hover:text-blue-600 rounded-lg"
-                         >
-                           <Edit3 className="h-5 w-5" />
-                         </Button>
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => deleteEntry(entry.id)}
-                           className="hover:bg-red-50 hover:text-red-600 rounded-lg"
-                         >
-                           <Trash2 className="h-5 w-5" />
-                         </Button>
-                       </div>
-                     </div>
-                   </CardHeader>
-                   <CardContent className="space-y-4">
-                     <p className="text-gray-700 line-clamp-3 leading-relaxed text-base">
-                       {entry.content}
-                     </p>
-                     
-                     <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
-                       <div className="flex items-center gap-4">
-                         <span className="flex items-center gap-1">
-                           <FileText className="h-4 w-4" />
-                           {entry.word_count || 0} words
-                         </span>
-                         <span className="flex items-center gap-1">
-                           <Clock className="h-4 w-4" />
-                           {entry.reading_time || 0} min read
-                         </span>
-                       </div>
-                     </div>
-                     
-                     {entry.tags && entry.tags.length > 0 && (
-                       <div className="flex flex-wrap gap-2 pt-2">
-                         {entry.tags.slice(0, 4).map((tag, index) => (
-                           <Badge key={index} variant="outline" className="text-xs px-2 py-1 rounded-full">
-                             #{tag}
-                           </Badge>
-                         ))}
-                         {entry.tags.length > 4 && (
-                           <Badge variant="outline" className="text-xs px-2 py-1 rounded-full">
-                             +{entry.tags.length - 4} more
-                           </Badge>
-                         )}
-                       </div>
-                     )}
-                   </CardContent>
-                 </Card>
-               ))}
-           </div>
-         )}
+        ) : filteredEntries.length > 0 ? (
+          <div className="grid gap-6">
+            {filteredEntries.map((entry) => (
+              <Card key={entry.id} className="shadow-sm hover:shadow-md transition-shadow border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                        {entry.title}
+                      </CardTitle>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate(entry.created_at)}</span>
+                        </div>
+                        {entry.mood && (
+                          <Badge variant="secondary" className="text-xs">
+                            {moods.find(m => m.value === entry.mood)?.label || entry.mood}
+                          </Badge>
+                        )}
+                        {entry.verse_reference && (
+                          <Badge variant="outline" className="text-xs">
+                            <Quote className="h-3 w-3 mr-1" />
+                            {entry.verse_reference}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEntryDialog(entry)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteEntry(entry.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {entry.verse_text && (
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 mb-4 border-l-4 border-indigo-500">
+                      <p className="text-sm italic text-gray-700 mb-2">"{entry.verse_text}"</p>
+                      <p className="text-xs font-medium text-indigo-600">— {entry.verse_reference}</p>
+                    </div>
+                  )}
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {entry.content}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-xl font-semibold mb-2 text-gray-900">No journal entries yet</h3>
+            <p className="text-gray-600 mb-6">
+              Start documenting your spiritual journey today
+            </p>
+            <Button onClick={() => openEntryDialog()} className="bg-indigo-600 hover:bg-indigo-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Write Your First Entry
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Entry Dialog */}
+      <Dialog open={showEntryDialog} onOpenChange={(open) => !open && closeEntryDialog()}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              {editingEntry ? 'Edit Entry' : 'New Journal Entry'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Title</label>
+              <Input
+                value={entryTitle}
+                onChange={(e) => setEntryTitle(e.target.value)}
+                placeholder="Enter a title for your entry..."
+                className="h-11"
+              />
+            </div>
+
+            {/* Mood Selection */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Mood (optional)</label>
+              <Select value={entryMood} onValueChange={setEntryMood}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="How are you feeling?" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No mood selected</SelectItem>
+                  {moods.map(mood => (
+                    <SelectItem key={mood.value} value={mood.value}>
+                      {mood.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Bible Verse Selector */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium">Bible Verse (optional)</label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowVerseSelector(!showVerseSelector)}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  {selectedVerse ? 'Change Verse' : 'Add Verse'}
+                  <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showVerseSelector ? 'rotate-180' : ''}`} />
+                </Button>
+              </div>
+
+              {selectedVerse && (
+                <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                  <p className="text-sm italic text-gray-700 mb-1">"{selectedVerse.text}"</p>
+                  <p className="text-xs font-medium text-indigo-600">
+                    — {selectedVerse.book_name} {selectedVerse.chapter}:{selectedVerse.verse}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedVerse(null)}
+                    className="text-red-600 hover:text-red-700 mt-2 p-0 h-auto"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Remove verse
+                  </Button>
+                </div>
+              )}
+
+              {showVerseSelector && (
+                <Card className="p-4 border">
+                  <div className="space-y-4">
+                    {/* Language Selection */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Language</label>
+                      <Select value={selectedLanguage} onValueChange={(value: any) => setSelectedLanguage(value)}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map(lang => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Book Selection */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Book</label>
+                      <Select value={selectedBook?.id || ""} onValueChange={(bookId) => {
+                        const book = bibleBooks.find(b => b.id === bookId);
+                        setSelectedBook(book || null);
+                        setSelectedChapter(1);
+                      }}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select a book" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bibleBooks.map(book => (
+                            <SelectItem key={book.id} value={book.id}>
+                              {book.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Chapter Selection */}
+                    {selectedBook && (
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Chapter</label>
+                        <Select value={selectedChapter.toString()} onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: selectedBook.chapters }, (_, i) => (
+                              <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                Chapter {i + 1}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {/* Verse Selection */}
+                    {chapterVerses.length > 0 && (
+                      <div>
+                        <label className="block text-xs font-medium mb-2">Select Verse</label>
+                        <div className="max-h-40 overflow-y-auto border rounded">
+                          {chapterVerses.map(verse => (
+                            <button
+                              key={verse.id}
+                              onClick={() => {
+                                setSelectedVerse(verse);
+                                setShowVerseSelector(false);
+                              }}
+                              className="w-full text-left p-2 hover:bg-gray-50 border-b last:border-b-0 text-xs"
+                            >
+                              <span className="font-medium text-indigo-600">{verse.verse}.</span> {verse.text}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            {/* Content */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Content</label>
+              <Textarea
+                value={entryContent}
+                onChange={(e) => setEntryContent(e.target.value)}
+                placeholder="Share your thoughts, reflections, prayers, or experiences..."
+                className="min-h-[200px] resize-none"
+                rows={8}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-between pt-4">
+              <Button variant="outline" onClick={closeEntryDialog}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveEntry}
+                disabled={loading || !entryTitle.trim() || !entryContent.trim()}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {loading ? 'Saving...' : editingEntry ? 'Update Entry' : 'Save Entry'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

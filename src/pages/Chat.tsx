@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, Bot, User, Book, MessageCircle, LogIn } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Send, Bot, User, Book, MessageCircle, LogIn, Languages, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +13,16 @@ import { Link } from 'react-router-dom';
 import { aiChatRateLimiter, getUserIdentifier } from '@/lib/enhancedRateLimiter';
 import { DEEPSEEK_CONFIG, BIBLICAL_SYSTEM_PROMPT } from '@/lib/api-config';
 import { PageLayout } from '@/components/PageLayout';
+import { 
+  parseVerseReference, 
+  containsVerseReference, 
+  getVerseText, 
+  createBibleExplanationPrompt, 
+  parseAIExplanation,
+  SupportedLanguage,
+  LANGUAGE_NAMES,
+  VerseExplanation 
+} from '@/lib/verse-explanation';
 
 interface Message {
   id: string;
@@ -19,6 +30,8 @@ interface Message {
   content: string;
   timestamp: string;
   model?: string;
+  verseExplanation?: VerseExplanation;
+  isVerseExplanation?: boolean;
 }
 
 interface Conversation {
@@ -112,6 +125,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('english');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Load conversations when user changes
@@ -241,26 +255,77 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      // Prepare conversation history for AI (limit to last 10 for optimal performance)
-      const fullHistory = [...messages, userMessage];
-      const limitedHistory = limitMessagesToLast10(fullHistory);
-      const conversationHistory = limitedHistory.map(msg => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content
-      }));
+      // Check if input contains a verse reference
+      const verseReference = parseVerseReference(input);
+      let aiResponse: any;
+      let aiMessage: Message;
 
-      console.log(`🧠 Sending ${conversationHistory.length} messages to AI (limited from ${fullHistory.length} total)`);
+      if (verseReference && verseReference.isValid) {
+        console.log('🔍 Bible verse detected:', verseReference);
+        
+        // Get verse text from local Bible
+        const bibleLanguage = selectedLanguage === 'sinhala' ? 'english' : selectedLanguage as 'english' | 'tamil';
+        const verseData = await getVerseText(verseReference, bibleLanguage);
+        
+        if (verseData) {
+          // Create specialized Bible explanation prompt
+          const biblePrompt = createBibleExplanationPrompt(verseData, selectedLanguage);
+          
+          // Call AI with Bible explanation prompt
+          aiResponse = await callBiblicalAI([{ role: 'user', content: biblePrompt }]);
+          
+          // Parse structured response
+          const parsedExplanation = parseAIExplanation(aiResponse.content, verseReference, selectedLanguage);
+          
+          aiMessage = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: aiResponse.content,
+            timestamp: new Date().toISOString(),
+            model: aiResponse.model,
+            isVerseExplanation: true,
+            verseExplanation: parsedExplanation
+          };
 
-      // Call biblical AI with optimized conversation history
-      const aiResponse = await callBiblicalAI(conversationHistory);
+          console.log('✅ Bible verse explanation generated:', parsedExplanation);
+        } else {
+          // Verse not found, fall back to regular chat
+          console.log('❌ Verse not found, falling back to regular chat');
+          
+          const fallbackPrompt = `The user asked about ${verseReference.book} ${verseReference.chapter}:${verseReference.verse}, but I couldn't find this verse in my local Bible database. Please provide a helpful response explaining that this verse reference might not be available or might be incorrectly formatted, and suggest they try a different format or verse. Respond in ${LANGUAGE_NAMES[selectedLanguage]}.`;
+          
+          aiResponse = await callBiblicalAI([{ role: 'user', content: fallbackPrompt }]);
+          
+          aiMessage = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: aiResponse.content,
+            timestamp: new Date().toISOString(),
+            model: aiResponse.model
+          };
+        }
+      } else {
+        // Regular conversation - use existing logic
+        const fullHistory = [...messages, userMessage];
+        const limitedHistory = limitMessagesToLast10(fullHistory);
+        const conversationHistory = limitedHistory.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content
+        }));
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: aiResponse.content,
-        timestamp: new Date().toISOString(),
-        model: aiResponse.model
-      };
+        console.log(`🧠 Sending ${conversationHistory.length} messages to AI (limited from ${fullHistory.length} total)`);
+
+        // Call biblical AI with optimized conversation history
+        aiResponse = await callBiblicalAI(conversationHistory);
+
+        aiMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: aiResponse.content,
+          timestamp: new Date().toISOString(),
+          model: aiResponse.model
+        };
+      }
 
       const updatedMessages = [...messages, userMessage, aiMessage];
       setMessages(updatedMessages);
@@ -336,29 +401,85 @@ export default function Chat() {
         {isAI && (
           <div className="flex-shrink-0">
             <Avatar className="h-10 w-10">
-                                  <AvatarImage src="" alt="✦ Bible Aura AI" />
+              <AvatarImage src="" alt="✦ Bible Aura AI" />
               <AvatarFallback className="bg-primary text-white">
-                <Bot className="h-5 w-5" />
+                {message.isVerseExplanation ? <BookOpen className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
               </AvatarFallback>
             </Avatar>
           </div>
         )}
         
-        <div className={`max-w-[70%] ${isAI ? 'mr-auto' : 'ml-auto'}`}>
+        <div className={`max-w-[80%] ${isAI ? 'mr-auto' : 'ml-auto'}`}>
           <div className={`p-4 rounded-2xl ${
             isAI 
-              ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' 
+              ? message.isVerseExplanation
+                ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700'
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
               : 'bg-primary text-white'
           }`}>
-            <div className="prose prose-sm max-w-none">
-              <div className={`whitespace-pre-wrap leading-relaxed ${
-                isAI 
-                  ? 'text-gray-800 dark:text-gray-200' 
-                  : 'text-white'
-              }`}>
-                {message.content}
+            {/* Structured Bible Verse Explanation */}
+            {isAI && message.isVerseExplanation && message.verseExplanation ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Bible Verse Explanation</span>
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                    {message.verseExplanation.language}
+                  </span>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Verse */}
+                  <div className="p-3 bg-white/80 dark:bg-gray-800/80 rounded-lg border-l-4 border-primary">
+                    <h4 className="font-semibold text-primary mb-1">Verse</h4>
+                    <p className="text-gray-800 dark:text-gray-200 italic">
+                      {message.verseExplanation.verse}
+                    </p>
+                  </div>
+                  
+                  {/* Historical Background */}
+                  {message.verseExplanation.historicalBackground && (
+                    <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Historical Background</h4>
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {message.verseExplanation.historicalBackground}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Theology */}
+                  {message.verseExplanation.theology && (
+                    <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Theology</h4>
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {message.verseExplanation.theology}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Explanation */}
+                  {message.verseExplanation.explanation && (
+                    <div className="p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Explanation</h4>
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {message.verseExplanation.explanation}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Regular Message Content */
+              <div className="prose prose-sm max-w-none">
+                <div className={`whitespace-pre-wrap leading-relaxed ${
+                  isAI 
+                    ? 'text-gray-800 dark:text-gray-200' 
+                    : 'text-white'
+                }`}>
+                  {message.content}
+                </div>
+              </div>
+            )}
             
             <div className={`text-xs mt-3 flex justify-between items-center ${
               isAI 
@@ -418,21 +539,23 @@ export default function Chat() {
 
   return (
     <PageLayout padding="none" maxWidth="full">
-    <div className="h-screen bg-background flex flex-col w-full">
+    <div className="min-h-screen bg-background flex flex-col w-full">
       {/* Enhanced Mobile-First Header */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-4 border-b shadow-lg flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 flex items-center justify-center bg-white/20 rounded-lg backdrop-blur-sm">
-              <span className="text-lg font-bold">✦</span>
+      <div className="bg-gradient-to-r from-primary to-primary/90 text-white border-b shadow-lg sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center bg-white/20 rounded-lg backdrop-blur-sm">
+                <span className="text-sm sm:text-lg font-bold">✦</span>
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-base sm:text-lg lg:text-xl font-semibold">Bible Aura AI</h1>
+                <p className="text-xs text-white/80 hidden sm:block">Ask anything about Scripture</p>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-lg sm:text-xl font-semibold">Bible Aura AI</h1>
-              <p className="text-xs text-white/80 hidden sm:block">Ask anything about Scripture</p>
+            <div className="text-xs text-white/80 hidden md:block">
+              Powered by Bible Aura AI
             </div>
-          </div>
-          <div className="text-xs text-white/80 hidden md:block">
-            Powered by Bible Aura AI
           </div>
         </div>
       </div>
@@ -493,8 +616,23 @@ export default function Chat() {
                   </div>
                   <h2 className="font-semibold text-gray-800 truncate">Bible Aura AI</h2>
                 </div>
-                <div className="text-sm text-muted-foreground hidden sm:block flex-shrink-0">
-                  Bible-Based Responses
+                <div className="flex items-center gap-3">
+                  <div className="hidden sm:block text-sm text-muted-foreground">
+                    Bible-Based Responses
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Languages className="h-4 w-4 text-muted-foreground" />
+                    <Select value={selectedLanguage} onValueChange={(value: SupportedLanguage) => setSelectedLanguage(value)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="tamil">Tamil</SelectItem>
+                        <SelectItem value="sinhala">Sinhala</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -513,6 +651,67 @@ export default function Chat() {
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                     Ask me anything about Scripture, seek biblical guidance, or explore the wisdom of God's Word.
+                  </p>
+                  
+                  {/* Quick Bible Verse Examples */}
+                  <div className="max-w-2xl mx-auto space-y-3 mb-6">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Try asking about specific Bible verses for detailed explanations:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => useQuickPrompt("John 3:16")}
+                        className="text-left justify-start h-auto p-3"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium">John 3:16</div>
+                          <div className="text-xs text-muted-foreground">God's love for the world</div>
+                        </div>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => useQuickPrompt("Psalm 23:1")}
+                        className="text-left justify-start h-auto p-3"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium">Psalm 23:1</div>
+                          <div className="text-xs text-muted-foreground">The Lord is my shepherd</div>
+                        </div>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => useQuickPrompt("Romans 8:28")}
+                        className="text-left justify-start h-auto p-3"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium">Romans 8:28</div>
+                          <div className="text-xs text-muted-foreground">All things work together</div>
+                        </div>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => useQuickPrompt("Philippians 4:13")}
+                        className="text-left justify-start h-auto p-3"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium">Philippians 4:13</div>
+                          <div className="text-xs text-muted-foreground">I can do all things</div>
+                        </div>
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                    You can also ask general biblical questions or request explanations in English, Tamil, or Sinhala.
                   </p>
                 </div>
                               ) : (

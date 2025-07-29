@@ -102,22 +102,21 @@ export default function Songs() {
   };
 
   return (
-    <div className="h-screen bg-background overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
-        <div className="w-full">
+      <div className="bg-aura-gradient text-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-2">
-            <Music className="h-6 w-6" />
-            <h1 className="text-2xl font-divine">Worship Songs</h1>
-            <Star className="h-5 w-5" />
+            <Music className="h-5 w-5 sm:h-6 sm:w-6" />
+            <h1 className="text-xl sm:text-2xl font-divine">Worship Songs</h1>
+            <Star className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <p className="text-white/80 mt-1">Discover hymns and contemporary worship songs</p>
+          <p className="text-white/80 mt-1 text-sm sm:text-base">Discover hymns and contemporary worship songs</p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="w-full px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Search and Filter */}
           <Card className="mb-6">
             <CardContent className="p-4">

@@ -12,31 +12,33 @@ const Landing = () => {
   const howItWorksSteps = [
     {
       step: "1",
-      title: "AI-Powered Insights",
-      description: "Get instant biblical insights and contextual explanations powered by advanced AI technology that understands Scripture.",
-      icon: Bot,
-      gradient: "from-blue-500 to-purple-600"
+      title: "Login & Sign In",
+      description: "Create your free account or sign in to access your personalized Bible study experience and sync your progress across devices.",
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
       step: "2", 
-      title: "Complete Bible Access",
-      description: "Access multiple Bible translations, search verses, and explore cross-references with our comprehensive biblical database.",
-      icon: BookOpen,
-      gradient: "from-green-500 to-teal-600"
+      title: "Full Bible Access",
+      description: "Access multiple Bible translations, search verses, explore cross-references, and dive deep into Scripture with our comprehensive biblical database.",
+      gradient: "from-green-500 to-emerald-600"
     },
     {
       step: "3",
       title: "Study Resources",
-      description: "Utilize extensive study materials, commentaries, and theological resources to deepen your understanding.",
-      icon: Library,
-      gradient: "from-orange-500 to-red-600"
+      description: "Utilize extensive study materials, commentaries, theological resources, and reading plans to deepen your biblical understanding.",
+      gradient: "from-orange-500 to-amber-600"
     },
     {
       step: "4",
-      title: "Community & Growth",
-      description: "Connect with other believers, track your spiritual journey, and grow in faith through personalized tools.",
-      icon: Users,
-      gradient: "from-purple-500 to-pink-600"
+      title: "Ask AI & Analysis",
+      description: "Get instant biblical insights, contextual explanations, and spiritual guidance through our advanced AI-powered analysis tools.",
+      gradient: "from-purple-500 to-violet-600"
+    },
+    {
+      step: "5",
+      title: "Write Journals & Sermons",
+      description: "Document your spiritual journey, create personal reflections, prepare sermons, and organize your thoughts with powerful writing tools.",
+      gradient: "from-pink-500 to-rose-600"
     }
   ];
 
@@ -85,12 +87,9 @@ const Landing = () => {
         <div className="w-full px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="space-y-6 sm:space-y-8">
             <div className="space-y-2 sm:space-y-3">
-              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold drop-shadow-lg leading-tight">
-                ✦Bible Aura
-              </h1>
-              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold drop-shadow-md leading-relaxed">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-semibold drop-shadow-md leading-relaxed">
                 AI-Powered Biblical Insight
-              </h2>
+              </h1>
             </div>
 
             
@@ -218,69 +217,92 @@ const Landing = () => {
       </section>
 
       {/* How Bible Aura Works - Vertical Roadmap */}
-      <section className="py-24 bg-gradient-to-b from-gray-900 via-gray-800 to-black relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/3 rounded-full blur-3xl"></div>
         </div>
 
         <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
               How Bible Aura Works
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
               Your spiritual journey made simple through our powerful platform
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            {/* Vertical Roadmap */}
-            <div className="relative">
-              {/* Vertical Line */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-500 via-purple-500 to-orange-500 rounded-full shadow-lg shadow-blue-500/20"></div>
-              
-              {howItWorksSteps.map((step, index) => {
-                const IconComponent = step.icon;
-                const isEven = index % 2 === 0;
-                
-                return (
-                  <div key={index} className={`relative flex items-center mb-20 ${isEven ? 'justify-start' : 'justify-end'}`}>
-                    {/* Step Card */}
-                    <div className={`w-5/12 ${isEven ? 'pr-12' : 'pl-12'}`}>
-                      <Card className={`p-8 bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 ${isEven ? 'text-right' : 'text-left'}`}>
-                        <CardContent className="p-0">
-                          <div className={`flex items-center gap-4 mb-6 ${isEven ? 'flex-row-reverse' : 'flex-row'}`}>
-                            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${step.gradient} p-4 shadow-lg shadow-white/20`}>
-                              <IconComponent className="w-full h-full text-white filter drop-shadow-lg" />
-                            </div>
-                            <div className="text-6xl font-bold text-gray-600/30">
-                              {step.step}
-                            </div>
-                          </div>
-                          <h3 className="text-2xl font-bold text-white mb-4">
+          <div className="max-w-6xl mx-auto">
+            {/* Mobile: Vertical Stack */}
+            <div className="lg:hidden space-y-8">
+              {howItWorksSteps.map((step, index) => (
+                <div key={index} className="relative">
+                  <Card className={`p-6 bg-white border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 rounded-3xl`}>
+                    <CardContent className="p-0">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${step.gradient} flex items-center justify-center shadow-lg flex-shrink-0`}>
+                          <span className="text-white font-bold text-lg">{step.step}</span>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">
                             {step.title}
                           </h3>
-                          <p className="text-gray-300 text-lg leading-relaxed">
+                          <p className="text-gray-600 text-sm leading-relaxed">
                             {step.description}
                           </p>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Central Icon with Glow */}
-                    <div className="absolute left-1/2 transform -translate-x-1/2 w-20 h-20 z-10">
-                      <div className={`w-full h-full rounded-full bg-gradient-to-r ${step.gradient} p-4 shadow-2xl shadow-white/30 border-4 border-white/20 backdrop-blur-sm animate-pulse`}>
-                        <IconComponent className="w-full h-full text-white filter drop-shadow-2xl" />
+                        </div>
                       </div>
-                      {/* Glow Effect */}
-                      <div className={`absolute inset-0 w-full h-full rounded-full bg-gradient-to-r ${step.gradient} opacity-20 blur-xl animate-ping`}></div>
+                    </CardContent>
+                  </Card>
+                  {/* Connecting line for mobile */}
+                  {index < howItWorksSteps.length - 1 && (
+                    <div className="flex justify-center py-4">
+                      <div className="w-1 h-8 bg-gradient-to-b from-gray-300 to-gray-200 rounded-full"></div>
                     </div>
-                  </div>
-                );
-              })}
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Horizontal Roadmap */}
+            <div className="hidden lg:block">
+              <div className="relative">
+                {/* Horizontal Line */}
+                <div className="absolute top-16 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-green-500 via-orange-500 via-purple-500 to-pink-500 rounded-full shadow-lg"></div>
+                
+                <div className="grid grid-cols-5 gap-4">
+                  {howItWorksSteps.map((step, index) => (
+                    <div key={index} className="relative">
+                      {/* Step Number Circle on Line */}
+                      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 w-8 h-8 z-20">
+                        <div className={`w-full h-full rounded-full bg-gradient-to-r ${step.gradient} flex items-center justify-center shadow-xl border-4 border-white`}>
+                          <span className="text-white font-bold text-sm">{step.step}</span>
+                        </div>
+                      </div>
+
+                      {/* Step Card */}
+                      <div className="pt-24">
+                        <Card className={`p-6 bg-white border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 rounded-3xl h-full`}>
+                          <CardContent className="p-0 text-center">
+                            <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r ${step.gradient} flex items-center justify-center shadow-lg`}>
+                              <span className="text-white font-bold text-xl">{step.step}</span>
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-3">
+                              {step.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                              {step.description}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -459,24 +481,24 @@ const Landing = () => {
       </section>
 
       {/* Enhanced FAQ Section */}
-      <section className="py-24 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
+      <section className="py-24 bg-white relative overflow-hidden">
         {/* Animated background */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-72 h-72 bg-orange-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500/3 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
         <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-8 shadow-lg shadow-blue-500/25">
+            <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mb-8 shadow-lg shadow-orange-500/25">
               <MessageCircle className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Frequently Asked Questions
             </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto mb-6 rounded-full shadow-lg shadow-blue-400/50"></div>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <div className="w-24 h-1 bg-gradient-to-r from-orange-500 to-orange-600 mx-auto mb-6 rounded-full shadow-lg shadow-orange-500/50"></div>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Get answers to common questions about Bible Aura
             </p>
           </div>
@@ -484,16 +506,16 @@ const Landing = () => {
           <div className="max-w-4xl mx-auto">
             {faqs.map((faq, index) => (
               <div key={index} className="mb-4">
-                <Card className={`border-0 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-500 transform hover:scale-[1.02] ${openFaq === index ? 'shadow-2xl shadow-blue-500/20 bg-white/10' : 'shadow-lg'}`}>
+                <Card className={`border border-orange-200 bg-orange-50/50 hover:bg-orange-50 transition-all duration-500 transform hover:scale-[1.02] ${openFaq === index ? 'shadow-2xl shadow-orange-500/20 bg-orange-50 border-orange-300' : 'shadow-lg'}`}>
                   <CardHeader 
                     className="cursor-pointer p-6"
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
                   >
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg text-left text-white font-semibold pr-4">
+                      <CardTitle className="text-lg text-left text-gray-900 font-semibold pr-4">
                         {faq.question}
                       </CardTitle>
-                      <div className={`p-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}>
+                      <div className={`p-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''}`}>
                         {openFaq === index ? (
                           <ChevronUp className="h-5 w-5 text-white" />
                         ) : (
@@ -504,8 +526,8 @@ const Landing = () => {
                   </CardHeader>
                   <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                     <CardContent className="pt-0 pb-6 px-6">
-                      <div className="border-t border-white/10 pt-4">
-                        <p className="text-gray-300 leading-relaxed text-base">
+                      <div className="border-t border-orange-200 pt-4">
+                        <p className="text-gray-700 leading-relaxed text-base">
                           {faq.answer}
                         </p>
                       </div>
@@ -518,36 +540,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-24 bg-gradient-to-r from-orange-600 via-orange-500 to-yellow-500">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white">
-            <div className="inline-flex items-center justify-center p-3 bg-white/20 rounded-full mb-8">
-              <Heart className="h-8 w-8 text-white" />
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Transform Your Bible Study?
-            </h2>
-            <p className="text-xl mb-8 max-w-3xl mx-auto opacity-90">
-              Join thousands of believers who are deepening their faith with AI-powered biblical insights. 
-              Start your journey today - completely free.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="bg-white text-orange-600 hover:bg-white/90 font-bold px-8 py-4 text-lg">
-                <Link to="/auth">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Start Your Free Journey
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="border-white text-white bg-white/10 hover:bg-white hover:text-orange-600 font-bold px-8 py-4 text-lg backdrop-blur-sm">
-                <Link to="/about">
-                  Learn More About Us
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="bg-black text-white py-16">

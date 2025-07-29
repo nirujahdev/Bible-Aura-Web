@@ -114,35 +114,72 @@ export default function BibleQA() {
   };
 
   return (
-    <div className="h-screen bg-background overflow-hidden flex flex-col">
-      {/* Header */}
-      <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
-        <div className="w-full">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-6 w-6" />
-            <h1 className="text-2xl font-divine">Bible Q&A</h1>
-            <HelpCircle className="h-5 w-5" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Unique Q&A Banner - Green Knowledge Theme */}
+      <div className="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 text-white border-b sticky top-0 z-10 relative overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-36 translate-x-36 animate-pulse"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full translate-y-48 -translate-x-48"></div>
+          <div className="absolute top-1/2 left-1/4 w-4 h-4 bg-white/20 rounded-full animate-ping delay-1000"></div>
+          <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-white/30 rounded-full animate-ping delay-500"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            {/* Icon with glow effect */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/30 rounded-2xl blur-md"></div>
+                <div className="relative p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                  <HelpCircle className="h-8 w-8 text-white" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
+                  Bible Q&A
+                  <Lightbulb className="h-6 w-6 sm:h-7 sm:w-7 text-yellow-300 animate-pulse" />
+                </h1>
+                <p className="text-emerald-100 text-sm sm:text-base lg:text-lg mt-1 font-medium">
+                  Find answers to common biblical questions
+                </p>
+              </div>
+            </div>
+
+            {/* Stats badges */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:ml-auto">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <MessageCircle className="h-4 w-4" />
+                  <span>{filteredQA.length} Questions</span>
+                </div>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <BookOpen className="h-4 w-4" />
+                  <span>Expert Answers</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-white/80 mt-1">Find answers to common biblical questions</p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="w-full px-4 py-6">
-          {/* Search and Filter */}
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex flex-col gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search questions and answers..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Search and Filter */}
+        <Card className="mb-6 border-0 shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search questions and answers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-12 text-base"
+                />
+              </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="w-full sm:w-48">
@@ -282,7 +319,6 @@ export default function BibleQA() {
               </CardContent>
             </Card>
           )}
-        </div>
       </div>
     </div>
   );
