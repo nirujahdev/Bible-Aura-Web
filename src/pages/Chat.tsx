@@ -438,6 +438,7 @@ export default function Chat() {
 
   return (
     <PageLayout padding="none" maxWidth="full">
+      <>
     <div className="min-h-screen bg-background flex flex-col w-full">
       <UnifiedHeader
         icon={MessageCircle}
@@ -604,6 +605,7 @@ export default function Chat() {
         </div>
       </div>
     </div>
+      </>
     </PageLayout>
   );
 }

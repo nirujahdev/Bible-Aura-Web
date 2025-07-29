@@ -116,6 +116,7 @@ const Dashboard = () => {
 
   return (
     <PageLayout padding="none" maxWidth="full">
+      <>
       {/* Header Banner with Orange Background and Centered Content */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -164,7 +165,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Daily Verse Section */}
         <div className="mb-8">
           <WidgetErrorBoundary widgetName="Daily Verse" fallbackMessage="Unable to load today's verse. Please try refreshing.">
@@ -260,6 +261,7 @@ const Dashboard = () => {
       
       {/* Debug Console for Development */}
       {process.env.NODE_ENV === 'development' && <DebugConsole />}
+      </>
     </PageLayout>
   );
 };

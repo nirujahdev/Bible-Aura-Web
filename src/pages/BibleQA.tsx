@@ -116,6 +116,7 @@ export default function BibleQA() {
 
   return (
     <PageLayout padding="none" maxWidth="full">
+      <>
       <div className="min-h-screen bg-gray-50">
       {/* Unique Q&A Banner - Green Knowledge Theme */}
       <div className="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 text-white border-b sticky top-0 z-10 relative overflow-hidden">
@@ -323,6 +324,7 @@ export default function BibleQA() {
           )}
       </div>
     </div>
+      </>
     </PageLayout>
   );
 } 
