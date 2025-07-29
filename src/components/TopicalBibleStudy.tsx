@@ -515,7 +515,7 @@ const TopicalBibleStudy = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full">
       {/* Header */}
       <div className="bg-aura-gradient text-white border-b sticky top-0 z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">

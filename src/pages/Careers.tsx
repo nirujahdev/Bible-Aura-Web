@@ -201,7 +201,7 @@ Best regards,
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 w-full">
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
       

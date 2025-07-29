@@ -22,7 +22,7 @@ export default function VerseDemo() {
   ];
 
   return (
-    <div className="h-screen bg-background overflow-auto">
+    <div className="min-h-screen bg-background overflow-auto w-full">
       {/* Header */}
       <div className="bg-aura-gradient text-white p-4 border-b">
         <div className="w-full">

@@ -304,7 +304,7 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 w-full">
       <UnifiedHeader
         icon={FileText}
         title="My Spiritual Journal"

@@ -439,7 +439,7 @@ export default function Chat() {
   return (
     <PageLayout padding="none" maxWidth="full">
       <>
-    <div className="min-h-screen bg-background flex flex-col w-full">
+    <div className="h-full bg-background flex flex-col w-full">
       <UnifiedHeader
         icon={MessageCircle}
         title="✦ Bible Aura AI"

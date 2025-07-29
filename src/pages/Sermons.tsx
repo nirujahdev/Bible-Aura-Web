@@ -883,7 +883,7 @@ const Sermons = () => {
 
   if (!user) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center p-8">
+      <div className="min-h-screen bg-background flex items-center justify-center p-8 w-full">
         <div className="text-center space-y-6 max-w-md">
           <Mic className="h-16 w-16 text-primary mx-auto" />
           <h1 className="text-3xl font-bold text-primary">Sermon Creator</h1>
@@ -906,7 +906,7 @@ const Sermons = () => {
   }
 
   return (
-    <div className="h-screen bg-background overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background overflow-hidden flex flex-col w-full">
       {/* Header */}
       <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
         <div className="w-full">

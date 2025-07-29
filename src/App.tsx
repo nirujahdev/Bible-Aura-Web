@@ -83,7 +83,7 @@ function AppLayout() {
       ) : (
         // Sidebar layout for app pages
         <SidebarProvider>
-          <div className="flex h-screen relative z-10 bg-gray-50/30">
+          <div className="flex h-screen relative z-10 bg-gray-50">
             <AppSidebar />
             <main className="flex-1 overflow-auto bg-transparent w-full">
               <div className="w-full min-h-full relative">

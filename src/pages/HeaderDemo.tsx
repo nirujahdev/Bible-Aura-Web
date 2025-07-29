@@ -66,7 +66,7 @@ export default function HeaderDemo() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full">
       {/* Demo Header - Show Selected Variant */}
       <div className="mb-8">
         <ModernHeader variant={selectedVariant} showDismiss={false} />

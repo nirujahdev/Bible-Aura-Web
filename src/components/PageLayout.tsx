@@ -37,7 +37,7 @@ export function PageLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30">
+    <div className="min-h-screen bg-gray-50">
       <div className={cn(
         'w-full',
         maxWidth !== 'full' && 'mx-auto',

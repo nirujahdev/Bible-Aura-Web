@@ -141,7 +141,7 @@ export default function BibleCharacters() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 w-full">
       <UnifiedHeader
         icon={Users}
         title="Bible Characters"

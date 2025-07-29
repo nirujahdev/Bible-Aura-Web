@@ -78,7 +78,7 @@ const Terms = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full">
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-12">
         <div className="w-full px-4 sm:px-6 lg:px-8">

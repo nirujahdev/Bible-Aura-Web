@@ -36,7 +36,7 @@ const About = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background w-full">
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
 

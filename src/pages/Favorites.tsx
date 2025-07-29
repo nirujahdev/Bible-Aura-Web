@@ -133,7 +133,7 @@ export default function Favorites() {
 
   if (!user) {
     return (
-      <div className="h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center w-full">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="p-8 text-center">
             <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -151,7 +151,7 @@ export default function Favorites() {
   }
 
   return (
-    <div className="h-screen bg-background overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background overflow-hidden flex flex-col w-full">
       {/* Header */}
       <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
         <div className="w-full">

@@ -283,7 +283,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden w-full">
       {/* Left Side - Features Showcase (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
         <div className="flex flex-col items-center justify-center p-6 text-gray-800 w-full">
