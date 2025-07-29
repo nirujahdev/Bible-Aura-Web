@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { PageLayout } from '@/components/PageLayout';
 
 interface QAItem {
   id: string;
@@ -114,7 +115,8 @@ export default function BibleQA() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <PageLayout padding="none" maxWidth="full">
+      <div className="min-h-screen bg-gray-50">
       {/* Unique Q&A Banner - Green Knowledge Theme */}
       <div className="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 text-white border-b sticky top-0 z-10 relative overflow-hidden">
         {/* Decorative Background Elements */}
@@ -321,5 +323,6 @@ export default function BibleQA() {
           )}
       </div>
     </div>
+    </PageLayout>
   );
 } 

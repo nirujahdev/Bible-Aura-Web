@@ -14,6 +14,7 @@ import {
   Save, Calendar, Quote, X, ChevronDown
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 
 interface JournalEntry {
   id: string;
@@ -304,51 +305,30 @@ const Journal = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white border-b sticky top-0 z-10 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-4 mb-3">
-                <div className="p-3 bg-white/20 rounded-2xl">
-                  <FileText className="h-8 w-8 sm:h-10 sm:w-10" />
-                </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-                  My Spiritual Journal
-                </h1>
-              </div>
-              <p className="text-white/90 text-base sm:text-lg font-medium">
-                Document your spiritual journey and reflections
-              </p>
-              <div className="flex flex-wrap items-center gap-6 text-sm sm:text-base text-white/80 pt-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">📊</span>
-                  <span>{totalEntries} entries</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">📝</span>
-                  <span>{totalWords.toLocaleString()} words</span>
-                </div>
-              </div>
-            </div>
-
-            <Button 
-              onClick={() => openEntryDialog()}
-              size="lg" 
-              className="bg-white text-indigo-600 hover:bg-white/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-6 sm:px-8 py-3 sm:py-4 rounded-xl"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              New Entry
-            </Button>
+      <UnifiedHeader
+        icon={FileText}
+        title="My Spiritual Journal"
+        subtitle="Document your spiritual journey and reflections"
+      >
+        <div className="flex items-center gap-6 text-sm text-white/80 mr-4">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📊</span>
+            <span>{totalEntries} entries</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📝</span>
+            <span>{totalWords.toLocaleString()} words</span>
           </div>
         </div>
-      </div>
+        <Button 
+          onClick={() => openEntryDialog()}
+          size="sm" 
+          className="bg-white text-orange-600 hover:bg-white/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          New Entry
+        </Button>
+      </UnifiedHeader>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -360,7 +340,7 @@ const Journal = () => {
               placeholder="Search your journal entries..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-indigo-500 shadow-sm"
+              className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-orange-500 shadow-sm"
             />
           </div>
         </div>
@@ -368,7 +348,7 @@ const Journal = () => {
         {/* Entries */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading your journal entries...</p>
           </div>
         ) : filteredEntries.length > 0 ? (
@@ -420,9 +400,9 @@ const Journal = () => {
                 </CardHeader>
                 <CardContent>
                   {entry.verse_text && (
-                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 mb-4 border-l-4 border-indigo-500">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 mb-4 border-l-4 border-orange-500">
                       <p className="text-sm italic text-gray-700 mb-2">"{entry.verse_text}"</p>
-                      <p className="text-xs font-medium text-indigo-600">— {entry.verse_reference}</p>
+                                              <p className="text-xs font-medium text-orange-600">— {entry.verse_reference}</p>
                     </div>
                   )}
                   <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -439,7 +419,7 @@ const Journal = () => {
             <p className="text-gray-600 mb-6">
               Start documenting your spiritual journey today
             </p>
-            <Button onClick={() => openEntryDialog()} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={() => openEntryDialog()} className="bg-orange-600 hover:bg-orange-700">
               <Plus className="h-4 w-4 mr-2" />
               Write Your First Entry
             </Button>
@@ -504,7 +484,7 @@ const Journal = () => {
               {selectedVerse && (
                 <div className="bg-gray-50 rounded-lg p-3 mb-3">
                   <p className="text-sm italic text-gray-700 mb-1">"{selectedVerse.text}"</p>
-                  <p className="text-xs font-medium text-indigo-600">
+                  <p className="text-xs font-medium text-orange-600">
                     — {selectedVerse.book_name} {selectedVerse.chapter}:{selectedVerse.verse}
                   </p>
                   <Button
@@ -593,7 +573,7 @@ const Journal = () => {
                               }}
                               className="w-full text-left p-2 hover:bg-gray-50 border-b last:border-b-0 text-xs"
                             >
-                              <span className="font-medium text-indigo-600">{verse.verse}.</span> {verse.text}
+                              <span className="font-medium text-orange-600">{verse.verse}.</span> {verse.text}
                             </button>
                           ))}
                         </div>
@@ -624,7 +604,7 @@ const Journal = () => {
               <Button 
                 onClick={handleSaveEntry}
                 disabled={loading || !entryTitle.trim() || !entryContent.trim()}
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-orange-600 hover:bg-orange-700"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? 'Saving...' : editingEntry ? 'Update Entry' : 'Save Entry'}
