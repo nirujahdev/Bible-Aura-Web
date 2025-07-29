@@ -36,10 +36,10 @@ export type SupportedLanguage = 'english' | 'tamil' | 'sinhala';
 // =============================================================================
 
 export const AI_CONFIG = {
-  // DeepSeek API Configuration
+  // OpenRouter API Configuration (more reliable than direct DeepSeek)
   apiKey: "sk-50e2e8a01cc440c3bf61641eee6aa2a6",
-  model: "deepseek-chat",
-  baseURL: "https://api.deepseek.com/v1",
+  model: "deepseek/deepseek-r1",
+  baseURL: "https://openrouter.ai/api/v1",
   
   // Request parameters
   defaultParams: {
@@ -50,7 +50,9 @@ export const AI_CONFIG = {
   // Request headers
   headers: {
     "User-Agent": "Bible-Aura/1.0",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://bible-aura.app",
+    "X-Title": "✦Bible Aura - AI Chat"
   }
 };
 
