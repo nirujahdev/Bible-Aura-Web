@@ -40,7 +40,7 @@ const Funding = () => {
     {
       id: "supporter",
       name: "Supporter",
-      price: "1,200",
+      price: "1,800",
       currency: "LKR",
       period: "month",
       badge: "Supporting Ministry",
@@ -53,7 +53,7 @@ const Funding = () => {
     {
       id: "partner",
       name: "Partner",
-      price: "2,400",
+      price: "4,000",
       currency: "LKR",
       period: "month",
       badge: "Ministry Partner",
@@ -259,14 +259,14 @@ const Funding = () => {
                         <div className="flex flex-col items-center">
                           <TreePine className="h-6 w-6 text-orange-600 mb-2" />
                           <span>Supporter</span>
-                          <span className="text-sm text-gray-500">1,200 LKR</span>
+                          <span className="text-sm text-gray-500">1,800 LKR</span>
                         </div>
                       </th>
                       <th className="text-center py-4 px-6 font-semibold text-gray-900">
                         <div className="flex flex-col items-center">
                           <Crown className="h-6 w-6 text-purple-600 mb-2" />
                           <span>Partner</span>
-                          <span className="text-sm text-gray-500">2,400 LKR</span>
+                          <span className="text-sm text-gray-500">4,000 LKR</span>
                         </div>
                       </th>
                     </tr>

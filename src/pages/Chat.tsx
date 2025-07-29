@@ -269,16 +269,15 @@ export default function Chat() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout padding="none" maxWidth="full">
       <UnifiedHeader 
         icon={MessageCircle}
         title="Bible AI Chat"
         subtitle="Ask questions about Scripture and get biblical insights"
       />
       
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-        <div className="container mx-auto px-4 py-8">
-          <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
+      <div className="w-full px-4 py-8 min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
             <CardHeader className="flex-shrink-0 border-b bg-white">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -408,7 +407,6 @@ export default function Chat() {
             </div>
           </Card>
         </div>
-      </div>
     </PageLayout>
   );
 }

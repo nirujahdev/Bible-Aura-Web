@@ -113,11 +113,6 @@ const allNavigationItems: NavigationItem[] = [
     url: "/profile",
     icon: User,
   },
-  {
-    title: "Pricing",
-    url: "/pricing",
-    icon: DollarSign,
-  },
 ];
 
 // Guest navigation (limited features)

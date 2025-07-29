@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { UnifiedHeader } from '@/components/UnifiedHeader';
+import { PageLayout } from '@/components/PageLayout';
 
 interface BibleCharacter {
   id: string;
@@ -141,7 +142,7 @@ export default function BibleCharacters() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 w-full">
+    <PageLayout padding="none" maxWidth="full">
       <UnifiedHeader
         icon={Users}
         title="Bible Characters"
@@ -170,7 +171,8 @@ export default function BibleCharacters() {
       </UnifiedHeader>
 
       {/* Main Content */}
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Search and Filter */}
           <Card className="mb-6">
             <CardContent className="p-4">
@@ -358,6 +360,7 @@ export default function BibleCharacters() {
             </Card>
           )}
         </div>
-    </div>
+      </div>
+    </PageLayout>
   );
 } 

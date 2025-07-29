@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { PageLayout } from "@/components/PageLayout";
 
 interface JournalEntry {
   id: string;
@@ -304,7 +305,7 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 w-full">
+    <PageLayout padding="none" maxWidth="full">
       <UnifiedHeader
         icon={FileText}
         title="My Spiritual Journal"
@@ -330,8 +331,9 @@ const Journal = () => {
         </Button>
       </UnifiedHeader>
 
-      {/* Main Content */}
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      {/* Main Content Background */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Search */}
         <div className="mb-8">
           <div className="relative max-w-md">
@@ -425,6 +427,7 @@ const Journal = () => {
             </Button>
           </div>
         )}
+        </div>
       </div>
 
       {/* Entry Dialog */}
@@ -613,7 +616,7 @@ const Journal = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageLayout>
   );
 };
 

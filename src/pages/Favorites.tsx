@@ -21,13 +21,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
+import { PageLayout } from '@/components/PageLayout';
 
 interface FavoriteVerse {
   id: string;
   verse_id: string;
-  book: string;
-  chapter: number;
-  verse: number;
+  book?: string;
+  chapter?: number;
+  verse?: number;
   text?: string;
   created_at: string;
 }
@@ -79,7 +80,7 @@ export default function Favorites() {
         .order('created_at', { ascending: false });
 
       if (bookmarksError) throw bookmarksError;
-      setFavoriteVerses(bookmarksData || []);
+      setFavoriteVerses((bookmarksData as unknown as FavoriteVerse[]) || []);
 
       // Mock favorite notes (would need notes table)
       setFavoriteNotes([]);
@@ -127,7 +128,7 @@ export default function Favorites() {
   };
 
   const filteredVerses = favoriteVerses.filter(verse => 
-    verse.book.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    verse.book?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     verse.verse_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -151,9 +152,9 @@ export default function Favorites() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden flex flex-col w-full">
+    <PageLayout padding="none" maxWidth="full">
       {/* Header */}
-      <div className="bg-aura-gradient text-white p-4 border-b flex-shrink-0">
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 border-b flex-shrink-0">
         <div className="w-full">
           <div className="flex items-center gap-2">
             <Heart className="h-6 w-6" />
@@ -165,7 +166,7 @@ export default function Favorites() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto min-h-screen bg-background">
         <div className="w-full px-4 py-6">
           {/* Search and Filter */}
           <Card className="mb-6">
@@ -304,6 +305,6 @@ export default function Favorites() {
           </Tabs>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 } 
