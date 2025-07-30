@@ -235,70 +235,19 @@ export default function Dashboard() {
   };
 
   const loadConversationHistory = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .select('messages')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data && data.messages && Array.isArray(data.messages)) {
-        setMessages(data.messages as unknown as Message[]);
-      }
-    } catch (error) {
-      console.log('No previous conversation found');
-    }
+    // Always start with a fresh conversation - no history loaded
+    setMessages([]);
+    setCurrentConversationId(null);
   };
 
   const loadConversations = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .select('id, title, messages, updated_at')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(10);
-
-      if (data) {
-        const conversationList = data.map(conv => ({
-          id: conv.id,
-          title: conv.title || 'Bible Chat',
-          preview: Array.isArray(conv.messages) && conv.messages.length > 0 
-            ? (conv.messages[0] as any)?.content?.substring(0, 50) + '...' 
-            : 'Empty conversation',
-          timestamp: conv.updated_at
-        }));
-        setConversations(conversationList);
-      }
-    } catch (error) {
-      console.error('Error loading conversations:', error);
-    }
+    // Always start with no saved conversations - fresh start
+    setConversations([]);
   };
 
   const saveConversation = async (updatedMessages: Message[]) => {
-    if (!user || updatedMessages.length === 0) return;
-
-    try {
-      await supabase
-        .from('ai_conversations')
-        .upsert({
-          user_id: user.id,
-          messages: updatedMessages as any,
-          title: updatedMessages[0]?.content.substring(0, 50) || 'Bible Chat',
-          updated_at: new Date().toISOString()
-        });
-      
-      // Reload conversations list
-      await loadConversations();
-    } catch (error) {
-      console.error('Failed to save conversation:', error);
-    }
+    // Conversation saving disabled - always start fresh
+    return;
   };
 
   const sendMessage = async (messageText?: string) => {
@@ -598,7 +547,13 @@ export default function Dashboard() {
                     {message.role === 'assistant' && (
                       <div className="flex items-center space-x-2 mb-1 lg:mb-2">
                         <span className="text-orange-500 text-xs lg:text-sm">✦</span>
-                        <User className="h-3 w-3 lg:h-4 lg:w-4 text-gray-500" />
+                        <span className="text-xs lg:text-sm text-gray-500 font-medium">Bible Aura AI</span>
+                      </div>
+                    )}
+                    {message.role === 'user' && (
+                      <div className="flex items-center justify-end space-x-2 mb-1 lg:mb-2">
+                        <User className="h-3 w-3 lg:h-4 lg:w-4 text-white/80" />
+                        <span className="text-xs lg:text-sm text-white/80 font-medium">You</span>
                       </div>
                     )}
                     <p className="text-xs sm:text-sm lg:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -629,7 +584,7 @@ export default function Dashboard() {
 
       {/* Fixed Message Input at Bottom - Mobile responsive */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 lg:p-4">
-        <div className="max-w-4xl mx-auto lg:ml-16">
+        <div className="max-w-4xl mx-auto">
           <div className="bg-gray-100 rounded-2xl lg:rounded-3xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3 shadow-lg">
             <div className="flex items-center space-x-1 lg:space-x-2">
               <span className="text-orange-500 text-base lg:text-lg">✦</span>
