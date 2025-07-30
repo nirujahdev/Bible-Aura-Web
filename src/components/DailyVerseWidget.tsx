@@ -72,16 +72,14 @@ Write 2-3 sentences that:
 Keep it warm, biblical, and uplifting.`;
 
     // Use AI to generate devotional context
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
-        'HTTP-Referer': 'https://bible-aura.app',
-        'X-Title': '✦Bible Aura - Daily Devotional',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'deepseek/deepseek-r1',
+          const response = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
         messages: [
           {
             role: 'system',

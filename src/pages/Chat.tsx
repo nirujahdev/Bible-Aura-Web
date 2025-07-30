@@ -28,22 +28,20 @@ interface Message {
   model?: string;
 }
 
-// Simple, working AI function using OpenRouter
+// Direct DeepSeek API function
 const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>, abortController?: AbortController) => {
   try {
     const controller = abortController || new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://bible-aura.app',
-        'X-Title': '✦Bible Aura - AI Chat'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1',
+        model: 'deepseek-chat',
         messages: [
           {
             role: "system",
@@ -74,7 +72,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
 
     return {
       content: data.choices[0].message.content,
-      model: data.model || 'deepseek/deepseek-r1'
+      model: data.model || 'deepseek-chat'
     };
 
   } catch (error: any) {

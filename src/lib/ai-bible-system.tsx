@@ -38,8 +38,8 @@ export type SupportedLanguage = 'english' | 'tamil' | 'sinhala';
 export const AI_CONFIG = {
   // DeepSeek API Configuration
   apiKey: "sk-6251eb1f9fb8476cb2aba1431ab3c114",
-  model: "deepseek/deepseek-r1",
-  baseURL: "https://openrouter.ai/api/v1",
+  model: "deepseek-chat",
+  baseURL: "https://api.deepseek.com",
   
   // Request parameters
   defaultParams: {

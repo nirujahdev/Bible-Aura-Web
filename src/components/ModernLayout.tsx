@@ -48,33 +48,36 @@ export function ModernLayout({ children }: ModernLayoutProps) {
 
   return (
     <div className="min-h-screen bg-white flex">
-      {/* Sidebar */}
-      <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 space-y-3">
-        {/* Logo */}
-        <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4">
-          <span className="text-white font-bold text-lg">✦</span>
+      {/* Compact Scrollable Sidebar */}
+      <div className="w-14 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+        {/* Logo - Fixed at top */}
+        <div className="flex-shrink-0 p-2 border-b border-gray-100">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">✦</span>
+          </div>
         </div>
 
-        {/* Navigation Icons */}
-        <div className="flex flex-col space-y-2 flex-1">
+        {/* Scrollable Navigation */}
+        <div className="flex-1 overflow-y-auto py-2 space-y-1">
           {sidebarItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
-              <div key={item.name} className="relative group">
+              <div key={item.name} className="relative group px-2">
                 <Link
                   to={item.href}
                   className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105",
+                    "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200",
                     isActive 
-                      ? "bg-orange-500 text-white shadow-lg" 
+                      ? "bg-orange-500 text-white shadow-md" 
                       : "bg-gray-50 text-gray-600 hover:bg-orange-50 hover:text-orange-600"
                   )}
+                  title={item.tooltip}
                 >
-                  <item.icon className="h-6 w-6" />
+                  <item.icon className="h-5 w-5" />
                 </Link>
                 
                 {/* Tooltip */}
-                <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 ml-1">
                   {item.tooltip}
                 </div>
               </div>
@@ -82,24 +85,25 @@ export function ModernLayout({ children }: ModernLayoutProps) {
           })}
         </div>
 
-        {/* Bottom Section */}
-        <div className="flex flex-col space-y-2">
+        {/* Bottom Section - Fixed */}
+        <div className="flex-shrink-0 border-t border-gray-100 p-2 space-y-1">
           {/* Settings */}
           <div className="relative group">
             <Link
               to="/profile"
               className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105",
+                "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200",
                 location.pathname === '/profile' 
-                  ? "bg-orange-500 text-white shadow-lg" 
+                  ? "bg-orange-500 text-white shadow-md" 
                   : "bg-gray-50 text-gray-600 hover:bg-orange-50 hover:text-orange-600"
               )}
+              title="Settings"
             >
-              <Settings className="h-6 w-6" />
+              <Settings className="h-5 w-5" />
             </Link>
             
             {/* Tooltip */}
-            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 ml-1">
               Settings
             </div>
           </div>
@@ -109,19 +113,20 @@ export function ModernLayout({ children }: ModernLayoutProps) {
             <div className="relative group">
               <Link
                 to="/profile"
-                className="w-12 h-12 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-orange-400 transition-all duration-200 hover:scale-105"
+                className="w-10 h-10 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-orange-400 transition-all duration-200 block"
+                title="Profile"
               >
                 <Avatar className="w-full h-full">
                   <AvatarImage src={profile?.avatar_url || ''} />
-                  <AvatarFallback className="bg-orange-500 text-white text-sm font-semibold">
+                  <AvatarFallback className="bg-orange-500 text-white text-xs font-semibold">
                     {getUserName().charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </Link>
               
               {/* Tooltip */}
-              <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                Profile
+              <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 ml-1">
+                {getUserName()}
               </div>
             </div>
           )}

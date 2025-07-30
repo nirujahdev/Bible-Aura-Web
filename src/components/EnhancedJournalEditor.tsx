@@ -271,16 +271,14 @@ export function EnhancedJournalEditor({
     setAiLoading(true);
     try {
       // Generate AI suggestions based on content
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
-          'HTTP-Referer': 'https://bible-aura.app',
-          'X-Title': '✦Bible Aura - Journal AI',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-r1',
+          model: 'deepseek-chat',
           messages: [
             {
               role: 'system',
