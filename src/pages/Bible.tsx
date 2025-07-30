@@ -7,12 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Star, Book, Sparkles, Globe, Languages, StickyNote, Brain, 
   MessageCircle, BookOpen, Filter, Calendar, Target, TrendingUp,
   Download, Copy, Highlighter, Eye, BarChart3, Clock, Shuffle,
-  Link2, Quote, FileText, Settings, Zap, Compass, MapPin
+  Link2, Quote, FileText, Settings, Zap, Compass, MapPin,
+  ChevronDown, ChevronUp, Home, History, Bookmark as BookmarkIcon,
+  Play, FastForward, RotateCcw, Menu
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,10 +53,38 @@ const HIGHLIGHT_COLORS = [
   { id: 'red', name: 'Red', color: 'bg-red-200 border-red-400' },
 ];
 
+// Popular book shortcuts for quick access
+const POPULAR_BOOKS = {
+  english: [
+    { name: 'Genesis', icon: Star, color: 'text-purple-600' },
+    { name: 'Psalms', icon: Heart, color: 'text-red-600' },
+    { name: 'Proverbs', icon: Brain, color: 'text-blue-600' },
+    { name: 'Matthew', icon: BookOpen, color: 'text-green-600' },
+    { name: 'John', icon: Quote, color: 'text-orange-600' },
+    { name: 'Romans', icon: Zap, color: 'text-yellow-600' },
+  ],
+  tamil: [
+    { name: 'Genesis', tamil: 'ஆதியாகமம்', icon: Star, color: 'text-purple-600' },
+    { name: 'Psalms', tamil: 'சங்கீதம்', icon: Heart, color: 'text-red-600' },
+    { name: 'Proverbs', tamil: 'நீதிமொழிகள்', icon: Brain, color: 'text-blue-600' },
+    { name: 'Matthew', tamil: 'மத்தேயு', icon: BookOpen, color: 'text-green-600' },
+    { name: 'John', tamil: 'யோவான்', icon: Quote, color: 'text-orange-600' },
+    { name: 'Romans', tamil: 'ரோமர்', icon: Zap, color: 'text-yellow-600' },
+  ]
+};
+
+interface TamilBookName {
+  book: {
+    english: string;
+    tamil: string;
+  };
+}
+
 export default function Bible() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [books, setBooks] = useState<BibleBook[]>([]);
+  const [tamilBookNames, setTamilBookNames] = useState<TamilBookName[]>([]);
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [selectedBook, setSelectedBook] = useState<BibleBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState(1);
@@ -83,8 +114,17 @@ export default function Bible() {
   const [showVerseNumbers, setShowVerseNumbers] = useState(true);
   const [comparisonMode, setComparisonMode] = useState(false);
   const [crossReferences, setCrossReferences] = useState<any[]>([]);
+  
+  // New state for UI improvements
+  const [oldTestamentExpanded, setOldTestamentExpanded] = useState(false);
+  const [newTestamentExpanded, setNewTestamentExpanded] = useState(false);
+  const [showTopShortcuts, setShowTopShortcuts] = useState(true);
+  const [recentBooks, setRecentBooks] = useState<string[]>([]);
+
   useEffect(() => {
     loadBooks();
+    loadTamilBookNames();
+    loadRecentBooks();
     if (user) {
       loadBookmarks();
       loadFavorites();
@@ -96,8 +136,40 @@ export default function Bible() {
   useEffect(() => {
     if (selectedBook) {
       loadChapter();
+      updateRecentBooks(selectedBook.name);
     }
   }, [selectedBook, selectedChapter, selectedLanguage]);
+
+  const loadTamilBookNames = async () => {
+    try {
+      const response = await fetch('/Bible/Tamil bible/Books.json');
+      const data = await response.json();
+      setTamilBookNames(data);
+    } catch (error) {
+      console.error('Error loading Tamil book names:', error);
+    }
+  };
+
+  const loadRecentBooks = () => {
+    const stored = localStorage.getItem('bible_recent_books');
+    if (stored) {
+      setRecentBooks(JSON.parse(stored));
+    }
+  };
+
+  const updateRecentBooks = (bookName: string) => {
+    const updated = [bookName, ...recentBooks.filter(b => b !== bookName)].slice(0, 5);
+    setRecentBooks(updated);
+    localStorage.setItem('bible_recent_books', JSON.stringify(updated));
+  };
+
+  const getBookDisplayName = (bookName: string): string => {
+    if (selectedLanguage === 'tamil') {
+      const tamilBook = tamilBookNames.find(t => t.book.english === bookName);
+      return tamilBook?.book.tamil.trim() || bookName;
+    }
+    return bookName;
+  };
 
   const loadBooks = async () => {
     setBooksLoading(true);
@@ -204,8 +276,6 @@ export default function Bible() {
       console.error('Error loading reading progress:', error);
     }
   };
-
-
 
   const updateReadingProgress = async () => {
     if (!user || !selectedBook) return;
@@ -404,6 +474,14 @@ export default function Bible() {
     }
   };
 
+  const handleBookSelect = (bookName: string) => {
+    const book = books.find(b => b.name === bookName);
+    if (book) {
+      setSelectedBook(book);
+      setSelectedChapter(1);
+    }
+  };
+
   const getRandomVerse = () => {
     if (verses.length === 0) return;
     const randomVerse = verses[Math.floor(Math.random() * verses.length)];
@@ -424,13 +502,96 @@ export default function Bible() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      {/* Top Shortcuts Bar */}
+      {showTopShortcuts && (
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h1 className="text-lg font-bold text-orange-600 flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Bible Study
+                </h1>
+                
+                <Separator orientation="vertical" className="h-6" />
+                
+                {/* Quick Book Access */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Quick Access:</span>
+                  {POPULAR_BOOKS[selectedLanguage].map((book) => {
+                    const Icon = book.icon;
+                    const displayName = selectedLanguage === 'tamil' && 'tamil' in book ? book.tamil : book.name;
+                    return (
+                      <Button
+                        key={book.name}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleBookSelect(book.name)}
+                        className={`h-8 text-xs ${book.color} hover:bg-gray-100`}
+                        title={`Go to ${book.name}`}
+                      >
+                        <Icon className="h-3 w-3 mr-1" />
+                        {displayName}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
 
+              <div className="flex items-center gap-2">
+                {/* Recent Books */}
+                {recentBooks.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Recent:</span>
+                    {recentBooks.slice(0, 3).map((bookName) => (
+                      <Button
+                        key={bookName}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBookSelect(bookName)}
+                        className="h-7 text-xs"
+                      >
+                        <History className="h-3 w-3 mr-1" />
+                        {getBookDisplayName(bookName)}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTopShortcuts(false)}
+                  className="h-7 w-7 p-0 text-gray-400"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Collapsed Top Bar */}
+      {!showTopShortcuts && (
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowTopShortcuts(true)}
+              className="h-6 text-xs text-gray-500"
+            >
+              <ChevronDown className="h-3 w-3 mr-1" />
+              Show Quick Access
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="flex h-[calc(100vh-120px)]">
-        {/* Enhanced Sidebar */}
+        {/* Bible Content Panel */}
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm">
-
-
           {/* Reading Progress */}
           <div className="p-4 border-b">
             <div className="flex items-center justify-between mb-2">
@@ -479,49 +640,105 @@ export default function Bible() {
                   </Select>
                 </div>
 
-                {/* Book Selection */}
+                {/* Book Selection with Expandable Sections */}
                 <div className="mb-4">
-                  <label className="text-sm font-medium mb-2 block">Books</label>
+                  <label className="text-sm font-medium mb-3 block">Books</label>
                   <div className="space-y-3">
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 mb-2">Old Testament</h4>
-                      <div className="grid grid-cols-2 gap-1">
-                        {oldTestamentBooks.slice(0, 8).map(book => (
-                          <Button
-                            key={book.id}
-                            variant={selectedBook?.name === book.name ? "default" : "ghost"}
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBook(book);
-                              setSelectedChapter(1);
-                            }}
-                            className="justify-start text-xs h-8"
-                          >
-                            {book.name}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Old Testament Section */}
+                    <Collapsible open={oldTestamentExpanded} onOpenChange={setOldTestamentExpanded}>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between p-2 h-auto text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Book className="h-4 w-4 text-orange-600" />
+                            <span className="font-semibold text-gray-700">
+                              {selectedLanguage === 'tamil' ? 'பழைய ஏற்பாடு' : 'Old Testament'}
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              {oldTestamentBooks.length}
+                            </Badge>
+                          </div>
+                          {oldTestamentExpanded ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-1 pl-2">
+                        <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto">
+                          {oldTestamentBooks.map(book => (
+                            <Button
+                              key={book.id}
+                              variant={selectedBook?.name === book.name ? "default" : "ghost"}
+                              size="sm"
+                              onClick={() => {
+                                setSelectedBook(book);
+                                setSelectedChapter(1);
+                              }}
+                              className="justify-start text-xs h-8 px-3"
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <span>{getBookDisplayName(book.name)}</span>
+                                <Badge variant="outline" className="text-xs ml-2">
+                                  {book.chapters}
+                                </Badge>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                     
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 mb-2">New Testament</h4>
-                      <div className="grid grid-cols-2 gap-1">
-                        {newTestamentBooks.slice(0, 8).map(book => (
-                          <Button
-                            key={book.id}
-                            variant={selectedBook?.name === book.name ? "default" : "ghost"}
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBook(book);
-                              setSelectedChapter(1);
-                            }}
-                            className="justify-start text-xs h-8"
-                          >
-                            {book.name}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
+                    {/* New Testament Section */}
+                    <Collapsible open={newTestamentExpanded} onOpenChange={setNewTestamentExpanded}>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between p-2 h-auto text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-blue-600" />
+                            <span className="font-semibold text-gray-700">
+                              {selectedLanguage === 'tamil' ? 'புதிய ஏற்பாடு' : 'New Testament'}
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              {newTestamentBooks.length}
+                            </Badge>
+                          </div>
+                          {newTestamentExpanded ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-1 pl-2">
+                        <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto">
+                          {newTestamentBooks.map(book => (
+                            <Button
+                              key={book.id}
+                              variant={selectedBook?.name === book.name ? "default" : "ghost"}
+                              size="sm"
+                              onClick={() => {
+                                setSelectedBook(book);
+                                setSelectedChapter(1);
+                              }}
+                              className="justify-start text-xs h-8 px-3"
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <span>{getBookDisplayName(book.name)}</span>
+                                <Badge variant="outline" className="text-xs ml-2">
+                                  {book.chapters}
+                                </Badge>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 </div>
 
@@ -657,7 +874,7 @@ export default function Bible() {
                   
                   <div className="text-center">
                     <h2 className="font-bold text-lg">
-                      {selectedBook.name} {selectedChapter}
+                      {getBookDisplayName(selectedBook.name)} {selectedChapter}
                     </h2>
                     <p className="text-xs text-gray-500">{currentTranslation?.label}</p>
                   </div>
@@ -708,6 +925,15 @@ export default function Bible() {
               >
                 <Link2 className="h-4 w-4" />
               </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={getRandomVerse}
+                title="Random Verse"
+              >
+                <Shuffle className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
@@ -736,6 +962,7 @@ export default function Bible() {
                         onOpenNote={openNoteModal}
                         onOpenAI={openAiModal}
                         toast={toast}
+                        getBookDisplayName={getBookDisplayName}
                       />
                     ))}
                   </div>
@@ -757,6 +984,7 @@ export default function Bible() {
                         onOpenNote={openNoteModal}
                         onOpenAI={openAiModal}
                         toast={toast}
+                        getBookDisplayName={getBookDisplayName}
                       />
                     ))}
                   </div>
@@ -767,7 +995,31 @@ export default function Bible() {
                   <div className="text-center">
                     <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Start Reading</h3>
-                    <p className="text-gray-600">Select a book and chapter to begin your Bible study journey.</p>
+                    <p className="text-gray-600 mb-4">Select a book and chapter to begin your Bible study journey.</p>
+                    
+                    {/* Quick start buttons */}
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setOldTestamentExpanded(true);
+                          setActiveTab('read');
+                        }}
+                      >
+                        <Book className="h-4 w-4 mr-2" />
+                        Browse Old Testament
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setNewTestamentExpanded(true);
+                          setActiveTab('read');
+                        }}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Browse New Testament
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -811,7 +1063,8 @@ function VerseCard({
   onHighlight, 
   onOpenNote, 
   onOpenAI, 
-  toast 
+  toast,
+  getBookDisplayName
 }: any) {
   const [showHighlighter, setShowHighlighter] = useState(false);
   
@@ -851,7 +1104,7 @@ function VerseCard({
           
           {verse.book_name && (
             <Badge variant="outline" className="text-xs">
-              {verse.book_name} {verse.chapter}:{verse.verse}
+              {getBookDisplayName ? getBookDisplayName(verse.book_name) : verse.book_name} {verse.chapter}:{verse.verse}
             </Badge>
           )}
         </div>
@@ -925,7 +1178,8 @@ function VerseCard({
             size="sm" 
             className="h-8 w-8 p-0"
             onClick={() => {
-              const reference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+              const bookName = getBookDisplayName ? getBookDisplayName(verse.book_name) : verse.book_name;
+              const reference = `${bookName} ${verse.chapter}:${verse.verse}`;
               navigator.clipboard.writeText(`${reference} - ${verse.text}`);
               toast({ title: "Copied!", description: "Verse copied to clipboard" });
             }}

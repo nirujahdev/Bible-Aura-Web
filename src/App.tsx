@@ -42,8 +42,12 @@ function AppLayout() {
     const { user } = useAuth();
     
     if (user) {
-      // User is authenticated, show dashboard
-      return <Dashboard />;
+      // User is authenticated, show dashboard with consistent layout
+      return (
+        <ModernLayout>
+          <Dashboard />
+        </ModernLayout>
+      );
     } else {
       // User is not authenticated, show landing page
       return <Home />;
@@ -94,7 +98,9 @@ function AppLayout() {
             {/* Dashboard route */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Dashboard />
+                <ModernLayout>
+                  <Dashboard />
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
