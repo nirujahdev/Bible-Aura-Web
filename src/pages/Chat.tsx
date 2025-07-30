@@ -9,14 +9,9 @@ import {
   Bot, 
   User, 
   MessageCircle, 
-  LogIn, 
   Cloud, 
   Package, 
   Zap,
-  Home,
-  Grid3X3,
-  HelpCircle,
-  Settings,
   Paperclip,
   Plus
 } from 'lucide-react';
@@ -94,7 +89,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
 };
 
 export default function Chat() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -236,8 +231,8 @@ export default function Chat() {
   };
 
   const getUserName = () => {
-    if (user?.user_metadata?.full_name) {
-      return user.user_metadata.full_name.split(' ')[0];
+    if (profile?.display_name) {
+      return profile.display_name.split(' ')[0];
     }
     if (user?.email) {
       return user.email.split('@')[0];
@@ -247,18 +242,20 @@ export default function Chat() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4 bg-gray-800 border-gray-700">
-          <CardContent className="p-8 text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <LogIn className="h-8 w-8 text-white" />
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white border border-gray-200 shadow-lg">
+          <CardContent className="p-8 text-center space-y-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto">
+              <MessageCircle className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Sign In Required</h2>
-            <p className="text-gray-400">
-              Please sign in to chat with Bible Aura AI and get personalized biblical insights.
-            </p>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-black">Sign In Required</h2>
+              <p className="text-gray-600">
+                Please sign in to chat with Bible Aura AI and get personalized biblical insights.
+              </p>
+            </div>
             <Link to="/auth">
-              <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+              <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
                 Sign In to Chat
               </Button>
             </Link>
@@ -269,67 +266,17 @@ export default function Chat() {
   }
 
   if (!showChat) {
-    // Welcome screen with modern dark design
+    // Welcome screen with clean white theme
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        {/* Sidebar */}
-        <div className="fixed left-0 top-0 h-full w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 space-y-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-            <Bot className="h-6 w-6 text-white" />
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-            onClick={() => setShowChat(false)}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-          >
-            <Home className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-          >
-            <Grid3X3 className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-          >
-            <HelpCircle className="h-5 w-5" />
-          </Button>
-          <div className="flex-1" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
-          <Avatar className="w-10 h-10">
-            <AvatarFallback className="bg-gray-600 text-white text-sm">
-              {getUserName().charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-
-        {/* Main Content */}
-        <div className="ml-16 p-8">
+      <div className="min-h-screen bg-white">
+        <div className="p-8">
           <div className="max-w-4xl mx-auto">
             {/* Greeting */}
             <div className="mb-12">
-              <h1 className="text-3xl font-light text-gray-300 mb-2">
+              <h1 className="text-2xl text-gray-500 mb-2">
                 Hello {getUserName()}!
               </h1>
-              <h2 className="text-4xl font-semibold text-white">
+              <h2 className="text-4xl font-medium text-black">
                 How can I assist you today?
               </h2>
             </div>
@@ -337,61 +284,64 @@ export default function Chat() {
             {/* Action Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
               <Card 
-                className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all cursor-pointer group"
+                className="bg-white border border-gray-200 hover:border-gray-300 transition-all cursor-pointer group hover:shadow-lg"
                 onClick={() => handleSuggestionClick("Help me understand a Bible verse")}
               >
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-600 transition-colors">
-                    <Cloud className="h-6 w-6 text-gray-400" />
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-50 transition-colors">
+                    <Cloud className="h-6 w-6 text-gray-600 group-hover:text-orange-600" />
                   </div>
-                  <h3 className="text-white font-semibold mb-2">Scripture Study</h3>
-                  <p className="text-gray-400 text-sm">Get biblical insights and verse explanations</p>
+                  <h3 className="text-black font-semibold mb-2">Cloud Storage</h3>
+                  <p className="text-gray-600 text-sm">Sync your study notes and insights across devices</p>
                 </CardContent>
               </Card>
 
               <Card 
-                className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-all cursor-pointer group"
+                className="bg-white border border-gray-200 hover:border-gray-300 transition-all cursor-pointer group hover:shadow-lg"
                 onClick={() => handleSuggestionClick("I need prayer guidance")}
               >
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center mb-4 group-hover:bg-gray-600 transition-colors">
-                    <Package className="h-6 w-6 text-gray-400" />
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-50 transition-colors">
+                    <Package className="h-6 w-6 text-gray-600 group-hover:text-orange-600" />
                   </div>
-                  <h3 className="text-white font-semibold mb-2">Prayer & Worship</h3>
-                  <p className="text-gray-400 text-sm">Find guidance for your spiritual journey</p>
+                  <h3 className="text-black font-semibold mb-2">Integrations</h3>
+                  <p className="text-gray-600 text-sm">Connect with your favorite study apps</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-purple-500 to-pink-500 border-0 hover:from-purple-600 hover:to-pink-600 transition-all cursor-pointer group">
+              <Card 
+                className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 hover:from-orange-600 hover:to-orange-700 transition-all cursor-pointer group"
+                onClick={() => handleSuggestionClick("What does Romans 8:28 mean for my daily life?")}
+              >
                 <CardContent className="p-6">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
                     <Zap className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-white font-semibold mb-2">Quick Start</h3>
-                  <p className="text-white/80 text-sm">Begin your conversation now</p>
+                  <p className="text-white/90 text-sm">Begin your spiritual journey now</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Suggestions */}
             <div className="mb-8">
-              <p className="text-gray-400 text-sm mb-4">Bible Aura suggestion</p>
+              <p className="text-gray-500 text-sm mb-4">Bible Aura suggestion</p>
               <div 
-                className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-4 cursor-pointer hover:border-purple-400/50 transition-all group"
-                onClick={() => handleSuggestionClick("What has been the weather forecast for August 23rd in the past 10 years?")}
+                className="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-2xl p-4 cursor-pointer hover:border-orange-300 transition-all group"
+                onClick={() => handleSuggestionClick("Bible Aura, what does Romans 8:28 mean for my daily life?")}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
                       <Bot className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-white group-hover:text-purple-200 transition-colors">
+                    <span className="text-black group-hover:text-orange-600 transition-colors">
                       Bible Aura, what does Romans 8:28 mean for my daily life?
                     </span>
                   </div>
                   <Button 
                     size="sm" 
-                    className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+                    className="bg-white hover:bg-orange-50 text-orange-600 border border-orange-200 hover:border-orange-300"
                   >
                     Ask
                   </Button>
@@ -400,7 +350,7 @@ export default function Chat() {
             </div>
 
             {/* Message Input */}
-            <div className="bg-gray-800 rounded-2xl p-4 border border-gray-700">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
               <div className="flex items-center space-x-3">
                 <Input
                   value={input}
@@ -408,12 +358,12 @@ export default function Chat() {
                   onKeyDown={handleKeyPress}
                   placeholder="Message Bible Aura"
                   disabled={isLoading}
-                  className="flex-1 bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:border-0"
+                  className="flex-1 bg-transparent border-0 text-black placeholder-gray-400 focus:ring-0 focus:border-0 shadow-none"
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-gray-400 hover:text-white"
+                  className="text-gray-400 hover:text-gray-600"
                 >
                   <Paperclip className="h-5 w-5" />
                 </Button>
@@ -421,7 +371,7 @@ export default function Chat() {
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isLoading}
                   size="icon"
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -435,146 +385,116 @@ export default function Chat() {
 
   // Chat interface
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 space-y-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-          <Bot className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Chat Header */}
+      <div className="border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setShowChat(false);
+                setMessages([]);
+              }}
+              className="text-gray-600 hover:text-orange-600"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold text-black">Bible Aura AI</h1>
+          </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-          onClick={() => {
-            setShowChat(false);
-            setMessages([]);
-          }}
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-        >
-          <Home className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-        >
-          <Grid3X3 className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-        >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 text-gray-400 hover:text-white hover:bg-gray-700"
-        >
-          <Settings className="h-5 w-5" />
-        </Button>
-        <Avatar className="w-10 h-10">
-          <AvatarFallback className="bg-gray-600 text-white text-sm">
-            {getUserName().charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
       </div>
 
-      {/* Chat Area */}
-      <div className="ml-16 flex flex-col h-screen">
-        <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
-          <div className="max-w-4xl mx-auto space-y-6">
-            {messages.map((message) => (
-              <div key={message.id} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {message.role === 'assistant' && (
-                  <Avatar className="w-10 h-10 flex-shrink-0">
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-sm">
-                      ✦
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                
-                <div className={`max-w-[80%] ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-                  <div className={`p-4 rounded-2xl ${
-                    message.role === 'assistant' 
-                      ? 'bg-gray-800 border border-gray-700'
-                      : 'bg-gradient-to-r from-purple-500 to-pink-500'
-                  }`}>
-                    <div className="whitespace-pre-wrap leading-relaxed text-white">
-                      {message.content}
-                    </div>
-                    
-                    <div className="text-xs mt-3 text-gray-400">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </div>
-                  </div>
-                </div>
-
-                {message.role === 'user' && (
-                  <Avatar className="w-10 h-10 flex-shrink-0">
-                    <AvatarFallback className="bg-gray-600 text-white">
-                      <User className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex gap-4 justify-start">
+      {/* Chat Messages */}
+      <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+        <div className="max-w-4xl mx-auto space-y-6">
+          {messages.map((message) => (
+            <div key={message.id} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {message.role === 'assistant' && (
                 <Avatar className="w-10 h-10 flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-sm">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-sm">
                     ✦
                   </AvatarFallback>
                 </Avatar>
-                <div className="bg-gray-800 border border-gray-700 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
-                    <span>Bible Aura AI is thinking...</span>
+              )}
+              
+              <div className={`max-w-[80%] ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
+                <div className={`p-4 rounded-2xl ${
+                  message.role === 'assistant' 
+                    ? 'bg-gray-50 border border-gray-200'
+                    : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
+                }`}>
+                  <div className={`whitespace-pre-wrap leading-relaxed ${
+                    message.role === 'assistant' ? 'text-black' : 'text-white'
+                  }`}>
+                    {message.content}
+                  </div>
+                  
+                  <div className={`text-xs mt-3 ${
+                    message.role === 'assistant' ? 'text-gray-500' : 'text-white/70'
+                  }`}>
+                    {new Date(message.timestamp).toLocaleTimeString()}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-        </ScrollArea>
 
-        {/* Message Input */}
-        <div className="p-6 border-t border-gray-700">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gray-800 rounded-2xl p-4 border border-gray-700">
-              <div className="flex items-center space-x-3">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder="Message Bible Aura"
-                  disabled={isLoading}
-                  className="flex-1 bg-transparent border-0 text-white placeholder-gray-400 focus:ring-0 focus:border-0"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-400 hover:text-white"
-                >
-                  <Paperclip className="h-5 w-5" />
-                </Button>
-                <Button 
-                  onClick={() => sendMessage()}
-                  disabled={!input.trim() || isLoading}
-                  size="icon"
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+              {message.role === 'user' && (
+                <Avatar className="w-10 h-10 flex-shrink-0">
+                  <AvatarFallback className="bg-gray-200 text-gray-600">
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </div>
+          ))}
+
+          {isLoading && (
+            <div className="flex gap-4 justify-start">
+              <Avatar className="w-10 h-10 flex-shrink-0">
+                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-sm">
+                  ✦
+                </AvatarFallback>
+              </Avatar>
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                  <span>Bible Aura AI is thinking...</span>
+                </div>
               </div>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      {/* Message Input */}
+      <div className="p-6 border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Message Bible Aura"
+                disabled={isLoading}
+                className="flex-1 bg-transparent border-0 text-black placeholder-gray-400 focus:ring-0 focus:border-0 shadow-none"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <Paperclip className="h-5 w-5" />
+              </Button>
+              <Button 
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || isLoading}
+                size="icon"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>

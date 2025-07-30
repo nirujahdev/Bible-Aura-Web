@@ -155,37 +155,52 @@ export type Database = {
       }
       journal_entries: {
         Row: {
+          category: string | null
           content: string
           created_at: string
+          entry_date: string | null
           id: string
+          is_pinned: boolean | null
+          metadata: Json | null
           mood: string | null
-          spiritual_state: string | null
+          template_used: string | null
           title: string | null
           updated_at: string
           user_id: string
-          verse_references: string[] | null
+          verse_reference: string | null
+          verse_text: string | null
         }
         Insert: {
+          category?: string | null
           content: string
           created_at?: string
+          entry_date?: string | null
           id?: string
+          is_pinned?: boolean | null
+          metadata?: Json | null
           mood?: string | null
-          spiritual_state?: string | null
+          template_used?: string | null
           title?: string | null
           updated_at?: string
           user_id: string
-          verse_references?: string[] | null
+          verse_reference?: string | null
+          verse_text?: string | null
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string
+          entry_date?: string | null
           id?: string
+          is_pinned?: boolean | null
+          metadata?: Json | null
           mood?: string | null
-          spiritual_state?: string | null
+          template_used?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string
-          verse_references?: string[] | null
+          verse_reference?: string | null
+          verse_text?: string | null
         }
         Relationships: []
       }
@@ -296,44 +311,69 @@ export type Database = {
       }
       reading_progress: {
         Row: {
-          completed_at: string | null
-          completed_days: number[] | null
-          current_day: number | null
+          created_at: string
           id: string
-          last_read_at: string | null
-          plan_id: string
-          started_at: string
+          last_read_book: string | null
+          last_read_chapter: number | null
+          progress_percentage: number
+          updated_at: string
           user_id: string
         }
         Insert: {
-          completed_at?: string | null
-          completed_days?: number[] | null
-          current_day?: number | null
+          created_at?: string
           id?: string
-          last_read_at?: string | null
-          plan_id: string
-          started_at?: string
+          last_read_book?: string | null
+          last_read_chapter?: number | null
+          progress_percentage?: number
+          updated_at?: string
           user_id: string
         }
         Update: {
-          completed_at?: string | null
-          completed_days?: number[] | null
-          current_day?: number | null
+          created_at?: string
           id?: string
-          last_read_at?: string | null
-          plan_id?: string
-          started_at?: string
+          last_read_book?: string | null
+          last_read_chapter?: number | null
+          progress_percentage?: number
+          updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "reading_progress_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "reading_plans"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      user_bookmarks: {
+        Row: {
+          book_name: string
+          chapter: number
+          created_at: string
+          id: string
+          user_id: string
+          verse: number
+          verse_id: string
+          verse_reference: string
+          verse_text: string
+        }
+        Insert: {
+          book_name: string
+          chapter: number
+          created_at?: string
+          id?: string
+          user_id: string
+          verse: number
+          verse_id: string
+          verse_reference: string
+          verse_text: string
+        }
+        Update: {
+          book_name?: string
+          chapter?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+          verse?: number
+          verse_id?: string
+          verse_reference?: string
+          verse_text?: string
+        }
+        Relationships: []
       }
       sermons: {
         Row: {
@@ -447,31 +487,34 @@ export type Database = {
       }
       daily_verses: {
         Row: {
-          ai_context: string
+          book_name: string
+          chapter: number
           created_at: string
-          daily_theme: string
           id: string
-          user_id: string
+          language: string | null
+          verse: number
           verse_date: string
           verse_reference: string
           verse_text: string
         }
         Insert: {
-          ai_context: string
+          book_name: string
+          chapter: number
           created_at?: string
-          daily_theme: string
           id?: string
-          user_id: string
+          language?: string | null
+          verse: number
           verse_date: string
           verse_reference: string
           verse_text: string
         }
         Update: {
-          ai_context?: string
+          book_name?: string
+          chapter?: number
           created_at?: string
-          daily_theme?: string
           id?: string
-          user_id?: string
+          language?: string | null
+          verse?: number
           verse_date?: string
           verse_reference?: string
           verse_text?: string

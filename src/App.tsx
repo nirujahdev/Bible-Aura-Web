@@ -3,7 +3,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
-import { Sparkles, Star, Heart } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { queryClient } from "./lib/queryClient";
 import { Suspense, lazy } from "react";
@@ -32,18 +31,16 @@ const Favorites = lazy(() => import("./pages/Favorites"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Careers = lazy(() => import("./pages/Careers"));
 
-
-// Component imports (keep these as regular imports since they're critical)
-import { ModernSidebar as AppSidebar } from "./components/ModernSidebar";
-import { BibleApiTest } from "./components/BibleApiTest";
+// Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ModernLayout } from "./components/ModernLayout";
 
 function AppLayout() {
   const location = useLocation();
 
-  // Define routes that should use full-screen layout (no sidebar)
-  const fullScreenRoutes = [
-    '/',
+  // Define routes that should use landing layout (no sidebar)
+  const landingRoutes = [
+    '/landing',
     '/auth',
     '/about', 
     '/contact',
@@ -54,30 +51,16 @@ function AppLayout() {
     '/careers'
   ];
 
-  const isFullScreen = fullScreenRoutes.includes(location.pathname);
+  const isLandingPage = landingRoutes.includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Background decoration with performance optimization */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-orange-50 pointer-events-none">
-        <div className="absolute top-20 left-20 text-blue-200/20">
-          <Sparkles className="h-16 w-16" />
-        </div>
-        <div className="absolute top-40 right-32 text-orange-200/20">
-          <Star className="h-12 w-12" />
-        </div>
-        <div className="absolute bottom-32 left-1/3 text-pink-200/20">
-          <Heart className="h-14 w-14" />
-        </div>
-
-      </div>
-      
-      {isFullScreen ? (
-        // Full-screen layout for landing and static pages
-        <main className="relative z-10">
+    <div className="min-h-screen bg-white">
+      {isLandingPage ? (
+        // Landing page layout for static pages
+        <main>
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/landing" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
@@ -91,91 +74,114 @@ function AppLayout() {
           </Suspense>
         </main>
       ) : (
-        // Modern sidebar layout for app pages
-        <div className="h-screen">
-          <Suspense fallback={<LoadingScreen />}>
-            <Routes>
-              {/* Modern Sidebar handles the main layout for chat route */}
-              <Route path="/chat" element={
-                <ProtectedRoute>
-                  <AppSidebar />
-                </ProtectedRoute>
-              } />
-              
-              {/* Other routes use individual page layouts */}
-              <Route path="/bible-api-test" element={<BibleApiTest />} />
-              
-              <Route path="/bible" element={
-                <ProtectedRoute>
+        // Modern app layout with sidebar for all app pages
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            {/* Chat is the home page */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <ModernLayout>
+                  <Chat />
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            {/* All other app routes */}
+            <Route path="/bible" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <Bible />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/songs" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/songs" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <Songs />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/bible-qa" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/bible-qa" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <BibleQA />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/bible-characters" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/bible-characters" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <BibleCharacters />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/sermons" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/sermons" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <Sermons />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/topical-study" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/topical-study" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <TopicalStudy />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/sermon-library" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/sermon-library" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <SermonLibrary />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/parables-study" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/parables-study" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <ParablesStudy />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/favorites" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/favorites" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <Favorites />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/journal" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/journal" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <Journal />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/profile" element={
-                <ProtectedRoute>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ModernLayout>
                   <Profile />
-                </ProtectedRoute>
-              } />
-              
-              {/* Fallback route redirects to chat */}
-              <Route path="*" element={<Navigate to="/chat" replace />} />
-            </Routes>
-          </Suspense>
-        </div>
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+
+            {/* Legacy chat route redirects to home */}
+            <Route path="/chat" element={<Navigate to="/" replace />} />
+            
+            {/* Fallback route redirects to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       )}
     </div>
   );

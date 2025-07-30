@@ -250,14 +250,17 @@ export async function getVerse(
 // Save verse to favorites/bookmarks (using Supabase)
 export async function saveBookmark(verse: BibleVerse, userId: string): Promise<boolean> {
   try {
-    const verseId = `${verse.book_name}:${verse.chapter}:${verse.verse}`;
+    const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
     const { error } = await supabase
-      .from('bookmarks')
+      .from('user_bookmarks')
       .insert({
         user_id: userId,
         verse_id: verseId,
-        notes: `${verse.book_name} ${verse.chapter}:${verse.verse} - ${verse.text}`,
-        tags: [verse.language, verse.book_name],
+        book_name: verse.book_name,
+        chapter: verse.chapter,
+        verse: verse.verse,
+        verse_text: verse.text,
+        verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
         created_at: new Date().toISOString()
       });
 
@@ -272,33 +275,22 @@ export async function saveBookmark(verse: BibleVerse, userId: string): Promise<b
 export async function getUserBookmarks(userId: string): Promise<BibleVerse[]> {
   try {
     const { data, error } = await supabase
-      .from('bookmarks')
+      .from('user_bookmarks')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    return (data || []).map(bookmark => {
-      // Parse verse_id format: "BookName:Chapter:Verse"
-      const [bookName, chapterStr, verseStr] = bookmark.verse_id.split(':');
-      const chapter = parseInt(chapterStr) || 1;
-      const verse = parseInt(verseStr) || 1;
-      
-      // Extract text from notes (fallback)
-      const text = bookmark.notes || '';
-      const language = bookmark.tags?.includes('tamil') ? 'tamil' : 'english';
-
-      return {
-        id: bookmark.verse_id,
-        book_id: bookName,
-        book_name: bookName,
-        chapter,
-        verse,
-        text,
-        language: language as 'english' | 'tamil'
-      };
-    });
+    return (data || []).map(bookmark => ({
+      id: bookmark.verse_id,
+      book_id: bookmark.book_name,
+      book_name: bookmark.book_name,
+      chapter: bookmark.chapter,
+      verse: bookmark.verse,
+      text: bookmark.verse_text,
+      language: 'english' as const // Default to English, can be enhanced later
+    }));
   } catch (error) {
     console.error('Error getting bookmarks:', error);
     return [];

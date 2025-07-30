@@ -7,6 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +17,10 @@ import {
   BookOpen, Plus, Edit3, Trash2, Search, FileText, 
   Save, Calendar as CalendarIcon, Quote, X, ChevronDown,
   ChevronLeft, ChevronRight, Menu, Briefcase, PartyPopper,
-  User, MapPin, GraduationCap, Users, Settings
+  User, MapPin, GraduationCap, Users, Settings, Heart,
+  Star, Filter, Download, Lightbulb, Target, TrendingUp,
+  Clock, PrayerIcon as Pray, Sparkles, BarChart3, Book,
+  Copy, Share, Eye, Archive, Pin, Tag
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
 
@@ -29,6 +35,10 @@ interface JournalEntry {
   entry_date?: string;
   created_at: string;
   updated_at: string;
+  is_pinned?: boolean;
+  prayer_requests?: string[];
+  gratitude_items?: string[];
+  template_used?: string;
 }
 
 interface BibleBook {
@@ -53,15 +63,76 @@ const categories = [
   { id: 'trips', name: 'Trips', icon: MapPin, color: 'bg-orange-500' },
   { id: 'education', name: 'Education', icon: GraduationCap, color: 'bg-indigo-500' },
   { id: 'social', name: 'Social', icon: Users, color: 'bg-pink-500' },
+  { id: 'prayer', name: 'Prayer', icon: Pray, color: 'bg-rose-500' },
+  { id: 'gratitude', name: 'Gratitude', icon: Heart, color: 'bg-red-500' },
+  { id: 'bible-study', name: 'Bible Study', icon: Book, color: 'bg-amber-500' },
+  { id: 'devotional', name: 'Devotional', icon: Sparkles, color: 'bg-yellow-500' },
 ];
 
 const moods = [
-  { value: "joyful", label: "😊 Joyful" },
-  { value: "peaceful", label: "😌 Peaceful" },
-  { value: "grateful", label: "🙏 Grateful" },
-  { value: "contemplative", label: "🤔 Contemplative" },
-  { value: "hopeful", label: "✨ Hopeful" },
-  { value: "blessed", label: "🙌 Blessed" }
+  { value: "joyful", label: "😊 Joyful", color: "bg-yellow-100 text-yellow-800" },
+  { value: "peaceful", label: "😌 Peaceful", color: "bg-blue-100 text-blue-800" },
+  { value: "grateful", label: "🙏 Grateful", color: "bg-green-100 text-green-800" },
+  { value: "contemplative", label: "🤔 Contemplative", color: "bg-purple-100 text-purple-800" },
+  { value: "hopeful", label: "✨ Hopeful", color: "bg-pink-100 text-pink-800" },
+  { value: "blessed", label: "🙌 Blessed", color: "bg-orange-100 text-orange-800" },
+  { value: "reflective", label: "📝 Reflective", color: "bg-indigo-100 text-indigo-800" },
+  { value: "worship", label: "🎵 Worship", color: "bg-rose-100 text-rose-800" }
+];
+
+const journalTemplates = [
+  {
+    id: 'daily-reflection',
+    name: 'Daily Reflection',
+    icon: '📝',
+    description: 'A structured daily reflection template',
+    prompts: [
+      'What did I learn about God today?',
+      'How did I see God working in my life?',
+      'What am I grateful for?',
+      'What challenges did I face and how did faith help?',
+      'Prayer requests for tomorrow:'
+    ]
+  },
+  {
+    id: 'bible-study',
+    name: 'Bible Study',
+    icon: '📖',
+    description: 'Deep dive into scripture study',
+    prompts: [
+      'Scripture passage studied:',
+      'Key insights and revelations:',
+      'How does this apply to my life?',
+      'Questions for further study:',
+      'Prayer based on this passage:'
+    ]
+  },
+  {
+    id: 'prayer-journal',
+    name: 'Prayer Journal',
+    icon: '🙏',
+    description: 'Focused prayer and intercession',
+    prompts: [
+      'Personal prayer requests:',
+      'Prayers for family and friends:',
+      'Prayers for church and community:',
+      'Prayers answered recently:',
+      'Scripture promises to claim:'
+    ]
+  },
+  {
+    id: 'gratitude',
+    name: 'Gratitude',
+    icon: '💝',
+    description: 'Counting blessings and giving thanks',
+    prompts: [
+      'Three things I\'m grateful for today:',
+      'God\'s provision I noticed:',
+      'Relationships I\'m thankful for:',
+      'Challenges that became blessings:',
+      'Ways to express gratitude:'
+    ]
+  }
 ];
 
 const Journal = () => {
@@ -77,6 +148,7 @@ const Journal = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [activeView, setActiveView] = useState('entries');
   
   // Entry dialog state
   const [showEntryDialog, setShowEntryDialog] = useState(false);
@@ -85,6 +157,9 @@ const Journal = () => {
   const [entryContent, setEntryContent] = useState("");
   const [entryCategory, setEntryCategory] = useState("personal");
   const [entryMood, setEntryMood] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [prayerRequests, setPrayerRequests] = useState<string[]>([]);
+  const [gratitudeItems, setGratitudeItems] = useState<string[]>([]);
   
   // Bible integration state
   const [showVerseSelector, setShowVerseSelector] = useState(false);
@@ -94,6 +169,16 @@ const Journal = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
   const [chapterVerses, setChapterVerses] = useState<BibleVerse[]>([]);
   const [selectedVerse, setSelectedVerse] = useState<BibleVerse | null>(null);
+
+  // Enhanced features state
+  const [filters, setFilters] = useState({
+    mood: 'all',
+    dateRange: 'all',
+    hasVerse: false,
+    isPinned: false
+  });
+  const [sortBy, setSortBy] = useState('newest');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const languages = [
     { value: 'english', label: 'English (KJV)' },
@@ -109,7 +194,7 @@ const Journal = () => {
 
   useEffect(() => {
     filterEntries();
-  }, [entries, selectedCategory, searchQuery, selectedDate]);
+  }, [entries, selectedCategory, searchQuery, selectedDate, filters, sortBy]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -185,6 +270,34 @@ const Journal = () => {
       return entryDate === selectedDateStr;
     });
 
+    // Apply advanced filters
+    if (filters.mood !== 'all') {
+      filtered = filtered.filter(entry => entry.mood === filters.mood);
+    }
+
+    if (filters.hasVerse) {
+      filtered = filtered.filter(entry => entry.verse_text);
+    }
+
+    if (filters.isPinned) {
+      filtered = filtered.filter(entry => entry.is_pinned);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'oldest':
+        filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case 'alphabetical':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'category':
+        filtered.sort((a, b) => (a.category || 'personal').localeCompare(b.category || 'personal'));
+        break;
+      default: // newest
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+
     setFilteredEntries(filtered);
   };
 
@@ -209,7 +322,13 @@ const Journal = () => {
         verse_reference: selectedVerse ? `${selectedVerse.book_name} ${selectedVerse.chapter}:${selectedVerse.verse}` : null,
         verse_text: selectedVerse?.text || null,
         entry_date: selectedDate.toISOString().split('T')[0],
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // Store additional data as JSON in content for now
+        metadata: JSON.stringify({
+          prayer_requests: prayerRequests.filter(p => p.trim()),
+          gratitude_items: gratitudeItems.filter(g => g.trim()),
+          template_used: selectedTemplate
+        })
       };
 
       if (editingEntry) {
@@ -282,13 +401,49 @@ const Journal = () => {
     }
   };
 
-  const openEntryDialog = (entry?: JournalEntry) => {
+  const togglePin = async (entry: JournalEntry) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('journal_entries')
+        .update({ is_pinned: !entry.is_pinned })
+        .eq('id', entry.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      
+      toast({
+        title: entry.is_pinned ? "Entry unpinned" : "Entry pinned",
+        description: entry.title,
+      });
+      
+      loadEntries();
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+    }
+  };
+
+  const openEntryDialog = (entry?: JournalEntry, template?: string) => {
     if (entry) {
       setEditingEntry(entry);
       setEntryTitle(entry.title);
       setEntryContent(entry.content);
       setEntryCategory(entry.category || 'personal');
       setEntryMood(entry.mood || "");
+      
+      // Try to parse metadata
+      try {
+        const metadata = entry.metadata ? JSON.parse(entry.metadata) : {};
+        setPrayerRequests(metadata.prayer_requests || []);
+        setGratitudeItems(metadata.gratitude_items || []);
+        setSelectedTemplate(metadata.template_used || null);
+      } catch (e) {
+        setPrayerRequests([]);
+        setGratitudeItems([]);
+        setSelectedTemplate(null);
+      }
+      
       if (entry.verse_text) {
         setSelectedVerse({
           id: 'existing',
@@ -305,6 +460,19 @@ const Journal = () => {
       setEntryCategory("personal");
       setEntryMood("");
       setSelectedVerse(null);
+      setPrayerRequests([]);
+      setGratitudeItems([]);
+      
+      if (template) {
+        setSelectedTemplate(template);
+        const templateData = journalTemplates.find(t => t.id === template);
+        if (templateData) {
+          setEntryTitle(templateData.name);
+          setEntryContent(templateData.prompts.join('\n\n'));
+        }
+      } else {
+        setSelectedTemplate(null);
+      }
     }
     setShowEntryDialog(true);
   };
@@ -318,6 +486,48 @@ const Journal = () => {
     setEntryMood("");
     setSelectedVerse(null);
     setShowVerseSelector(false);
+    setSelectedTemplate(null);
+    setPrayerRequests([]);
+    setGratitudeItems([]);
+  };
+
+  const exportEntries = () => {
+    const dataStr = JSON.stringify(entries, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `bible-aura-journal-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast({
+      title: "Exported successfully",
+      description: "Your journal entries have been exported",
+    });
+  };
+
+  const getJournalStats = () => {
+    const thisMonth = entries.filter(entry => {
+      const entryDate = new Date(entry.created_at);
+      const now = new Date();
+      return entryDate.getMonth() === now.getMonth() && entryDate.getFullYear() === now.getFullYear();
+    });
+
+    const withVerses = entries.filter(entry => entry.verse_text).length;
+    const totalWords = entries.reduce((sum, entry) => sum + entry.content.split(' ').length, 0);
+
+    return {
+      total: entries.length,
+      thisMonth: thisMonth.length,
+      withVerses,
+      totalWords,
+      categories: categories.map(cat => ({
+        ...cat,
+        count: entries.filter(e => (e.category || 'personal') === cat.id).length
+      })).filter(cat => cat.count > 0)
+    };
   };
 
   const formatDate = (date: Date) => {
@@ -349,10 +559,17 @@ const Journal = () => {
     return category ? category.icon : FileText;
   };
 
+  const getMoodColor = (mood: string) => {
+    const moodData = moods.find(m => m.value === mood);
+    return moodData ? moodData.color : 'bg-gray-100 text-gray-800';
+  };
+
+  const stats = getJournalStats();
+
   if (!user) {
     return (
-      <div className="min-h-screen bg-purple-600 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4 bg-white">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-sm">
           <CardContent className="p-8 text-center">
             <FileText className="h-16 w-16 mx-auto mb-4 text-purple-500" />
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Sign In Required</h2>
@@ -366,156 +583,307 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-600 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3 mb-6">
-            <Menu className="h-6 w-6 text-gray-400" />
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-9 text-sm border-gray-200"
-              />
-            </div>
-            <Button size="icon" variant="ghost" className="h-9 w-9">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Journals</h2>
-          
-          {/* Categories */}
-          <div className="space-y-2">
-            <Button
-              variant={selectedCategory === 'all' ? "default" : "ghost"}
-              className="w-full justify-start h-9 text-sm"
-              onClick={() => setSelectedCategory('all')}
-            >
-              <FileText className="h-4 w-4 mr-3" />
-              All Entries
-            </Button>
-            
-                         {categories.map((category) => {
-               const Icon = category.icon;
-               const entryCount = entries.filter(e => (e.category || 'personal') === category.id).length;
-              
-              return (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "ghost"}
-                  className="w-full justify-between h-9 text-sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <div className="flex items-center">
-                    <Icon className="h-4 w-4 mr-3" />
-                    {category.name}
-                  </div>
-                  <span className="text-xs text-gray-500">{entryCount}</span>
-                </Button>
-              );
-            })}
-            
-            <Button
-              variant="ghost"
-              className="w-full justify-start h-9 text-sm text-purple-600"
-              onClick={() => openEntryDialog()}
-            >
-              <Plus className="h-4 w-4 mr-3" />
-              Add new
-            </Button>
-          </div>
-        </div>
-
-        {/* Calendar */}
-        <div className="p-6 flex-1">
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-gray-800">
-                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </h3>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800">
+      {/* Enhanced Header */}
+      <div className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-20">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-xl">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">Spiritual Journal</h1>
+                <p className="text-purple-100 text-sm">Record your faith journey</p>
               </div>
             </div>
             
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              month={currentMonth}
-              onMonthChange={setCurrentMonth}
-              className="w-full"
-              modifiers={{
-                hasEntry: (date) => getEntriesForDate(date).length > 0
-              }}
-              modifiersStyles={{
-                hasEntry: { 
-                  backgroundColor: '#8b5cf6', 
-                  color: 'white',
-                  borderRadius: '50%'
-                }
-              }}
-            />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={exportEntries}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              
+              <Button
+                onClick={() => openEntryDialog()}
+                className="bg-white text-purple-600 hover:bg-white/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Entry
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex h-[calc(100vh-120px)]">
+        {/* Enhanced Sidebar */}
+        <div className="w-80 bg-white/95 backdrop-blur-sm border-r border-gray-200 flex flex-col">
+          {/* Quick Stats */}
+          <div className="p-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+            <h3 className="font-semibold mb-3">Journal Stats</h3>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="text-center">
+                <div className="text-2xl font-bold">{stats.total}</div>
+                <div className="text-purple-100">Total Entries</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{stats.thisMonth}</div>
+                <div className="text-purple-100">This Month</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Tabs */}
+          <Tabs value={activeView} onValueChange={setActiveView} className="flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-3 m-4 mb-0">
+              <TabsTrigger value="entries" className="text-xs">
+                <FileText className="h-4 w-4 mr-1" />
+                Entries
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="text-xs">
+                <CalendarIcon className="h-4 w-4 mr-1" />
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs">
+                <BarChart3 className="h-4 w-4 mr-1" />
+                Insights
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="flex-1 overflow-auto">
+              <TabsContent value="entries" className="p-4 mt-0">
+                {/* Search and Filters */}
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search entries..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {/* Categories */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Categories</h4>
+                    <div className="space-y-1">
+                      <Button
+                        variant={selectedCategory === 'all' ? "default" : "ghost"}
+                        className="w-full justify-start h-9 text-sm"
+                        onClick={() => setSelectedCategory('all')}
+                      >
+                        <FileText className="h-4 w-4 mr-3" />
+                        All Entries
+                        <Badge variant="secondary" className="ml-auto">
+                          {entries.length}
+                        </Badge>
+                      </Button>
+                      
+                      {categories.map((category) => {
+                        const Icon = category.icon;
+                        const entryCount = entries.filter(e => (e.category || 'personal') === category.id).length;
+                        
+                        if (entryCount === 0) return null;
+                        
+                        return (
+                          <Button
+                            key={category.id}
+                            variant={selectedCategory === category.id ? "default" : "ghost"}
+                            className="w-full justify-between h-9 text-sm"
+                            onClick={() => setSelectedCategory(category.id)}
+                          >
+                            <div className="flex items-center">
+                              <Icon className="h-4 w-4 mr-3" />
+                              {category.name}
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              {entryCount}
+                            </Badge>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Quick Templates */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Quick Start</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {journalTemplates.map((template) => (
+                        <Button
+                          key={template.id}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEntryDialog(undefined, template.id)}
+                          className="flex flex-col items-center p-3 h-auto"
+                        >
+                          <span className="text-lg mb-1">{template.icon}</span>
+                          <span className="text-xs">{template.name}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="calendar" className="p-4 mt-0">
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-medium text-gray-800">
+                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </h3>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    month={currentMonth}
+                    onMonthChange={setCurrentMonth}
+                    className="w-full"
+                    modifiers={{
+                      hasEntry: (date) => getEntriesForDate(date).length > 0
+                    }}
+                    modifiersStyles={{
+                      hasEntry: { 
+                        backgroundColor: '#8b5cf6', 
+                        color: 'white',
+                        borderRadius: '50%'
+                      }
+                    }}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="insights" className="p-4 mt-0">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Writing Statistics</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Total Words</span>
+                        <span className="font-semibold">{stats.totalWords.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">With Bible Verses</span>
+                        <span className="font-semibold">{stats.withVerses}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">This Month</span>
+                        <span className="font-semibold">{stats.thisMonth}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Categories</h4>
+                    <div className="space-y-2">
+                      {stats.categories.map((category) => {
+                        const Icon = category.icon;
+                        const percentage = (category.count / stats.total) * 100;
+                        
+                        return (
+                          <div key={category.id} className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                <span className="text-sm">{category.name}</span>
+                              </div>
+                              <span className="text-sm font-medium">{category.count}</span>
+                            </div>
+                            <Progress value={percentage} className="h-2" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
+
         {/* Entries List */}
-        <div className="w-80 bg-gray-50 border-r border-gray-200 overflow-y-auto">
+        <div className="w-96 bg-gray-50/80 backdrop-blur-sm border-r border-gray-200 overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800">
-                {formatDate(selectedDate)}
-              </h2>
-              <Button
-                size="sm"
-                onClick={() => openEntryDialog()}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {formatDate(selectedDate)}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {filteredEntries.length} {filteredEntries.length === 1 ? 'entry' : 'entries'}
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode(viewMode === 'card' ? 'list' : 'card')}
+                >
+                  {viewMode === 'card' ? <Menu /> : <Eye />}
+                </Button>
+                
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-32 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest</SelectItem>
+                    <SelectItem value="oldest">Oldest</SelectItem>
+                    <SelectItem value="alphabetical">A-Z</SelectItem>
+                    <SelectItem value="category">Category</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {filteredEntries.length > 0 ? (
-                                 filteredEntries.map((entry) => {
-                   const Icon = getCategoryIcon(entry.category || 'personal');
-                   const category = categories.find(cat => cat.id === (entry.category || 'personal'));
+                filteredEntries.map((entry) => {
+                  const Icon = getCategoryIcon(entry.category || 'personal');
+                  const category = categories.find(cat => cat.id === (entry.category || 'personal'));
                   
                   return (
                     <Card
                       key={entry.id}
                       className={`cursor-pointer transition-all hover:shadow-md ${
-                        selectedEntry?.id === entry.id ? 'ring-2 ring-purple-500' : ''
-                      }`}
+                        selectedEntry?.id === entry.id ? 'ring-2 ring-purple-500 bg-purple-50' : ''
+                      } ${entry.is_pinned ? 'border-l-4 border-l-amber-400' : ''}`}
                       onClick={() => setSelectedEntry(entry)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="text-center min-w-[40px]">
-                            <div className="text-2xl font-bold text-gray-800">
+                            <div className="text-xl font-bold text-gray-800">
                               {formatDay(new Date(entry.created_at))}
                             </div>
                             <div className="text-xs text-gray-500">
@@ -523,24 +891,41 @@ const Journal = () => {
                             </div>
                           </div>
                           
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <Icon className="h-4 w-4 text-gray-500" />
-                              <h3 className="font-medium text-gray-800 text-sm">
+                              <Icon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                              <h3 className="font-medium text-gray-800 text-sm truncate">
                                 {entry.title}
                               </h3>
+                              {entry.is_pinned && (
+                                <Pin className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                              )}
                             </div>
-                            <p className="text-xs text-gray-600 line-clamp-2">
+                            
+                            <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                               {entry.content}
                             </p>
-                            {category && (
-                              <Badge 
-                                variant="secondary" 
-                                className="mt-2 text-xs"
-                              >
-                                {category.name}
-                              </Badge>
-                            )}
+                            
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {category && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {category.name}
+                                </Badge>
+                              )}
+                              
+                              {entry.mood && (
+                                <Badge variant="outline" className={`text-xs ${getMoodColor(entry.mood)}`}>
+                                  {moods.find(m => m.value === entry.mood)?.label}
+                                </Badge>
+                              )}
+                              
+                              {entry.verse_text && (
+                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                  <Book className="h-3 w-3 mr-1" />
+                                  Verse
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -548,14 +933,13 @@ const Journal = () => {
                   );
                 })
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-12">
                   <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-500 text-sm">No entries for this date</p>
+                  <p className="text-gray-500 text-sm mb-4">No entries for this date</p>
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="mt-3"
                     onClick={() => openEntryDialog()}
+                    className="bg-purple-600 hover:bg-purple-700"
                   >
                     Create Entry
                   </Button>
@@ -566,19 +950,46 @@ const Journal = () => {
         </div>
 
         {/* Entry Detail */}
-        <div className="flex-1 bg-white overflow-y-auto">
+        <div className="flex-1 bg-white/95 backdrop-blur-sm overflow-y-auto">
           {selectedEntry ? (
-            <div className="p-8 max-w-3xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                    {selectedEntry.title}
-                  </h1>
-                  <p className="text-gray-500">
-                    {formatDayName(new Date(selectedEntry.created_at))}, {formatDate(new Date(selectedEntry.created_at))}
-                  </p>
+            <div className="p-8 max-w-4xl mx-auto">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      {selectedEntry.title}
+                    </h1>
+                    {selectedEntry.is_pinned && (
+                      <Pin className="h-5 w-5 text-amber-500" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span>{formatDayName(new Date(selectedEntry.created_at))}, {formatDate(new Date(selectedEntry.created_at))}</span>
+                    <span>•</span>
+                    <span>{selectedEntry.content.split(' ').length} words</span>
+                  </div>
                 </div>
+                
                 <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => togglePin(selectedEntry)}
+                  >
+                    <Pin className={`h-4 w-4 ${selectedEntry.is_pinned ? 'text-amber-500' : ''}`} />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${selectedEntry.title}\n\n${selectedEntry.content}`);
+                      toast({ title: "Copied!", description: "Entry copied to clipboard" });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  
                   <Button
                     variant="outline"
                     size="sm"
@@ -587,6 +998,7 @@ const Journal = () => {
                     <Edit3 className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
+                  
                   <Button
                     variant="outline"
                     size="sm"
@@ -599,115 +1011,212 @@ const Journal = () => {
                 </div>
               </div>
 
-              {selectedEntry.verse_text && (
-                <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6 rounded-r-lg">
-                  <p className="text-gray-700 italic mb-2">"{selectedEntry.verse_text}"</p>
-                  <p className="text-sm font-medium text-purple-600">
-                    — {selectedEntry.verse_reference}
-                  </p>
-                </div>
-              )}
-
-              <div className="prose max-w-none">
-                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                  {selectedEntry.content}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 mt-8 pt-6 border-t border-gray-200">
+              {/* Entry Metadata */}
+              <div className="flex items-center gap-4 mb-6">
                 {selectedEntry.category && (
                   <Badge variant="secondary">
                     {categories.find(cat => cat.id === selectedEntry.category)?.name || selectedEntry.category}
                   </Badge>
                 )}
+                
                 {selectedEntry.mood && (
-                  <Badge variant="outline">
+                  <Badge className={getMoodColor(selectedEntry.mood)}>
                     {moods.find(m => m.value === selectedEntry.mood)?.label || selectedEntry.mood}
                   </Badge>
                 )}
               </div>
+
+              {/* Bible Verse */}
+              {selectedEntry.verse_text && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-6 mb-6 rounded-r-xl">
+                  <div className="flex items-start gap-3">
+                    <Quote className="h-5 w-5 text-purple-500 mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="text-gray-700 italic mb-3 text-lg leading-relaxed">
+                        "{selectedEntry.verse_text}"
+                      </p>
+                      <p className="text-sm font-semibold text-purple-600">
+                        — {selectedEntry.verse_reference}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Entry Content */}
+              <div className="prose max-w-none mb-8">
+                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">
+                  {selectedEntry.content}
+                </div>
+              </div>
+
+              {/* Additional Metadata */}
+              {selectedEntry.metadata && (
+                <div className="border-t border-gray-200 pt-6">
+                  {(() => {
+                    try {
+                      const metadata = JSON.parse(selectedEntry.metadata);
+                      return (
+                        <div className="space-y-4">
+                          {metadata.prayer_requests && metadata.prayer_requests.length > 0 && (
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                <Pray className="h-4 w-4" />
+                                Prayer Requests
+                              </h4>
+                              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                                {metadata.prayer_requests.map((request: string, index: number) => (
+                                  <li key={index}>{request}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {metadata.gratitude_items && metadata.gratitude_items.length > 0 && (
+                            <div>
+                              <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                <Heart className="h-4 w-4" />
+                                Gratitude
+                              </h4>
+                              <ul className="list-disc list-inside text-gray-600 space-y-1">
+                                {metadata.gratitude_items.map((item: string, index: number) => (
+                                  <li key={index}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } catch (e) {
+                      return null;
+                    }
+                  })()}
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
+              <div className="text-center max-w-md">
                 <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-xl font-medium text-gray-600 mb-2">
-                  What lesson did I learn this week?
+                  Your Spiritual Journey Awaits
                 </h3>
-                <p className="text-gray-500 mb-6 max-w-md">
-                  Recently, I've been exploring the true meaning of contentment. 
-                  My perspective has been leading me to conclude that grounding and commitment are a bit like cousins. At first glance, they have similar features...
+                <p className="text-gray-500 mb-6">
+                  Select an entry to read or create a new one to capture your thoughts, prayers, and reflections.
                 </p>
-                <Button onClick={() => openEntryDialog()} className="bg-purple-600 hover:bg-purple-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Entry
-                </Button>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    onClick={() => openEntryDialog()} 
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Entry
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => openEntryDialog(undefined, 'daily-reflection')}
+                  >
+                    📝 Daily Reflection
+                  </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Entry Dialog */}
+      {/* Enhanced Entry Dialog */}
       <Dialog open={showEntryDialog} onOpenChange={(open) => !open && closeEntryDialog()}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              {editingEntry ? 'Edit Entry' : 'New Journal Entry'}
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+              {selectedTemplate && (
+                <span className="text-2xl">
+                  {journalTemplates.find(t => t.id === selectedTemplate)?.icon}
+                </span>
+              )}
+              {editingEntry ? 'Edit Entry' : selectedTemplate ? journalTemplates.find(t => t.id === selectedTemplate)?.name : 'New Journal Entry'}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
+            {/* Template Selection */}
+            {!editingEntry && !selectedTemplate && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Choose a Template (Optional)</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {journalTemplates.map((template) => (
+                    <Button
+                      key={template.id}
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTemplate(template.id);
+                        setEntryTitle(template.name);
+                        setEntryContent(template.prompts.join('\n\n'));
+                      }}
+                      className="flex flex-col items-center p-4 h-auto"
+                    >
+                      <span className="text-2xl mb-2">{template.icon}</span>
+                      <span className="font-medium">{template.name}</span>
+                      <span className="text-xs text-gray-500 mt-1">{template.description}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Title */}
             <div>
               <label className="block text-sm font-medium mb-2">Title</label>
               <Input
                 value={entryTitle}
                 onChange={(e) => setEntryTitle(e.target.value)}
-                placeholder="What lesson did I learn today?"
+                placeholder="What's on your heart today?"
                 className="h-11"
               />
             </div>
 
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <Select value={entryCategory} onValueChange={setEntryCategory}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => {
-                    const Icon = category.icon;
-                    return (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center">
-                          <Icon className="h-4 w-4 mr-2" />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Category</label>
+                <Select value={entryCategory} onValueChange={setEntryCategory}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => {
+                      const Icon = category.icon;
+                      return (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center">
+                            <Icon className="h-4 w-4 mr-2" />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Mood Selection */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Mood (optional)</label>
-              <Select value={entryMood} onValueChange={setEntryMood}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="How are you feeling?" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">No mood selected</SelectItem>
-                  {moods.map(mood => (
-                    <SelectItem key={mood.value} value={mood.value}>
-                      {mood.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Mood Selection */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Mood (optional)</label>
+                <Select value={entryMood} onValueChange={setEntryMood}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="How are you feeling?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No mood selected</SelectItem>
+                    {moods.map(mood => (
+                      <SelectItem key={mood.value} value={mood.value}>
+                        {mood.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Bible Verse Selector */}
@@ -726,8 +1235,8 @@ const Journal = () => {
               </div>
 
               {selectedVerse && (
-                <div className="bg-purple-50 rounded-lg p-3 mb-3">
-                  <p className="text-sm italic text-gray-700 mb-1">"{selectedVerse.text}"</p>
+                <div className="bg-purple-50 rounded-lg p-4 mb-3 border-l-4 border-purple-400">
+                  <p className="text-sm italic text-gray-700 mb-2">"{selectedVerse.text}"</p>
                   <p className="text-xs font-medium text-purple-600">
                     — {selectedVerse.book_name} {selectedVerse.chapter}:{selectedVerse.verse}
                   </p>
@@ -828,6 +1337,85 @@ const Journal = () => {
               )}
             </div>
 
+            {/* Additional Fields for specific templates */}
+            {(selectedTemplate === 'prayer-journal' || entryCategory === 'prayer') && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Prayer Requests</label>
+                <div className="space-y-2">
+                  {prayerRequests.map((request, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={request}
+                        onChange={(e) => {
+                          const updated = [...prayerRequests];
+                          updated[index] = e.target.value;
+                          setPrayerRequests(updated);
+                        }}
+                        placeholder="Enter prayer request..."
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const updated = prayerRequests.filter((_, i) => i !== index);
+                          setPrayerRequests(updated);
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPrayerRequests([...prayerRequests, ''])}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Prayer Request
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {(selectedTemplate === 'gratitude' || entryCategory === 'gratitude') && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Gratitude Items</label>
+                <div className="space-y-2">
+                  {gratitudeItems.map((item, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={item}
+                        onChange={(e) => {
+                          const updated = [...gratitudeItems];
+                          updated[index] = e.target.value;
+                          setGratitudeItems(updated);
+                        }}
+                        placeholder="Something you're grateful for..."
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const updated = gratitudeItems.filter((_, i) => i !== index);
+                          setGratitudeItems(updated);
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setGratitudeItems([...gratitudeItems, ''])}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Gratitude Item
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Content */}
             <div>
               <label className="block text-sm font-medium mb-2">Content</label>
@@ -835,8 +1423,8 @@ const Journal = () => {
                 value={entryContent}
                 onChange={(e) => setEntryContent(e.target.value)}
                 placeholder="Share your thoughts, reflections, prayers, or experiences..."
-                className="min-h-[200px] resize-none"
-                rows={8}
+                className="min-h-[300px] resize-none"
+                rows={12}
               />
             </div>
 
