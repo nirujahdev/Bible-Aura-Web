@@ -1,13 +1,15 @@
-# 🔧 Google OAuth & Magic Link Setup - Complete Fix Guide
+# 🔧 Google OAuth Setup for Bible Aura - Complete Guide
 
-## 🚨 Current Errors:
-```
-Error 400: redirect_uri_mismatch
-Access blocked: This app's request is invalid
-Magic link authentication not working
-```
+## ✅ **HOMEPAGE REQUIREMENTS - COMPLETED!**
+Your Bible Aura homepage now meets all Google OAuth requirements:
+- ✅ **App Identity**: Clear branding with "✦Bible Aura - AI-Powered Biblical Insight"
+- ✅ **Functionality Description**: Comprehensive features overview including AI chat, Bible study, journals
+- ✅ **Data Usage Transparency**: NEW - Added dedicated "Your Data & Privacy" section
+- ✅ **Privacy Policy Link**: Available in footer and data section
+- ✅ **Public Access**: Homepage visible without login
+- ✅ **Professional Domain**: Using Vercel deployment (bible-aura.vercel.app)
 
-## ✅ **STEP 1: Fix Google OAuth Setup**
+## ✅ **STEP 1: Configure Google Cloud Console**
 
 ### **Google Cloud Console Configuration:**
 
@@ -16,28 +18,52 @@ Magic link authentication not working
 3. **Navigate to**: APIs & Services → Credentials
 4. **Find your OAuth 2.0 Client ID** or create a new one
 
-### **Add CORRECT Authorized Redirect URIs:**
+### **Set Up OAuth Application:**
 
-⚠️ **CRITICAL**: Use these **EXACT** URIs (note `/auth/v1/callback` not `/auth/callback`):
+1. **Create OAuth 2.0 Client ID** (if not already created)
+2. **Application Type**: Web application
+3. **Name**: Bible Aura
+4. **Authorized JavaScript origins**:
+   ```
+   http://localhost:5173
+   https://bible-aura.vercel.app
+   https://bible-aura.app (if you have custom domain)
+   ```
 
-```
-https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback
-```
+5. **Authorized Redirect URIs** (⚠️ **CRITICAL - EXACT URIs**):
+   ```
+   https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback
+   ```
 
-**For Development:**
-```
-http://localhost:8080
-http://127.0.0.1:8080
-```
-
-**For Production (when deployed):**
-```
-https://your-production-domain.com
-```
+### **Set App Homepage URL:**
+In your OAuth consent screen configuration:
+- **Application Homepage**: `https://bible-aura.vercel.app`
+- **Privacy Policy**: `https://bible-aura.vercel.app/privacy`
+- **Terms of Service**: `https://bible-aura.vercel.app/terms`
 
 ---
 
-## ✅ **STEP 2: Supabase Dashboard Configuration**
+## ✅ **STEP 2: Extract Google OAuth Credentials**
+
+### **From your downloaded credentials.json file:**
+1. Open `C:\Users\benai\Downloads\credentials.json`
+2. Copy the **Client ID** and **Client Secret** from the file
+3. The file structure should look like:
+   ```json
+   {
+     "web": {
+       "client_id": "your-client-id-here.googleusercontent.com",
+       "client_secret": "your-client-secret-here",
+       "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+       "token_uri": "https://oauth2.googleapis.com/token",
+       "redirect_uris": [...]
+     }
+   }
+   ```
+
+---
+
+## ✅ **STEP 3: Supabase Dashboard Configuration**
 
 ### **Go to Supabase Dashboard:**
 1. **Visit**: [https://supabase.com/dashboard](https://supabase.com/dashboard)
@@ -57,8 +83,10 @@ https://your-production-domain.com
 #### **B. Configure Email Settings:**
 1. Go to **Authentication → Settings → Email**
 2. **Enable email confirmations** if not already enabled
-3. **Set Site URL** to: `http://localhost:8080` (for development)
-4. **Set Redirect URLs** to: `http://localhost:8080/dashboard`
+3. **Set Site URL** to: `http://localhost:5173` (for development)
+4. **Set Redirect URLs** to: 
+   - `http://localhost:5173/dashboard` (development)
+   - `https://bible-aura.vercel.app/dashboard` (production)
 
 #### **C. Enable Magic Links:**
 1. In **Authentication → Settings → Auth Providers**
@@ -78,29 +106,60 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 ---
 
-## ✅ **STEP 4: Testing Steps**
+## ✅ **STEP 4: Deploy and Test**
 
+### **Deploy Your Updated Homepage:**
+1. **Commit your changes**:
+   ```bash
+   git add .
+   git commit -m "Add Google OAuth data transparency section"
+   git push origin main
+   ```
+
+2. **Verify deployment** at `https://bible-aura.vercel.app`
+3. **Check the new "Your Data & Privacy" section** is visible on homepage
+
+### **Test OAuth:**
 1. **Save all settings** in both Google Console and Supabase
 2. **Wait 5-10 minutes** for changes to propagate
-3. **Restart your development server**: `npm run dev`
-4. **Test Magic Link**: Try signing in with email (check spam folder)
-5. **Test Google OAuth**: Try "Sign in with Google" button
+3. **Start development server**: `npm run dev`
+4. **Test Google OAuth**: Try "Sign in with Google" button
+5. **Test Magic Link**: Try signing in with email (check spam folder)
 6. **Check browser console** for any errors
 
 ---
 
-## 🔍 **Quick Checklist:**
+## 🔍 **Complete Setup Checklist:**
 
-- [ ] Google Cloud Console OAuth 2.0 Client created
-- [ ] **CORRECT** redirect URI added: `https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback`
-- [ ] Google provider enabled in Supabase
-- [ ] Client ID & Secret added to Supabase
+### **Homepage Requirements (✅ COMPLETED):**
+- [x] **App Identity**: Clear branding and description
+- [x] **Data Transparency**: Added "Your Data & Privacy" section
+- [x] **Privacy Policy Link**: Available and accessible
+- [x] **Public Access**: Homepage visible without login
+- [x] **Professional Domain**: Deployed on Vercel
+
+### **Google Cloud Console:**
+- [ ] OAuth 2.0 Client ID created for "Bible Aura"
+- [ ] Homepage URL set: `https://bible-aura.vercel.app`
+- [ ] Privacy Policy URL set: `https://bible-aura.vercel.app/privacy`
+- [ ] Authorized origins: `http://localhost:5173` and `https://bible-aura.vercel.app`
+- [ ] **CRITICAL** redirect URI: `https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback`
+- [ ] Downloaded credentials.json and extracted Client ID & Secret
+
+### **Supabase Configuration:**
+- [ ] Google provider enabled in Authentication → Settings
+- [ ] Client ID & Secret from credentials.json added to Supabase
 - [ ] Email provider enabled in Supabase
 - [ ] Magic links enabled in Supabase
-- [ ] Site URL configured: `http://localhost:8080`
-- [ ] Redirect URLs configured: `http://localhost:8080/dashboard`
-- [ ] Development server restarted
-- [ ] 5-10 minutes waited for propagation
+- [ ] Site URLs configured for dev (`http://localhost:5173`) and prod
+- [ ] Redirect URLs configured for dashboard access
+
+### **Deployment & Testing:**
+- [ ] Changes committed and pushed to repository
+- [ ] Vercel deployment verified at `https://bible-aura.vercel.app`
+- [ ] 5-10 minutes waited for Google OAuth propagation
+- [ ] Google OAuth tested successfully
+- [ ] Magic link authentication tested
 
 ---
 
@@ -123,4 +182,39 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 - Check if Supabase project is active and not paused
 - Restart development server: `npm run dev`
 
-**🎉 Once all steps are complete, both Google OAuth and Magic Links should work perfectly!** 
+---
+
+## 🚀 **NEXT STEPS:**
+
+### **1. Deploy Your Changes First:**
+```bash
+git add .
+git commit -m "Add Google OAuth data transparency section"
+git push origin main
+```
+
+### **2. Complete Google OAuth Setup:**
+1. Open `C:\Users\benai\Downloads\credentials.json`
+2. Copy the Client ID and Client Secret
+3. Add them to your Supabase project in Authentication → Settings → Auth Providers → Google
+4. Set all the URLs as specified in the checklist above
+
+### **3. Test Everything:**
+- Visit `https://bible-aura.vercel.app`
+- Verify the new "Your Data & Privacy" section appears
+- Test Google OAuth login
+- Test magic link login
+
+### **4. Domain Verification (Optional but Recommended):**
+If you want to use a custom domain like `bible-aura.app`:
+1. Purchase the domain
+2. Add it to Vercel
+3. Update all Google OAuth URLs to use the custom domain
+4. Update Supabase URLs accordingly
+
+---
+
+## 🎯 **GOOGLE OAUTH APPROVAL:**
+With your enhanced homepage showing clear data usage transparency, comprehensive app description, and proper legal pages, your app should meet all Google OAuth verification requirements for production use.
+
+**🎉 Your Bible Aura app is now ready for Google OAuth verification!** 

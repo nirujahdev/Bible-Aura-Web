@@ -5,7 +5,8 @@ import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
   BookOpen, Bot, Wrench, Library, BookOpenCheck, PenTool,
   MessageCircle, Star, ArrowRight, Sparkles, ChevronDown, ChevronUp,
-  Send, User, Zap, LogIn, Search, FileText, MessageSquare, Edit
+  Send, User, Zap, LogIn, Search, FileText, MessageSquare, Edit,
+  Shield, Eye, Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -587,6 +588,89 @@ const Home = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Data Usage Transparency Section - Google OAuth Requirement */}
+      <section className="py-12 md:py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-14 md:w-16 h-14 md:h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white mb-6">
+              <Shield className="h-6 md:h-8 w-6 md:w-8" />
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Your Data & <span className="text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text">Privacy</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+              We are committed to protecting your privacy and being transparent about how we use your data
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {/* What We Collect */}
+            <Card className="hover:shadow-lg transition-shadow bg-white">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
+                  <Eye className="h-5 w-5 mr-3 text-blue-600" />
+                  What We Collect
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-gray-700">
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                    <p className="text-sm"><strong>Basic Account Info:</strong> Email address and name for account creation</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                    <p className="text-sm"><strong>Usage Data:</strong> Bible study preferences and reading progress</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                    <p className="text-sm"><strong>Content:</strong> Your journal entries, notes, and bookmarks</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* How We Use It */}
+            <Card className="hover:shadow-lg transition-shadow bg-white">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
+                  <Users className="h-5 w-5 mr-3 text-indigo-600" />
+                  How We Use Your Data
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-gray-700">
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                    <p className="text-sm"><strong>Personalization:</strong> Provide tailored Bible study recommendations</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                    <p className="text-sm"><strong>AI Insights:</strong> Generate contextual biblical analysis and answers</p>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                    <p className="text-sm"><strong>Service Improvement:</strong> Enhance our AI and user experience</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-gray-600 mb-4">
+              We never sell your personal data. Read our complete privacy policy for detailed information.
+            </p>
+            <Button asChild variant="outline" className="border-blue-200 hover:bg-blue-50">
+              <Link to="/privacy">
+                <Shield className="mr-2 h-4 w-4" />
+                View Privacy Policy
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
