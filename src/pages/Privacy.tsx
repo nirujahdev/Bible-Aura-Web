@@ -83,23 +83,7 @@ const Privacy = () => {
 
   return (
     <div className="min-h-screen bg-background w-full">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-12">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2 text-white hover:text-orange-200 transition-colors">
-                <ArrowLeft className="h-5 w-5" />
-                <span>Back to Home</span>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-3">
-              <img src="/✦Bible Aura.svg" alt="✦Bible Aura" className="h-8 w-8" />
-              <span className="text-xl font-bold">✦Bible Aura</span>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Hero Section */}
               <div className="w-full px-4 sm:px-6 lg:px-8 py-16">

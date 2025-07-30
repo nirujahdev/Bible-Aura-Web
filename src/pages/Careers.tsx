@@ -205,33 +205,7 @@ Best regards,
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
       
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 via-orange-700 to-red-600 text-white">
-        <div className="w-full px-6 py-16 pt-32 text-center">
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold">
-              ✦ Bible Aura – Volunteer Careers
-            </h1>
-            <div className="flex items-center justify-center space-x-6 text-lg">
-              <div className="flex items-center space-x-2">
-                <Globe className="h-5 w-5" />
-                <span>Remote</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Flexible Hours</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Cross className="h-5 w-5" />
-                <span>Faith-Driven Mission</span>
-              </div>
-            </div>
-            <p className="text-xl opacity-90 max-w-3xl mx-auto">
-              Join our mission to bring the Word of God alive through technology and design.
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       {/* Contact Info */}
       <div className="bg-white border-b border-gray-200">

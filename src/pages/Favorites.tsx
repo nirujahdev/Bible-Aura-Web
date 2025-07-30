@@ -153,17 +153,7 @@ export default function Favorites() {
 
   return (
     <PageLayout padding="none" maxWidth="full">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 border-b flex-shrink-0">
-        <div className="w-full">
-          <div className="flex items-center gap-2">
-            <Heart className="h-6 w-6" />
-            <h1 className="text-2xl font-divine">My Favorites</h1>
-            <Star className="h-5 w-5" />
-          </div>
-          <p className="text-white/80 mt-1">Your saved verses, notes, and highlights</p>
-        </div>
-      </div>
+
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto min-h-screen bg-background">

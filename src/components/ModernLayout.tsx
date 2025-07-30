@@ -47,29 +47,29 @@ export function ModernLayout({ children }: ModernLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Compact Scrollable Sidebar */}
-      <div className="w-14 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex">
+      {/* Clean Modern Sidebar */}
+      <div className="w-16 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 flex flex-col shadow-sm">
         {/* Logo - Fixed at top */}
-        <div className="flex-shrink-0 p-2 border-b border-gray-100">
-          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">✦</span>
+        <div className="flex-shrink-0 p-3 border-b border-gray-100">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-lg">✦</span>
           </div>
         </div>
 
-        {/* Scrollable Navigation */}
-        <div className="flex-1 overflow-y-auto py-2 space-y-1">
+        {/* Navigation */}
+        <div className="flex-1 py-4 space-y-2 overflow-y-auto">
           {sidebarItems.map((item) => {
             const isActive = location.pathname === item.href;
             return (
-              <div key={item.name} className="relative group px-2">
+              <div key={item.name} className="relative group px-3">
                 <Link
                   to={item.href}
                   className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200",
+                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110",
                     isActive 
-                      ? "bg-orange-500 text-white shadow-md" 
-                      : "bg-gray-50 text-gray-600 hover:bg-orange-50 hover:text-orange-600"
+                      ? "bg-orange-500 text-white shadow-lg shadow-orange-200" 
+                      : "bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 shadow-sm border border-gray-100"
                   )}
                   title={item.tooltip}
                 >
@@ -77,8 +77,9 @@ export function ModernLayout({ children }: ModernLayoutProps) {
                 </Link>
                 
                 {/* Tooltip */}
-                <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 ml-1">
+                <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                   {item.tooltip}
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
                 </div>
               </div>
             );
@@ -86,16 +87,16 @@ export function ModernLayout({ children }: ModernLayoutProps) {
         </div>
 
         {/* Bottom Section - Fixed */}
-        <div className="flex-shrink-0 border-t border-gray-100 p-2 space-y-1">
+        <div className="flex-shrink-0 border-t border-gray-100 p-3 space-y-2 bg-gradient-to-t from-white to-gray-50">
           {/* Settings */}
           <div className="relative group">
             <Link
               to="/profile"
               className={cn(
-                "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200",
+                "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110",
                 location.pathname === '/profile' 
-                  ? "bg-orange-500 text-white shadow-md" 
-                  : "bg-gray-50 text-gray-600 hover:bg-orange-50 hover:text-orange-600"
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-200" 
+                  : "bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600 shadow-sm border border-gray-100"
               )}
               title="Settings"
             >
@@ -103,8 +104,9 @@ export function ModernLayout({ children }: ModernLayoutProps) {
             </Link>
             
             {/* Tooltip */}
-            <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 ml-1">
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
               Settings
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
             </div>
           </div>
 
@@ -113,20 +115,21 @@ export function ModernLayout({ children }: ModernLayoutProps) {
             <div className="relative group">
               <Link
                 to="/profile"
-                className="w-10 h-10 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-orange-400 transition-all duration-200 block"
+                className="w-10 h-10 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-orange-400 transition-all duration-300 block transform hover:scale-110 shadow-sm"
                 title="Profile"
               >
                 <Avatar className="w-full h-full">
                   <AvatarImage src={profile?.avatar_url || ''} />
-                  <AvatarFallback className="bg-orange-500 text-white text-xs font-semibold">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-sm font-semibold">
                     {getUserName().charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </Link>
               
               {/* Tooltip */}
-              <div className="absolute left-14 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 ml-1">
+              <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                 {getUserName()}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
               </div>
             </div>
           )}
