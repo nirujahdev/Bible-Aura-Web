@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,11 +15,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   BookOpen, Plus, Edit3, Trash2, Search, FileText, 
   Save, Calendar as CalendarIcon, Quote, X, ChevronDown,
-  ChevronLeft, ChevronRight, Menu, Briefcase, PartyPopper,
-  User, MapPin, GraduationCap, Users, Settings, Heart,
-  Star, Filter, Download, Lightbulb, Target, TrendingUp,
-  Clock, Hand as Pray, Sparkles, BarChart3, Book,
-  Copy, Share, Eye, Archive, Pin, Tag
+  ChevronLeft, ChevronRight, Briefcase, PartyPopper,
+  User, MapPin, GraduationCap, Users, Heart,
+  Filter, Clock, Hand as Pray, Sparkles, Book,
+  Copy, Pin, Feather
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
 import type { Json } from "@/integrations/supabase/types";
@@ -59,27 +57,25 @@ interface BibleVerse {
 }
 
 const categories = [
-  { id: 'work', name: 'Work', icon: Briefcase, color: 'bg-blue-500' },
-  { id: 'events', name: 'Events', icon: PartyPopper, color: 'bg-green-500' },
-  { id: 'personal', name: 'Personal', icon: User, color: 'bg-purple-500' },
-  { id: 'trips', name: 'Trips', icon: MapPin, color: 'bg-orange-500' },
-  { id: 'education', name: 'Education', icon: GraduationCap, color: 'bg-indigo-500' },
-  { id: 'social', name: 'Social', icon: Users, color: 'bg-pink-500' },
-  { id: 'prayer', name: 'Prayer', icon: Pray, color: 'bg-rose-500' },
-  { id: 'gratitude', name: 'Gratitude', icon: Heart, color: 'bg-red-500' },
-  { id: 'bible-study', name: 'Bible Study', icon: Book, color: 'bg-amber-500' },
-  { id: 'devotional', name: 'Devotional', icon: Sparkles, color: 'bg-yellow-500' },
+  { id: 'personal', name: 'Personal', icon: User, color: 'bg-orange-100 text-orange-800' },
+  { id: 'prayer', name: 'Prayer', icon: Pray, color: 'bg-orange-200 text-orange-900' },
+  { id: 'gratitude', name: 'Gratitude', icon: Heart, color: 'bg-orange-300 text-orange-900' },
+  { id: 'bible-study', name: 'Bible Study', icon: Book, color: 'bg-orange-400 text-white' },
+  { id: 'devotional', name: 'Devotional', icon: Sparkles, color: 'bg-orange-500 text-white' },
+  { id: 'work', name: 'Work', icon: Briefcase, color: 'bg-orange-600 text-white' },
+  { id: 'events', name: 'Events', icon: PartyPopper, color: 'bg-orange-700 text-white' },
+  { id: 'trips', name: 'Trips', icon: MapPin, color: 'bg-orange-800 text-white' },
 ];
 
 const moods = [
-  { value: "joyful", label: "😊 Joyful", color: "bg-yellow-100 text-yellow-800" },
-  { value: "peaceful", label: "😌 Peaceful", color: "bg-blue-100 text-blue-800" },
-  { value: "grateful", label: "🙏 Grateful", color: "bg-green-100 text-green-800" },
-  { value: "contemplative", label: "🤔 Contemplative", color: "bg-purple-100 text-purple-800" },
-  { value: "hopeful", label: "✨ Hopeful", color: "bg-pink-100 text-pink-800" },
-  { value: "blessed", label: "🙌 Blessed", color: "bg-orange-100 text-orange-800" },
-  { value: "reflective", label: "📝 Reflective", color: "bg-indigo-100 text-indigo-800" },
-  { value: "worship", label: "🎵 Worship", color: "bg-rose-100 text-rose-800" }
+  { value: "joyful", label: "😊 Joyful", color: "bg-orange-50 text-orange-800" },
+  { value: "peaceful", label: "😌 Peaceful", color: "bg-orange-100 text-orange-800" },
+  { value: "grateful", label: "🙏 Grateful", color: "bg-orange-200 text-orange-900" },
+  { value: "contemplative", label: "🤔 Contemplative", color: "bg-orange-300 text-orange-900" },
+  { value: "hopeful", label: "✨ Hopeful", color: "bg-orange-400 text-white" },
+  { value: "blessed", label: "🙌 Blessed", color: "bg-orange-500 text-white" },
+  { value: "reflective", label: "📝 Reflective", color: "bg-orange-600 text-white" },
+  { value: "worship", label: "🎵 Worship", color: "bg-orange-700 text-white" }
 ];
 
 const journalTemplates = [
@@ -172,15 +168,7 @@ const Journal = () => {
   const [chapterVerses, setChapterVerses] = useState<BibleVerse[]>([]);
   const [selectedVerse, setSelectedVerse] = useState<BibleVerse | null>(null);
 
-  // Enhanced features state
-  const [filters, setFilters] = useState({
-    mood: 'all',
-    dateRange: 'all',
-    hasVerse: false,
-    isPinned: false
-  });
   const [sortBy, setSortBy] = useState('newest');
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const languages = [
     { value: 'english', label: 'English (KJV)' },
@@ -196,7 +184,7 @@ const Journal = () => {
 
   useEffect(() => {
     filterEntries();
-  }, [entries, selectedCategory, searchQuery, selectedDate, filters, sortBy]);
+  }, [entries, selectedCategory, searchQuery, selectedDate, sortBy]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -272,19 +260,6 @@ const Journal = () => {
       return entryDate === selectedDateStr;
     });
 
-    // Apply advanced filters
-    if (filters.mood !== 'all') {
-      filtered = filtered.filter(entry => entry.mood === filters.mood);
-    }
-
-    if (filters.hasVerse) {
-      filtered = filtered.filter(entry => entry.verse_text);
-    }
-
-    if (filters.isPinned) {
-      filtered = filtered.filter(entry => entry.is_pinned);
-    }
-
     // Apply sorting
     switch (sortBy) {
       case 'oldest':
@@ -325,12 +300,11 @@ const Journal = () => {
         verse_text: selectedVerse?.text || null,
         entry_date: selectedDate.toISOString().split('T')[0],
         updated_at: new Date().toISOString(),
-        // Store additional data as JSON in content for now
         metadata: JSON.stringify({
           prayer_requests: prayerRequests.filter(p => p.trim()),
           gratitude_items: gratitudeItems.filter(g => g.trim()),
           template_used: selectedTemplate
-        })
+        }) as any
       };
 
       if (editingEntry) {
@@ -434,7 +408,6 @@ const Journal = () => {
       setEntryCategory(entry.category || 'personal');
       setEntryMood(entry.mood || "");
       
-      // Initialize with empty values for now
       setPrayerRequests([]);
       setGratitudeItems([]);
       setSelectedTemplate(null);
@@ -486,45 +459,6 @@ const Journal = () => {
     setGratitudeItems([]);
   };
 
-  const exportEntries = () => {
-    const dataStr = JSON.stringify(entries, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `bible-aura-journal-${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast({
-      title: "Exported successfully",
-      description: "Your journal entries have been exported",
-    });
-  };
-
-  const getJournalStats = () => {
-    const thisMonth = entries.filter(entry => {
-      const entryDate = new Date(entry.created_at);
-      const now = new Date();
-      return entryDate.getMonth() === now.getMonth() && entryDate.getFullYear() === now.getFullYear();
-    });
-
-    const withVerses = entries.filter(entry => entry.verse_text).length;
-    const totalWords = entries.reduce((sum, entry) => sum + entry.content.split(' ').length, 0);
-
-    return {
-      total: entries.length,
-      thisMonth: thisMonth.length,
-      withVerses,
-      totalWords,
-      categories: categories.map(cat => ({
-        ...cat,
-        count: entries.filter(e => (e.category || 'personal') === cat.id).length
-      })).filter(cat => cat.count > 0)
-    };
-  };
-
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -556,17 +490,15 @@ const Journal = () => {
 
   const getMoodColor = (mood: string) => {
     const moodData = moods.find(m => m.value === mood);
-    return moodData ? moodData.color : 'bg-gray-100 text-gray-800';
+    return moodData ? moodData.color : 'bg-orange-50 text-orange-800';
   };
-
-  const stats = getJournalStats();
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-sm">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-sm border-orange-200">
           <CardContent className="p-8 text-center">
-            <FileText className="h-16 w-16 mx-auto mb-4 text-purple-500" />
+            <Feather className="h-16 w-16 mx-auto mb-4 text-orange-500" />
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Sign In Required</h2>
             <p className="text-gray-600">
               Please sign in to access your spiritual journal.
@@ -578,70 +510,72 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-
-
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
       <div className="flex h-[calc(100vh-120px)]">
         {/* Enhanced Sidebar */}
-        <div className="w-80 bg-white/95 backdrop-blur-sm border-r border-gray-200 flex flex-col">
-          {/* Quick Stats */}
-          <div className="p-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
-            <h3 className="font-semibold mb-3">Journal Stats</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-purple-100">Total Entries</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{stats.thisMonth}</div>
-                <div className="text-purple-100">This Month</div>
+        <div className="w-80 bg-white/95 backdrop-blur-sm border-r border-orange-200 flex flex-col">
+          {/* Header */}
+          <div className="p-6 bg-gradient-to-r from-orange-500 to-amber-600 text-white">
+            <div className="flex items-center gap-3 mb-4">
+              <Feather className="h-8 w-8 text-orange-100" />
+              <div>
+                <h2 className="text-xl font-bold">My Journal</h2>
+                <p className="text-orange-100 text-sm">Capture your spiritual journey</p>
               </div>
             </div>
+            <Button
+              onClick={() => openEntryDialog()}
+              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
+              size="lg"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Entry
+            </Button>
           </div>
 
           {/* Navigation Tabs */}
           <Tabs value={activeView} onValueChange={setActiveView} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 m-4 mb-0">
-              <TabsTrigger value="entries" className="text-xs">
-                <FileText className="h-4 w-4 mr-1" />
+            <TabsList className="grid w-full grid-cols-2 m-4 mb-0">
+              <TabsTrigger value="entries" className="text-sm">
+                <FileText className="h-4 w-4 mr-2" />
                 Entries
               </TabsTrigger>
-              <TabsTrigger value="calendar" className="text-xs">
-                <CalendarIcon className="h-4 w-4 mr-1" />
+              <TabsTrigger value="calendar" className="text-sm">
+                <CalendarIcon className="h-4 w-4 mr-2" />
                 Calendar
-              </TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs">
-                <BarChart3 className="h-4 w-4 mr-1" />
-                Insights
               </TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-auto">
               <TabsContent value="entries" className="p-4 mt-0">
-                {/* Search and Filters */}
                 <div className="space-y-4">
+                  {/* Search */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search entries..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 border-orange-200 focus:border-orange-400"
                     />
                   </div>
 
                   {/* Categories */}
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Categories</h4>
+                    <h4 className="text-sm font-medium mb-3 text-gray-700">Categories</h4>
                     <div className="space-y-1">
                       <Button
                         variant={selectedCategory === 'all' ? "default" : "ghost"}
-                        className="w-full justify-start h-9 text-sm"
+                        className={`w-full justify-start h-9 text-sm ${
+                          selectedCategory === 'all' 
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                            : 'hover:bg-orange-50'
+                        }`}
                         onClick={() => setSelectedCategory('all')}
                       >
                         <FileText className="h-4 w-4 mr-3" />
                         All Entries
-                        <Badge variant="secondary" className="ml-auto">
+                        <Badge variant="secondary" className="ml-auto bg-orange-100 text-orange-800">
                           {entries.length}
                         </Badge>
                       </Button>
@@ -656,14 +590,18 @@ const Journal = () => {
                           <Button
                             key={category.id}
                             variant={selectedCategory === category.id ? "default" : "ghost"}
-                            className="w-full justify-between h-9 text-sm"
+                            className={`w-full justify-between h-9 text-sm ${
+                              selectedCategory === category.id 
+                                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                                : 'hover:bg-orange-50'
+                            }`}
                             onClick={() => setSelectedCategory(category.id)}
                           >
                             <div className="flex items-center">
                               <Icon className="h-4 w-4 mr-3" />
                               {category.name}
                             </div>
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
                               {entryCount}
                             </Badge>
                           </Button>
@@ -672,9 +610,9 @@ const Journal = () => {
                     </div>
                   </div>
 
-                  {/* Quick Templates */}
+                  {/* Templates */}
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Quick Start</h4>
+                    <h4 className="text-sm font-medium mb-3 text-gray-700">Templates</h4>
                     <div className="grid grid-cols-2 gap-2">
                       {journalTemplates.map((template) => (
                         <Button
@@ -682,10 +620,10 @@ const Journal = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => openEntryDialog(undefined, template.id)}
-                          className="flex flex-col items-center p-3 h-auto"
+                          className="flex flex-col items-center p-3 h-auto border-orange-200 hover:bg-orange-50 hover:border-orange-300"
                         >
                           <span className="text-lg mb-1">{template.icon}</span>
-                          <span className="text-xs">{template.name}</span>
+                          <span className="text-xs text-center">{template.name}</span>
                         </Button>
                       ))}
                     </div>
@@ -703,7 +641,7 @@ const Journal = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-7 w-7 hover:bg-orange-100"
                         onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
                       >
                         <ChevronLeft className="h-4 w-4" />
@@ -711,7 +649,7 @@ const Journal = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-7 w-7 hover:bg-orange-100"
                         onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -731,7 +669,7 @@ const Journal = () => {
                     }}
                     modifiersStyles={{
                       hasEntry: { 
-                        backgroundColor: '#8b5cf6', 
+                        backgroundColor: '#f97316', 
                         color: 'white',
                         borderRadius: '50%'
                       }
@@ -739,59 +677,12 @@ const Journal = () => {
                   />
                 </div>
               </TabsContent>
-
-              <TabsContent value="insights" className="p-4 mt-0">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-3">Writing Statistics</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Total Words</span>
-                        <span className="font-semibold">{stats.totalWords.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">With Bible Verses</span>
-                        <span className="font-semibold">{stats.withVerses}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">This Month</span>
-                        <span className="font-semibold">{stats.thisMonth}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-3">Categories</h4>
-                    <div className="space-y-2">
-                      {stats.categories.map((category) => {
-                        const Icon = category.icon;
-                        const percentage = (category.count / stats.total) * 100;
-                        
-                        return (
-                          <div key={category.id} className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Icon className="h-4 w-4" />
-                                <span className="text-sm">{category.name}</span>
-                              </div>
-                              <span className="text-sm font-medium">{category.count}</span>
-                            </div>
-                            <Progress value={percentage} className="h-2" />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
             </div>
           </Tabs>
         </div>
 
         {/* Entries List */}
-        <div className="w-96 bg-gray-50/80 backdrop-blur-sm border-r border-gray-200 overflow-y-auto">
+        <div className="w-96 bg-orange-50/50 backdrop-blur-sm border-r border-orange-200 overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -803,27 +694,17 @@ const Journal = () => {
                 </p>
               </div>
               
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewMode(viewMode === 'card' ? 'list' : 'card')}
-                >
-                  {viewMode === 'card' ? <Menu /> : <Eye />}
-                </Button>
-                
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-32 h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="oldest">Oldest</SelectItem>
-                    <SelectItem value="alphabetical">A-Z</SelectItem>
-                    <SelectItem value="category">Category</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-32 h-8 border-orange-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="oldest">Oldest</SelectItem>
+                  <SelectItem value="alphabetical">A-Z</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-3">
@@ -835,30 +716,30 @@ const Journal = () => {
                   return (
                     <Card
                       key={entry.id}
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        selectedEntry?.id === entry.id ? 'ring-2 ring-purple-500 bg-purple-50' : ''
-                      } ${entry.is_pinned ? 'border-l-4 border-l-amber-400' : ''}`}
+                      className={`cursor-pointer transition-all hover:shadow-md border-orange-200 ${
+                        selectedEntry?.id === entry.id ? 'ring-2 ring-orange-500 bg-orange-50' : 'hover:bg-orange-25'
+                      } ${entry.is_pinned ? 'border-l-4 border-l-orange-400' : ''}`}
                       onClick={() => setSelectedEntry(entry)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="text-center min-w-[40px]">
-                            <div className="text-xl font-bold text-gray-800">
+                            <div className="text-xl font-bold text-orange-600">
                               {formatDay(new Date(entry.created_at))}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-orange-500">
                               {formatDayName(new Date(entry.created_at)).slice(0, 3)}
                             </div>
                           </div>
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <Icon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                              <Icon className="h-4 w-4 text-orange-500 flex-shrink-0" />
                               <h3 className="font-medium text-gray-800 text-sm truncate">
                                 {entry.title}
                               </h3>
                               {entry.is_pinned && (
-                                <Pin className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                                <Pin className="h-3 w-3 text-orange-500 flex-shrink-0" />
                               )}
                             </div>
                             
@@ -868,7 +749,7 @@ const Journal = () => {
                             
                             <div className="flex items-center gap-2 flex-wrap">
                               {category && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
                                   {category.name}
                                 </Badge>
                               )}
@@ -880,7 +761,7 @@ const Journal = () => {
                               )}
                               
                               {entry.verse_text && (
-                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
                                   <Book className="h-3 w-3 mr-1" />
                                   Verse
                                 </Badge>
@@ -894,12 +775,12 @@ const Journal = () => {
                 })
               ) : (
                 <div className="text-center py-12">
-                  <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-orange-300" />
                   <p className="text-gray-500 text-sm mb-4">No entries for this date</p>
                   <Button
                     size="sm"
                     onClick={() => openEntryDialog()}
-                    className="bg-purple-600 hover:bg-purple-700"
+                    className="bg-orange-500 hover:bg-orange-600"
                   >
                     Create Entry
                   </Button>
@@ -920,7 +801,7 @@ const Journal = () => {
                       {selectedEntry.title}
                     </h1>
                     {selectedEntry.is_pinned && (
-                      <Pin className="h-5 w-5 text-amber-500" />
+                      <Pin className="h-5 w-5 text-orange-500" />
                     )}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -935,8 +816,9 @@ const Journal = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => togglePin(selectedEntry)}
+                    className="hover:bg-orange-50"
                   >
-                    <Pin className={`h-4 w-4 ${selectedEntry.is_pinned ? 'text-amber-500' : ''}`} />
+                    <Pin className={`h-4 w-4 ${selectedEntry.is_pinned ? 'text-orange-500' : ''}`} />
                   </Button>
                   
                   <Button
@@ -946,6 +828,7 @@ const Journal = () => {
                       navigator.clipboard.writeText(`${selectedEntry.title}\n\n${selectedEntry.content}`);
                       toast({ title: "Copied!", description: "Entry copied to clipboard" });
                     }}
+                    className="hover:bg-orange-50"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -954,6 +837,7 @@ const Journal = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => openEntryDialog(selectedEntry)}
+                    className="border-orange-200 hover:bg-orange-50"
                   >
                     <Edit3 className="h-4 w-4 mr-2" />
                     Edit
@@ -963,7 +847,7 @@ const Journal = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleDeleteEntry(selectedEntry.id)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
@@ -974,7 +858,7 @@ const Journal = () => {
               {/* Entry Metadata */}
               <div className="flex items-center gap-4 mb-6">
                 {selectedEntry.category && (
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
                     {categories.find(cat => cat.id === selectedEntry.category)?.name || selectedEntry.category}
                   </Badge>
                 )}
@@ -988,14 +872,14 @@ const Journal = () => {
 
               {/* Bible Verse */}
               {selectedEntry.verse_text && (
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-6 mb-6 rounded-r-xl">
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-l-4 border-orange-500 p-6 mb-6 rounded-r-xl">
                   <div className="flex items-start gap-3">
-                    <Quote className="h-5 w-5 text-purple-500 mt-1 flex-shrink-0" />
+                    <Quote className="h-5 w-5 text-orange-500 mt-1 flex-shrink-0" />
                     <div>
                       <p className="text-gray-700 italic mb-3 text-lg leading-relaxed">
                         "{selectedEntry.verse_text}"
                       </p>
-                      <p className="text-sm font-semibold text-purple-600">
+                      <p className="text-sm font-semibold text-orange-600">
                         — {selectedEntry.verse_reference}
                       </p>
                     </div>
@@ -1009,13 +893,11 @@ const Journal = () => {
                   {selectedEntry.content}
                 </div>
               </div>
-
-
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md">
-                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <Feather className="h-16 w-16 mx-auto mb-4 text-orange-300" />
                 <h3 className="text-xl font-medium text-gray-600 mb-2">
                   Your Spiritual Journey Awaits
                 </h3>
@@ -1025,7 +907,7 @@ const Journal = () => {
                 <div className="flex gap-3 justify-center">
                   <Button 
                     onClick={() => openEntryDialog()} 
-                    className="bg-purple-600 hover:bg-purple-700"
+                    className="bg-orange-500 hover:bg-orange-600"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     New Entry
@@ -1033,6 +915,7 @@ const Journal = () => {
                   <Button 
                     variant="outline" 
                     onClick={() => openEntryDialog(undefined, 'daily-reflection')}
+                    className="border-orange-200 hover:bg-orange-50"
                   >
                     📝 Daily Reflection
                   </Button>
@@ -1047,7 +930,7 @@ const Journal = () => {
       <Dialog open={showEntryDialog} onOpenChange={(open) => !open && closeEntryDialog()}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2 text-orange-700">
               {selectedTemplate && (
                 <span className="text-2xl">
                   {journalTemplates.find(t => t.id === selectedTemplate)?.icon}
@@ -1072,7 +955,7 @@ const Journal = () => {
                         setEntryTitle(template.name);
                         setEntryContent(template.prompts.join('\n\n'));
                       }}
-                      className="flex flex-col items-center p-4 h-auto"
+                      className="flex flex-col items-center p-4 h-auto border-orange-200 hover:bg-orange-50"
                     >
                       <span className="text-2xl mb-2">{template.icon}</span>
                       <span className="font-medium">{template.name}</span>
@@ -1090,7 +973,7 @@ const Journal = () => {
                 value={entryTitle}
                 onChange={(e) => setEntryTitle(e.target.value)}
                 placeholder="What's on your heart today?"
-                className="h-11"
+                className="h-11 border-orange-200 focus:border-orange-400"
               />
             </div>
 
@@ -1099,7 +982,7 @@ const Journal = () => {
               <div>
                 <label className="block text-sm font-medium mb-2">Category</label>
                 <Select value={entryCategory} onValueChange={setEntryCategory}>
-                  <SelectTrigger className="h-11">
+                  <SelectTrigger className="h-11 border-orange-200">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1122,7 +1005,7 @@ const Journal = () => {
               <div>
                 <label className="block text-sm font-medium mb-2">Mood (optional)</label>
                 <Select value={entryMood} onValueChange={setEntryMood}>
-                  <SelectTrigger className="h-11">
+                  <SelectTrigger className="h-11 border-orange-200">
                     <SelectValue placeholder="How are you feeling?" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1145,6 +1028,7 @@ const Journal = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowVerseSelector(!showVerseSelector)}
+                  className="border-orange-200 hover:bg-orange-50"
                 >
                   <BookOpen className="h-4 w-4 mr-2" />
                   {selectedVerse ? 'Change Verse' : 'Add Verse'}
@@ -1153,9 +1037,9 @@ const Journal = () => {
               </div>
 
               {selectedVerse && (
-                <div className="bg-purple-50 rounded-lg p-4 mb-3 border-l-4 border-purple-400">
+                <div className="bg-orange-50 rounded-lg p-4 mb-3 border-l-4 border-orange-400">
                   <p className="text-sm italic text-gray-700 mb-2">"{selectedVerse.text}"</p>
-                  <p className="text-xs font-medium text-purple-600">
+                  <p className="text-xs font-medium text-orange-600">
                     — {selectedVerse.book_name} {selectedVerse.chapter}:{selectedVerse.verse}
                   </p>
                   <Button
@@ -1171,7 +1055,7 @@ const Journal = () => {
               )}
 
               {showVerseSelector && (
-                <Card className="p-4 border">
+                <Card className="p-4 border border-orange-200">
                   <div className="space-y-4">
                     {/* Language Selection */}
                     <div>
@@ -1234,7 +1118,7 @@ const Journal = () => {
                     {chapterVerses.length > 0 && (
                       <div>
                         <label className="block text-xs font-medium mb-2">Select Verse</label>
-                        <div className="max-h-40 overflow-y-auto border rounded">
+                        <div className="max-h-40 overflow-y-auto border rounded border-orange-200">
                           {chapterVerses.map(verse => (
                             <button
                               key={verse.id}
@@ -1242,9 +1126,9 @@ const Journal = () => {
                                 setSelectedVerse(verse);
                                 setShowVerseSelector(false);
                               }}
-                              className="w-full text-left p-2 hover:bg-gray-50 border-b last:border-b-0 text-xs"
+                              className="w-full text-left p-2 hover:bg-orange-50 border-b last:border-b-0 text-xs"
                             >
-                              <span className="font-medium text-purple-600">{verse.verse}.</span> {verse.text}
+                              <span className="font-medium text-orange-600">{verse.verse}.</span> {verse.text}
                             </button>
                           ))}
                         </div>
@@ -1270,6 +1154,7 @@ const Journal = () => {
                           setPrayerRequests(updated);
                         }}
                         placeholder="Enter prayer request..."
+                        className="border-orange-200"
                       />
                       <Button
                         variant="ghost"
@@ -1287,6 +1172,7 @@ const Journal = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setPrayerRequests([...prayerRequests, ''])}
+                    className="border-orange-200 hover:bg-orange-50"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Prayer Request
@@ -1309,6 +1195,7 @@ const Journal = () => {
                           setGratitudeItems(updated);
                         }}
                         placeholder="Something you're grateful for..."
+                        className="border-orange-200"
                       />
                       <Button
                         variant="ghost"
@@ -1326,6 +1213,7 @@ const Journal = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setGratitudeItems([...gratitudeItems, ''])}
+                    className="border-orange-200 hover:bg-orange-50"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Gratitude Item
@@ -1341,20 +1229,20 @@ const Journal = () => {
                 value={entryContent}
                 onChange={(e) => setEntryContent(e.target.value)}
                 placeholder="Share your thoughts, reflections, prayers, or experiences..."
-                className="min-h-[300px] resize-none"
+                className="min-h-[300px] resize-none border-orange-200 focus:border-orange-400"
                 rows={12}
               />
             </div>
 
             {/* Actions */}
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={closeEntryDialog}>
+              <Button variant="outline" onClick={closeEntryDialog} className="border-gray-300">
                 Cancel
               </Button>
               <Button 
                 onClick={handleSaveEntry}
                 disabled={loading || !entryTitle.trim() || !entryContent.trim()}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-orange-500 hover:bg-orange-600"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? 'Saving...' : editingEntry ? 'Update Entry' : 'Save Entry'}
