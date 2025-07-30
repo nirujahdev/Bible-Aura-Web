@@ -24,7 +24,7 @@ const BibleQA = lazy(() => import("./pages/BibleQA"));
 const BibleCharacters = lazy(() => import("./pages/BibleCharacters"));
 const ParablesStudy = lazy(() => import("./pages/ParablesStudy"));
 const TopicalStudy = lazy(() => import("./pages/TopicalStudy"));
-const SermonLibrary = lazy(() => import("./pages/SermonLibrary"));
+const StudyHub = lazy(() => import("./pages/StudyHub"));
 const Sermons = lazy(() => import("./pages/Sermons"));
 const Songs = lazy(() => import("./pages/Songs"));
 const Favorites = lazy(() => import("./pages/Favorites"));
@@ -103,10 +103,18 @@ function AppLayout() {
               </ProtectedRoute>
             } />
             
+            <Route path="/study" element={
+              <ProtectedRoute>
+                <ModernLayout>
+                  <StudyHub />
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
             <Route path="/bible-qa" element={
               <ProtectedRoute>
                 <ModernLayout>
-                  <BibleQA />
+                  <StudyHub />
                 </ModernLayout>
               </ProtectedRoute>
             } />
@@ -130,7 +138,7 @@ function AppLayout() {
             <Route path="/topical-study" element={
               <ProtectedRoute>
                 <ModernLayout>
-                  <TopicalStudy />
+                  <StudyHub />
                 </ModernLayout>
               </ProtectedRoute>
             } />
@@ -138,7 +146,7 @@ function AppLayout() {
             <Route path="/sermon-library" element={
               <ProtectedRoute>
                 <ModernLayout>
-                  <SermonLibrary />
+                  <StudyHub />
                 </ModernLayout>
               </ProtectedRoute>
             } />
@@ -146,7 +154,7 @@ function AppLayout() {
             <Route path="/parables-study" element={
               <ProtectedRoute>
                 <ModernLayout>
-                  <ParablesStudy />
+                  <StudyHub />
                 </ModernLayout>
               </ProtectedRoute>
             } />

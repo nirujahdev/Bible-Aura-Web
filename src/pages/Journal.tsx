@@ -579,42 +579,7 @@ const Journal = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800">
-      {/* Enhanced Header */}
-      <div className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-20">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <FileText className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Spiritual Journal</h1>
-                <p className="text-purple-100 text-sm">Record your faith journey</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={exportEntries}
-                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              
-              <Button
-                onClick={() => openEntryDialog()}
-                className="bg-white text-purple-600 hover:bg-white/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Entry
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       <div className="flex h-[calc(100vh-120px)]">
         {/* Enhanced Sidebar */}
@@ -1045,49 +1010,7 @@ const Journal = () => {
                 </div>
               </div>
 
-              {/* Additional Metadata */}
-              {selectedEntry.metadata && (
-                <div className="border-t border-gray-200 pt-6">
-                  {(() => {
-                    try {
-                      const metadata = JSON.parse(selectedEntry.metadata);
-                      return (
-                        <div className="space-y-4">
-                          {metadata.prayer_requests && metadata.prayer_requests.length > 0 && (
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                <Pray className="h-4 w-4" />
-                                Prayer Requests
-                              </h4>
-                              <ul className="list-disc list-inside text-gray-600 space-y-1">
-                                {metadata.prayer_requests.map((request: string, index: number) => (
-                                  <li key={index}>{request}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          
-                          {metadata.gratitude_items && metadata.gratitude_items.length > 0 && (
-                            <div>
-                              <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                <Heart className="h-4 w-4" />
-                                Gratitude
-                              </h4>
-                              <ul className="list-disc list-inside text-gray-600 space-y-1">
-                                {metadata.gratitude_items.map((item: string, index: number) => (
-                                  <li key={index}>{item}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    } catch (e) {
-                      return null;
-                    }
-                  })()}
-                </div>
-              )}
+
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">

@@ -26,11 +26,8 @@ const sidebarItems: SidebarItem[] = [
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
   { name: 'Characters', href: '/bible-characters', icon: Users, tooltip: 'Bible Characters' },
+  { name: 'Study Hub', href: '/study', icon: BookOpen, tooltip: 'Study Hub - Q&A, Sermons, Parables & Topics' },
   { name: 'Sermons', href: '/sermons', icon: Headphones, tooltip: 'Sermons' },
-  { name: 'Q&A', href: '/bible-qa', icon: HelpCircle, tooltip: 'Bible Q&A' },
-  { name: 'Topical', href: '/topical-study', icon: Search, tooltip: 'Topical Study' },
-  { name: 'Sermon Library', href: '/sermon-library', icon: Mic, tooltip: 'Sermon Library' },
-  { name: 'Parables', href: '/parables-study', icon: TreePine, tooltip: 'Parables Study' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
   { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
 ];

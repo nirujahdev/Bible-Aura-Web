@@ -441,37 +441,7 @@ export default function Bible() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-      {/* Enhanced Header */}
-      <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white border-b sticky top-0 z-20 shadow-lg">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Book className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold">Bible Study</h1>
-                <p className="text-orange-100 text-sm">Discover God's Word</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                {readingProgress.toFixed(1)}% Complete
-              </Badge>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={getRandomVerse}
-                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              >
-                <Shuffle className="h-4 w-4 mr-2" />
-                Random
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       <div className="flex h-[calc(100vh-120px)]">
         {/* Enhanced Sidebar */}
