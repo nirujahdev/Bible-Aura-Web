@@ -127,10 +127,10 @@ export default function Auth() {
     console.log('Auth state:', { user: !!user, loading, isMagicLinkAuth });
     
     if (!loading && user) {
-      console.log('User authenticated successfully, redirecting to dashboard');
+      console.log('User authenticated successfully, redirecting to chat');
       // Add a small delay to ensure the auth state is fully stable
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
+        navigate('/chat', { replace: true });
       }, 100);
     } else if (!loading && isMagicLinkAuth && !user) {
       // Magic link detected but authentication not complete
@@ -168,9 +168,9 @@ export default function Auth() {
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Auto-redirect to dashboard on successful login
+        // Auto-redirect to chat on successful login
         setAuthError(null);
-        navigate('/dashboard', { replace: true });
+        navigate('/chat', { replace: true });
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -205,9 +205,9 @@ export default function Auth() {
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Auto-redirect to dashboard on successful signup
+        // Auto-redirect to chat on successful signup
         setAuthError(null);
-        navigate('/dashboard', { replace: true });
+        navigate('/chat', { replace: true });
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -628,8 +628,8 @@ export default function Auth() {
                           asChild 
                           className="w-full bg-green-600 hover:bg-green-700 text-white"
                         >
-                          <Link to="/dashboard">
-                            Go to Dashboard
+                          <Link to="/chat">
+                            Go to AI Chat
                           </Link>
                         </Button>
                       </div>

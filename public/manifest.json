@@ -2,7 +2,7 @@
   "name": "Bible Aura - AI-Powered Biblical Insights",
   "short_name": "Bible Aura",
   "description": "Experience the Bible with AI-powered insights, daily verses, spiritual journaling, and comprehensive Bible study tools.",
-  "start_url": "/dashboard",
+  "start_url": "/chat",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#f97316",
@@ -17,7 +17,7 @@
       "sizes": "1280x720",
       "type": "image/png",
       "platform": "wide",
-      "label": "Bible Aura Dashboard on Desktop"
+      "label": "Bible Aura AI Chat on Desktop"
     },
     {
       "src": "/screenshot-mobile.png",
@@ -70,7 +70,7 @@
       "name": "Daily Verse",
       "short_name": "Daily Verse",
       "description": "View today's AI-generated daily verse and reflection",
-      "url": "/dashboard#daily-verse",
+      "url": "/chat#daily-verse",
       "icons": [
         {
           "src": "/✦Bible Aura.svg",

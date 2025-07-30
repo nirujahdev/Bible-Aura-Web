@@ -3,7 +3,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
-import { SidebarProvider } from "./components/ui/sidebar";
 import { Sparkles, Star, Heart } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { queryClient } from "./lib/queryClient";
@@ -12,7 +11,7 @@ import LoadingScreen from "./components/LoadingScreen";
 
 // Lazy load all page components for better performance
 const Auth = lazy(() => import("./pages/Auth"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Home = lazy(() => import("./pages/Home"));
 const Bible = lazy(() => import("./pages/Bible"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Journal = lazy(() => import("./pages/Journal"));
@@ -35,29 +34,42 @@ const Careers = lazy(() => import("./pages/Careers"));
 
 
 // Component imports (keep these as regular imports since they're critical)
-import { AppSidebar } from "./components/AppSidebar";
+import { ModernSidebar as AppSidebar } from "./components/ModernSidebar";
 import { BibleApiTest } from "./components/BibleApiTest";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Component to handle layout based on route
 function AppLayout() {
   const location = useLocation();
-  
-  // Routes that should display without sidebar (full-screen)
-  const fullScreenRoutes = ["/", "/auth", "/about", "/contact", "/terms", "/privacy", "/pricing", "/careers"];
+
+  // Define routes that should use full-screen layout (no sidebar)
+  const fullScreenRoutes = [
+    '/',
+    '/auth',
+    '/about', 
+    '/contact',
+    '/terms',
+    '/privacy',
+    '/pricing',
+    '/funding',
+    '/careers'
+  ];
+
   const isFullScreen = fullScreenRoutes.includes(location.pathname);
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-primary/10 to-transparent rounded-full"></div>
-        <div className="absolute top-1/3 -left-8 w-32 h-32 bg-gradient-to-tr from-orange-200/20 to-transparent rounded-full"></div>
-        <div className="absolute bottom-1/4 right-1/6 w-20 h-20 bg-gradient-to-bl from-amber-200/15 to-transparent rounded-full"></div>
-        
-        <Sparkles className="h-4 w-4 text-primary/30 absolute top-20 left-1/4" />
-        <Star className="h-3 w-3 text-orange-400/40 absolute top-1/2 right-1/3" />
-        <Heart className="h-5 w-5 text-white/50 absolute bottom-6 right-8" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Background decoration with performance optimization */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-orange-50 pointer-events-none">
+        <div className="absolute top-20 left-20 text-blue-200/20">
+          <Sparkles className="h-16 w-16" />
+        </div>
+        <div className="absolute top-40 right-32 text-orange-200/20">
+          <Star className="h-12 w-12" />
+        </div>
+        <div className="absolute bottom-32 left-1/3 text-pink-200/20">
+          <Heart className="h-14 w-14" />
+        </div>
+
       </div>
       
       {isFullScreen ? (
@@ -65,7 +77,7 @@ function AppLayout() {
         <main className="relative z-10">
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
-              <Route path="/" element={<Navigate to="/chat" replace />} />
+              <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
@@ -79,91 +91,91 @@ function AppLayout() {
           </Suspense>
         </main>
       ) : (
-        // Sidebar layout for app pages
-        <SidebarProvider>
-          <div className="flex h-screen relative z-10 bg-gray-50">
-            <AppSidebar />
-            <main className="flex-1 overflow-auto bg-transparent w-full">
-              <div className="w-full min-h-full relative">
-                <Suspense fallback={<LoadingScreen />}>
-                  <Routes>
-
-                    <Route path="/bible-api-test" element={<BibleApiTest />} />
-                    
-                    {/* Protected Routes */}
-                    <Route path="/dashboard" element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/bible" element={
-                      <ProtectedRoute>
-                        <Bible />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/chat" element={
-                      <ProtectedRoute>
-                        <Chat />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/journal" element={
-                      <ProtectedRoute>
-                        <Journal />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/bible-qa" element={
-                      <ProtectedRoute>
-                        <BibleQA />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/bible-characters" element={
-                      <ProtectedRoute>
-                        <BibleCharacters />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/parables" element={
-                      <ProtectedRoute>
-                        <ParablesStudy />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/topical-study" element={
-                      <ProtectedRoute>
-                        <TopicalStudy />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/sermon-library" element={
-                      <ProtectedRoute>
-                        <SermonLibrary />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/sermons" element={
-                      <ProtectedRoute>
-                        <Sermons />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/songs" element={
-                      <ProtectedRoute>
-                        <Songs />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/favorites" element={
-                      <ProtectedRoute>
-                        <Favorites />
-                      </ProtectedRoute>
-                    } />
-                    
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </div>
-          </main>
+        // Modern sidebar layout for app pages
+        <div className="h-screen">
+          <Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              {/* Modern Sidebar handles the main layout for chat route */}
+              <Route path="/chat" element={
+                <ProtectedRoute>
+                  <AppSidebar />
+                </ProtectedRoute>
+              } />
+              
+              {/* Other routes use individual page layouts */}
+              <Route path="/bible-api-test" element={<BibleApiTest />} />
+              
+              <Route path="/bible" element={
+                <ProtectedRoute>
+                  <Bible />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/songs" element={
+                <ProtectedRoute>
+                  <Songs />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/bible-qa" element={
+                <ProtectedRoute>
+                  <BibleQA />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/bible-characters" element={
+                <ProtectedRoute>
+                  <BibleCharacters />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/sermons" element={
+                <ProtectedRoute>
+                  <Sermons />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/topical-study" element={
+                <ProtectedRoute>
+                  <TopicalStudy />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/sermon-library" element={
+                <ProtectedRoute>
+                  <SermonLibrary />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/parables-study" element={
+                <ProtectedRoute>
+                  <ParablesStudy />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/favorites" element={
+                <ProtectedRoute>
+                  <Favorites />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/journal" element={
+                <ProtectedRoute>
+                  <Journal />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              
+              {/* Fallback route redirects to chat */}
+              <Route path="*" element={<Navigate to="/chat" replace />} />
+            </Routes>
+          </Suspense>
         </div>
-        </SidebarProvider>
       )}
     </div>
   );

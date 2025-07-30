@@ -5,7 +5,7 @@ const DYNAMIC_CACHE = 'bible-aura-dynamic-v1';
 // Files to cache immediately
 const STATIC_ASSETS = [
   '/',
-  '/dashboard',
+  '/chat',
   '/auth',
   '/bible',
   '/chat',
@@ -363,7 +363,7 @@ self.addEventListener('notificationclick', (event) => {
   
   if (event.action === 'open' || !event.action) {
     event.waitUntil(
-      clients.openWindow('/dashboard')
+      clients.openWindow('/chat')
     );
   }
 });
