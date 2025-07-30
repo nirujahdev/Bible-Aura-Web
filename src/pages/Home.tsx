@@ -149,8 +149,8 @@ const Home = () => {
 
         <div className="relative w-full max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left Side - Content */}
-            <div className="text-center lg:text-left flex flex-col justify-center order-2 lg:order-1">
+            {/* Left Side - Content - Now First on Mobile */}
+            <div className="text-center lg:text-left flex flex-col justify-center order-1">
               {/* Header Icon */}
               <div className="inline-flex items-center justify-center w-14 md:w-16 h-14 md:h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 md:mb-8 animate-bounce mx-auto lg:mx-0">
                 <Sparkles className="h-6 md:h-8 w-6 md:w-8" />
@@ -167,15 +167,15 @@ const Home = () => {
                 Grow deeper in your faith with Bible Aura's AI-powered spiritual tools and biblical insights.
               </p>
 
-              {/* Feature Tags */}
-              <div className="flex flex-wrap gap-2 md:gap-3 justify-center lg:justify-start mb-6 md:mb-8 px-4 md:px-0">
-                <span className="px-3 md:px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-xs md:text-sm font-medium">
+              {/* Feature Tags - Single Line */}
+              <div className="flex flex-nowrap gap-2 md:gap-3 justify-center lg:justify-start mb-6 md:mb-8 px-4 md:px-0 overflow-x-auto">
+                <span className="px-3 md:px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-xs md:text-sm font-medium whitespace-nowrap">
                   ⚡ AI Insights
                 </span>
-                <span className="px-3 md:px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs md:text-sm font-medium">
+                <span className="px-3 md:px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs md:text-sm font-medium whitespace-nowrap">
                   📖 All in one Bible
                 </span>
-                <span className="px-3 md:px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-xs md:text-sm font-medium">
+                <span className="px-3 md:px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-xs md:text-sm font-medium whitespace-nowrap">
                   💬 AI Chat
                 </span>
               </div>
@@ -191,8 +191,8 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right Side - Phone Animation */}
-            <div className="relative flex justify-center order-1 lg:order-2 mb-8 lg:mb-0">
+            {/* Right Side - Phone Animation - Now Second on Mobile */}
+            <div className="relative flex justify-center order-2 mb-8 lg:mb-0">
               {/* Phone Mockup */}
               <div className="relative">
                 {/* Phone Frame */}
@@ -589,7 +589,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Footer - Same as Contact Page */}
+      {/* Footer - Consistent with Contact Page */}
       <footer className="bg-black text-white py-12 md:py-16">
         <div className="w-full px-4 sm:px-6 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center md:text-left">
