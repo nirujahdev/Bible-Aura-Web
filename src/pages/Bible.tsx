@@ -83,8 +83,6 @@ export default function Bible() {
   const [showVerseNumbers, setShowVerseNumbers] = useState(true);
   const [comparisonMode, setComparisonMode] = useState(false);
   const [crossReferences, setCrossReferences] = useState<any[]>([]);
-  const [dailyVerse, setDailyVerse] = useState<BibleVerse | null>(null);
-
   useEffect(() => {
     loadBooks();
     if (user) {
@@ -92,7 +90,6 @@ export default function Bible() {
       loadFavorites();
       loadHighlights();
       loadReadingProgress();
-      loadDailyVerse();
     }
   }, [user, selectedLanguage]);
 
@@ -208,21 +205,7 @@ export default function Bible() {
     }
   };
 
-  const loadDailyVerse = async () => {
-    try {
-      // Get a random verse for daily verse
-      const randomBooks = ['Psalms', 'Proverbs', 'John', 'Romans', 'Philippians'];
-      const randomBook = randomBooks[Math.floor(Math.random() * randomBooks.length)];
-      const randomChapter = Math.floor(Math.random() * 10) + 1;
-      const chapterVerses = await getChapterVerses(randomBook, randomChapter, selectedLanguage);
-      if (chapterVerses.length > 0) {
-        const randomVerse = chapterVerses[Math.floor(Math.random() * chapterVerses.length)];
-        setDailyVerse(randomVerse);
-      }
-    } catch (error) {
-      console.error('Error loading daily verse:', error);
-    }
-  };
+
 
   const updateReadingProgress = async () => {
     if (!user || !selectedBook) return;
@@ -446,17 +429,7 @@ export default function Bible() {
       <div className="flex h-[calc(100vh-120px)]">
         {/* Enhanced Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm">
-          {/* Daily Verse Widget */}
-          {dailyVerse && (
-            <div className="p-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4" />
-                <span className="text-sm font-medium">Verse of the Day</span>
-              </div>
-              <p className="text-sm italic mb-2">"{dailyVerse.text}"</p>
-              <p className="text-xs opacity-90">— {dailyVerse.book_name} {dailyVerse.chapter}:{dailyVerse.verse}</p>
-            </div>
-          )}
+
 
           {/* Reading Progress */}
           <div className="p-4 border-b">

@@ -11,8 +11,9 @@ import LoadingScreen from "./components/LoadingScreen";
 // Lazy load all page components for better performance
 const Auth = lazy(() => import("./pages/Auth"));
 const Home = lazy(() => import("./pages/Home"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Bible = lazy(() => import("./pages/Bible"));
-const Chat = lazy(() => import("./pages/Chat"));
+
 const Journal = lazy(() => import("./pages/Journal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const About = lazy(() => import("./pages/About"));
@@ -77,11 +78,11 @@ function AppLayout() {
         // Modern app layout with sidebar for all app pages
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            {/* Chat is the home page */}
+            {/* Dashboard is the home page */}
             <Route path="/" element={
               <ProtectedRoute>
                 <ModernLayout>
-                  <Chat />
+                  <Dashboard />
                 </ModernLayout>
               </ProtectedRoute>
             } />
@@ -104,6 +105,14 @@ function AppLayout() {
             } />
             
             <Route path="/study" element={
+              <ProtectedRoute>
+                <ModernLayout>
+                  <StudyHub />
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/study-hub" element={
               <ProtectedRoute>
                 <ModernLayout>
                   <StudyHub />

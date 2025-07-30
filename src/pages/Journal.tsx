@@ -563,7 +563,7 @@ const Journal = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-sm">
           <CardContent className="p-8 text-center">
             <FileText className="h-16 w-16 mx-auto mb-4 text-purple-500" />
@@ -578,7 +578,7 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
 
 
       <div className="flex h-[calc(100vh-120px)]">
