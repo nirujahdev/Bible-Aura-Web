@@ -384,104 +384,88 @@ export default function Dashboard() {
     { name: 'Journal', href: '/journal', icon: FileText },
   ];
 
-  const MobileNavigation = () => {
+  // Clean icon sidebar for desktop
+  const IconSidebar = () => {
     const location = useLocation();
-    const [open, setOpen] = useState(false);
 
     return (
-      <div className="lg:hidden">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
+      <div className="hidden lg:flex w-16 bg-gray-50 flex-col items-center py-4 border-r border-gray-200">
+        {/* Logo */}
+        <div className="mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-lg">✦</span>
+          </div>
+        </div>
+
+        {/* Navigation Icons */}
+        <div className="flex flex-col gap-3 mb-auto">
+          <div className="relative group">
             <Button
               variant="ghost"
               size="sm"
-              className="fixed top-4 left-4 z-50 h-12 w-12 p-0 bg-white/95 backdrop-blur-sm border-2 border-orange-500/20 shadow-lg hover:bg-orange-50 rounded-xl"
+              className="w-10 h-10 p-0 bg-white rounded-xl shadow-sm"
+              onClick={() => setShowChat(false)}
             >
-              <div className="relative">
-                <Menu className="h-5 w-5 text-gray-700" />
-                <span className="absolute -top-0.5 -right-0.5 text-xs font-bold text-orange-500">✦</span>
-              </div>
+              <Plus className="h-5 w-5 text-gray-600" />
             </Button>
-          </SheetTrigger>
-          
-          <SheetContent side="left" className="w-[320px] p-0 bg-white">
-            {/* Mobile Header */}
-            <div className="p-6 bg-gradient-to-r from-orange-500 to-purple-600 text-white">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-3">
-                  <span className="text-xl font-bold">✦</span>
-                </div>
-                <h1 className="text-xl font-bold">Bible Aura</h1>
-                <p className="text-sm text-white/80 mt-1">AI Biblical Assistant</p>
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+              New Chat
+            </div>
+          </div>
+
+          {navigationItems.map((item) => (
+            <div key={item.name} className="relative group">
+              <Link
+                to={item.href}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                  location.pathname === item.href 
+                    ? 'bg-orange-500 text-white shadow-lg' 
+                    : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'
+                }`}
+              >
+                <item.icon className="h-5 w-5" />
+              </Link>
+              <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                {item.name}
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* Navigation */}
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <div className="space-y-1">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all ${
-                      location.pathname === item.href 
-                        ? 'bg-orange-50 border-l-4 border-orange-500' 
-                        : ''
-                    }`}
-                  >
-                    <item.icon className={`h-5 w-5 ${
-                      location.pathname === item.href 
-                        ? 'text-orange-500' 
-                        : 'text-gray-600'
-                    }`} />
-                    <span className={`font-medium text-sm ${
-                      location.pathname === item.href 
-                        ? 'text-orange-500' 
-                        : 'text-gray-700'
-                    }`}>
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
+        {/* Bottom Icons */}
+        <div className="flex flex-col gap-3">
+          <div className="relative group">
+            <Link
+              to="/profile"
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-white text-gray-600 hover:bg-gray-100 shadow-sm transition-all"
+            >
+              <Settings className="h-5 w-5" />
+            </Link>
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+              Settings
+            </div>
+          </div>
+
+          {/* User Avatar */}
+          {user && (
+            <div className="relative group">
+              <Link
+                to="/profile"
+                className="w-10 h-10 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-orange-400 transition-all"
+              >
+                <Avatar className="w-full h-full">
+                  <AvatarImage src={profile?.avatar_url} />
+                  <AvatarFallback className="bg-orange-500 text-white text-sm">
+                    {getUserName().charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+              <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                {getUserName()}
               </div>
             </div>
-
-            {/* Mobile Footer */}
-            <div className="p-4 border-t bg-gray-50/50">
-              {user && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-orange-500 text-white">
-                        {getUserName().charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm text-gray-800">
-                        {getUserName()}
-                      </div>
-                      <div className="text-xs text-gray-500">{user?.email}</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link to="/profile">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Settings className="h-4 w-4 mr-1" />
-                        Profile
-                      </Button>
-                    </Link>
-                    <Button variant="outline" size="sm" className="w-full text-red-600">
-                      <LogOut className="h-4 w-4 mr-1" />
-                      Sign Out
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+          )}
+        </div>
       </div>
     );
   };
@@ -491,110 +475,62 @@ export default function Dashboard() {
   if (!showChat) {
     // Welcome screen with chat integration
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
-        <MobileNavigation />
+      <div className="min-h-screen bg-white flex">
+        <IconSidebar />
         
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          {/* Mobile padding for menu button */}
-          <div className="lg:hidden h-16"></div>
-          {/* Welcome Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-purple-600 text-white mb-6 shadow-lg">
-              <Sparkles className="h-8 w-8" />
-            </div>
-            
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {getGreeting()}
-            </h1>
-            
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto shadow-lg border border-orange-100">
-              <p className="text-lg text-gray-700 mb-2">
-                "{inspirationalQuotes[currentQuote].text}"
-              </p>
-              <p className="text-sm text-gray-500">
-                — {inspirationalQuotes[currentQuote].reference}
-              </p>
-            </div>
+        <div className="flex-1 p-8 max-w-4xl mx-auto">
+
+          {/* Header - Clean Chat Style */}
+          <div className="mb-8">
+            <h2 className="text-gray-500 text-lg mb-2">Hello {getUserName()}!</h2>
+            <h1 className="text-4xl font-medium text-black">How can I assist you today?</h1>
           </div>
 
-          {/* Stats Overview - Mobile Responsive */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-12">
-            <Card className="text-center border-0 shadow-md bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <PenTool className="h-6 w-6 text-blue-600" />
+
+
+          {/* Action Cards Grid - Clean Style */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            {/* Cloud Storage Card */}
+            <Card 
+              className="bg-white border border-gray-200 hover:border-gray-300 transition-all cursor-pointer group hover:shadow-lg"
+              onClick={() => window.location.href = '/favorites'}
+            >
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-50 transition-colors">
+                  <Heart className="h-6 w-6 text-gray-600 group-hover:text-blue-600" />
                 </div>
-                <div className="text-2xl font-bold text-gray-900">{stats.journalEntries}</div>
-                <div className="text-sm text-gray-600">Journal Entries</div>
+                <h3 className="text-black font-semibold mb-2">Cloud Storage</h3>
+                <p className="text-gray-600 text-sm">Sync your study notes and insights across devices</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center border-0 shadow-md bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <MessageCircle className="h-6 w-6 text-purple-600" />
+            {/* Integrations Card */}
+            <Card 
+              className="bg-white border border-gray-200 hover:border-gray-300 transition-all cursor-pointer group hover:shadow-lg"
+              onClick={() => window.location.href = '/study-hub'}
+            >
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-50 transition-colors">
+                  <Book className="h-6 w-6 text-gray-600 group-hover:text-purple-600" />
                 </div>
-                <div className="text-2xl font-bold text-gray-900">{stats.chatConversations}</div>
-                <div className="text-sm text-gray-600">AI Chats</div>
+                <h3 className="text-black font-semibold mb-2">Integrations</h3>
+                <p className="text-gray-600 text-sm">Connect with your favorite study apps</p>
               </CardContent>
             </Card>
 
-            <Card className="text-center border-0 shadow-md bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Trophy className="h-6 w-6 text-green-600" />
+            {/* Quick Start Card - Special gradient */}
+            <Card 
+              className="bg-gradient-to-br from-orange-500 to-orange-600 border-0 hover:from-orange-600 hover:to-orange-700 transition-all cursor-pointer group"
+              onClick={() => handleSuggestionClick("What biblical principles can guide me through difficult times?")}
+            >
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
+                  <Zap className="h-6 w-6 text-white" />
                 </div>
-                <div className="text-2xl font-bold text-gray-900">{stats.readingStreak}</div>
-                <div className="text-sm text-gray-600">Day Streak</div>
+                <h3 className="text-white font-semibold mb-2">Quick Start</h3>
+                <p className="text-white/90 text-sm">Begin your spiritual journey now</p>
               </CardContent>
             </Card>
-
-            <Card className="text-center border-0 shadow-md bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all">
-              <CardContent className="pt-6">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Target className="h-6 w-6 text-orange-600" />
-                </div>
-                <div className="text-2xl font-bold text-gray-900">{Math.round((stats.journalEntries / 7) * 100)}%</div>
-                <div className="text-sm text-gray-600">Weekly Goal</div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Start Actions - Mobile Responsive */}
-          <div className="mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-gray-900">
-              Start Your Spiritual Journey Today
-            </h2>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {quickStartPrompts.map((prompt) => (
-                <Card 
-                  key={prompt.id}
-                  className="group cursor-pointer border-0 shadow-lg bg-white/90 backdrop-blur-sm hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
-                  onClick={() => handleQuickStart(prompt)}
-                >
-                  <CardHeader className="pb-4">
-                    <div className={`w-14 h-14 ${prompt.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <prompt.icon className="h-7 w-7 text-white" />
-                    </div>
-                    <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-gray-700">
-                      {prompt.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                      {prompt.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="text-xs">
-                        {prompt.action === 'journal' ? 'Journal' : 'AI Chat'}
-                      </Badge>
-                      <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
 
           {/* AI Chat Suggestion */}
@@ -623,86 +559,46 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Input Area for Quick Chat - Mobile Responsive */}
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 md:p-4">
-              <div className="flex items-center space-x-2 md:space-x-4">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={isMobile ? "Ask about any Bible verse..." : "Ask me about any Bible verse or spiritual question..."}
-                  className="flex-1 border-0 text-base md:text-lg focus:ring-0 shadow-none"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={() => sendMessage()}
-                  disabled={!input.trim() || isLoading}
-                  size={isMobile ? "default" : "lg"}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-4 md:px-8"
-                >
-                  {isLoading ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4 md:h-5 md:w-5" />
-                  )}
-                </Button>
-              </div>
+          {/* Message Input - Clean Style */}
+          <div className="max-w-4xl">
+            <div className="bg-gray-100 rounded-2xl p-4 flex items-center gap-3">
+              <Input 
+                type="text" 
+                placeholder="Message Bible Aura"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1 bg-transparent border-0 text-black placeholder-gray-500 outline-none focus:ring-0 shadow-none"
+                disabled={isLoading}
+              />
+              <Button 
+                size="sm" 
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || isLoading}
+                className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
             </div>
           </div>
 
-          {/* Quick Navigation */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mt-12">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center text-gray-900">
-                Explore More Features
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button asChild variant="outline" size="lg" className="h-auto p-4 flex-col bg-white hover:bg-blue-50 border-blue-200">
-                  <Link to="/bible">
-                    <BookOpen className="h-8 w-8 mb-2 text-blue-600" />
-                    <span className="text-sm font-medium">Bible Study</span>
-                  </Link>
-                </Button>
-                
-                <Button asChild variant="outline" size="lg" className="h-auto p-4 flex-col bg-white hover:bg-green-50 border-green-200">
-                  <Link to="/study-hub">
-                    <Book className="h-8 w-8 mb-2 text-green-600" />
-                    <span className="text-sm font-medium">Study Hub</span>
-                  </Link>
-                </Button>
-                
-                <Button asChild variant="outline" size="lg" className="h-auto p-4 flex-col bg-white hover:bg-purple-50 border-purple-200">
-                  <Link to="/favorites">
-                    <Star className="h-8 w-8 mb-2 text-purple-600" />
-                    <span className="text-sm font-medium">Favorites</span>
-                  </Link>
-                </Button>
-                
-                <Button asChild variant="outline" size="lg" className="h-auto p-4 flex-col bg-white hover:bg-orange-50 border-orange-200">
-                  <Link to="/profile">
-                    <Users className="h-8 w-8 mb-2 text-orange-600" />
-                    <span className="text-sm font-medium">Profile</span>
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
         </div>
       </div>
     );
   }
 
   // Chat Interface
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
-      <MobileNavigation />
-      
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
-        {/* Mobile padding for menu button */}
-        <div className="lg:hidden h-16"></div>
+      return (
+      <div className="min-h-screen bg-white flex">
+        <IconSidebar />
+        
+        <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto">
+        
         {/* Chat Header - Mobile Responsive */}
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <div className="flex items-center space-x-3 md:space-x-4">
