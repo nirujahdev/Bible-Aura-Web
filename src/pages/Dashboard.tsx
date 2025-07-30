@@ -9,8 +9,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   MessageCircle, BookOpen, PenTool, Sparkles, TrendingUp, 
   Star, Calendar, Target, Heart, Brain, Clock, ChevronRight,
-  Plus, Book, Zap, Users, Trophy, ArrowRight, Send, Bot, User,
-  Menu, Settings, LogOut, Headphones, FileText, Edit, MessageSquare
+  Plus, Book, Zap, Users, Trophy, ArrowRight, Send, Bot,
+  Menu, Settings, LogOut, Headphones, FileText, Edit
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,12 +33,7 @@ interface Message {
   model?: string;
 }
 
-interface Conversation {
-  id: string;
-  title: string;
-  preview: string;
-  timestamp: string;
-}
+
 
 const quickStartPrompts = [
   {
@@ -168,10 +163,8 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showChat, setShowChat] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [showConversations, setShowConversations] = useState(false);
+  const [hasLoadedInitialConversation, setHasLoadedInitialConversation] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -179,7 +172,6 @@ export default function Dashboard() {
     if (user) {
       loadDashboardStats();
       loadConversationHistory();
-      loadConversations();
       
       // Rotate inspirational quotes every 5 seconds
       const interval = setInterval(() => {
@@ -191,7 +183,6 @@ export default function Dashboard() {
       if (prompt) {
         setInput(prompt);
         sessionStorage.removeItem('chatPrompt');
-        setShowChat(true);
       }
 
       return () => clearInterval(interval);
@@ -235,19 +226,26 @@ export default function Dashboard() {
   };
 
   const loadConversationHistory = async () => {
-    // Always start with a fresh conversation - no history loaded
-    setMessages([]);
-    setCurrentConversationId(null);
-  };
-
-  const loadConversations = async () => {
-    // Always start with no saved conversations - fresh start
-    setConversations([]);
+    // Only load on first time login, preserve existing conversation afterwards
+    if (!hasLoadedInitialConversation) {
+      const savedMessages = localStorage.getItem(`chat_messages_${user?.id}`);
+      if (savedMessages) {
+        try {
+          setMessages(JSON.parse(savedMessages));
+        } catch (error) {
+          console.error('Error loading saved messages:', error);
+          setMessages([]);
+        }
+      }
+      setHasLoadedInitialConversation(true);
+    }
   };
 
   const saveConversation = async (updatedMessages: Message[]) => {
-    // Conversation saving disabled - always start fresh
-    return;
+    // Save to localStorage to persist conversation
+    if (user?.id) {
+      localStorage.setItem(`chat_messages_${user.id}`, JSON.stringify(updatedMessages));
+    }
   };
 
   const sendMessage = async (messageText?: string) => {
@@ -342,24 +340,9 @@ export default function Dashboard() {
   const startNewConversation = () => {
     setMessages([]);
     setCurrentConversationId(null);
-  };
-
-  const loadConversation = async (conversationId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('ai_conversations')
-        .select('messages')
-        .eq('id', conversationId)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (data && data.messages) {
-        setMessages(data.messages as unknown as Message[]);
-        setCurrentConversationId(conversationId);
-        setShowConversations(false);
-      }
-    } catch (error) {
-      console.error('Error loading conversation:', error);
+    // Clear saved conversation
+    if (user?.id) {
+      localStorage.removeItem(`chat_messages_${user.id}`);
     }
   };
 
@@ -380,74 +363,23 @@ export default function Dashboard() {
 
   // Single unified page for chat - everything happens here
   return (
-    <div className="min-h-screen bg-white flex relative">
-      {/* Conversations Sidebar - Mobile responsive */}
-      {showConversations && (
-        <>
-          {/* Mobile overlay */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-            onClick={() => setShowConversations(false)}
-          />
-          
-          <div className="fixed inset-y-0 left-0 z-50 w-72 lg:w-80 lg:relative lg:z-auto bg-gray-50 border-r border-gray-200 p-4 overflow-y-auto transform transition-transform duration-300 ease-in-out">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Saved Conversations</h3>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={() => setShowConversations(false)}
-                className="h-8 w-8 p-0"
-              >
-                ×
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {conversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  className="p-3 bg-white rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                  onClick={() => loadConversation(conv.id)}
-                >
-                  <h4 className="font-medium text-sm text-gray-900 truncate">{conv.title}</h4>
-                  <p className="text-xs text-gray-600 mt-1 truncate">{conv.preview}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(conv.timestamp).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-              {conversations.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-4">No saved conversations yet</p>
-              )}
-            </div>
+    <div className="min-h-screen bg-white">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 lg:py-8 max-w-4xl mx-auto relative">
+        {/* New Chat button - moved to header area */}
+        {messages.length > 0 && (
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={startNewConversation}
+              className="bg-white/95 backdrop-blur-sm border-gray-200 hover:bg-gray-50 text-xs sm:text-sm"
+            >
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">New Chat</span>
+              <span className="sm:hidden">New</span>
+            </Button>
           </div>
-        </>
-      )}
-      
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-4 lg:py-8 max-w-4xl mx-auto relative">
-        {/* Top Action Bar - Mobile responsive */}
-        <div className="flex justify-end gap-2 mb-4 lg:absolute lg:top-4 lg:right-4 lg:mb-0 z-10">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={startNewConversation}
-            className="bg-white/95 backdrop-blur-sm border-gray-200 hover:bg-gray-50 text-xs sm:text-sm"
-          >
-            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">New Chat</span>
-            <span className="sm:hidden">New</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowConversations(!showConversations)}
-            className={`bg-white/95 backdrop-blur-sm border-gray-200 hover:bg-gray-50 text-xs sm:text-sm ${showConversations ? 'bg-gray-100' : ''}`}
-          >
-            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">History</span>
-            <span className="sm:hidden">History</span>
-          </Button>
-        </div>
+        )}
 
         {/* Header - Always show when no messages - Mobile responsive */}
         {messages.length === 0 && (
@@ -552,7 +484,6 @@ export default function Dashboard() {
                     )}
                     {message.role === 'user' && (
                       <div className="flex items-center justify-end space-x-2 mb-1 lg:mb-2">
-                        <User className="h-3 w-3 lg:h-4 lg:w-4 text-white/80" />
                         <span className="text-xs lg:text-sm text-white/80 font-medium">You</span>
                       </div>
                     )}
@@ -588,27 +519,16 @@ export default function Dashboard() {
           <div className="bg-gray-100 rounded-2xl lg:rounded-3xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3 shadow-lg">
             <div className="flex items-center space-x-1 lg:space-x-2">
               <span className="text-orange-500 text-base lg:text-lg">✦</span>
-              <User className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
             </div>
             <Input 
               type="text" 
-              placeholder="Message Bible Aura"
+              placeholder="ask me anything about bible"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               className="flex-1 bg-transparent border-0 text-black placeholder-gray-500 outline-none focus:ring-0 shadow-none text-sm lg:text-base"
               disabled={isLoading}
             />
-            {messages.length > 0 && (
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={startNewConversation}
-                className="bg-white hover:bg-gray-50 border-gray-300 text-gray-600 rounded-xl lg:rounded-2xl p-2"
-              >
-                <Plus className="h-3 w-3 lg:h-4 lg:w-4" />
-              </Button>
-            )}
             <Button 
               size="sm" 
               onClick={() => sendMessage()}
