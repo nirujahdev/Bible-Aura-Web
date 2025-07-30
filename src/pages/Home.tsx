@@ -131,156 +131,156 @@ const Home = () => {
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
 
-      {/* Hero Section - Enhanced Mobile Responsiveness and Clean Positioning */}
-      <section className="relative py-16 md:py-24 px-4 md:px-6 lg:px-10 bg-gradient-to-br from-gray-50 via-white to-orange-50 overflow-hidden pt-28 md:pt-36">
+      {/* Hero Section - Optimized for Laptop View */}
+      <section className="relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 bg-gradient-to-br from-gray-50 via-white to-orange-50 overflow-hidden pt-24 md:pt-28 lg:pt-32">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-32 md:w-64 h-32 md:h-64 bg-orange-400/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-48 md:w-96 h-48 md:h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-32 md:w-48 lg:w-64 h-32 md:h-48 lg:h-64 bg-orange-400/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-48 md:w-64 lg:w-80 h-48 md:h-64 lg:h-80 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
           
-          {/* Floating icons - Hidden on mobile for cleaner look */}
-          <div className="hidden md:block absolute top-20 left-20 text-orange-400/20 animate-bounce">
-            <Sparkles className="h-8 w-8" />
+          {/* Floating icons - Subtle animations */}
+          <div className="hidden lg:block absolute top-20 left-20 text-orange-400/20 animate-pulse">
+            <Sparkles className="h-6 w-6" />
           </div>
-          <div className="hidden md:block absolute top-40 right-32 text-yellow-400/20 animate-pulse">
-            <Star className="h-6 w-6" />
+          <div className="hidden lg:block absolute top-40 right-32 text-yellow-400/20 animate-pulse delay-500">
+            <Star className="h-5 w-5" />
           </div>
         </div>
 
-        <div className="relative w-full max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left Side - Content - Improved Positioning */}
-            <div className="text-center lg:text-left flex flex-col justify-center order-1 space-y-6 md:space-y-8">
-              {/* Header Icon */}
-              <div className="inline-flex items-center justify-center w-16 md:w-20 h-16 md:h-20 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white animate-bounce mx-auto lg:mx-0 shadow-lg">
-                <Sparkles className="h-8 md:h-10 w-8 md:w-10" />
+        <div className="relative w-full max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left Side - Content - Optimized Sizing */}
+            <div className="text-center lg:text-left flex flex-col justify-center order-1 space-y-4 md:space-y-6 lg:space-y-8">
+              {/* Header Icon - No jumping */}
+              <div className="inline-flex items-center justify-center w-12 md:w-14 lg:w-16 h-12 md:h-14 lg:h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mx-auto lg:mx-0 shadow-lg">
+                <Sparkles className="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8" />
               </div>
 
-              {/* Main Title */}
-              <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight">
+              {/* Main Title - Better proportions */}
+              <div className="space-y-3 md:space-y-4">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
                   <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">
                     AI-Powered Biblical Insight
                   </span>
                 </h1>
                 
-                <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                   Grow deeper in your faith with Bible Aura's AI-powered spiritual tools and biblical insights.
                 </p>
               </div>
 
-              {/* Feature Tags - Single Line No Scroll */}
-              <div className="flex justify-center lg:justify-start gap-2 md:gap-3">
-                <span className="px-2 md:px-3 py-1.5 md:py-2 bg-orange-100 text-orange-700 rounded-full text-xs md:text-sm font-medium">
+              {/* Feature Tags - Optimized spacing */}
+              <div className="flex justify-center lg:justify-start gap-2 lg:gap-3">
+                <span className="px-2 md:px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-xs lg:text-sm font-medium">
                   ⚡ AI Insights
                 </span>
-                <span className="px-2 md:px-3 py-1.5 md:py-2 bg-blue-100 text-blue-700 rounded-full text-xs md:text-sm font-medium">
+                <span className="px-2 md:px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs lg:text-sm font-medium">
                   📖 All in one Bible
                 </span>
-                <span className="px-2 md:px-3 py-1.5 md:py-2 bg-purple-100 text-purple-700 rounded-full text-xs md:text-sm font-medium">
+                <span className="px-2 md:px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-xs lg:text-sm font-medium">
                   💬 AI Chat
                 </span>
               </div>
 
-              {/* CTA Button */}
-              <div className="pt-4">
-                <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-lg md:text-xl px-8 md:px-12 py-6 md:py-8 rounded-2xl shadow-2xl animate-pulse hover:scale-105 transition-transform w-full sm:w-auto">
+              {/* CTA Button - No animations */}
+              <div className="pt-2 lg:pt-4">
+                <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-base lg:text-lg px-6 lg:px-8 py-4 lg:py-5 rounded-xl shadow-lg hover:scale-105 transition-transform w-full sm:w-auto">
                   <Link to="/auth">
-                    <Sparkles className="h-5 md:h-6 w-5 md:w-6 mr-3" />
+                    <Sparkles className="h-4 lg:h-5 w-4 lg:w-5 mr-2" />
                     START YOUR JOURNEY
                   </Link>
                 </Button>
               </div>
             </div>
 
-            {/* Right Side - Phone Animation - Better Positioning */}
+            {/* Right Side - Phone Animation - Laptop optimized */}
             <div className="relative flex justify-center order-2">
-              {/* Phone Mockup */}
+              {/* Phone Mockup - Better laptop proportions */}
               <div className="relative transform hover:scale-105 transition-transform duration-500">
-                {/* Phone Frame */}
-                <div className="relative w-80 md:w-96 h-[600px] md:h-[700px] bg-black rounded-[3rem] md:rounded-[3.5rem] p-2 md:p-3 shadow-2xl">
-                  <div className="w-full h-full bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden relative">
+                {/* Phone Frame - Smaller for laptop */}
+                <div className="relative w-64 md:w-72 lg:w-80 h-[480px] md:h-[540px] lg:h-[600px] bg-black rounded-[2rem] md:rounded-[2.5rem] lg:rounded-[3rem] p-1.5 md:p-2 shadow-2xl">
+                  <div className="w-full h-full bg-white rounded-[1.5rem] md:rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden relative">
                     {/* Phone Header */}
-                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 md:p-6 text-white">
-                      <div className="flex items-center gap-3 md:gap-4">
-                        <div className="w-10 md:w-12 h-10 md:h-12 bg-white/20 rounded-full flex items-center justify-center">
-                          <span className="text-white text-lg md:text-xl font-bold">✦</span>
+                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-3 md:p-4 lg:p-5 text-white">
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <div className="w-8 md:w-9 lg:w-10 h-8 md:h-9 lg:h-10 bg-white/20 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm md:text-base lg:text-lg font-bold">✦</span>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-base md:text-lg">Bible Aura AI</h3>
-                          <p className="text-xs md:text-sm opacity-80">AI Biblical Assistant</p>
+                          <h3 className="font-semibold text-sm md:text-base">Bible Aura AI</h3>
+                          <p className="text-xs opacity-80">AI Biblical Assistant</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Chat Messages */}
-                    <div className="p-4 md:p-6 space-y-4 md:space-y-6 h-[450px] md:h-[550px] overflow-hidden">
+                    <div className="p-3 md:p-4 lg:p-5 space-y-3 md:space-y-4 h-[350px] md:h-[400px] lg:h-[450px] overflow-hidden">
                       {/* User Message */}
                       <div className="flex justify-end animate-slideInRight">
-                        <div className="bg-orange-500 text-white p-3 md:p-4 rounded-2xl rounded-br-md max-w-xs">
-                          <p className="text-sm md:text-base">What does Romans 8:28 mean?</p>
+                        <div className="bg-orange-500 text-white p-2.5 md:p-3 rounded-2xl rounded-br-md max-w-xs">
+                          <p className="text-xs md:text-sm">What does Romans 8:28 mean?</p>
                         </div>
                       </div>
 
                       {/* AI Response */}
                       <div className="flex justify-start animate-slideInLeft animation-delay-1000">
-                        <div className="bg-gray-100 text-gray-800 p-3 md:p-4 rounded-2xl rounded-bl-md max-w-xs">
-                          <p className="text-sm md:text-base">Romans 8:28 teaches us that God works all things together for good for those who love Him. This doesn't mean everything is good, but that God can use even difficult circumstances for our ultimate benefit and His glory.</p>
+                        <div className="bg-gray-100 text-gray-800 p-2.5 md:p-3 rounded-2xl rounded-bl-md max-w-xs">
+                          <p className="text-xs md:text-sm">Romans 8:28 teaches us that God works all things together for good for those who love Him. This doesn't mean everything is good, but that God can use even difficult circumstances for our ultimate benefit and His glory.</p>
                         </div>
                       </div>
 
-                      {/* Typing Indicator */}
+                      {/* Typing Indicator - Subtle animation */}
                       <div className="flex justify-start animate-pulse animation-delay-2000">
-                        <div className="bg-gray-100 p-3 md:p-4 rounded-2xl rounded-bl-md">
+                        <div className="bg-gray-100 p-2.5 md:p-3 rounded-2xl rounded-bl-md">
                           <div className="flex space-x-1">
-                            <div className="w-2 md:w-3 h-2 md:h-3 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div className="w-2 md:w-3 h-2 md:h-3 bg-gray-400 rounded-full animate-bounce animation-delay-200"></div>
-                            <div className="w-2 md:w-3 h-2 md:h-3 bg-gray-400 rounded-full animate-bounce animation-delay-400"></div>
+                            <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                            <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-gray-400 rounded-full animate-pulse animation-delay-200"></div>
+                            <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-gray-400 rounded-full animate-pulse animation-delay-400"></div>
                           </div>
                         </div>
                       </div>
 
                       {/* Follow-up Question */}
                       <div className="flex justify-end animate-slideInRight animation-delay-3000">
-                        <div className="bg-orange-500 text-white p-3 md:p-4 rounded-2xl rounded-br-md max-w-xs">
-                          <p className="text-sm md:text-base">Can you give me related verses?</p>
+                        <div className="bg-orange-500 text-white p-2.5 md:p-3 rounded-2xl rounded-br-md max-w-xs">
+                          <p className="text-xs md:text-sm">Can you give me related verses?</p>
                         </div>
                       </div>
 
                       {/* AI Related Verses */}
                       <div className="flex justify-start animate-slideInLeft animation-delay-4000">
-                        <div className="bg-gray-100 text-gray-800 p-3 md:p-4 rounded-2xl rounded-bl-md max-w-xs">
-                          <p className="text-sm md:text-base">Here are related verses:</p>
-                          <p className="text-xs md:text-sm mt-2 text-blue-600">• Jeremiah 29:11</p>
-                          <p className="text-xs md:text-sm text-blue-600">• Philippians 1:6</p>
-                          <p className="text-xs md:text-sm text-blue-600">• 1 Corinthians 10:13</p>
+                        <div className="bg-gray-100 text-gray-800 p-2.5 md:p-3 rounded-2xl rounded-bl-md max-w-xs">
+                          <p className="text-xs md:text-sm">Here are related verses:</p>
+                          <p className="text-xs mt-1.5 text-blue-600">• Jeremiah 29:11</p>
+                          <p className="text-xs text-blue-600">• Philippians 1:6</p>
+                          <p className="text-xs text-blue-600">• 1 Corinthians 10:13</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Input Area */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white border-t">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-gray-100 rounded-full px-4 md:px-6 py-3 md:py-4">
-                          <p className="text-sm md:text-base text-gray-500">Ask about any Bible verse...</p>
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 lg:p-5 bg-white border-t">
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <div className="flex-1 bg-gray-100 rounded-full px-3 md:px-4 py-2 md:py-2.5">
+                          <p className="text-xs md:text-sm text-gray-500">Ask about any Bible verse...</p>
                         </div>
-                        <div className="w-12 md:w-14 h-12 md:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                          <Send className="h-5 md:h-6 w-5 md:w-6 text-white" />
+                        <div className="w-8 md:w-9 lg:w-10 h-8 md:h-9 lg:h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                          <Send className="h-3.5 md:h-4 lg:h-5 w-3.5 md:w-4 lg:w-5 text-white" />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Floating Elements Around Phone */}
-                <div className="hidden md:block absolute -top-6 -right-6 w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center animate-bounce animation-delay-500 shadow-lg">
-                  <Zap className="h-8 w-8 text-orange-600" />
+                {/* Floating Elements Around Phone - Subtle, no bouncing */}
+                <div className="hidden lg:block absolute -top-4 -right-4 w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center animate-pulse animation-delay-500 shadow-lg">
+                  <Zap className="h-6 w-6 text-orange-600" />
                 </div>
-                <div className="hidden md:block absolute -bottom-6 -left-6 w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center animate-bounce animation-delay-1000 shadow-lg">
-                  <BookOpen className="h-8 w-8 text-blue-600" />
+                <div className="hidden lg:block absolute -bottom-4 -left-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center animate-pulse animation-delay-1000 shadow-lg">
+                  <BookOpen className="h-6 w-6 text-blue-600" />
                 </div>
-                <div className="hidden lg:block absolute top-1/2 -left-10 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center animate-pulse shadow-lg">
-                  <MessageCircle className="h-6 w-6 text-purple-600" />
+                <div className="hidden xl:block absolute top-1/2 -left-8 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                  <MessageCircle className="h-5 w-5 text-purple-600" />
                 </div>
               </div>
             </div>
