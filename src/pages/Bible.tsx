@@ -473,47 +473,9 @@ export default function Bible() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-      {/* Simple Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-orange-600 flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              {selectedBook ? `${getBookDisplayName(selectedBook.name)} ${selectedChapter}` : 'Bible Study'}
-              {selectedBook && (
-                <span className="text-sm text-gray-500 ml-2">
-                  {currentTranslation?.label}
-                </span>
-              )}
-            </h1>
-            
-            {selectedBook && !isMobile && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateChapter('prev')}
-                  disabled={selectedChapter <= 1}
-                  className="h-7"
-                >
-                  <ChevronLeft className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigateChapter('next')}
-                  disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                  className="h-7"
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      <div className="flex h-[calc(100vh-60px)]">
+
+      <div className="flex h-screen">
         {/* Mobile Menu Button */}
         {isMobile && (
           <Button
@@ -553,14 +515,6 @@ export default function Bible() {
         {/* Bible Content Panel - Desktop */}
         {!isMobile && (
           <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm">
-          {/* Reading Progress */}
-          <div className="p-4 border-b">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Reading Progress</span>
-              <span className="text-xs text-gray-500">{readingProgress.toFixed(1)}%</span>
-            </div>
-            <Progress value={readingProgress} className="h-2" />
-          </div>
 
           {/* Navigation Tabs */}
           <Tabs value={activeTab} onValueChange={(value) => {
@@ -653,7 +607,10 @@ export default function Bible() {
                   <label className="text-sm font-medium mb-3 block">Books</label>
                   <div className="space-y-2">
                     {/* Old Testament Section */}
-                    <Collapsible open={oldTestamentExpanded} onOpenChange={setOldTestamentExpanded}>
+                    <Collapsible open={oldTestamentExpanded} onOpenChange={(open) => {
+                      setOldTestamentExpanded(open);
+                      if (open) setNewTestamentExpanded(false);
+                    }}>
                       <CollapsibleTrigger asChild>
                         <Button
                           variant="outline"
@@ -701,7 +658,10 @@ export default function Bible() {
                     </Collapsible>
                     
                     {/* New Testament Section */}
-                    <Collapsible open={newTestamentExpanded} onOpenChange={setNewTestamentExpanded}>
+                    <Collapsible open={newTestamentExpanded} onOpenChange={(open) => {
+                      setNewTestamentExpanded(open);
+                      if (open) setOldTestamentExpanded(false);
+                    }}>
                       <CollapsibleTrigger asChild>
                         <Button
                           variant="outline"
@@ -832,14 +792,6 @@ export default function Bible() {
           <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
             <SheetContent side="left" className="w-80 p-0">
               <div className="h-full bg-white flex flex-col">
-                {/* Reading Progress */}
-                <div className="p-4 border-b">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Reading Progress</span>
-                    <span className="text-xs text-gray-500">{readingProgress.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={readingProgress} className="h-2" />
-                </div>
 
                 {/* Navigation Tabs */}
                 <Tabs value={activeTab} onValueChange={(value) => {
@@ -938,7 +890,10 @@ export default function Bible() {
                         <label className="text-sm font-medium mb-3 block">Books</label>
                         <div className="space-y-2">
                           {/* Old Testament Section */}
-                          <Collapsible open={oldTestamentExpanded} onOpenChange={setOldTestamentExpanded}>
+                          <Collapsible open={oldTestamentExpanded} onOpenChange={(open) => {
+                            setOldTestamentExpanded(open);
+                            if (open) setNewTestamentExpanded(false);
+                          }}>
                             <CollapsibleTrigger asChild>
                               <Button
                                 variant="outline"
@@ -973,7 +928,10 @@ export default function Bible() {
                           </Collapsible>
 
                           {/* New Testament Section */}
-                          <Collapsible open={newTestamentExpanded} onOpenChange={setNewTestamentExpanded}>
+                          <Collapsible open={newTestamentExpanded} onOpenChange={(open) => {
+                            setNewTestamentExpanded(open);
+                            if (open) setOldTestamentExpanded(false);
+                          }}>
                             <CollapsibleTrigger asChild>
                               <Button
                                 variant="outline" 
@@ -1109,18 +1067,67 @@ export default function Bible() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Book Header Banner - Moved from top */}
+          {selectedBook && (
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 md:p-6 shadow-sm border-b">
+              <div className="max-w-6xl mx-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <BookOpen className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-bold">
+                        {getBookDisplayName(selectedBook.name)} {selectedChapter}
+                      </h1>
+                      <p className="text-orange-100 text-sm">
+                        {currentTranslation?.label}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {!isMobile && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateChapter('prev')}
+                        disabled={selectedChapter <= 1}
+                        className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-8"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-white/80 text-sm px-2">
+                        Chapter {selectedChapter} of {selectedBook.chapters}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateChapter('next')}
+                        disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                        className="bg-white/20 border-white/30 text-white hover:bg-white/30 h-8"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Verses Display */}
-          <div className="flex-1 overflow-auto bg-white">
-            <div className="max-w-4xl mx-auto p-3 md:p-6">
+          <div className="flex-1 overflow-auto bg-gray-50">
+            <div className="max-w-5xl mx-auto p-4 md:p-8">
               {searchResults.length > 0 ? (
                 // Search Results
-                <div>
-                  <div className="mb-4 md:mb-6">
-                    <h2 className="text-xl md:text-2xl font-bold mb-2">Search Results</h2>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+                  <div className="mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold mb-2 text-gray-800">Search Results</h2>
                     <p className="text-sm md:text-base text-gray-600">Found {searchResults.length} verses for "{searchQuery}"</p>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {searchResults.map((verse) => (
                       <VerseCard 
                         key={verse.id}
@@ -1141,8 +1148,8 @@ export default function Bible() {
                 </div>
               ) : verses.length > 0 ? (
                 // Chapter Display
-                <div>
-                  <div className="space-y-4">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+                  <div className="space-y-6">
                     {verses.map((verse) => (
                       <VerseCard 
                         key={verse.id}
@@ -1263,36 +1270,30 @@ function VerseCard({
 
   return (
     <div
-      className={`group p-3 md:p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${
+      className={`group p-4 md:p-6 rounded-lg transition-all duration-300 hover:shadow-sm ${
         highlightColor 
           ? getHighlightClass(highlightColor)
-          : 'border-gray-200 hover:border-orange-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-orange-50'
+          : 'border-l-4 border-orange-200 hover:border-orange-400 hover:bg-orange-50/30'
       }`}
-      style={{ fontSize: `${fontSize}px`, lineHeight: 1.7 }}
+      style={{ fontSize: `${fontSize + 2}px`, lineHeight: 1.8 }}
     >
-      <div className="flex items-start gap-2 md:gap-4">
+      <div className="flex items-start gap-4 md:gap-6">
         {showVerseNumbers && (
           <div className="flex-shrink-0">
-            <span className="inline-flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white font-bold text-xs md:text-sm">
+            <span className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white font-bold text-sm md:text-base shadow-sm">
               {verse.verse}
             </span>
           </div>
         )}
         
-        <div className="flex-1">
-          <p className="text-gray-800 font-medium leading-relaxed mb-2 md:mb-3 text-sm md:text-base">
+        <div className="flex-1 min-w-0">
+          <p className="text-gray-800 font-normal leading-relaxed mb-3 md:mb-4 text-base md:text-lg">
             {verse.text}
           </p>
-          
-          {verse.book_name && (
-            <Badge variant="outline" className="text-xs">
-              {getBookDisplayName ? getBookDisplayName(verse.book_name) : verse.book_name} {verse.chapter}:{verse.verse}
-            </Badge>
-          )}
         </div>
         
-        {/* Action Buttons - Vertical on mobile, horizontal on desktop */}
-        <div className="flex flex-col md:flex-row items-center gap-0.5 md:gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+        {/* Action Buttons - Horizontal layout, always visible on mobile */}
+        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {/* Highlight */}
           <div className="relative">
             <Button
