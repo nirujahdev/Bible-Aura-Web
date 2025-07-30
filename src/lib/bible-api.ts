@@ -49,6 +49,21 @@ export interface BibleChapter {
   verses: BibleVerse[];
 }
 
+// API Response interfaces
+interface ApiVerseResponse {
+  id: string;
+  orgId?: string;
+  bookId?: string;
+  content?: string;
+  text?: string;
+  reference?: string;
+}
+
+interface ApiPassageResponse {
+  content?: string;
+  reference?: string;
+}
+
 export interface BibleSummary {
   id: string;
   name: string;
@@ -447,8 +462,8 @@ class BibleApiService {
     if (cached) return cached;
 
     try {
-      const response = await this.makeRequest<{ data: BibleVerse[] }>(`/bibles/${bibleId}/chapters/${chapterId}/verses`);
-              const verses = (response.data || []).map((verse: any) => ({
+      const response = await this.makeRequest<{ data: ApiVerseResponse[] }>(`/bibles/${bibleId}/chapters/${chapterId}/verses`);
+              const verses = (response.data || []).map((verse: ApiVerseResponse) => ({
         id: verse.id,
         orgId: verse.orgId || verse.id,
         book: verse.bookId || chapterId.split('.')[0],
@@ -457,7 +472,7 @@ class BibleApiService {
         verse: parseInt(verse.id.split('.')[2]) || 1,
         text: this.cleanVerseText(verse.content || ''),
         reference: verse.reference || `${verse.bookId} ${chapterId.split('.')[1]}:${verse.id.split('.')[2]}`,
-        bibleId
+        bibleId: bibleId
       }));
       
       this.setCachedData(cacheKey, verses);
@@ -475,7 +490,7 @@ class BibleApiService {
     if (cached) return cached;
 
     try {
-              const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/verses/${verseId}`);
+              const response = await this.makeRequest<{ data: ApiVerseResponse }>(`/bibles/${bibleId}/verses/${verseId}`);
       const verse = response.data;
       
       if (verse) {
@@ -488,7 +503,7 @@ class BibleApiService {
           verse: parseInt(verseId.split('.')[2]) || 1,
           text: this.cleanVerseText(verse.content || verse.text || ''),
           reference: verse.reference || verseId,
-          bibleId
+          bibleId: bibleId
         };
         
         this.setCachedData(cacheKey, formattedVerse);
@@ -561,11 +576,11 @@ class BibleApiService {
   // Get passage (multiple verses)
   async getPassage(bibleId: string, passageId: string): Promise<{ content: string; reference: string; verses: BibleVerse[] } | null> {
     const cacheKey = `passage_${bibleId}_${passageId}`;
-    const cached = this.getCachedData<any>(cacheKey);
+    const cached = this.getCachedData<{ content: string; reference: string; verses: BibleVerse[] }>(cacheKey);
     if (cached) return cached;
 
     try {
-              const response = await this.makeRequest<{ data: any }>(`/bibles/${bibleId}/passages/${passageId}`);
+              const response = await this.makeRequest<{ data: ApiPassageResponse }>(`/bibles/${bibleId}/passages/${passageId}`);
       const passage = response.data;
       
       if (passage) {

@@ -20,8 +20,6 @@ import {
   PenTool
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { bibleApi } from '@/lib/bible-api';
-import { billyGrahamDevotional } from '@/lib/billy-graham-devotional';
 
 interface DailyVerse {
   id: string;
@@ -38,41 +36,48 @@ interface VerseOfDay {
   reference: string;
   context: string;
   theme: string;
-  billyGrahamContent?: string; // Optional expanded content
 }
 
-// Enhanced function to get Billy Graham devotional with AI enhancement
+// Enhanced function to generate daily verse with AI insights
 const generateDailyVerse = async (): Promise<VerseOfDay> => {
   try {
-    // Get today's Billy Graham devotion
-    const devotion = await billyGrahamDevotional.getTodaysVerse();
-    
-    if (!devotion) {
-      return getFallbackVerse();
-    }
+    // Get a random inspiring Bible verse
+    const inspiringVerses = [
+      { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future.", reference: "Jeremiah 29:11", theme: "Hope and Future" },
+      { text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.", reference: "Proverbs 3:5-6", theme: "Trust and Guidance" },
+      { text: "I can do all this through him who gives me strength.", reference: "Philippians 4:13", theme: "Strength and Perseverance" },
+      { text: "The Lord your God is with you, the Mighty Warrior who saves. He will take great delight in you; in his love he will no longer rebuke you, but will rejoice over you with singing.", reference: "Zephaniah 3:17", theme: "God's Love and Presence" },
+      { text: "Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own.", reference: "Matthew 6:34", theme: "Peace and Trust" },
+      { text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.", reference: "Romans 8:28", theme: "God's Sovereignty" },
+      { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", reference: "Joshua 1:9", theme: "Courage and Faith" },
+      { text: "The Lord is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.", reference: "Psalm 23:1-3", theme: "Rest and Restoration" }
+    ];
 
-    // Enhance the Billy Graham content with AI insights
-    const contextPrompt = `Based on this Billy Graham devotional content, provide a brief, encouraging summary that captures the essence of his teaching:
+    // Select verse based on day of year to ensure consistency
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    const selectedVerse = inspiringVerses[dayOfYear % inspiringVerses.length];
 
-Billy Graham's Teaching: "${devotion.devotional_content}"
-Scripture: "${devotion.verse_text}" - ${devotion.verse_reference}
-Theme: ${devotion.theme}
+    // Generate AI-enhanced context
+    const contextPrompt = `Based on this Bible verse, provide a brief, encouraging devotional reflection that helps the reader apply this truth to their daily life:
+
+Scripture: "${selectedVerse.text}" - ${selectedVerse.reference}
+Theme: ${selectedVerse.theme}
 
 Write 2-3 sentences that:
-1. Capture Billy Graham's key spiritual insight
+1. Explain the key spiritual truth in this verse
 2. Make it personal and encouraging for today
 3. Connect it to practical Christian living
-4. Stay true to his evangelical message
+4. Offer hope and inspiration
 
-Keep it warm, biblical, and inspiring in Billy Graham's style.`;
+Keep it warm, biblical, and uplifting.`;
 
-    // Use AI to enhance Billy Graham's content
+    // Use AI to generate devotional context
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
         'HTTP-Referer': 'https://bible-aura.app',
-        'X-Title': '✦Bible Aura - Billy Graham Daily Devotion',
+        'X-Title': '✦Bible Aura - Daily Devotional',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -80,7 +85,7 @@ Keep it warm, biblical, and inspiring in Billy Graham's style.`;
         messages: [
           {
             role: 'system',
-            content: 'You are helping to summarize Billy Graham\'s devotional teachings. Maintain his warm, evangelical, and encouraging tone while making the content accessible for daily inspiration.'
+            content: 'You are a Christian devotional writer. Create inspiring, biblical reflections that help people connect God\'s word to their daily lives. Be encouraging, practical, and spiritually uplifting.'
           },
           {
             role: 'user',
@@ -88,72 +93,63 @@ Keep it warm, biblical, and inspiring in Billy Graham's style.`;
           }
         ],
         temperature: 0.7,
-        max_tokens: 250
+        max_tokens: 200
       })
     });
 
-    let enhancedContext = devotion.reflection;
+    let aiContext = "God's word speaks directly to our hearts today. Take time to meditate on this verse and let its truth guide your steps. Remember that God's promises are faithful and His love for you is unchanging.";
     
     if (response.ok) {
       const data = await response.json();
-      enhancedContext = data.choices[0]?.message?.content || devotion.reflection;
+      aiContext = data.choices[0]?.message?.content || aiContext;
     }
 
     return {
-      text: devotion.verse_text,
-      reference: devotion.verse_reference,
-      context: enhancedContext,
-      theme: devotion.theme,
-      billyGrahamContent: devotion.devotional_content // Extra content for expansion
+      text: selectedVerse.text,
+      reference: selectedVerse.reference,
+      context: aiContext,
+      theme: selectedVerse.theme
     };
   } catch (error) {
-    console.error('Error loading Billy Graham devotion:', error);
+    console.error('Error generating daily verse:', error);
     return getFallbackVerse();
   }
 };
 
 // Fallback function for error cases
 const getFallbackVerse = (): VerseOfDay => {
-  const themes = [
-    'Faith and Trust', 'Love and Compassion', 'Hope and Encouragement', 
-    'Peace and Rest', 'Wisdom and Guidance', 'Strength and Courage',
-    'Gratitude and Praise', 'Forgiveness and Grace', 'Joy and Celebration',
-    'Prayer and Worship', 'Service and Purpose', 'Growth and Transformation'
+  const fallbackVerses = [
+    { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future.", reference: "Jeremiah 29:11", theme: "Hope and Future" },
+    { text: "Trust in the Lord with all your heart and lean not on your own understanding.", reference: "Proverbs 3:5", theme: "Trust and Guidance" },
+    { text: "I can do all this through him who gives me strength.", reference: "Philippians 4:13", theme: "Strength in Christ" }
   ];
   
-  const todayTheme = themes[new Date().getDate() % themes.length];
+  const randomVerse = fallbackVerses[Math.floor(Math.random() * fallbackVerses.length)];
   
   return {
-    text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
-    reference: "Proverbs 3:5-6",
-    context: `God calls us to trust Him completely. Today, surrender your worries and lean into His perfect wisdom and timing. This timeless truth reminds us that ${todayTheme} comes through trusting in His plan for your life.`,
-    theme: todayTheme
+    text: randomVerse.text,
+    reference: randomVerse.reference,
+    context: "God's word is living and active, speaking to our hearts each day. Let this verse encourage you and remind you of God's faithful love. Take time to reflect on how this truth applies to your life today.",
+    theme: randomVerse.theme
   };
 };
 
-export function DailyVerseWidget() {
-  const { user } = useAuth();
-  const { toast } = useToast();
+export default function DailyVerseWidget() {
   const [dailyVerse, setDailyVerse] = useState<VerseOfDay | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [todayDate] = useState(new Date().toISOString().split('T')[0]);
-
-  useEffect(() => {
-    loadDailyVerse();
-  }, [user]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   const loadDailyVerse = async () => {
-    if (!user) return;
-    
     setLoading(true);
     try {
-      // Check if we already have today's verse
+      // Check if we have today's verse in database
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data: existingVerse, error } = await supabase
         .from('daily_verses')
         .select('*')
-        .eq('user_id', user.id)
-        .eq('verse_date', todayDate)
+        .eq('verse_date', today)
         .single();
 
       if (existingVerse && !error) {
@@ -164,90 +160,52 @@ export function DailyVerseWidget() {
           theme: existingVerse.daily_theme
         });
       } else {
-        // Generate new daily verse
+        // Generate new verse
         const newVerse = await generateDailyVerse();
+        setDailyVerse(newVerse);
         
         // Save to database
-        const { error: insertError } = await supabase
-          .from('daily_verses')
-          .insert({
-            user_id: user.id,
-            verse_text: newVerse.text,
-            verse_reference: newVerse.reference,
-            ai_context: newVerse.context,
-            daily_theme: newVerse.theme,
-            verse_date: todayDate
-          });
-
-        if (insertError) {
-          console.error('Error saving daily verse:', insertError);
+        if (user) {
+          await supabase
+            .from('daily_verses')
+            .insert({
+              user_id: user.id,
+              verse_text: newVerse.text,
+              verse_reference: newVerse.reference,
+              ai_context: newVerse.context,
+              daily_theme: newVerse.theme,
+              verse_date: today
+            });
         }
-
-        setDailyVerse(newVerse);
       }
-
-      // Check if verse is bookmarked
-      checkIfBookmarked();
     } catch (error) {
       console.error('Error loading daily verse:', error);
-      // Use fallback verse
-      setDailyVerse({
-        text: 'For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future.',
-        reference: 'Jeremiah 29:11',
-        context: 'God has beautiful plans for your life. Trust in His perfect timing and rest in His promises today.',
-        theme: 'Hope and Encouragement'
-      });
+      const fallback = getFallbackVerse();
+      setDailyVerse(fallback);
     } finally {
       setLoading(false);
     }
   };
 
-  const checkIfBookmarked = async () => {
-    if (!user || !dailyVerse) return;
-    
-    try {
-      const { data } = await supabase
-        .from('bookmarks')
-        .select('id')
-        .eq('user_id', user.id)
-        .ilike('notes', `%${dailyVerse.reference}%`)
-        .limit(1);
-      
-      setIsBookmarked(data && data.length > 0);
-    } catch (error) {
-      console.error('Error checking bookmark:', error);
-    }
-  };
+  useEffect(() => {
+    loadDailyVerse();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshVerse = async () => {
     setLoading(true);
     try {
       const newVerse = await generateDailyVerse();
-      
-      // Update existing record or create new one
-      const { error } = await supabase
-        .from('daily_verses')
-        .upsert({
-          user_id: user.id,
-          verse_text: newVerse.text,
-          verse_reference: newVerse.reference,
-          ai_context: newVerse.context,
-          daily_theme: newVerse.theme,
-          verse_date: todayDate
-        });
-
-      if (error) throw error;
-      
       setDailyVerse(newVerse);
+      
       toast({
-        title: "New verse generated",
-        description: "Your Billy Graham devotion has been refreshed",
+        title: "Verse Refreshed",
+        description: "Your daily verse has been updated",
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to refresh verse. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -255,89 +213,112 @@ export function DailyVerseWidget() {
   };
 
   const copyVerse = async () => {
-    if (!dailyVerse) return;
-    
-    const fullText = `"${dailyVerse.text}" - ${dailyVerse.reference}\n\n${dailyVerse.context}`;
-    
-    try {
-      await navigator.clipboard.writeText(fullText);
-      toast({
-        title: "Copied to clipboard",
-        description: "Daily verse and context copied successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
+    if (dailyVerse) {
+      const verseText = `"${dailyVerse.text}" - ${dailyVerse.reference}`;
+      try {
+        await navigator.clipboard.writeText(verseText);
+        toast({
+          title: "Copied!",
+          description: "Verse copied to clipboard",
+        });
+      } catch (error) {
+        toast({
+          title: "Copy failed",
+          description: "Could not copy to clipboard",
+          variant: "destructive"
+        });
+      }
     }
   };
 
-  const addToJournal = () => {
-    if (!dailyVerse) return;
-    
-    const journalContent = `🌅 Daily Verse for ${new Date().toLocaleDateString()}\n\n"${dailyVerse.text}"\n- ${dailyVerse.reference}\n\n💭 Reflection:\n${dailyVerse.context}\n\n✍️ My thoughts:\n`;
-    
-    // Navigate to journal with pre-filled content
-    window.location.href = `/journal?daily_verse=true&content=${encodeURIComponent(journalContent)}&theme=${encodeURIComponent(dailyVerse.theme)}`;
+  const addToJournal = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save to your journal",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (dailyVerse) {
+      try {
+        const journalEntry = `Daily Verse - ${new Date().toLocaleDateString()}
+
+"${dailyVerse.text}" - ${dailyVerse.reference}
+
+Reflection:
+${dailyVerse.context}
+
+Theme: ${dailyVerse.theme}`;
+
+        const { error } = await supabase
+          .from('journal_entries')
+          .insert({
+            user_id: user.id,
+            title: `Daily Verse - ${dailyVerse.reference}`,
+            content: journalEntry,
+            entry_date: new Date().toISOString()
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Added to Journal",
+          description: "Daily verse saved to your journal",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save to journal",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
-  if (loading) {
+  if (!dailyVerse) {
     return (
-      <Card className="overflow-hidden bg-gradient-to-br from-orange-50 via-white to-amber-50 border-0 shadow-lg">
+      <Card className="w-full max-w-2xl mx-auto bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 shadow-lg">
         <CardContent className="p-8">
-          <div className="space-y-6 animate-pulse">
-            <div className="flex justify-between items-center">
-              <div className="h-8 bg-orange-200 rounded-lg w-48"></div>
-              <div className="h-6 bg-orange-100 rounded-full w-20"></div>
-            </div>
-            <div className="h-6 bg-orange-200 rounded-lg w-32"></div>
-            <div className="space-y-3">
-              <div className="h-5 bg-gray-200 rounded w-full"></div>
-              <div className="h-5 bg-gray-200 rounded w-5/6"></div>
-              <div className="h-5 bg-gray-200 rounded w-4/6"></div>
-            </div>
-            <div className="h-16 bg-gray-100 rounded-xl"></div>
-            <div className="h-12 bg-orange-200 rounded-xl"></div>
+          <div className="flex items-center justify-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-orange-500" />
+            <span className="ml-3 text-lg text-gray-700">Loading today's verse...</span>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!dailyVerse) return null;
-
   return (
-    <Card className="overflow-hidden bg-gradient-to-br from-orange-50 via-white to-amber-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-      {/* Header Section */}
-      <div className="relative px-8 pt-8 pb-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl shadow-md">
-              <BookOpen className="h-6 w-6 text-white" />
+    <Card className="w-full max-w-2xl mx-auto bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-6 rounded-t-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+              <Calendar className="h-8 w-8 text-white" />
             </div>
             <div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-2xl font-bold text-white flex items-center gap-2">
                   Today's Verse
-                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  <Sparkles className="h-5 w-5 text-yellow-200" />
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Billy Graham's "Living in Christ" Daily Devotional
+                <p className="text-orange-100 mt-1">
+                  Daily Scripture & Inspiration
                 </p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-medium border border-orange-200">
+            <div className="px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-medium border border-white/30">
               📅 {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </div>
           </div>
         </div>
 
         {/* Theme Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded-full text-sm font-medium border border-purple-200 shadow-sm">
+        <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-medium border border-white/30">
           🎯 {dailyVerse.theme}
         </div>
       </div>
@@ -368,7 +349,7 @@ export function DailyVerseWidget() {
             <div className="p-2.5 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <h4 className="text-lg font-semibold text-blue-800">Billy Graham's Teaching</h4>
+            <h4 className="text-lg font-semibold text-blue-800">Daily Reflection</h4>
           </div>
           <p className="text-gray-700 leading-relaxed text-base">
             {dailyVerse.context}

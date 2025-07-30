@@ -6,21 +6,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   BookOpen, Plus, Edit3, Trash2, Search, FileText, 
-  Save, Calendar, Quote, X, ChevronDown
+  Save, Calendar as CalendarIcon, Quote, X, ChevronDown,
+  ChevronLeft, ChevronRight, Menu, Briefcase, PartyPopper,
+  User, MapPin, GraduationCap, Users, Settings
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
-import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { PageLayout } from "@/components/PageLayout";
 
 interface JournalEntry {
   id: string;
   title: string;
   content: string;
+  category?: string;
   verse_reference?: string;
   verse_text?: string;
   mood?: string;
@@ -44,20 +46,44 @@ interface BibleVerse {
   book_name: string;
 }
 
+const categories = [
+  { id: 'work', name: 'Work', icon: Briefcase, color: 'bg-blue-500' },
+  { id: 'events', name: 'Events', icon: PartyPopper, color: 'bg-green-500' },
+  { id: 'personal', name: 'Personal', icon: User, color: 'bg-purple-500' },
+  { id: 'trips', name: 'Trips', icon: MapPin, color: 'bg-orange-500' },
+  { id: 'education', name: 'Education', icon: GraduationCap, color: 'bg-indigo-500' },
+  { id: 'social', name: 'Social', icon: Users, color: 'bg-pink-500' },
+];
+
+const moods = [
+  { value: "joyful", label: "😊 Joyful" },
+  { value: "peaceful", label: "😌 Peaceful" },
+  { value: "grateful", label: "🙏 Grateful" },
+  { value: "contemplative", label: "🤔 Contemplative" },
+  { value: "hopeful", label: "✨ Hopeful" },
+  { value: "blessed", label: "🙌 Blessed" }
+];
+
 const Journal = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
   // Core state
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Entry dialog state
   const [showEntryDialog, setShowEntryDialog] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [entryTitle, setEntryTitle] = useState("");
   const [entryContent, setEntryContent] = useState("");
+  const [entryCategory, setEntryCategory] = useState("personal");
   const [entryMood, setEntryMood] = useState("");
   
   // Bible integration state
@@ -68,19 +94,6 @@ const Journal = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
   const [chapterVerses, setChapterVerses] = useState<BibleVerse[]>([]);
   const [selectedVerse, setSelectedVerse] = useState<BibleVerse | null>(null);
-
-  // Stats
-  const totalEntries = entries.length;
-  const totalWords = entries.reduce((sum, entry) => sum + entry.content.split(' ').length, 0);
-
-  const moods = [
-    { value: "joyful", label: "😊 Joyful" },
-    { value: "peaceful", label: "😌 Peaceful" },
-    { value: "grateful", label: "🙏 Grateful" },
-    { value: "contemplative", label: "🤔 Contemplative" },
-    { value: "hopeful", label: "✨ Hopeful" },
-    { value: "blessed", label: "🙌 Blessed" }
-  ];
 
   const languages = [
     { value: 'english', label: 'English (KJV)' },
@@ -93,6 +106,10 @@ const Journal = () => {
       loadBibleBooks();
     }
   }, [user]);
+
+  useEffect(() => {
+    filterEntries();
+  }, [entries, selectedCategory, searchQuery, selectedDate]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -145,6 +162,32 @@ const Journal = () => {
     }
   };
 
+  const filterEntries = () => {
+    let filtered = entries;
+
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(entry => (entry.category || 'personal') === selectedCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(entry =>
+        entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        entry.content.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by selected date
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    filtered = filtered.filter(entry => {
+      const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
+      return entryDate === selectedDateStr;
+    });
+
+    setFilteredEntries(filtered);
+  };
+
   const handleSaveEntry = async () => {
     if (!user || !entryTitle.trim() || !entryContent.trim()) {
       toast({
@@ -161,15 +204,15 @@ const Journal = () => {
         user_id: user.id,
         title: entryTitle.trim(),
         content: entryContent.trim(),
+        category: entryCategory,
         mood: entryMood || null,
         verse_reference: selectedVerse ? `${selectedVerse.book_name} ${selectedVerse.chapter}:${selectedVerse.verse}` : null,
         verse_text: selectedVerse?.text || null,
-        entry_date: new Date().toISOString().split('T')[0],
+        entry_date: selectedDate.toISOString().split('T')[0],
         updated_at: new Date().toISOString()
       };
 
       if (editingEntry) {
-        // Update existing entry
         const { error } = await supabase
           .from('journal_entries')
           .update(entryData)
@@ -182,7 +225,6 @@ const Journal = () => {
           description: "Your journal entry has been saved successfully",
         });
       } else {
-        // Create new entry
         const { data, error } = await supabase
           .from('journal_entries')
           .insert(entryData)
@@ -228,6 +270,7 @@ const Journal = () => {
         description: "Your journal entry has been deleted",
       });
       
+      setSelectedEntry(null);
       loadEntries();
     } catch (error) {
       console.error('Error deleting entry:', error);
@@ -244,9 +287,9 @@ const Journal = () => {
       setEditingEntry(entry);
       setEntryTitle(entry.title);
       setEntryContent(entry.content);
+      setEntryCategory(entry.category || 'personal');
       setEntryMood(entry.mood || "");
       if (entry.verse_text) {
-        // Parse existing verse reference if available
         setSelectedVerse({
           id: 'existing',
           chapter: 0,
@@ -259,6 +302,7 @@ const Journal = () => {
       setEditingEntry(null);
       setEntryTitle("");
       setEntryContent("");
+      setEntryCategory("personal");
       setEntryMood("");
       setSelectedVerse(null);
     }
@@ -270,32 +314,49 @@ const Journal = () => {
     setEditingEntry(null);
     setEntryTitle("");
     setEntryContent("");
+    setEntryCategory("personal");
     setEntryMood("");
     setSelectedVerse(null);
     setShowVerseSelector(false);
   };
 
-  const filteredEntries = entries.filter(entry =>
-    entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
   };
 
+  const formatDay = (date: Date) => {
+    return date.getDate();
+  };
+
+  const formatDayName = (date: Date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
+  const getEntriesForDate = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
+      return entryDate === dateStr;
+    });
+  };
+
+  const getCategoryIcon = (categoryId: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.icon : FileText;
+  };
+
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Sign In Required</h2>
-            <p className="text-muted-foreground">
+      <div className="min-h-screen bg-purple-600 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4 bg-white">
+          <CardContent className="p-8 text-center">
+            <FileText className="h-16 w-16 mx-auto mb-4 text-purple-500" />
+            <h2 className="text-2xl font-bold mb-2 text-gray-800">Sign In Required</h2>
+            <p className="text-gray-600">
               Please sign in to access your spiritual journal.
             </p>
           </CardContent>
@@ -305,128 +366,285 @@ const Journal = () => {
   }
 
   return (
-    <PageLayout padding="none" maxWidth="full">
-      <UnifiedHeader
-        icon={FileText}
-        title="My Spiritual Journal"
-        subtitle="Document your spiritual journey and reflections"
-      >
-        <div className="flex items-center gap-6 text-sm text-white/80 mr-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">📊</span>
-            <span>{totalEntries} entries</span>
+    <div className="min-h-screen bg-purple-600 flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3 mb-6">
+            <Menu className="h-6 w-6 text-gray-400" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-9 text-sm border-gray-200"
+              />
+            </div>
+            <Button size="icon" variant="ghost" className="h-9 w-9">
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-lg">📝</span>
-            <span>{totalWords.toLocaleString()} words</span>
+
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Journals</h2>
+          
+          {/* Categories */}
+          <div className="space-y-2">
+            <Button
+              variant={selectedCategory === 'all' ? "default" : "ghost"}
+              className="w-full justify-start h-9 text-sm"
+              onClick={() => setSelectedCategory('all')}
+            >
+              <FileText className="h-4 w-4 mr-3" />
+              All Entries
+            </Button>
+            
+                         {categories.map((category) => {
+               const Icon = category.icon;
+               const entryCount = entries.filter(e => (e.category || 'personal') === category.id).length;
+              
+              return (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "ghost"}
+                  className="w-full justify-between h-9 text-sm"
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  <div className="flex items-center">
+                    <Icon className="h-4 w-4 mr-3" />
+                    {category.name}
+                  </div>
+                  <span className="text-xs text-gray-500">{entryCount}</span>
+                </Button>
+              );
+            })}
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-9 text-sm text-purple-600"
+              onClick={() => openEntryDialog()}
+            >
+              <Plus className="h-4 w-4 mr-3" />
+              Add new
+            </Button>
           </div>
         </div>
-        <Button 
-          onClick={() => openEntryDialog()}
-          size="sm" 
-          className="bg-white text-orange-600 hover:bg-white/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Entry
-        </Button>
-      </UnifiedHeader>
 
-      {/* Main Content Background */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Search */}
-        <div className="mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <Input
-              placeholder="Search your journal entries..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 text-base rounded-xl border-gray-200 focus:border-orange-500 shadow-sm"
+        {/* Calendar */}
+        <div className="p-6 flex-1">
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-gray-800">
+                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </h3>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              month={currentMonth}
+              onMonthChange={setCurrentMonth}
+              className="w-full"
+              modifiers={{
+                hasEntry: (date) => getEntriesForDate(date).length > 0
+              }}
+              modifiersStyles={{
+                hasEntry: { 
+                  backgroundColor: '#8b5cf6', 
+                  color: 'white',
+                  borderRadius: '50%'
+                }
+              }}
             />
           </div>
         </div>
+      </div>
 
-        {/* Entries */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your journal entries...</p>
-          </div>
-        ) : filteredEntries.length > 0 ? (
-          <div className="grid gap-6">
-            {filteredEntries.map((entry) => (
-              <Card key={entry.id} className="shadow-sm hover:shadow-md transition-shadow border-0 bg-white/80 backdrop-blur-sm">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                        {entry.title}
-                      </CardTitle>
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate(entry.created_at)}</span>
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* Entries List */}
+        <div className="w-80 bg-gray-50 border-r border-gray-200 overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-800">
+                {formatDate(selectedDate)}
+              </h2>
+              <Button
+                size="sm"
+                onClick={() => openEntryDialog()}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {filteredEntries.length > 0 ? (
+                                 filteredEntries.map((entry) => {
+                   const Icon = getCategoryIcon(entry.category || 'personal');
+                   const category = categories.find(cat => cat.id === (entry.category || 'personal'));
+                  
+                  return (
+                    <Card
+                      key={entry.id}
+                      className={`cursor-pointer transition-all hover:shadow-md ${
+                        selectedEntry?.id === entry.id ? 'ring-2 ring-purple-500' : ''
+                      }`}
+                      onClick={() => setSelectedEntry(entry)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="text-center min-w-[40px]">
+                            <div className="text-2xl font-bold text-gray-800">
+                              {formatDay(new Date(entry.created_at))}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {formatDayName(new Date(entry.created_at)).slice(0, 3)}
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Icon className="h-4 w-4 text-gray-500" />
+                              <h3 className="font-medium text-gray-800 text-sm">
+                                {entry.title}
+                              </h3>
+                            </div>
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {entry.content}
+                            </p>
+                            {category && (
+                              <Badge 
+                                variant="secondary" 
+                                className="mt-2 text-xs"
+                              >
+                                {category.name}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        {entry.mood && (
-                          <Badge variant="secondary" className="text-xs">
-                            {moods.find(m => m.value === entry.mood)?.label || entry.mood}
-                          </Badge>
-                        )}
-                        {entry.verse_reference && (
-                          <Badge variant="outline" className="text-xs">
-                            <Quote className="h-3 w-3 mr-1" />
-                            {entry.verse_reference}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEntryDialog(entry)}
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {entry.verse_text && (
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 mb-4 border-l-4 border-orange-500">
-                      <p className="text-sm italic text-gray-700 mb-2">"{entry.verse_text}"</p>
-                                              <p className="text-xs font-medium text-orange-600">— {entry.verse_reference}</p>
-                    </div>
-                  )}
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {entry.content}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-500 text-sm">No entries for this date</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => openEntryDialog()}
+                  >
+                    Create Entry
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Entry Detail */}
+        <div className="flex-1 bg-white overflow-y-auto">
+          {selectedEntry ? (
+            <div className="p-8 max-w-3xl mx-auto">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                    {selectedEntry.title}
+                  </h1>
+                  <p className="text-gray-500">
+                    {formatDayName(new Date(selectedEntry.created_at))}, {formatDate(new Date(selectedEntry.created_at))}
                   </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-xl font-semibold mb-2 text-gray-900">No journal entries yet</h3>
-            <p className="text-gray-600 mb-6">
-              Start documenting your spiritual journey today
-            </p>
-            <Button onClick={() => openEntryDialog()} className="bg-orange-600 hover:bg-orange-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Write Your First Entry
-            </Button>
-          </div>
-        )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEntryDialog(selectedEntry)}
+                  >
+                    <Edit3 className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteEntry(selectedEntry.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+
+              {selectedEntry.verse_text && (
+                <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6 rounded-r-lg">
+                  <p className="text-gray-700 italic mb-2">"{selectedEntry.verse_text}"</p>
+                  <p className="text-sm font-medium text-purple-600">
+                    — {selectedEntry.verse_reference}
+                  </p>
+                </div>
+              )}
+
+              <div className="prose max-w-none">
+                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                  {selectedEntry.content}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 mt-8 pt-6 border-t border-gray-200">
+                {selectedEntry.category && (
+                  <Badge variant="secondary">
+                    {categories.find(cat => cat.id === selectedEntry.category)?.name || selectedEntry.category}
+                  </Badge>
+                )}
+                {selectedEntry.mood && (
+                  <Badge variant="outline">
+                    {moods.find(m => m.value === selectedEntry.mood)?.label || selectedEntry.mood}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-xl font-medium text-gray-600 mb-2">
+                  What lesson did I learn this week?
+                </h3>
+                <p className="text-gray-500 mb-6 max-w-md">
+                  Recently, I've been exploring the true meaning of contentment. 
+                  My perspective has been leading me to conclude that grounding and commitment are a bit like cousins. At first glance, they have similar features...
+                </p>
+                <Button onClick={() => openEntryDialog()} className="bg-purple-600 hover:bg-purple-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New Entry
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -446,9 +664,32 @@ const Journal = () => {
               <Input
                 value={entryTitle}
                 onChange={(e) => setEntryTitle(e.target.value)}
-                placeholder="Enter a title for your entry..."
+                placeholder="What lesson did I learn today?"
                 className="h-11"
               />
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Category</label>
+              <Select value={entryCategory} onValueChange={setEntryCategory}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => {
+                    const Icon = category.icon;
+                    return (
+                      <SelectItem key={category.id} value={category.id}>
+                        <div className="flex items-center">
+                          <Icon className="h-4 w-4 mr-2" />
+                          {category.name}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Mood Selection */}
@@ -485,9 +726,9 @@ const Journal = () => {
               </div>
 
               {selectedVerse && (
-                <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                <div className="bg-purple-50 rounded-lg p-3 mb-3">
                   <p className="text-sm italic text-gray-700 mb-1">"{selectedVerse.text}"</p>
-                  <p className="text-xs font-medium text-orange-600">
+                  <p className="text-xs font-medium text-purple-600">
                     — {selectedVerse.book_name} {selectedVerse.chapter}:{selectedVerse.verse}
                   </p>
                   <Button
@@ -576,7 +817,7 @@ const Journal = () => {
                               }}
                               className="w-full text-left p-2 hover:bg-gray-50 border-b last:border-b-0 text-xs"
                             >
-                              <span className="font-medium text-orange-600">{verse.verse}.</span> {verse.text}
+                              <span className="font-medium text-purple-600">{verse.verse}.</span> {verse.text}
                             </button>
                           ))}
                         </div>
@@ -607,7 +848,7 @@ const Journal = () => {
               <Button 
                 onClick={handleSaveEntry}
                 disabled={loading || !entryTitle.trim() || !entryContent.trim()}
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-purple-600 hover:bg-purple-700"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? 'Saving...' : editingEntry ? 'Update Entry' : 'Save Entry'}
@@ -616,7 +857,7 @@ const Journal = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </PageLayout>
+    </div>
   );
 };
 

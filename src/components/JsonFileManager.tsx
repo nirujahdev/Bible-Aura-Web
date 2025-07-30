@@ -42,7 +42,7 @@ interface FileItem {
   updated_at: string;
   created_at: string;
   last_accessed_at: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
 }
 
 export function JsonFileManager({ 
@@ -55,7 +55,7 @@ export function JsonFileManager({
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
-  const [jsonContent, setJsonContent] = useState<any>(null);
+  const [jsonContent, setJsonContent] = useState<unknown>(null);
   const [uploadContent, setUploadContent] = useState('');
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState<string | null>(null);

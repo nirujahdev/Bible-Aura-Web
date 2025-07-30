@@ -42,7 +42,6 @@ export default defineConfig(({ mode }) => ({
           'icons': ['lucide-react'],
           'editor': ['react-quill'],
           'charts': ['recharts'],
-          'ai-vendor': ['openai'],
           'utils': ['clsx', 'tailwind-merge', 'class-variance-authority', 'date-fns']
         }
       }

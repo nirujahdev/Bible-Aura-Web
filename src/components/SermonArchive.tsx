@@ -117,7 +117,7 @@ const SermonArchive = () => {
       "Thomas Aquinas", "Origen", "Clement of Alexandria", "Basil the Great"
     ],
     Modern: [
-      "Billy Graham", "John Stott", "Martyn Lloyd-Jones", "A.W. Tozer",
+      "John Stott", "Martyn Lloyd-Jones", "A.W. Tozer",
       "Watchman Nee", "Oswald Chambers", "F.B. Meyer", "G. Campbell Morgan",
       "Alexander Maclaren", "Joseph Parker", "R.W. Dale", "Phillips Brooks"
     ],
@@ -204,7 +204,7 @@ const SermonArchive = () => {
 
       if (error) throw error;
       setPreachers(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching preachers:', error);
     }
   };
@@ -218,7 +218,7 @@ const SermonArchive = () => {
 
       if (error) throw error;
       setBookmarkedSermons(data?.map(b => b.sermon_id) || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching bookmarks:', error);
     }
   };
@@ -249,10 +249,11 @@ const SermonArchive = () => {
         setBookmarkedSermons(prev => [...prev, sermonId]);
         toast({ title: "Bookmark added" });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Error updating bookmark",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,14 +37,14 @@ export function BibleApiTest() {
   // Load available Bibles on component mount
   useEffect(() => {
     loadAvailableBibles();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load books when Bible selection changes
   useEffect(() => {
     if (selectedBible) {
       loadBooks();
     }
-  }, [selectedBible]);
+  }, [selectedBible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAvailableBibles = async () => {
     setLoading(true);

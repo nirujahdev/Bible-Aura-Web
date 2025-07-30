@@ -11,7 +11,6 @@ import { Suspense, lazy } from "react";
 import LoadingScreen from "./components/LoadingScreen";
 
 // Lazy load all page components for better performance
-const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Bible = lazy(() => import("./pages/Bible"));
@@ -66,7 +65,7 @@ function AppLayout() {
         <main className="relative z-10">
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<Navigate to="/chat" replace />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />

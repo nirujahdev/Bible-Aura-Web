@@ -169,10 +169,11 @@ const TopicalBibleStudy = () => {
       // Organize topics hierarchically
       const organizedTopics = organizeTopicsHierarchically(data || []);
       setTopics(organizedTopics);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load topics';
       toast({
         title: "Error loading topics",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -180,7 +181,7 @@ const TopicalBibleStudy = () => {
     }
   };
 
-  const organizeTopicsHierarchically = (topicsData: any[]): Topic[] => {
+  const organizeTopicsHierarchically = (topicsData: unknown[]): Topic[] => {
     const topicMap = new Map();
     const rootTopics: Topic[] = [];
 
@@ -211,7 +212,7 @@ const TopicalBibleStudy = () => {
 
       if (error) throw error;
       setBookmarkedTopics(data?.map(b => b.topic_id) || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching bookmarks:', error);
     }
   };
