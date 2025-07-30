@@ -638,6 +638,30 @@ export default function Bible() {
           </Button>
         )}
 
+        {/* Mobile Chapter Navigation - Right side */}
+        {isMobile && selectedBook && (
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateChapter('prev')}
+              disabled={selectedChapter <= 1}
+              className="h-8 w-8 p-0 bg-white shadow-lg"
+            >
+              <ChevronLeft className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateChapter('next')}
+              disabled={selectedChapter >= (selectedBook.chapters || 1)}
+              className="h-8 w-8 p-0 bg-white shadow-lg"
+            >
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+
         {/* Bible Content Panel - Desktop */}
         {!isMobile && (
           <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm">
@@ -1355,17 +1379,17 @@ function VerseCard({
           )}
         </div>
         
-        {/* Action Buttons - Always visible on mobile */}
-        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+        {/* Action Buttons - Vertical on mobile, horizontal on desktop */}
+        <div className="flex flex-col md:flex-row items-center gap-0.5 md:gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           {/* Highlight */}
           <div className="relative">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowHighlighter(!showHighlighter)}
-              className="h-8 w-8 p-0"
+              className="h-6 w-6 md:h-8 md:w-8 p-0"
             >
-              <Highlighter className="h-4 w-4" />
+              <Highlighter className="h-3 w-3 md:h-4 md:w-4" />
             </Button>
             
             {showHighlighter && (
@@ -1391,9 +1415,9 @@ function VerseCard({
             variant="ghost"
             size="sm"
             onClick={() => onToggleFavorite(verse)}
-            className="h-8 w-8 p-0"
+            className="h-6 w-6 md:h-8 md:w-8 p-0"
           >
-            <Heart className={`h-4 w-4 ${
+            <Heart className={`h-3 w-3 md:h-4 md:w-4 ${
               isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
             }`} />
           </Button>
@@ -1403,9 +1427,9 @@ function VerseCard({
             variant="ghost" 
             size="sm"
             onClick={() => onOpenNote(verse)}
-            className="h-8 w-8 p-0"
+            className="h-6 w-6 md:h-8 md:w-8 p-0"
           >
-            <StickyNote className="h-4 w-4" />
+            <StickyNote className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
 
           {/* AI Analysis */}
@@ -1413,9 +1437,9 @@ function VerseCard({
             variant="ghost" 
             size="sm"
             onClick={() => onOpenAI(verse)}
-            className="h-8 w-8 p-0"
+            className="h-6 w-6 md:h-8 md:w-8 p-0"
           >
-            <Brain className="h-4 w-4" />
+            <Brain className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
           
           {/* Share */}
