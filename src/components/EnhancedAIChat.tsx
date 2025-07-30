@@ -16,7 +16,8 @@ import {
   Sparkles,
   Clock,
   User,
-  Bot
+  Bot,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -62,7 +63,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
         messages: [
           {
             role: "system",
-            content: "You are Bible Aura AI, a specialized biblical assistant designed to help with biblical questions. I provide explanations of Bible verses, historical context, theology, and practical applications in simple language. I can help you understand scripture better, find verses, or explore biblical topics. Let me know how I can assist you today."
+            content: "You are Bible Aura AI, a specialized biblical assistant. Follow these formatting guidelines strictly:\n\n1. Format ALL responses in clean, simple text using Montserrat Medium Bold font weight\n2. Structure responses in numbered points format\n3. NO markdown symbols (#, *, etc.) - use plain text only\n4. ALWAYS quote the relevant Bible verse at the beginning or end of your response\n5. Use this structure for verse explanations:\n\n1. [Quote the Bible verse with reference]\n2. [Historical context in simple points]\n3. [Theological meaning in simple points]\n4. [Practical application in simple points]\n\nFor general biblical questions:\n1. [Always include a relevant Bible verse quote]\n2. [Answer in clear, numbered points]\n3. [Provide practical application]\n\nUse simple, accessible language. Keep responses concise and focused. Always maintain reverence for scripture."
           },
           ...messages
         ],
@@ -130,6 +131,13 @@ export default function EnhancedAIChat() {
     }
   }, [messages]);
 
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  };
+
   const loadConversations = async () => {
     try {
       const { data, error } = await supabase
@@ -143,7 +151,11 @@ export default function EnhancedAIChat() {
         return;
       }
 
-      setConversations(data || []);
+      const conversations = (data || []).map(conv => ({
+        ...conv,
+        messages: Array.isArray(conv.messages) ? conv.messages as unknown as Message[] : []
+      }));
+      setConversations(conversations as Conversation[]);
     } catch (error) {
       console.error('Error loading conversations:', error);
     }
@@ -168,7 +180,7 @@ export default function EnhancedAIChat() {
         const { error } = await supabase
           .from('ai_conversations')
           .update({
-            messages: messages,
+            messages: messages as any,
             updated_at: new Date().toISOString()
           })
           .eq('id', currentConversationId)
@@ -182,7 +194,7 @@ export default function EnhancedAIChat() {
           .insert({
             user_id: user.id,
             title: title,
-            messages: messages
+            messages: messages as any
           })
           .select()
           .single();
@@ -463,12 +475,12 @@ export default function EnhancedAIChat() {
         </div>
 
         {/* Chat Messages Area */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden relative">
           {messages.length === 0 ? (
             // Welcome Screen
             <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <div className="text-6xl mb-4">✦</div>
+                <div className="text-6xl mb-4 text-orange-500">✦</div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
                   Hello {getUserName()}!
                 </h2>
@@ -501,8 +513,8 @@ export default function EnhancedAIChat() {
                     className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {message.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Bot className="h-4 w-4 text-primary" />
+                      <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+                        <span className="text-orange-500 text-lg font-bold">✦</span>
                       </div>
                     )}
                     
@@ -512,7 +524,12 @@ export default function EnhancedAIChat() {
                           ? 'bg-primary text-primary-foreground ml-auto'
                           : 'bg-gray-100 text-gray-900'
                       }`}>
-                        <p className="whitespace-pre-wrap leading-relaxed">
+                        <p className={`whitespace-pre-wrap leading-relaxed ${
+                          message.role === 'assistant' ? 'font-medium' : ''
+                        }`} style={{
+                          fontFamily: message.role === 'assistant' ? 'Montserrat, sans-serif' : 'inherit',
+                          fontWeight: message.role === 'assistant' ? '600' : 'normal'
+                        }}>
                           {message.content}
                         </p>
                       </div>
@@ -538,8 +555,8 @@ export default function EnhancedAIChat() {
                 {/* Loading indicator */}
                 {isLoading && (
                   <div className="flex gap-4 justify-start">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-500 text-lg font-bold">✦</span>
                     </div>
                     <div className="bg-gray-100 rounded-2xl px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -555,6 +572,18 @@ export default function EnhancedAIChat() {
                 )}
               </div>
             </ScrollArea>
+          )}
+
+          {/* Scroll to Bottom Button */}
+          {messages.length > 0 && (
+            <Button
+              onClick={scrollToBottom}
+              size="sm"
+              className="absolute bottom-6 right-6 rounded-full w-12 h-12 shadow-lg bg-orange-500 hover:bg-orange-600 text-white border-2 border-white"
+              style={{ zIndex: 10 }}
+            >
+              <ChevronDown className="h-5 w-5" />
+            </Button>
           )}
         </div>
 
