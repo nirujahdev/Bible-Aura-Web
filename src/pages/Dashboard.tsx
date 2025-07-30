@@ -5,15 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   MessageCircle, BookOpen, PenTool, Sparkles, TrendingUp, 
   Star, Calendar, Target, Heart, Brain, Clock, ChevronRight,
-  Plus, Book, Zap, Users, Trophy, ArrowRight, Send, Bot, User
+  Plus, Book, Zap, Users, Trophy, ArrowRight, Send, Bot, User,
+  Menu, Settings, LogOut, Headphones, FileText
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DashboardStats {
   journalEntries: number;
@@ -370,11 +373,130 @@ export default function Dashboard() {
     return profile?.display_name?.split(' ')[0] || 'Friend';
   };
 
+  // Mobile navigation items
+  const navigationItems = [
+    { name: 'Bible', href: '/bible', icon: BookOpen },
+    { name: 'Songs', href: '/songs', icon: Sparkles },
+    { name: 'Characters', href: '/bible-characters', icon: Users },
+    { name: 'Study Hub', href: '/study-hub', icon: Book },
+    { name: 'Sermons', href: '/sermons', icon: Headphones },
+    { name: 'Favorites', href: '/favorites', icon: Heart },
+    { name: 'Journal', href: '/journal', icon: FileText },
+  ];
+
+  const MobileNavigation = () => {
+    const location = useLocation();
+    const [open, setOpen] = useState(false);
+
+    return (
+      <div className="lg:hidden">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="fixed top-4 left-4 z-50 h-12 w-12 p-0 bg-white/95 backdrop-blur-sm border-2 border-orange-500/20 shadow-lg hover:bg-orange-50 rounded-xl"
+            >
+              <div className="relative">
+                <Menu className="h-5 w-5 text-gray-700" />
+                <span className="absolute -top-0.5 -right-0.5 text-xs font-bold text-orange-500">✦</span>
+              </div>
+            </Button>
+          </SheetTrigger>
+          
+          <SheetContent side="left" className="w-[320px] p-0 bg-white">
+            {/* Mobile Header */}
+            <div className="p-6 bg-gradient-to-r from-orange-500 to-purple-600 text-white">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-3">
+                  <span className="text-xl font-bold">✦</span>
+                </div>
+                <h1 className="text-xl font-bold">Bible Aura</h1>
+                <p className="text-sm text-white/80 mt-1">AI Biblical Assistant</p>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <div className="space-y-1">
+                {navigationItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all ${
+                      location.pathname === item.href 
+                        ? 'bg-orange-50 border-l-4 border-orange-500' 
+                        : ''
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 ${
+                      location.pathname === item.href 
+                        ? 'text-orange-500' 
+                        : 'text-gray-600'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      location.pathname === item.href 
+                        ? 'text-orange-500' 
+                        : 'text-gray-700'
+                    }`}>
+                      {item.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Footer */}
+            <div className="p-4 border-t bg-gray-50/50">
+              {user && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarFallback className="bg-orange-500 text-white">
+                        {getUserName().charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-gray-800">
+                        {getUserName()}
+                      </div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to="/profile">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Settings className="h-4 w-4 mr-1" />
+                        Profile
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm" className="w-full text-red-600">
+                      <LogOut className="h-4 w-4 mr-1" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    );
+  };
+
+  const isMobile = useIsMobile();
+
   if (!showChat) {
     // Welcome screen with chat integration
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
+        <MobileNavigation />
+        
         <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Mobile padding for menu button */}
+          <div className="lg:hidden h-16"></div>
           {/* Welcome Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-purple-600 text-white mb-6 shadow-lg">
@@ -395,8 +517,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {/* Stats Overview - Mobile Responsive */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-12">
             <Card className="text-center border-0 shadow-md bg-white/80 backdrop-blur-sm hover:shadow-lg transition-all">
               <CardContent className="pt-6">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -438,13 +560,13 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Quick Start Actions */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
+          {/* Quick Start Actions - Mobile Responsive */}
+          <div className="mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-gray-900">
               Start Your Spiritual Journey Today
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {quickStartPrompts.map((prompt) => (
                 <Card 
                   key={prompt.id}
@@ -501,28 +623,28 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Input Area for Quick Chat */}
+          {/* Input Area for Quick Chat - Mobile Responsive */}
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-              <div className="flex items-center space-x-4">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-3 md:p-4">
+              <div className="flex items-center space-x-2 md:space-x-4">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask me about any Bible verse or spiritual question..."
-                  className="flex-1 border-0 text-lg focus:ring-0 shadow-none"
+                  placeholder={isMobile ? "Ask about any Bible verse..." : "Ask me about any Bible verse or spiritual question..."}
+                  className="flex-1 border-0 text-base md:text-lg focus:ring-0 shadow-none"
                   disabled={isLoading}
                 />
                 <Button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isLoading}
-                  size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-8"
+                  size={isMobile ? "default" : "lg"}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-4 md:px-8"
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Send className="h-5 w-5" />
+                    <Send className="h-4 w-4 md:h-5 md:w-5" />
                   )}
                 </Button>
               </div>
@@ -576,32 +698,38 @@ export default function Dashboard() {
   // Chat Interface
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Chat Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Bot className="h-6 w-6 text-white" />
+      <MobileNavigation />
+      
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+        {/* Mobile padding for menu button */}
+        <div className="lg:hidden h-16"></div>
+        {/* Chat Header - Mobile Responsive */}
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-orange-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <Bot className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Bible Aura AI</h1>
-              <p className="text-gray-600">Your Biblical Assistant</p>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">Bible Aura AI</h1>
+              <p className="text-sm md:text-base text-gray-600 hidden sm:block">Your Biblical Assistant</p>
             </div>
           </div>
           <Button
             onClick={startNewConversation}
             variant="outline"
+            size={isMobile ? "sm" : "default"}
             className="bg-white hover:bg-gray-50"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            New Chat
+            <Plus className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">New Chat</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
 
-        {/* Chat Messages */}
-        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm mb-6">
+        {/* Chat Messages - Mobile Responsive */}
+        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm mb-4 md:mb-6">
           <CardContent className="p-0">
-            <ScrollArea ref={scrollAreaRef} className="h-[500px] p-6">
+            <ScrollArea ref={scrollAreaRef} className="h-[400px] md:h-[500px] p-4 md:p-6">
               <div className="space-y-6">
                 {messages.map((message) => (
                   <div
@@ -653,28 +781,28 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Chat Input */}
+        {/* Chat Input - Mobile Responsive */}
         <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-4">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-center space-x-2 md:space-x-4">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me about any Bible verse or spiritual question..."
-                className="flex-1 border-0 text-lg focus:ring-0 shadow-none"
+                placeholder={isMobile ? "Ask about Bible verses..." : "Ask me about any Bible verse or spiritual question..."}
+                className="flex-1 border-0 text-base md:text-lg focus:ring-0 shadow-none"
                 disabled={isLoading}
               />
               <Button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading}
-                size="lg"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-8"
+                size={isMobile ? "default" : "lg"}
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 px-4 md:px-8"
               >
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Send className="h-5 w-5" />
+                  <Send className="h-4 w-4 md:h-5 md:w-5" />
                 )}
               </Button>
             </div>

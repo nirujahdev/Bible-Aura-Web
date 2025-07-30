@@ -81,9 +81,7 @@ function AppLayout() {
             {/* Dashboard is the home page */}
             <Route path="/" element={
               <ProtectedRoute>
-                <ModernLayout>
-                  <Dashboard />
-                </ModernLayout>
+                <Dashboard />
               </ProtectedRoute>
             } />
             

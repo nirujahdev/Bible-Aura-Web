@@ -3,8 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   MessageCircle, BookOpen, Music, Users, Headphones, 
   Heart, FileText, User, Settings, HelpCircle, TreePine, 
-  Mic, Star, Search, Library, Home, Plus
+  Mic, Star, Search, Library, Home, Plus, Menu
 } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,11 +24,11 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: 'Chat', href: '/', icon: MessageCircle, tooltip: 'AI Chat' },
+  { name: 'Home', href: '/', icon: MessageCircle, tooltip: 'AI Chat Dashboard' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
   { name: 'Characters', href: '/bible-characters', icon: Users, tooltip: 'Bible Characters' },
-  { name: 'Study Hub', href: '/study', icon: BookOpen, tooltip: 'Study Hub - Q&A, Sermons, Parables & Topics' },
+  { name: 'Study Hub', href: '/study-hub', icon: Library, tooltip: 'Study Hub - Q&A, Sermons, Parables & Topics' },
   { name: 'Sermons', href: '/sermons', icon: Headphones, tooltip: 'Sermons' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
   { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
@@ -35,6 +37,7 @@ const sidebarItems: SidebarItem[] = [
 export function ModernLayout({ children }: ModernLayoutProps) {
   const location = useLocation();
   const { user, profile } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getUserName = () => {
     if (profile?.display_name) {
@@ -49,7 +52,7 @@ export function ModernLayout({ children }: ModernLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex">
       {/* Clean Modern Sidebar */}
-      <div className="w-16 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 flex flex-col shadow-sm">
+      <div className="hidden lg:flex w-16 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200 flex-col shadow-sm">
         {/* Logo - Fixed at top */}
         <div className="flex-shrink-0 p-3 border-b border-gray-100">
           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -136,8 +139,105 @@ export function ModernLayout({ children }: ModernLayoutProps) {
         </div>
       </div>
 
+      {/* Mobile Navigation */}
+      <div className="lg:hidden">
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="fixed top-4 left-4 z-50 h-12 w-12 p-0 bg-white/95 backdrop-blur-sm border-2 border-orange-500/20 shadow-lg hover:bg-orange-50 rounded-xl"
+            >
+              <div className="relative">
+                <Menu className="h-5 w-5 text-gray-700" />
+                <span className="absolute -top-0.5 -right-0.5 text-xs font-bold text-orange-500">✦</span>
+              </div>
+            </Button>
+          </SheetTrigger>
+          
+          <SheetContent side="left" className="w-[320px] p-0 bg-white">
+            {/* Mobile Header */}
+            <div className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-3">
+                  <span className="text-xl font-bold">✦</span>
+                </div>
+                <h1 className="text-xl font-bold">Bible Aura</h1>
+                <p className="text-sm text-white/80 mt-1">AI Biblical Assistant</p>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <div className="space-y-1">
+                {sidebarItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all ${
+                      location.pathname === item.href 
+                        ? 'bg-orange-50 border-l-4 border-orange-500' 
+                        : ''
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 ${
+                      location.pathname === item.href 
+                        ? 'text-orange-500' 
+                        : 'text-gray-600'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      location.pathname === item.href 
+                        ? 'text-orange-500' 
+                        : 'text-gray-700'
+                    }`}>
+                      {item.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Footer */}
+            <div className="p-4 border-t bg-gray-50/50">
+              {user && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarFallback className="bg-orange-500 text-white">
+                        {getUserName().charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-gray-800">
+                        {getUserName()}
+                      </div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to="/profile">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Settings className="h-4 w-4 mr-1" />
+                        Profile
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm" className="w-full text-red-600">
+                      <User className="h-4 w-4 mr-1" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 bg-white">
+      <div className="flex-1 bg-white lg:ml-0">
+        <div className="lg:hidden h-16"></div>
         {children}
       </div>
     </div>
