@@ -36,8 +36,8 @@ export type SupportedLanguage = 'english' | 'tamil' | 'sinhala';
 // =============================================================================
 
 export const AI_CONFIG = {
-  // OpenRouter API Configuration (more reliable than direct DeepSeek)
-  apiKey: "sk-50e2e8a01cc440c3bf61641eee6aa2a6",
+  // DeepSeek API Configuration
+  apiKey: "sk-6251eb1f9fb8476cb2aba1431ab3c114",
   model: "deepseek/deepseek-r1",
   baseURL: "https://openrouter.ai/api/v1",
   

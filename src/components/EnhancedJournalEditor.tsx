@@ -274,7 +274,7 @@ export function EnhancedJournalEditor({
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
+          'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
           'HTTP-Referer': 'https://bible-aura.app',
           'X-Title': '✦Bible Aura - Journal AI',
           'Content-Type': 'application/json'

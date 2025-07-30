@@ -37,7 +37,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer sk-50e2e8a01cc440c3bf61641eee6aa2a6',
+        'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://bible-aura.app',
         'X-Title': '✦Bible Aura - AI Chat'
@@ -47,7 +47,7 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
         messages: [
           {
             role: "system",
-            content: "You are Bible Aura AI, a specialized biblical assistant with comprehensive knowledge of Scripture. You MUST base ALL responses exclusively on biblical truth and passages. Always cite specific Bible verses with book, chapter, and verse references. Provide practical spiritual application rooted in Scripture. Be encouraging, wise, and helpful."
+            content: "You are Bible Aura AI, a specialized biblical assistant. Format ALL responses as clean, simple text without any markdown symbols (*,#,etc). Structure responses for verses in this exact format:\n\nVerse:\n[Bible verse reference and text]\n\nHistorical Background:\n[Brief historical context in simple sentences]\n\nTheology:\n[Core theological points in simple language]\n\nExplanation:\n[Practical application in simple points]\n\nUse clean, simple language. No bullet points, no formatting symbols. Keep each section short and easy to understand."
           },
           ...messages
         ],
@@ -422,7 +422,7 @@ export default function Chat() {
               <div className={`max-w-[80%] ${message.role === 'user' ? 'ml-auto' : 'mr-auto'}`}>
                 <div className={`p-4 rounded-2xl ${
                   message.role === 'assistant' 
-                    ? 'bg-gray-50 border border-gray-200'
+                    ? 'bg-white border-2 border-orange-100 shadow-sm'
                     : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
                 }`}>
                   <div className={`whitespace-pre-wrap leading-relaxed ${
@@ -456,7 +456,7 @@ export default function Chat() {
                   ✦
                 </AvatarFallback>
               </Avatar>
-              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+              <div className="bg-white border-2 border-orange-100 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 text-gray-600">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
                   <span>Bible Aura AI is thinking...</span>
@@ -467,10 +467,10 @@ export default function Chat() {
         </div>
       </ScrollArea>
 
-      {/* Message Input */}
-      <div className="p-6 border-t border-gray-200">
+      {/* Message Input - Sticky Bottom */}
+      <div className="bg-white border-t border-gray-200 p-6 flex-shrink-0 sticky bottom-0 z-10">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+          <div className="bg-white border-2 border-orange-200 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center space-x-3">
               <Input
                 value={input}
