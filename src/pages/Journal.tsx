@@ -19,10 +19,11 @@ import {
   ChevronLeft, ChevronRight, Menu, Briefcase, PartyPopper,
   User, MapPin, GraduationCap, Users, Settings, Heart,
   Star, Filter, Download, Lightbulb, Target, TrendingUp,
-  Clock, PrayerIcon as Pray, Sparkles, BarChart3, Book,
+  Clock, Hand as Pray, Sparkles, BarChart3, Book,
   Copy, Share, Eye, Archive, Pin, Tag
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
+import type { Json } from "@/integrations/supabase/types";
 
 interface JournalEntry {
   id: string;
@@ -39,6 +40,7 @@ interface JournalEntry {
   prayer_requests?: string[];
   gratitude_items?: string[];
   template_used?: string;
+  metadata?: Json;
 }
 
 interface BibleBook {
@@ -432,17 +434,10 @@ const Journal = () => {
       setEntryCategory(entry.category || 'personal');
       setEntryMood(entry.mood || "");
       
-      // Try to parse metadata
-      try {
-        const metadata = entry.metadata ? JSON.parse(entry.metadata) : {};
-        setPrayerRequests(metadata.prayer_requests || []);
-        setGratitudeItems(metadata.gratitude_items || []);
-        setSelectedTemplate(metadata.template_used || null);
-      } catch (e) {
-        setPrayerRequests([]);
-        setGratitudeItems([]);
-        setSelectedTemplate(null);
-      }
+      // Initialize with empty values for now
+      setPrayerRequests([]);
+      setGratitudeItems([]);
+      setSelectedTemplate(null);
       
       if (entry.verse_text) {
         setSelectedVerse({
