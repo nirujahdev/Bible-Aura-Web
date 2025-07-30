@@ -628,7 +628,7 @@ export default function Auth() {
                           asChild 
                           className="w-full bg-green-600 hover:bg-green-700 text-white"
                         >
-                          <Link to="/chat">
+                          <Link to="/">
                             Go to AI Chat
                           </Link>
                         </Button>

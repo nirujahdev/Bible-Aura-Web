@@ -554,9 +554,9 @@ const Funding = () => {
                 <Link to="/careers" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Careers
                 </Link>
-                                  <Link to="/chat" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                    AI Chat
-                  </Link>
+                                                  <Link to="/" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  AI Chat
+                </Link>
                 <Link to="/auth" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Sign In
                 </Link>

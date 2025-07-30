@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { Toaster } from "./components/ui/toaster";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { queryClient } from "./lib/queryClient";
@@ -37,11 +37,22 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ModernLayout } from "./components/ModernLayout";
 
 function AppLayout() {
+  // Component to handle root route - shows landing page or dashboard based on auth
+  const LandingOrDashboard = () => {
+    const { user } = useAuth();
+    
+    if (user) {
+      // User is authenticated, show dashboard
+      return <Dashboard />;
+    } else {
+      // User is not authenticated, show landing page
+      return <Home />;
+    }
+  };
   const location = useLocation();
 
   // Define routes that should use landing layout (no sidebar)
   const landingRoutes = [
-    '/landing',
     '/auth',
     '/about', 
     '/contact',
@@ -61,7 +72,6 @@ function AppLayout() {
         <main>
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
-              <Route path="/landing" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
@@ -78,8 +88,11 @@ function AppLayout() {
         // Modern app layout with sidebar for all app pages
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            {/* Dashboard is the home page */}
-            <Route path="/" element={
+            {/* Root route - Landing page for non-authenticated, Dashboard for authenticated */}
+            <Route path="/" element={<LandingOrDashboard />} />
+            
+            {/* Dashboard route */}
+            <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
