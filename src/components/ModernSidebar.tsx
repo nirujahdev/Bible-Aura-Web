@@ -45,14 +45,14 @@ const gridMenuItems: GridMenuItem[] = [
     path: "/bible"
   },
   {
-    label: "AI Chat",
+    label: "Study Hub",
     icon: MessageCircle,
-    path: "/chat"
+    path: "/study-hub"
   },
   {
-    label: "Quick Start",
+    label: "Journal",
     icon: Plus,
-    path: "/bible-qa",
+    path: "/journal",
     isSpecial: true
   },
   {
@@ -75,9 +75,9 @@ const gridMenuItems: GridMenuItem[] = [
 // Sidebar icon navigation
 const sidebarTopItems: SidebarIconItem[] = [
   { icon: Plus, action: "new", tooltip: "New Chat" },
-  { icon: Home, path: "/chat", tooltip: "Home" },
-  { icon: Grid3X3, path: "/resources", tooltip: "Resources" },
-  { icon: HelpCircle, path: "/bible-qa", tooltip: "Help" }
+  { icon: Home, path: "/", tooltip: "Home" },
+  { icon: BookOpen, path: "/study-hub", tooltip: "Study Hub" },
+  { icon: HelpCircle, path: "/study-hub", tooltip: "Help" }
 ]
 
 const sidebarBottomItems: SidebarIconItem[] = [
@@ -87,14 +87,14 @@ const sidebarBottomItems: SidebarIconItem[] = [
 // Define all navigation items for mobile
 const allNavigationItems: NavigationItem[] = [
   {
+    title: "Home",
+    url: "/",
+    icon: Home,
+  },
+  {
     title: "Bible",
     url: "/bible",
     icon: BookOpen,
-  },
-  {
-    title: "AI Chat",
-    url: "/chat",
-    icon: MessageCircle,
   },
   {
     title: "Songs",
@@ -102,8 +102,8 @@ const allNavigationItems: NavigationItem[] = [
     icon: Music,
   },
   {
-    title: "Bible Q&A",
-    url: "/bible-qa",
+    title: "Study Hub",
+    url: "/study-hub",
     icon: HelpCircle,
   },
   {
@@ -115,21 +115,6 @@ const allNavigationItems: NavigationItem[] = [
     title: "Sermons",
     url: "/sermons",
     icon: Headphones,
-  },
-  {
-    title: "Topical Study",
-    url: "/topical-study",
-    icon: BookOpen,
-  },
-  {
-    title: "Sermon Library",
-    url: "/sermon-library", 
-    icon: Mic,
-  },
-  {
-    title: "Parables Study",
-    url: "/parables-study",
-    icon: TreePine,
   },
   {
     title: "Favorites",
@@ -212,7 +197,7 @@ function MainContent() {
             </div>
             <Button 
               className="bg-white/20 hover:bg-white/30 text-white border-0 rounded-xl px-6"
-              onClick={() => window.location.href = `/chat?q=${encodeURIComponent(suggestion)}`}
+              onClick={() => window.location.href = `/study-hub?q=${encodeURIComponent(suggestion)}`}
             >
               Ask
             </Button>
@@ -230,7 +215,7 @@ function MainContent() {
               className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none"
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                  window.location.href = `/chat?q=${encodeURIComponent(e.currentTarget.value)}`;
+                  window.location.href = `/study-hub?q=${encodeURIComponent(e.currentTarget.value)}`;
                 }
               }}
             />
@@ -277,7 +262,7 @@ function IconSidebar() {
               </Link>
             ) : (
               <button
-                onClick={() => window.location.href = '/chat'}
+                onClick={() => window.location.href = '/study-hub'}
                 className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all duration-200"
               >
                 <item.icon className="h-5 w-5" />

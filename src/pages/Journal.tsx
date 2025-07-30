@@ -18,7 +18,7 @@ import {
   ChevronLeft, ChevronRight, Briefcase, PartyPopper,
   User, MapPin, GraduationCap, Users, Heart,
   Filter, Clock, Hand as Pray, Sparkles, Book,
-  Copy, Pin, Feather
+  Copy, Pin, Feather, AlertCircle
 } from "lucide-react";
 import { getAllBooks, getChapterVerses } from "@/lib/local-bible";
 import type { Json } from "@/integrations/supabase/types";
@@ -147,6 +147,7 @@ const Journal = () => {
   const [loading, setLoading] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [activeView, setActiveView] = useState('entries');
+  const [error, setError] = useState<string | null>(null);
   
   // Entry dialog state
   const [showEntryDialog, setShowEntryDialog] = useState(false);
@@ -183,7 +184,12 @@ const Journal = () => {
   }, [user]);
 
   useEffect(() => {
-    filterEntries();
+    try {
+      filterEntries();
+    } catch (error) {
+      console.error('Error filtering entries:', error);
+      setError('Error filtering entries. Please try refreshing.');
+    }
   }, [entries, selectedCategory, searchQuery, selectedDate, sortBy]);
 
   useEffect(() => {
@@ -196,6 +202,7 @@ const Journal = () => {
     if (!user) return;
     
     setLoading(true);
+    setError(null);
     try {
       const { data, error } = await supabase
         .from('journal_entries')
@@ -207,6 +214,7 @@ const Journal = () => {
       setEntries(data || []);
     } catch (error) {
       console.error('Error loading entries:', error);
+      setError('Failed to load journal entries');
       toast({
         title: "Error loading entries",
         description: "Please refresh the page to try again",
@@ -311,7 +319,8 @@ const Journal = () => {
         const { error } = await supabase
           .from('journal_entries')
           .update(entryData)
-          .eq('id', editingEntry.id);
+          .eq('id', editingEntry.id)
+          .eq('user_id', user.id);
 
         if (error) throw error;
         
@@ -503,6 +512,31 @@ const Journal = () => {
             <p className="text-gray-600">
               Please sign in to access your spiritual journal.
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-sm border-red-200">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
+            <h2 className="text-2xl font-bold mb-2 text-gray-800">Something went wrong</h2>
+            <p className="text-gray-600 mb-4">
+              {error}
+            </p>
+            <Button 
+              onClick={() => {
+                setError(null);
+                loadEntries();
+              }}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              Try Again
+            </Button>
           </CardContent>
         </Card>
       </div>
