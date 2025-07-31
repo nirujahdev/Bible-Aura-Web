@@ -699,8 +699,8 @@ const Home = () => {
                 <Link to="/careers" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Careers
                 </Link>
-                <Link to="/" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Chat
+                <Link to="/bible-ai" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  Bible AI
                 </Link>
                 <Link to="/auth" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
                   Sign In
@@ -708,18 +708,23 @@ const Home = () => {
               </nav>
             </div>
             
-            {/* Contact Section */}
+            {/* Blog Section */}
             <div className="text-center md:text-left">
-              <h4 className="text-xl font-semibold text-white mb-6">Contact</h4>
-              <div className="space-y-3">
-                <p className="text-gray-400">@bible_aura.ai</p>
-                <a 
-                  href="mailto:bibleaura.contact@gmail.com" 
-                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
-                >
-                  bibleaura.contact@gmail.com
-                </a>
-              </div>
+              <h4 className="text-xl font-semibold text-white mb-6">Bible AI Blog</h4>
+              <nav className="space-y-3">
+                <Link to="/blog" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  All Articles
+                </Link>
+                <Link to="/blog/how-ai-transforms-bible-study" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  AI Bible Study Guide
+                </Link>
+                <Link to="/blog/bible-ai-vs-traditional-study" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  AI vs Traditional Study
+                </Link>
+                <Link to="/blog/ai-bible-insights-accuracy" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                  AI Insights Accuracy
+                </Link>
+              </nav>
             </div>
           </div>
 

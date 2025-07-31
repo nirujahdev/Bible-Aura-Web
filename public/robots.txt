@@ -1,16 +1,119 @@
+# Robots.txt for Bible Aura - AI-Powered Biblical Insight Platform
+# Updated: December 2024
+
+# Allow all major search engines full access
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
 Allow: /
 
 User-agent: Twitterbot
 Allow: /
 
-User-agent: facebookexternalhit
+User-agent: LinkedInBot
 Allow: /
 
+User-agent: WhatsApp
+Allow: /
+
+# AI and API Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Allow all other crawlers with some restrictions
 User-agent: *
 Allow: /
 
+# Disallow sensitive areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /dashboard/private/
+Disallow: /profile/private/
+Disallow: /journal/private/
+Disallow: *.json$
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.env
+
+# Allow important static assets and pages
+Allow: /public/
+Allow: /assets/
+Allow: /images/
+Allow: /css/
+Allow: /js/
+Allow: /fonts/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.ico
+Allow: /*.webp
+
+# Important SEO pages - explicitly allow
+Allow: /bible
+Allow: /bible-ai
+Allow: /ai-bible-study
+Allow: /bible-chat
+Allow: /digital-bible
+Allow: /bible-journal
+Allow: /study
+Allow: /study-hub
+Allow: /bible-qa
+Allow: /bible-characters
+Allow: /topical-study
+Allow: /parables-study
+Allow: /sermons
+Allow: /sermon-writer
+Allow: /sermon-library
+Allow: /journal
+Allow: /about
+Allow: /contact
+Allow: /careers
+Allow: /pricing
+Allow: /blog/*
+
+# Host directive
+Host: bible-aura.com
+
+# Sitemap location
 Sitemap: https://bible-aura.com/sitemap.xml
+
+# Additional sitemap for blog content (future)
+Sitemap: https://bible-aura.com/blog-sitemap.xml

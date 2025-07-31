@@ -3,172 +3,250 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
 
-  <!-- Homepage -->
+  <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://bible-aura.com/</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://bible-aura.com/og-image.jpg</image:loc>
+      <image:caption>Bible Aura - AI-Powered Biblical Insight Platform</image:caption>
+      <image:title>Bible Aura Homepage</image:title>
+    </image:image>
   </url>
 
-  <!-- Authentication -->
+  <!-- Authentication - High Priority -->
   <url>
     <loc>https://bible-aura.com/auth</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Main App Pages -->
+  <!-- Main AI Bible Features - Very High Priority -->
   <url>
-    <loc>https://bible-aura.com/chat</loc>
-    <lastmod>2024-01-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://bible-aura.com/dashboard</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/bible</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- AI Study Features - High Priority -->
+  <url>
+    <loc>https://bible-aura.com/study</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bible-aura.com/chat</loc>
-    <lastmod>2024-01-21</lastmod>
+    <loc>https://bible-aura.com/study-hub</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
-  <url>
-    <loc>https://bible-aura.com/journal</loc>
-    <lastmod>2024-01-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/sermons</loc>
-    <lastmod>2024-01-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/favorites</loc>
-    <lastmod>2024-01-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/profile</loc>
-    <lastmod>2024-01-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Study Features -->
   <url>
     <loc>https://bible-aura.com/bible-qa</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/bible-characters</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/topical-study</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/sermon-library</loc>
-    <lastmod>2024-01-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/parables-study</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Personal Tools - High Priority -->
+  <url>
+    <loc>https://bible-aura.com/journal</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/favorites</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/profile</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Content Creation Features -->
+  <url>
+    <loc>https://bible-aura.com/sermons</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/sermon-writer</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/sermon-library</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/songs</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.75</priority>
   </url>
 
-  <!-- Static Pages -->
+  <!-- Static/Marketing Pages - Important for SEO -->
   <url>
     <loc>https://bible-aura.com/about</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/contact</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.75</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/careers</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/pricing</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.75</priority>
   </url>
 
-  <!-- Legal Pages -->
+  <!-- Legal Pages - Lower Priority but Still Important -->
   <url>
     <loc>https://bible-aura.com/privacy</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://bible-aura.com/terms</loc>
-    <lastmod>2024-01-21</lastmod>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
-  <!-- Demo Pages -->
+  <!-- Bible AI Blog/Articles (Future Content) -->
   <url>
-    <loc>https://bible-aura.com/header-demo</loc>
-    <lastmod>2024-01-21</lastmod>
+    <loc>https://bible-aura.com/blog/how-ai-transforms-bible-study</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bible-aura.com/verse-demo</loc>
-    <lastmod>2024-01-21</lastmod>
+    <loc>https://bible-aura.com/blog/bible-ai-vs-traditional-study</loc>
+    <lastmod>2024-12-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/blog/digital-bible-journaling-guide</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/blog/ai-bible-insights-accuracy</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/blog/best-bible-translations-comparison</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Special Landing Pages for SEO -->
+  <url>
+    <loc>https://bible-aura.com/bible-ai</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/ai-bible-study</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/bible-chat</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/digital-bible</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://bible-aura.com/bible-journal</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 
 </urlset> 

@@ -13,6 +13,13 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Bible = lazy(() => import("./pages/Bible"));
+const BibleAI = lazy(() => import("./pages/BibleAI"));
+const Blog = lazy(() => import("./pages/Blog"));
+
+// Blog post pages
+const HowAITransformsBibleStudy = lazy(() => import("./pages/blog/HowAITransformsBibleStudy"));
+const BibleAIVsTraditionalStudy = lazy(() => import("./pages/blog/BibleAIVsTraditionalStudy"));
+const BibleStudyAIBenefits = lazy(() => import("./pages/blog/BibleStudyAIBenefits"));
 
 const Journal = lazy(() => import("./pages/Journal"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -65,7 +72,13 @@ function AppLayout() {
     '/privacy',
     '/pricing',
     '/funding',
-    '/careers'
+    '/careers',
+    '/bible-ai',
+    '/ai-bible-study',
+    '/bible-chat',
+    '/digital-bible',
+    '/bible-journal',
+    '/blog'
   ];
 
   const isLandingPage = landingRoutes.includes(location.pathname);
@@ -85,6 +98,25 @@ function AppLayout() {
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/funding" element={<Navigate to="/pricing" replace />} />
               <Route path="/careers" element={<Careers />} />
+              
+              {/* SEO-Optimized Landing Pages */}
+              <Route path="/bible-ai" element={<BibleAI />} />
+              <Route path="/ai-bible-study" element={<BibleAI />} />
+              <Route path="/bible-chat" element={<BibleAI />} />
+              <Route path="/digital-bible" element={<BibleAI />} />
+              <Route path="/bible-journal" element={<BibleAI />} />
+              
+              {/* Blog Pages */}
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
+              <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
+              <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
+              <Route path="/blog/ai-bible-insights-accuracy" element={<BibleAI />} />
+              <Route path="/blog/ai-bible-chat-features" element={<BibleAI />} />
+              <Route path="/blog/smart-bible-search-techniques" element={<BibleAI />} />
+              <Route path="/blog/biblical-ai-assistant-guide" element={<BibleAI />} />
+              <Route path="/blog/christian-ai-technology-future" element={<BibleAI />} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
