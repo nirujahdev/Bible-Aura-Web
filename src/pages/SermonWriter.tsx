@@ -4,15 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
 import { 
   Mic, Plus, Edit3, Trash2, Search, 
   Save, Calendar as CalendarIcon, X,
   ChevronLeft, ChevronRight, RefreshCw, 
   AlertCircle, Clock, FileText, Sparkles,
-  BookOpen, Users, Volume2
+  BookOpen, Users, Volume2, Globe, Quote
 } from "lucide-react";
 
 interface SermonEntry {
@@ -100,7 +102,27 @@ const SermonWriter = () => {
     }
   };
 
-  const handleSaveSermon = async (sermonData: Omit<SermonEntry, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+  const handleNewSermon = () => {
+    setEditingSermon({
+      title: '',
+      content: '',
+      scripture_reference: '',
+      congregation: '',
+      sermon_date: new Date().toISOString().split('T')[0],
+      is_draft: true,
+      language: 'english'
+    });
+    setIsEditing(false);
+    setShowEditor(true);
+  };
+
+  const handleEditSermon = (sermon: SermonEntry) => {
+    setEditingSermon(sermon);
+    setIsEditing(true);
+    setShowEditor(true);
+  };
+
+  const handleSaveSermon = async (sermonData: any) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -118,20 +140,12 @@ const SermonWriter = () => {
         title: sermonData.title?.trim() || null,
         content: sermonData.content.trim(),
         scripture_reference: sermonData.scripture_reference || null,
-        main_points: sermonData.main_points || [],
         congregation: sermonData.congregation || null,
         sermon_date: sermonData.sermon_date || new Date().toISOString().split('T')[0],
-        duration: sermonData.duration || null,
-        notes: sermonData.notes || null,
-        tags: sermonData.tags || [],
         is_draft: sermonData.is_draft ?? true,
         word_count: sermonData.word_count || 0,
         estimated_time: sermonData.estimated_time || 0,
         language: sermonData.language || 'english',
-        category: sermonData.category || 'general',
-        outline: sermonData.outline || null,
-        illustrations: sermonData.illustrations || [],
-        applications: sermonData.applications || [],
         updated_at: new Date().toISOString()
       };
 
@@ -188,28 +202,30 @@ const SermonWriter = () => {
   };
 
   const handleDeleteSermon = async (sermonId: string) => {
-    if (!user) return;
-    
+    if (!confirm('Are you sure you want to delete this sermon? This action cannot be undone.')) {
+      return;
+    }
+
     try {
-      setLoading(true);
       const { error } = await supabase
         .from('sermons')
         .delete()
         .eq('id', sermonId)
-        .eq('user_id', user.id);
+        .eq('user_id', user?.id);
 
       if (error) throw error;
-      
+
       toast({
         title: "Sermon deleted",
-        description: "Your sermon has been deleted",
+        description: "The sermon has been removed successfully",
       });
-      
-      // If we're editing the deleted sermon, close the editor
-      if (editingSermon?.id === sermonId) {
-        handleCloseEditor();
+
+      // If the deleted sermon was selected, clear the selection
+      if (selectedSermon?.id === sermonId) {
+        setSelectedSermon(null);
       }
-      
+
+      // Reload sermons
       await loadSermons();
     } catch (error) {
       console.error('Error deleting sermon:', error);
@@ -218,46 +234,29 @@ const SermonWriter = () => {
         description: "Please try again",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const handleEditSermon = (sermon: SermonEntry) => {
-    setEditingSermon(sermon);
-    setIsEditing(true);
-    setShowEditor(true);
-  };
-
-  const handleNewSermon = () => {
-    setEditingSermon(null);
-    setIsEditing(false);
-    setShowEditor(true);
   };
 
   const handleCloseEditor = () => {
     setShowEditor(false);
-    setIsEditing(false);
     setEditingSermon(null);
-    setSelectedSermon(null);
+    setIsEditing(false);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
     });
   };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit' 
     });
   };
 
@@ -270,40 +269,21 @@ const SermonWriter = () => {
   };
 
   const getSermonStatus = (sermon: SermonEntry) => {
-    if (sermon.is_draft) return { text: 'Draft', color: 'bg-yellow-100 text-yellow-700' };
-    return { text: 'Complete', color: 'bg-green-100 text-green-700' };
+    if (sermon.is_draft) {
+      return <Badge variant="secondary">Draft</Badge>;
+    }
+    return <Badge variant="default" className="bg-green-100 text-green-800">Complete</Badge>;
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white shadow-lg">
-          <CardContent className="p-8 text-center">
-            <Mic className="h-16 w-16 mx-auto mb-4 text-blue-500" />
-            <h2 className="text-2xl font-bold mb-2 text-gray-800">Sermon Writer Access Required</h2>
-            <p className="text-gray-600 mb-4">
-              Please sign in to access your sermon writing workspace.
-            </p>
-            <Button 
-              onClick={() => window.location.href = '/auth'}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Show enhanced editor when editing or creating
+  // Show editor when editing/creating
   if (showEditor) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto p-6">
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Mic className="h-8 w-8 text-blue-600" />
+              <Mic className="h-8 w-8 text-purple-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">
                   {isEditing ? 'Edit Sermon' : 'New Sermon'}
@@ -323,92 +303,183 @@ const SermonWriter = () => {
             </div>
           </div>
 
-          <Card className="border-blue-200">
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sermon Title
-                  </label>
-                  <Input
-                    placeholder="Enter sermon title..."
-                    className="text-lg"
-                  />
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Main Content Area */}
+            <div className="lg:col-span-3">
+              <Card className="h-full">
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    {/* Title */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Sermon Title
+                      </label>
+                      <Input
+                        placeholder="Enter sermon title..."
+                        value={editingSermon?.title || ''}
+                        onChange={(e) => setEditingSermon(prev => ({ ...prev, title: e.target.value }))}
+                        className="text-lg"
+                      />
+                    </div>
 
-                {/* Scripture Reference */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Scripture Reference
-                  </label>
-                  <Input
-                    placeholder="e.g., John 3:16, Romans 8:28-30"
-                  />
-                </div>
+                    {/* Scripture Reference */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Scripture Reference
+                      </label>
+                      <Input
+                        placeholder="e.g., John 3:16, Romans 8:28-30"
+                        value={editingSermon?.scripture_reference || ''}
+                        onChange={(e) => setEditingSermon(prev => ({ ...prev, scripture_reference: e.target.value }))}
+                      />
+                    </div>
 
-                {/* Content Editor */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sermon Content
-                  </label>
-                  <Textarea
-                    placeholder="Write your sermon content here..."
-                    className="min-h-[400px] resize-y"
-                  />
-                </div>
+                    {/* Content Editor */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Sermon Content
+                      </label>
+                      <Textarea
+                        placeholder="Write your sermon content here..."
+                        value={editingSermon?.content || ''}
+                        onChange={(e) => setEditingSermon(prev => ({ ...prev, content: e.target.value }))}
+                        className="min-h-[400px] resize-y"
+                      />
+                    </div>
 
-                {/* Main Points */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Main Points
-                  </label>
-                  <Textarea
-                    placeholder="List your main sermon points..."
-                    className="min-h-[120px]"
-                  />
-                </div>
+                    {/* Additional Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Congregation
+                        </label>
+                        <Input 
+                          placeholder="e.g., Sunday Service, Youth Group" 
+                          value={editingSermon?.congregation || ''}
+                          onChange={(e) => setEditingSermon(prev => ({ ...prev, congregation: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sermon Date
+                        </label>
+                        <Input 
+                          type="date" 
+                          value={editingSermon?.sermon_date || ''}
+                          onChange={(e) => setEditingSermon(prev => ({ ...prev, sermon_date: e.target.value }))}
+                        />
+                      </div>
+                    </div>
 
-                {/* Additional Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Congregation
-                    </label>
-                    <Input placeholder="e.g., Sunday Service, Youth Group" />
+                    {/* Save Buttons */}
+                    <div className="flex justify-end gap-2 pt-4 border-t">
+                      <Button
+                        onClick={() => handleSaveSermon({ ...editingSermon, is_draft: true })}
+                        variant="outline"
+                        className="border-purple-300 text-purple-600"
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-2" />
+                        )}
+                        Save as Draft
+                      </Button>
+                      <Button
+                        onClick={() => handleSaveSermon({ ...editingSermon, is_draft: false })}
+                        className="bg-purple-500 hover:bg-purple-600"
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-2" />
+                        )}
+                        Save Sermon
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Estimated Duration (minutes)
-                    </label>
-                    <Input type="number" placeholder="30" />
-                  </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Save Buttons */}
-                <div className="flex justify-end gap-2 pt-4 border-t">
+            {/* Right Sidebar */}
+            <div className="lg:col-span-1 space-y-4">
+              {/* Sermon Details */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Sermon Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Language
+                    </label>
+                    <select 
+                      className="w-full p-2 border rounded-md text-sm"
+                      value={editingSermon?.language || 'english'}
+                      onChange={(e) => setEditingSermon(prev => ({ ...prev, language: e.target.value as any }))}
+                    >
+                      <option value="english">🇺🇸 English</option>
+                      <option value="tamil">🇮🇳 Tamil</option>
+                      <option value="sinhala">🇱🇰 Sinhala</option>
+                    </select>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Sermon Tools */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Sermon Tools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
                   <Button
                     variant="outline"
-                    className="border-blue-300 text-blue-600"
+                    size="sm"
+                    className="w-full justify-start"
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    Save as Draft
+                    <Quote className="h-4 w-4 mr-2" />
+                    Add Scripture
                   </Button>
                   <Button
-                    className="bg-blue-500 hover:bg-blue-600"
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Sermon
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Study Notes
                   </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Illustrations
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Timing Guide
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Main sermon list view
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
@@ -418,13 +489,13 @@ const SermonWriter = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <Mic className="h-6 w-6 text-blue-600" />
+                <Mic className="h-6 w-6 text-purple-600" />
                 Sermon Writer
               </h1>
               <Button
                 onClick={handleNewSermon}
                 size="sm"
-                className="bg-blue-500 hover:bg-blue-600"
+                className="bg-purple-500 hover:bg-purple-600"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 New
@@ -432,10 +503,10 @@ const SermonWriter = () => {
             </div>
 
             {/* Calendar Section */}
-            <Card className="border-blue-200">
+            <Card className="border-purple-200">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-blue-600" />
+                  <CalendarIcon className="h-5 w-5 text-purple-600" />
                   {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </CardTitle>
               </CardHeader>
@@ -456,8 +527,8 @@ const SermonWriter = () => {
                     row: "flex w-full mt-1",
                     cell: "text-center text-sm p-0 relative w-8 h-8",
                     day: "h-8 w-8 p-0 font-normal text-xs",
-                    day_selected: "bg-blue-500 text-white hover:bg-blue-600",
-                    day_today: "bg-blue-50 text-blue-600 font-semibold",
+                    day_selected: "bg-purple-500 text-white hover:bg-purple-600",
+                    day_today: "bg-purple-50 text-purple-600 font-semibold",
                     day_outside: "text-gray-300",
                   }}
                 />
@@ -465,11 +536,11 @@ const SermonWriter = () => {
             </Card>
 
             {/* Recent Sermons Section */}
-            <Card className="flex-1 border-blue-200">
+            <Card className="flex-1 border-purple-200">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-blue-600" />
+                    <Clock className="h-4 w-4 text-purple-600" />
                     Recent Sermons ({sermons.length})
                   </CardTitle>
                   <Button
@@ -486,7 +557,7 @@ const SermonWriter = () => {
                 <div className="max-h-96 overflow-y-auto">
                   {loading ? (
                     <div className="flex justify-center py-6">
-                      <RefreshCw className="h-5 w-5 animate-spin text-blue-500" />
+                      <RefreshCw className="h-5 w-5 animate-spin text-purple-500" />
                     </div>
                   ) : error ? (
                     <div className="p-4 text-center">
@@ -505,90 +576,63 @@ const SermonWriter = () => {
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-100">
-                      {sermons.map((sermon) => {
-                        const status = getSermonStatus(sermon);
-                        return (
-                          <div
-                            key={sermon.id}
-                            className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                              selectedSermon?.id === sermon.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
-                            }`}
-                            onClick={() => setSelectedSermon(sermon)}
-                          >
-                            <div className="flex justify-between items-start mb-1">
-                              <div className="flex items-center gap-1 flex-1">
-                                <span className="text-xs">{getLanguageFlag(sermon.language)}</span>
-                                <h3 className="font-medium text-gray-800 truncate text-sm">
-                                  {sermon.title || "Untitled Sermon"}
-                                </h3>
-                              </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditSermon(sermon);
-                                  }}
-                                  className="h-5 w-5 p-0 text-gray-400 hover:text-blue-600"
-                                >
-                                  <Edit3 className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteSermon(sermon.id);
-                                  }}
-                                  className="h-5 w-5 p-0 text-gray-400 hover:text-red-600"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
+                      {sermons.map((sermon) => (
+                        <div
+                          key={sermon.id}
+                          className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            selectedSermon?.id === sermon.id ? 'bg-purple-50 border-r-2 border-purple-500' : ''
+                          }`}
+                          onClick={() => setSelectedSermon(sermon)}
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <div className="flex items-center gap-1 flex-1">
+                              <span className="text-xs">{getLanguageFlag(sermon.language)}</span>
+                              <h3 className="font-medium text-gray-800 truncate text-sm">
+                                {sermon.title || "Untitled Sermon"}
+                              </h3>
                             </div>
-                            
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className={`inline-block text-xs px-2 py-0.5 rounded ${status.color}`}>
-                                {status.text}
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditSermon(sermon);
+                                }}
+                                className="h-5 w-5 p-0 text-gray-400 hover:text-purple-600"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSermon(sermon.id);
+                                }}
+                                className="h-5 w-5 p-0 text-gray-400 hover:text-red-600"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-1">
+                            {sermon.content}
+                          </p>
+                          <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
+                            <span>{formatDate(sermon.created_at)}</span>
+                            <span>{formatTime(sermon.created_at)}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            {getSermonStatus(sermon)}
+                            {sermon.scripture_reference && (
+                              <span className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
+                                📖 {sermon.scripture_reference}
                               </span>
-                              {sermon.scripture_reference && (
-                                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
-                                  {sermon.scripture_reference}
-                                </span>
-                              )}
-                            </div>
-                            
-                            <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                              {sermon.content}
-                            </p>
-                            <div className="flex justify-between items-center text-xs text-gray-500">
-                              <span>{formatDate(sermon.created_at)}</span>
-                              <div className="flex items-center gap-2">
-                                {sermon.duration && (
-                                  <span className="flex items-center gap-1">
-                                    <Volume2 className="h-3 w-3" />
-                                    {sermon.duration}min
-                                  </span>
-                                )}
-                                <span>{formatTime(sermon.created_at)}</span>
-                              </div>
-                            </div>
-                            {sermon.tags && sermon.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {sermon.tags.slice(0, 2).map((tag, index) => (
-                                  <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
-                                    {tag}
-                                  </span>
-                                ))}
-                                {sermon.tags.length > 2 && (
-                                  <span className="text-xs text-gray-400">+{sermon.tags.length - 2}</span>
-                                )}
-                              </div>
                             )}
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -616,7 +660,7 @@ const SermonWriter = () => {
                         onClick={() => handleEditSermon(selectedSermon)}
                         variant="outline"
                         size="sm"
-                        className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                        className="border-purple-300 text-purple-600 hover:bg-purple-50"
                       >
                         <Edit3 className="h-4 w-4 mr-1" />
                         Edit
@@ -632,7 +676,7 @@ const SermonWriter = () => {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                     <span>{formatDate(selectedSermon.created_at)}</span>
                     <span>•</span>
@@ -643,73 +687,38 @@ const SermonWriter = () => {
                         <span>{selectedSermon.word_count} words</span>
                       </>
                     )}
-                    {selectedSermon.duration && (
+                    {selectedSermon.estimated_time && (
                       <>
                         <span>•</span>
-                        <span>{selectedSermon.duration} min sermon</span>
+                        <span>{selectedSermon.estimated_time} min read</span>
                       </>
                     )}
                   </div>
 
                   {selectedSermon.scripture_reference && (
-                    <div className="mb-2">
-                      <span className="inline-block bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded">
-                        Scripture: {selectedSermon.scripture_reference}
-                      </span>
-                    </div>
-                  )}
-
-                  {selectedSermon.congregation && (
-                    <div className="mb-2">
-                      <span className="inline-block bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
-                        <Users className="h-3 w-3 inline mr-1" />
-                        {selectedSermon.congregation}
-                      </span>
-                    </div>
-                  )}
-
-                  {selectedSermon.tags && selectedSermon.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedSermon.tags.map((tag, index) => (
-                        <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                          {tag}
-                        </span>
-                      ))}
+                      <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
+                        📖 {selectedSermon.scripture_reference}
+                      </span>
                     </div>
                   )}
+
+                  <div className="flex items-center gap-2 mt-2">
+                    {getSermonStatus(selectedSermon)}
+                    {selectedSermon.congregation && (
+                      <Badge variant="outline" className="text-xs">
+                        <Users className="h-3 w-3 mr-1" />
+                        {selectedSermon.congregation}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
 
                 {/* Sermon Content */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="prose prose-gray max-w-none">
+                <div className="flex-1 overflow-auto">
+                  <div className="prose prose-lg max-w-none">
                     <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                      {selectedSermon.content.split('\n').map((line, index) => {
-                        // Simple markdown rendering
-                        let processedLine = line
-                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\*(.*?)\*/g, '<em>$1</em>');
-                        
-                        // Handle bullet points
-                        if (line.startsWith('• ')) {
-                          return (
-                            <div key={index} className="flex items-start gap-2 mb-1">
-                              <span className="mt-1.5 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
-                              <span dangerouslySetInnerHTML={{ __html: processedLine.substring(2) }} />
-                            </div>
-                          );
-                        }
-                        
-                        // Handle main points (numbered)
-                        if (line.match(/^\d+\. /)) {
-                          return (
-                            <div key={index} className="font-semibold text-blue-700 mt-4 mb-2" dangerouslySetInnerHTML={{ __html: processedLine }} />
-                          );
-                        }
-                        
-                        return (
-                          <div key={index} dangerouslySetInnerHTML={{ __html: processedLine || '<br/>' }} />
-                        );
-                      })}
+                      {selectedSermon.content}
                     </div>
                   </div>
                 </div>
@@ -718,14 +727,11 @@ const SermonWriter = () => {
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">
                   <Mic className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h2 className="text-xl font-semibold text-gray-600 mb-2">Select a sermon to read</h2>
-                  <p className="text-gray-500 mb-4">Choose from your recent sermons or create a new one</p>
-                  <Button
-                    onClick={handleNewSermon}
-                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                  >
+                  <h2 className="text-xl font-semibold text-gray-600 mb-2">No sermon selected</h2>
+                  <p className="text-gray-500 mb-4">Choose a sermon from the sidebar to view or edit it</p>
+                  <Button onClick={handleNewSermon} className="bg-purple-500 hover:bg-purple-600">
                     <Plus className="h-4 w-4 mr-2" />
-                    Write New Sermon
+                    Create New Sermon
                   </Button>
                 </div>
               </div>
