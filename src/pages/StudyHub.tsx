@@ -27,6 +27,7 @@ import {
   Bookmark
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 // Import existing components
 import SermonArchive from '@/components/SermonArchive';
@@ -110,6 +111,9 @@ const QA_CATEGORIES = [
 ];
 
 export default function StudyHub() {
+  // SEO optimization
+  useSEO(SEO_CONFIG.STUDY_HUB);
+  
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('qa');
   const [searchQuery, setSearchQuery] = useState('');

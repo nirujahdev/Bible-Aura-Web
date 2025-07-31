@@ -32,6 +32,7 @@ import {
 } from '@/lib/local-bible';
 import { NoteTaking } from '@/components/NoteTaking';
 import { AIAnalysis } from '@/components/AIAnalysis';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 const LANGUAGES = [
   { value: 'english', label: 'English (KJV)' },
@@ -63,6 +64,9 @@ interface TamilBookName {
 }
 
 export default function Bible() {
+  // SEO optimization
+  useSEO(SEO_CONFIG.BIBLE);
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [books, setBooks] = useState<BibleBook[]>([]);

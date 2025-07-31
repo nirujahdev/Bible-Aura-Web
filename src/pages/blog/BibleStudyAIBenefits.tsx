@@ -8,31 +8,23 @@ import {
   Heart, Lightbulb, Globe, Smartphone, ArrowRight
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useSEO, createBlogPostStructuredData } from "@/hooks/useSEO";
 
 const BibleStudyAIBenefits = () => {
-  // SEO optimization for page title
-  useEffect(() => {
-    document.title = "10 Benefits of Using AI for Bible Study | Bible Aura";
-    
-    // Add meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Discover the top 10 benefits of using AI for Bible study. Learn how artificial intelligence enhances biblical learning, provides instant insights, and transforms your spiritual journey.');
-    }
-
-    // Update OG image
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) {
-      ogImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-
-    // Update Twitter image
-    const twitterImage = document.querySelector('meta[name="twitter:image"]');
-    if (twitterImage) {
-      twitterImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-  }, []);
+  // SEO optimization with structured data
+  useSEO({
+    title: "10 Benefits of Using AI for Bible Study | Bible Aura",
+    description: "Discover the top 10 benefits of using AI for Bible study. Learn how artificial intelligence enhances biblical learning, provides instant insights, and transforms your spiritual journey.",
+    keywords: "AI Bible study benefits, artificial intelligence Bible, Bible AI advantages, AI biblical learning, smart Bible study, AI scripture analysis, Bible AI tools, digital Bible study benefits",
+    canonicalUrl: "https://bibleaura.xyz/blog/bible-study-ai-benefits",
+    structuredData: createBlogPostStructuredData(
+      "10 Benefits of Using AI for Bible Study",
+      "Discover the top 10 benefits of using AI for Bible study. Learn how artificial intelligence enhances biblical learning, provides instant insights, and transforms your spiritual journey.",
+      "2024-02-02",
+      "Bible Aura Team",
+      "https://bibleaura.xyz/blog/bible-study-ai-benefits"
+    )
+  });
 
   const benefits = [
     {

@@ -6,31 +6,11 @@ import {
   TrendingUp, Search, CheckCircle, Lightbulb, Target, Brain, FileText
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const Blog = () => {
-  // SEO optimization for page title
-  useEffect(() => {
-    document.title = "Bible AI Blog - Expert Insights on AI-Powered Bible Study | Bible Aura";
-    
-    // Add meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Discover expert insights on Bible AI, AI-powered Bible study, and digital biblical analysis. Learn how artificial intelligence transforms modern Bible study and spiritual growth.');
-    }
-
-    // Update OG image
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) {
-      ogImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-
-    // Update Twitter image
-    const twitterImage = document.querySelector('meta[name="twitter:image"]');
-    if (twitterImage) {
-      twitterImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-  }, []);
+  // SEO optimization
+  useSEO(SEO_CONFIG.BLOG);
 
   const blogPosts = [
     {

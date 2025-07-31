@@ -7,19 +7,11 @@ import {
   Clock, Shield, Lightbulb, Heart, Search, FileText
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const BibleAI = () => {
-  // SEO optimization for page title
-  useEffect(() => {
-    document.title = "Bible AI - AI-Powered Biblical Study & Scripture Analysis | Bible Aura";
-    
-    // Add meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Discover the power of Bible AI with Bible Aura. Get instant biblical insights, AI-powered scripture analysis, and intelligent Bible study assistance. Transform your spiritual journey with cutting-edge AI technology.');
-    }
-  }, []);
+  // SEO optimization
+  useSEO(SEO_CONFIG.BIBLE_AI);
 
   const aiFeatures = [
     {

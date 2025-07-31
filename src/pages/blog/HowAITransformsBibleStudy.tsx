@@ -7,43 +7,23 @@ import {
   TrendingUp, Star, Quote, ExternalLink
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useSEO, createBlogPostStructuredData } from "@/hooks/useSEO";
 
 const HowAITransformsBibleStudy = () => {
-  // SEO optimization for page title
-  useEffect(() => {
-    document.title = "How AI Transforms Bible Study: Complete Guide | Bible Aura";
-    
-    // Add meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Discover how artificial intelligence revolutionizes Bible study with smart insights, contextual analysis, and personalized learning. Complete guide to AI-powered biblical study in 2024.');
-    }
-
-    // Update OG image
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) {
-      ogImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-
-    // Update Twitter image
-    const twitterImage = document.querySelector('meta[name="twitter:image"]');
-    if (twitterImage) {
-      twitterImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-
-    // Update OG title
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', 'How AI Transforms Bible Study: Complete Guide | Bible Aura');
-    }
-
-    // Update Twitter title
-    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) {
-      twitterTitle.setAttribute('content', 'How AI Transforms Bible Study: Complete Guide | Bible Aura');
-    }
-  }, []);
+  // SEO optimization with structured data
+  useSEO({
+    title: "How AI Transforms Bible Study: Complete Guide | Bible Aura",
+    description: "Discover how artificial intelligence revolutionizes Bible study with smart insights, contextual analysis, and personalized learning. Complete guide to AI-powered biblical study in 2024.",
+    keywords: "AI Bible study, artificial intelligence Bible, Bible AI guide, AI biblical analysis, smart Bible study, AI scripture analysis, AI Bible insights, digital Bible study, Bible AI technology",
+    canonicalUrl: "https://bibleaura.xyz/blog/how-ai-transforms-bible-study",
+    structuredData: createBlogPostStructuredData(
+      "How AI Transforms Bible Study: Complete Guide",
+      "Discover how artificial intelligence revolutionizes Bible study with smart insights, contextual analysis, and personalized learning. Complete guide to AI-powered biblical study in 2024.",
+      "2024-02-02",
+      "Bible Aura Team",
+      "https://bibleaura.xyz/blog/how-ai-transforms-bible-study"
+    )
+  });
 
   const tableOfContents = [
     { id: "introduction", title: "Introduction to AI Bible Study" },

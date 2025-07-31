@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
+import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { 
   BookOpen, Plus, Edit3, Trash2, Search, 
   Save, Calendar as CalendarIcon, X,
@@ -40,6 +41,9 @@ interface JournalEntry {
 }
 
 const Journal = () => {
+  // SEO optimization
+  useSEO(SEO_CONFIG.JOURNAL);
+  
   const { user } = useAuth();
   const { toast } = useToast();
   

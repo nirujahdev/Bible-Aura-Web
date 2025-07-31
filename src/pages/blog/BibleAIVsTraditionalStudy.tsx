@@ -7,43 +7,23 @@ import {
   TrendingUp, Star, Quote, ExternalLink, Zap, Users, Heart
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useSEO, createBlogPostStructuredData } from "@/hooks/useSEO";
 
 const BibleAIVsTraditionalStudy = () => {
-  // SEO optimization for page title
-  useEffect(() => {
-    document.title = "Bible AI vs Traditional Study: Which is Better? | Bible Aura";
-    
-    // Add meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Compare AI-powered Bible study with traditional methods. Discover the benefits, limitations, and best practices for both approaches to biblical learning in 2024.');
-    }
-
-    // Update OG image
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) {
-      ogImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-
-    // Update Twitter image
-    const twitterImage = document.querySelector('meta[name="twitter:image"]');
-    if (twitterImage) {
-      twitterImage.setAttribute('content', 'https://bible-aura.com/✦Bible%20Aura%20(1).png');
-    }
-
-    // Update OG title
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', 'Bible AI vs Traditional Study: Which is Better? | Bible Aura');
-    }
-
-    // Update Twitter title
-    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) {
-      twitterTitle.setAttribute('content', 'Bible AI vs Traditional Study: Which is Better? | Bible Aura');
-    }
-  }, []);
+  // SEO optimization with structured data
+  useSEO({
+    title: "Bible AI vs Traditional Study: Which is Better? | Bible Aura",
+    description: "Compare AI-powered Bible study with traditional methods. Discover the benefits, limitations, and best practices for both approaches to biblical learning in 2024.",
+    keywords: "Bible AI vs traditional study, AI Bible study comparison, traditional Bible study, AI biblical analysis, Bible study methods, digital vs traditional Bible study",
+    canonicalUrl: "https://bibleaura.xyz/blog/bible-ai-vs-traditional-study",
+    structuredData: createBlogPostStructuredData(
+      "Bible AI vs Traditional Study: Which is Better?",
+      "Compare AI-powered Bible study with traditional methods. Discover the benefits, limitations, and best practices for both approaches to biblical learning in 2024.",
+      "2024-02-02",
+      "Bible Aura Team",
+      "https://bibleaura.xyz/blog/bible-ai-vs-traditional-study"
+    )
+  });
 
   const tableOfContents = [
     { id: "introduction", title: "Introduction to the Comparison" },
