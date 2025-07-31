@@ -1,14 +1,14 @@
-const CACHE_NAME = 'bible-aura-v1.0.0';
-const STATIC_CACHE = 'bible-aura-static-v1';
-const DYNAMIC_CACHE = 'bible-aura-dynamic-v1';
+const CACHE_NAME = 'bible-aura-v1.0.1';
+const STATIC_CACHE = 'bible-aura-static-v1.0.1';
+const DYNAMIC_CACHE = 'bible-aura-dynamic-v1.0.1';
 
 // Files to cache immediately
 const STATIC_ASSETS = [
   '/',
-  '/chat',
   '/auth',
+  '/dashboard',
   '/bible',
-  '/chat',
+  '/bible-ai',
   '/journal',
   '/manifest.json',
   '/assets/hero-spiritual.jpg',
@@ -207,16 +207,29 @@ async function networkFirstStrategy(request, cacheName) {
   }
 }
 
-// Navigation Strategy - for page requests
+// Navigation Strategy - for page requests (SPA-friendly)
 async function navigationStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
+    // If we get a successful response, cache and return it
     if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, networkResponse.clone());
+      return networkResponse;
     }
     
+    // If we get a 404 from the server (SPA routing), serve index.html from cache
+    if (networkResponse.status === 404) {
+      console.log('404 from server, serving cached index.html for SPA routing');
+      const cache = await caches.open(STATIC_CACHE);
+      const indexPage = await cache.match('/');
+      if (indexPage) {
+        return indexPage;
+      }
+    }
+    
+    // For other non-OK responses, return the network response
     return networkResponse;
   } catch (error) {
     console.log('Navigation offline, serving cached page');
@@ -229,7 +242,7 @@ async function navigationStrategy(request) {
       return cachedResponse;
     }
     
-    // Serve offline fallback
+    // Serve offline fallback - always serve index.html for SPA routing
     const offlinePage = await cache.match('/');
     if (offlinePage) {
       return offlinePage;

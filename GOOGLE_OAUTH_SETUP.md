@@ -80,11 +80,14 @@ In your OAuth consent screen configuration:
    - **Client Secret**: From Google Cloud Console
 4. **Save settings**
 
-#### **B. Configure Email Settings:**
-1. Go to **Authentication → Settings → Email**
-2. **Enable email confirmations** if not already enabled
-3. **Set Site URL** to: `http://localhost:5173` (for development)
-4. **Set Redirect URLs** to: 
+#### **B. Configure Site URL and Redirect URLs:**
+1. Go to **Authentication → Settings → URL Configuration**
+2. **Set Site URL** to: 
+   - `http://localhost:5173` (development)
+   - `https://bible-aura.vercel.app` (production)
+3. **Set Redirect URLs** to: 
+   - `http://localhost:5173/auth` (development)
+   - `https://bible-aura.vercel.app/auth` (production)
    - `http://localhost:5173/dashboard` (development)
    - `https://bible-aura.vercel.app/dashboard` (production)
 
@@ -151,8 +154,8 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 - [ ] Client ID & Secret from credentials.json added to Supabase
 - [ ] Email provider enabled in Supabase
 - [ ] Magic links enabled in Supabase
-- [ ] Site URLs configured for dev (`http://localhost:5173`) and prod
-- [ ] Redirect URLs configured for dashboard access
+- [ ] Site URLs configured for dev (`http://localhost:5173`) and prod (`https://bible-aura.vercel.app`)
+- [ ] Redirect URLs configured: `/auth` and `/dashboard` for both dev and prod domains
 
 ### **Deployment & Testing:**
 - [ ] Changes committed and pushed to repository
@@ -166,10 +169,20 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 ## 🚨 **Common Issues & Fixes:**
 
 ### **Google OAuth Still Not Working:**
-- Double-check redirect URI is **exactly**: `https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback`
+
+#### **URL Mismatch Issues (Most Common):**
+- **Google Cloud Console** redirect URI must be **exactly**: `https://foleepziqgrdgkljedux.supabase.co/auth/v1/callback`
+- **Supabase redirect URLs** must include: 
+  - `http://localhost:5173/auth` (development)
+  - `https://bible-aura.vercel.app/auth` (production)
+- **Check Supabase Dashboard** → Authentication → Settings → URL Configuration
+- **Verify Site URL** matches your domain exactly
+
+#### **Other Common Fixes:**
 - Ensure you're using the correct Google project
 - Clear browser cache completely
 - Try incognito/private browsing
+- Wait 5-10 minutes after making changes
 
 ### **Magic Links Not Working:**
 - Check spam/junk folder
