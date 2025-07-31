@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Info, Phone, Crown, Heart, LogIn, UserPlus, Menu, X } from "lucide-react";
+import { Home, Info, FileText, Crown, Heart, LogIn, UserPlus, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface GlobalNavigationProps {
@@ -24,7 +24,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
   const navigationItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/about", label: "About", icon: Info },
-    { href: "/contact", label: "Contact", icon: Phone },
+    { href: "/blog", label: "Blog", icon: FileText },
     { href: "/careers", label: "Careers", icon: Crown },
     { href: "/pricing", label: "Pricing", icon: Heart },
   ];
