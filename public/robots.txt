@@ -110,10 +110,10 @@ Allow: /pricing
 Allow: /blog/*
 
 # Host directive
-Host: bibleaura.xyz
+Host: www.bibleaura.xyz
 
 # Sitemap location
-Sitemap: https://bibleaura.xyz/sitemap.xml
+Sitemap: https://www.bibleaura.xyz/sitemap.xml
 
 # Additional sitemap for blog content (future)
-Sitemap: https://bibleaura.xyz/blog-sitemap.xml
+Sitemap: https://www.bibleaura.xyz/blog-sitemap.xml

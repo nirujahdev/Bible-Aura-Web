@@ -5,12 +5,12 @@
 
   <!-- Homepage - Highest Priority -->
   <url>
-    <loc>https://bibleaura.xyz/</loc>
+    <loc>https://www.bibleaura.xyz/</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:loc>https://www.bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
       <image:caption>Bible Aura - AI-Powered Biblical Insight Platform</image:caption>
       <image:title>Bible Aura Homepage</image:title>
     </image:image>
@@ -18,7 +18,7 @@
 
   <!-- Authentication - High Priority -->
   <url>
-    <loc>https://bibleaura.xyz/auth</loc>
+    <loc>https://www.bibleaura.xyz/auth</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -26,14 +26,14 @@
 
   <!-- Main AI Bible Features - Very High Priority -->
   <url>
-    <loc>https://bibleaura.xyz/dashboard</loc>
+    <loc>https://www.bibleaura.xyz/dashboard</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/bible</loc>
+    <loc>https://www.bibleaura.xyz/bible</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
@@ -41,42 +41,42 @@
 
   <!-- AI Study Features - High Priority -->
   <url>
-    <loc>https://bibleaura.xyz/study</loc>
+    <loc>https://www.bibleaura.xyz/study</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/study-hub</loc>
+    <loc>https://www.bibleaura.xyz/study-hub</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/bible-qa</loc>
+    <loc>https://www.bibleaura.xyz/bible-qa</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/bible-characters</loc>
+    <loc>https://www.bibleaura.xyz/bible-characters</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/topical-study</loc>
+    <loc>https://www.bibleaura.xyz/topical-study</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/parables-study</loc>
+    <loc>https://www.bibleaura.xyz/parables-study</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -84,21 +84,21 @@
 
   <!-- Personal Tools - High Priority -->
   <url>
-    <loc>https://bibleaura.xyz/journal</loc>
+    <loc>https://www.bibleaura.xyz/journal</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/favorites</loc>
+    <loc>https://www.bibleaura.xyz/favorites</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/profile</loc>
+    <loc>https://www.bibleaura.xyz/profile</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -106,28 +106,28 @@
 
   <!-- Content Creation Features -->
   <url>
-    <loc>https://bibleaura.xyz/sermons</loc>
+    <loc>https://www.bibleaura.xyz/sermons</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/sermon-writer</loc>
+    <loc>https://www.bibleaura.xyz/sermon-writer</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/sermon-library</loc>
+    <loc>https://www.bibleaura.xyz/sermon-library</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/songs</loc>
+    <loc>https://www.bibleaura.xyz/songs</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
@@ -135,28 +135,28 @@
 
   <!-- Static/Marketing Pages - Important for SEO -->
   <url>
-    <loc>https://bibleaura.xyz/about</loc>
+    <loc>https://www.bibleaura.xyz/about</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/contact</loc>
+    <loc>https://www.bibleaura.xyz/contact</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/careers</loc>
+    <loc>https://www.bibleaura.xyz/careers</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/pricing</loc>
+    <loc>https://www.bibleaura.xyz/pricing</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
@@ -164,50 +164,98 @@
 
   <!-- Legal Pages - Lower Priority but Still Important -->
   <url>
-    <loc>https://bibleaura.xyz/privacy</loc>
+    <loc>https://www.bibleaura.xyz/privacy</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/terms</loc>
+    <loc>https://www.bibleaura.xyz/terms</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+  </url>
+
+  <!-- Blog Main Page - High Priority for SEO -->
+  <url>
+    <loc>https://www.bibleaura.xyz/blog</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:caption>Bible Aura Blog - AI Bible Study Insights and Guides</image:caption>
+      <image:title>Bible Aura Blog</image:title>
+    </image:image>
   </url>
 
   <!-- Bible AI Blog/Articles (Future Content) -->
   <url>
-    <loc>https://bibleaura.xyz/blog/how-ai-transforms-bible-study</loc>
+    <loc>https://www.bibleaura.xyz/blog/how-ai-transforms-bible-study</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/blog/bible-ai-vs-traditional-study</loc>
+    <loc>https://www.bibleaura.xyz/blog/bible-ai-vs-traditional-study</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/blog/digital-bible-journaling-guide</loc>
+    <loc>https://www.bibleaura.xyz/blog/digital-bible-journaling-guide</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/blog/ai-bible-insights-accuracy</loc>
+    <loc>https://www.bibleaura.xyz/blog/ai-bible-insights-accuracy</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/blog/best-bible-translations-comparison</loc>
+    <loc>https://www.bibleaura.xyz/blog/bible-study-ai-benefits</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.bibleaura.xyz/blog/ai-bible-chat-features</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.bibleaura.xyz/blog/smart-bible-search-techniques</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.bibleaura.xyz/blog/biblical-ai-assistant-guide</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.bibleaura.xyz/blog/christian-ai-technology-future</loc>
+    <lastmod>2025-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.bibleaura.xyz/blog/best-bible-translations-comparison</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -215,35 +263,35 @@
 
   <!-- Special Landing Pages for SEO -->
   <url>
-    <loc>https://bibleaura.xyz/bible-ai</loc>
+    <loc>https://www.bibleaura.xyz/bible-ai</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/ai-bible-study</loc>
+    <loc>https://www.bibleaura.xyz/ai-bible-study</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/bible-chat</loc>
+    <loc>https://www.bibleaura.xyz/bible-chat</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/digital-bible</loc>
+    <loc>https://www.bibleaura.xyz/digital-bible</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/bible-journal</loc>
+    <loc>https://www.bibleaura.xyz/bible-journal</loc>
     <lastmod>2025-02-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
