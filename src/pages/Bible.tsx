@@ -100,7 +100,7 @@ export default function Bible() {
   // New state for UI improvements
   const [oldTestamentExpanded, setOldTestamentExpanded] = useState(false);
   const [newTestamentExpanded, setNewTestamentExpanded] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showSearchFilters, setShowSearchFilters] = useState(false);
   
   // Mobile detection
   const isMobile = useIsMobile();
@@ -474,23 +474,10 @@ export default function Bible() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
 
-
       <div className="flex h-screen">
-        {/* Mobile Menu Button */}
-        {isMobile && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileSidebarOpen(true)}
-            className="fixed top-4 left-4 z-50 bg-white shadow-lg"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
-        )}
-
-        {/* Mobile Chapter Navigation - Right side */}
+        {/* Mobile Chapter Navigation - Right side (keeping this as it's page-specific) */}
         {isMobile && selectedBook && (
-          <div className="fixed top-4 right-4 z-50 flex items-center gap-1">
+          <div className="fixed top-4 right-20 z-50 flex items-center gap-1">
             <Button
               variant="outline"
               size="sm"
@@ -787,284 +774,6 @@ export default function Bible() {
         </div>
         )}
 
-        {/* Mobile Bible Content Panel */}
-        {isMobile && (
-          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent side="left" className="w-80 p-0">
-              <div className="h-full bg-white flex flex-col">
-
-                {/* Navigation Tabs */}
-                <Tabs value={activeTab} onValueChange={(value) => {
-                  setActiveTab(value);
-                  // Clear search results when switching to read mode
-                  if (value === 'read') {
-                    setSearchResults([]);
-                  }
-                }} className="flex-1 flex flex-col">
-                  <TabsList className="grid w-full grid-cols-3 m-4 mb-0 h-8">
-                    <TabsTrigger value="read" className="text-xs h-6 px-2">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      Read
-                    </TabsTrigger>
-                    <TabsTrigger value="search" className="text-xs h-6 px-2">
-                      <Search className="h-3 w-3 mr-1" />
-                      Search
-                    </TabsTrigger>
-                    <TabsTrigger value="plans" className="text-xs h-6 px-2">
-                      <Target className="h-3 w-3 mr-1" />
-                      Plans
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <div className="flex-1 overflow-auto">
-                    <TabsContent value="read" className="p-4 mt-0">
-                      {/* Chapter Selection - MOVED TO TOP */}
-                      {selectedBook && (
-                        <div className="mb-4">
-                          <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                            <BookOpen className="h-4 w-4" />
-                            Chapters - {getBookDisplayName(selectedBook.name)}
-                          </label>
-                          <div className="grid grid-cols-5 gap-1">
-                            {Array.from({ length: Math.min(selectedBook.chapters, 25) }, (_, i) => i + 1).map(chapter => (
-                              <Button
-                                key={chapter}
-                                variant={selectedChapter === chapter ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedChapter(chapter);
-                                  setMobileSidebarOpen(false);
-                                }}
-                                className="text-xs h-7"
-                              >
-                                {chapter}
-                              </Button>
-                            ))}
-                          </div>
-                          
-                          {selectedBook.chapters > 25 && (
-                            <Select 
-                              value={selectedChapter.toString()} 
-                              onValueChange={(chapter) => {
-                                setSelectedChapter(parseInt(chapter));
-                                setMobileSidebarOpen(false);
-                              }}
-                            >
-                              <SelectTrigger className="mt-2 h-8">
-                                <SelectValue placeholder="More chapters..." />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-60">
-                                {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map(chapter => (
-                                  <SelectItem key={chapter} value={chapter.toString()}>
-                                    Chapter {chapter}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Language Selection */}
-                      <div className="mb-4">
-                        <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                          <Languages className="h-4 w-4" />
-                          Translation
-                        </label>
-                        <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                          <SelectTrigger className="h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LANGUAGES.map(language => (
-                              <SelectItem key={language.value} value={language.value}>
-                                {language.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Book Selection with Expandable Sections */}
-                      <div className="mb-4">
-                        <label className="text-sm font-medium mb-3 block">Books</label>
-                        <div className="space-y-2">
-                          {/* Old Testament Section */}
-                          <Collapsible open={oldTestamentExpanded} onOpenChange={(open) => {
-                            setOldTestamentExpanded(open);
-                            if (open) setNewTestamentExpanded(false);
-                          }}>
-                            <CollapsibleTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="flex w-full justify-between p-2 h-8 text-left"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Book className="h-3 w-3 text-orange-600" />
-                                  <span className="font-medium text-sm">Old Testament</span>
-                                  <Badge variant="secondary" className="text-xs h-4">
-                                    {oldTestamentBooks.length}
-                                  </Badge>
-                                </div>
-                                <ChevronDown className={`h-3 w-3 transition-transform ${oldTestamentExpanded ? 'rotate-180' : ''}`} />
-                              </Button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-1">
-                              <div className="grid grid-cols-2 gap-1">
-                                {oldTestamentBooks.map(book => (
-                                  <Button
-                                    key={book.name}
-                                    variant={selectedBook?.name === book.name ? "default" : "ghost"}
-                                    size="sm"
-                                    onClick={() => handleBookSelect(book.name)}
-                                    className="justify-start text-xs h-7 px-2"
-                                    title={`${book.chapters} chapters`}
-                                  >
-                                    {getBookDisplayName(book.name)}
-                                  </Button>
-                                ))}
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-
-                          {/* New Testament Section */}
-                          <Collapsible open={newTestamentExpanded} onOpenChange={(open) => {
-                            setNewTestamentExpanded(open);
-                            if (open) setOldTestamentExpanded(false);
-                          }}>
-                            <CollapsibleTrigger asChild>
-                              <Button
-                                variant="outline" 
-                                className="flex w-full justify-between p-2 h-8 text-left"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <BookOpen className="h-3 w-3 text-blue-600" />
-                                  <span className="font-medium text-sm">New Testament</span>
-                                  <Badge variant="secondary" className="text-xs h-4">
-                                    {newTestamentBooks.length}
-                                  </Badge>
-                                </div>
-                                <ChevronDown className={`h-3 w-3 transition-transform ${newTestamentExpanded ? 'rotate-180' : ''}`} />
-                              </Button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="mt-1">
-                              <div className="grid grid-cols-2 gap-1">
-                                {newTestamentBooks.map(book => (
-                                  <Button
-                                    key={book.name}
-                                    variant={selectedBook?.name === book.name ? "default" : "ghost"}
-                                    size="sm"
-                                    onClick={() => handleBookSelect(book.name)}
-                                    className="justify-start text-xs h-7 px-2"
-                                    title={`${book.chapters} chapters`}
-                                  >
-                                    {getBookDisplayName(book.name)}
-                                  </Button>
-                                ))}
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="search" className="p-4 mt-0">
-                      {/* Search Interface */}
-                      <div className="space-y-4">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Search verses..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                            className="flex-1"
-                          />
-                          <Button onClick={handleSearch} size="sm" disabled={loading}>
-                            <Search className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        {/* Search Filters */}
-                        <div className="space-y-3">
-                          <div>
-                            <label className="text-xs font-medium mb-1 block">Testament</label>
-                            <Select 
-                              value={searchFilters.testament} 
-                              onValueChange={(value) => setSearchFilters(prev => ({ ...prev, testament: value }))}
-                            >
-                              <SelectTrigger className="text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="old">Old Testament</SelectItem>
-                                <SelectItem value="new">New Testament</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-medium mb-1 block">Book</label>
-                            <Select 
-                              value={searchFilters.book} 
-                              onValueChange={(value) => setSearchFilters(prev => ({ ...prev, book: value }))}
-                            >
-                              <SelectTrigger className="text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-60">
-                                <SelectItem value="all">All Books</SelectItem>
-                                {books.map(book => (
-                                  <SelectItem key={book.name} value={book.name}>
-                                    {getBookDisplayName(book.name)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="exactMatch"
-                              checked={searchFilters.exactMatch}
-                              onChange={(e) => setSearchFilters(prev => ({ ...prev, exactMatch: e.target.checked }))}
-                              className="rounded"
-                            />
-                            <label htmlFor="exactMatch" className="text-xs">Exact match</label>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="plans" className="p-4 mt-0">
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium">Reading Plans</h4>
-                        {READING_PLANS.map(plan => (
-                          <Card key={plan.id} className="cursor-pointer hover:bg-gray-50">
-                            <CardContent className="p-3">
-                              <h5 className="font-medium text-sm">{plan.name}</h5>
-                              <p className="text-xs text-gray-500 mb-1">{plan.duration}</p>
-                              <p className="text-xs text-gray-600">{plan.description}</p>
-                              <Button 
-                                size="sm" 
-                                className="mt-2 w-full"
-                                onClick={() => setReadingPlan(plan.id)}
-                              >
-                                Start Plan
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </div>
-            </SheetContent>
-          </Sheet>
-        )}
-
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Book Header Banner - Moved from top */}
@@ -1183,7 +892,7 @@ export default function Bible() {
                         size="sm"
                         onClick={() => {
                           if (isMobile) {
-                            setMobileSidebarOpen(true);
+                            // Removed mobile sidebar functionality
                           }
                           setOldTestamentExpanded(true);
                           setActiveTab('read');
@@ -1198,7 +907,7 @@ export default function Bible() {
                         size="sm"
                         onClick={() => {
                           if (isMobile) {
-                            setMobileSidebarOpen(true);
+                            // Removed mobile sidebar functionality
                           }
                           setNewTestamentExpanded(true);
                           setActiveTab('read');

@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { User as SupabaseUser } from "@supabase/supabase-js"
 import { Database } from "@/integrations/supabase/types"
 import { useState } from "react"
+import React from "react"
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -565,7 +566,7 @@ function MobileRightSidebar() {
 }
 
 // Main App Sidebar Export
-export function ModernSidebar() {
+export function ModernSidebar({ children }: { children?: React.ReactNode }) {
   const isMobile = useIsMobile()
   
   // For mobile, show mobile navigation + main content with proper spacing
@@ -574,7 +575,7 @@ export function ModernSidebar() {
       <div className="h-screen bg-gray-900">
         <MobileNavigation />
         <div className="pl-16 pr-16"> {/* Add left and right padding for fixed sidebars */}
-          <MainContent />
+          {children || <MainContent />}
         </div>
         <MobileRightSidebar />
       </div>
@@ -585,7 +586,7 @@ export function ModernSidebar() {
   return (
     <div className="flex h-screen">
       <IconSidebar />
-      <MainContent />
+      {children || <MainContent />}
     </div>
   )
 } 
