@@ -5,8 +5,8 @@
 
   <!-- Bible AI Blog Articles -->
   <url>
-    <loc>https://bible-aura.com/blog/how-ai-transforms-bible-study</loc>
-    <lastmod>2024-12-20</lastmod>
+    <loc>https://bibleaura.xyz/blog/how-ai-transforms-bible-study</loc>
+    <lastmod>2025-02-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <news:news>
@@ -14,14 +14,14 @@
         <news:name>Bible Aura Blog</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
+      <news:publication_date>2025-02-03</news:publication_date>
       <news:title>How AI Transforms Bible Study: A Complete Guide</news:title>
     </news:news>
   </url>
 
   <url>
-    <loc>https://bible-aura.com/blog/bible-ai-vs-traditional-study</loc>
-    <lastmod>2024-12-20</lastmod>
+    <loc>https://bibleaura.xyz/blog/bible-ai-vs-traditional-study</loc>
+    <lastmod>2025-02-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <news:news>
@@ -29,14 +29,14 @@
         <news:name>Bible Aura Blog</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
+      <news:publication_date>2025-02-03</news:publication_date>
       <news:title>Bible AI vs Traditional Study: Which is Better?</news:title>
     </news:news>
   </url>
 
   <url>
-    <loc>https://bible-aura.com/blog/digital-bible-journaling-guide</loc>
-    <lastmod>2024-12-20</lastmod>
+    <loc>https://bibleaura.xyz/blog/bible-study-ai-benefits</loc>
+    <lastmod>2025-02-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <news:news>
@@ -44,113 +44,23 @@
         <news:name>Bible Aura Blog</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>Digital Bible Journaling: Complete Beginner's Guide</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/blog/ai-bible-insights-accuracy</loc>
-    <lastmod>2024-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>Are AI Bible Insights Accurate? Truth About Biblical AI</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/blog/best-bible-translations-comparison</loc>
-    <lastmod>2024-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>Best Bible Translations Comparison with AI Analysis</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/blog/ai-bible-chat-features</loc>
-    <lastmod>2024-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>Ultimate Guide to AI Bible Chat Features</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/blog/bible-study-ai-benefits</loc>
-    <lastmod>2024-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
+      <news:publication_date>2025-02-03</news:publication_date>
       <news:title>10 Benefits of Using AI for Bible Study</news:title>
     </news:news>
   </url>
 
   <url>
-    <loc>https://bible-aura.com/blog/smart-bible-search-techniques</loc>
-    <lastmod>2024-12-20</lastmod>
+    <loc>https://bibleaura.xyz/blog/ai-bible-insights-accuracy</loc>
+    <lastmod>2025-02-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
     <news:news>
       <news:publication>
         <news:name>Bible Aura Blog</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>Smart Bible Search Techniques with AI</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/blog/biblical-ai-assistant-guide</loc>
-    <lastmod>2024-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>Complete Guide to Biblical AI Assistant</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bible-aura.com/blog/christian-ai-technology-future</loc>
-    <lastmod>2024-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2024-12-20</news:publication_date>
-      <news:title>The Future of Christian AI Technology</news:title>
+      <news:publication_date>2025-02-03</news:publication_date>
+      <news:title>Are AI Bible Insights Accurate? Truth About Biblical AI</news:title>
     </news:news>
   </url>
 

@@ -1,5 +1,5 @@
 # Robots.txt for Bible Aura - AI-Powered Biblical Insight Platform
-# Updated: December 2024
+# Updated: February 2025
 
 # Allow all major search engines full access
 User-agent: Googlebot
@@ -105,15 +105,15 @@ Allow: /sermon-library
 Allow: /journal
 Allow: /about
 Allow: /contact
-Allow: /careers
+Allow: /features
 Allow: /pricing
 Allow: /blog/*
 
 # Host directive
-Host: www.bibleaura.xyz
+Host: bibleaura.xyz
 
 # Sitemap location
-Sitemap: https://www.bibleaura.xyz/sitemap.xml
+Sitemap: https://bibleaura.xyz/sitemap.xml
 
-# Additional sitemap for blog content (future)
-Sitemap: https://www.bibleaura.xyz/blog-sitemap.xml
+# Additional sitemap for blog content
+Sitemap: https://bibleaura.xyz/blog-sitemap.xml
