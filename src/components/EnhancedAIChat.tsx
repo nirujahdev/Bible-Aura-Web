@@ -17,7 +17,10 @@ import {
   User,
   Bot,
   ChevronDown,
-  Settings
+  Settings,
+  Languages,
+  BookOpen,
+  Filter
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +34,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Switch } from './ui/switch';
 import { generateSystemPrompt, AI_RESPONSE_TEMPLATES } from '../lib/ai-response-templates';
+import { BIBLE_TRANSLATIONS, TranslationCode } from '@/lib/local-bible';
 
 interface Message {
   id: string;
@@ -54,37 +59,79 @@ const CHAT_MODES = {
   chat: {
     name: "AI Chat",
     description: AI_RESPONSE_TEMPLATES.chat.purpose,
+    language: 'english'
   },
   verse: {
     name: "AI Analysis",
     description: AI_RESPONSE_TEMPLATES.verse.purpose,
+    language: 'english'
   },
   qa: {
     name: "Q&A",
     description: AI_RESPONSE_TEMPLATES.qa.purpose,
+    language: 'english'
   },
   parable: {
     name: "Parables",
     description: AI_RESPONSE_TEMPLATES.parable.purpose,
+    language: 'english'
   },
   character: {
     name: "Character",
     description: AI_RESPONSE_TEMPLATES.character.purpose,
+    language: 'english'
   },
   topical: {
     name: "Study",
     description: AI_RESPONSE_TEMPLATES.topical.purpose,
+    language: 'english'
+  },
+  // Tamil modes
+  'chat-tamil': {
+    name: "AI அரட்டை",
+    description: AI_RESPONSE_TEMPLATES['chat-tamil'].purpose,
+    language: 'tamil'
+  },
+  'verse-tamil': {
+    name: "AI பகுப்பாய்வு",
+    description: AI_RESPONSE_TEMPLATES['verse-tamil'].purpose,
+    language: 'tamil'
   }
 };
+
+// Language options
+const LANGUAGE_OPTIONS = [
+  { value: 'english', label: 'English', icon: '🇺🇸' },
+  { value: 'tamil', label: 'தமிழ்', icon: '🇮🇳' }
+];
+
+// English translations
+const SELECT_TRANSLATIONS = BIBLE_TRANSLATIONS.filter(t => t.language === 'english').slice(0, 9);
 
 const callBiblicalAI = async (
   messages: Array<{role: 'user' | 'assistant', content: string}>, 
   mode: keyof typeof CHAT_MODES = 'chat',
+  language: 'english' | 'tamil' = 'english',
+  translation: TranslationCode = 'KJV',
+  cleanMode: boolean = false,
   abortController?: AbortController
 ) => {
   try {
     const controller = abortController || new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // Reduced from 30s to 15s
+
+    // Generate enhanced system prompt with language and translation context
+    const basePrompt = generateSystemPrompt(mode);
+    const enhancedPrompt = `${basePrompt}
+
+LANGUAGE & TRANSLATION CONTEXT:
+- Response Language: ${language === 'english' ? 'English' : 'Tamil'}
+- Bible Translation: ${language === 'english' ? `${translation} (${BIBLE_TRANSLATIONS.find(t => t.code === translation)?.name || translation})` : 'Tamil Bible'}
+- Clean Mode: ${cleanMode ? 'Enabled - Provide concise, direct responses without extra formatting' : 'Disabled - Use full structured formatting as specified'}
+
+${cleanMode ? 'CLEAN MODE INSTRUCTIONS: Keep responses concise and direct. Avoid excessive formatting. Focus on essential information only.' : ''}
+
+When referencing Bible verses, use the ${language === 'english' ? translation : 'Tamil'} translation and always include the complete verse reference.`;
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -97,12 +144,12 @@ const callBiblicalAI = async (
         messages: [
           {
             role: "system",
-            content: generateSystemPrompt(mode)
+            content: enhancedPrompt
           },
           ...messages
         ],
-        max_tokens: 600, // Reduced from 1000 for faster responses
-        temperature: 0.5, // Reduced for more focused responses
+        max_tokens: cleanMode ? 300 : 600, // Shorter responses in clean mode
+        temperature: 0.5,
         stream: false
       }),
       signal: controller.signal
@@ -160,6 +207,11 @@ export default function EnhancedAIChat() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [selectedMode, setSelectedMode] = useState<keyof typeof CHAT_MODES>('chat');
   
+  // New AI enhancement states
+  const [cleanMode, setCleanMode] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
+  const [selectedTranslation, setSelectedTranslation] = useState<TranslationCode>('KJV');
+  
   // History state
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -169,6 +221,19 @@ export default function EnhancedAIChat() {
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-sync mode when language changes
+  useEffect(() => {
+    const currentModeLanguage = CHAT_MODES[selectedMode]?.language;
+    if (currentModeLanguage !== selectedLanguage) {
+      // Switch to the default mode for the selected language
+      if (selectedLanguage === 'tamil') {
+        setSelectedMode('chat-tamil');
+      } else {
+        setSelectedMode('chat');
+      }
+    }
+  }, [selectedLanguage, selectedMode]);
 
   // Load conversations on component mount
   useEffect(() => {
@@ -307,44 +372,28 @@ export default function EnhancedAIChat() {
     setIsLoading(true);
 
     try {
-      // Send message to AI
-      const sendToAI = async (message: string) => {
-        try {
-          // Mock AI response for demo purposes
-          // In production, this would connect to your preferred AI service
-          await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000)); // Simulate processing time
-          
-          const responses = [
-            "This is a wonderful spiritual question. Let me share some biblical insight...",
-            "The Bible teaches us many things about this topic. Consider these verses...",
-            "From a theological perspective, this touches on several important themes...",
-            "I can help you explore this biblical concept further. Here's what Scripture says...",
-            "This is an excellent question for spiritual growth. Let me provide some guidance..."
-          ];
-          
-          const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-          
-          return {
-            choices: [{
-              message: {
-                content: randomResponse + " Please note: This is a demonstration of the AI chat feature. In the full version, you would receive comprehensive biblical insights and theological guidance."
-              }
-            }]
-          };
-        } catch (error) {
-          console.error('AI request error:', error);
-          throw error;
-        }
-      };
+      // Prepare messages for AI call (convert to format expected by AI)
+      const aiMessages = updatedMessages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
 
-      const aiResponse = await sendToAI(messageToSend);
+      // Call the actual AI service with all parameters
+      const aiResponse = await callBiblicalAI(
+        aiMessages,
+        selectedMode,
+        selectedLanguage,
+        selectedTranslation,
+        cleanMode,
+        abortControllerRef.current
+      );
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse.choices[0].message.content,
+        content: aiResponse.content,
         timestamp: new Date().toISOString(),
-        model: 'local-ai' // Indicate it's a local simulation
+        model: aiResponse.model
       };
 
       const finalMessages = [...updatedMessages, aiMessage];
@@ -698,6 +747,77 @@ export default function EnhancedAIChat() {
         {/* Input Area */}
         <div className="border-t bg-white p-4" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
           <div className="max-w-4xl mx-auto">
+            {/* AI Controls Row */}
+            <div className="flex gap-3 items-center mb-3 p-3 bg-gray-50 rounded-xl">
+              {/* Clean Mode Toggle */}
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-600" />
+                <span className="text-sm text-gray-700">Clean Mode</span>
+                <Switch
+                  checked={cleanMode}
+                  onCheckedChange={setCleanMode}
+                  className="h-5 w-9"
+                />
+              </div>
+
+              <Separator orientation="vertical" className="h-6" />
+
+              {/* Language Selector */}
+              <div className="flex items-center gap-2">
+                <Languages className="h-4 w-4 text-gray-600" />
+                <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => {
+                  setSelectedLanguage(value);
+                  // Auto-switch to appropriate mode for the language
+                  if (value === 'tamil') {
+                    setSelectedMode('chat-tamil');
+                  } else {
+                    setSelectedMode('chat');
+                  }
+                }}>
+                  <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGE_OPTIONS.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        <span className="flex items-center gap-2">
+                          <span>{lang.icon}</span>
+                          <span>{lang.label}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Translation Selector (Only for English) */}
+              {selectedLanguage === 'english' && (
+                <>
+                  <Separator orientation="vertical" className="h-6" />
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-gray-600" />
+                    <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                      <SelectTrigger className="w-auto min-w-[80px] h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SELECT_TRANSLATIONS.map((trans) => (
+                          <SelectItem key={trans.code} value={trans.code}>
+                            <span className="flex items-center gap-2">
+                              <span className="font-mono text-xs">{trans.code}</span>
+                              <span className="text-xs text-gray-500 hidden sm:inline">
+                                {trans.name.split(' ').slice(0, 2).join(' ')}
+                              </span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Input Row with Mode Selector */}
             <div className="flex gap-2 items-end">
               {/* Mode Selector */}
@@ -707,11 +827,13 @@ export default function EnhancedAIChat() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(CHAT_MODES).map(([key, mode]) => (
-                      <SelectItem key={key} value={key} style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                        <span className="font-medium">{mode.name}</span>
-                      </SelectItem>
-                    ))}
+                    {Object.entries(CHAT_MODES)
+                      .filter(([key, mode]) => mode.language === selectedLanguage)
+                      .map(([key, mode]) => (
+                        <SelectItem key={key} value={key} style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
+                          <span className="font-medium">{mode.name}</span>
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>

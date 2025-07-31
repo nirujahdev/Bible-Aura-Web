@@ -8,6 +8,10 @@ import characterProfilesTemplate from './character-profiles.json';
 import topicalStudyTemplate from './topical-study.json';
 import qaModeTemplate from './qa-mode.json';
 
+// Tamil Templates
+import chatModeTamilTemplate from './chat-mode-tamil.json';
+import verseAnalysisTamilTemplate from './verse-analysis-tamil.json';
+
 export interface ResponseTemplate {
   mode: string;
   name: string;
@@ -49,6 +53,10 @@ export const AI_RESPONSE_TEMPLATES: Record<string, ResponseTemplate> = {
   character: characterProfilesTemplate as ResponseTemplate,
   topical: topicalStudyTemplate as ResponseTemplate,
   qa: qaModeTemplate as ResponseTemplate,
+  
+  // Tamil Templates
+  'chat-tamil': chatModeTamilTemplate as ResponseTemplate,
+  'verse-tamil': verseAnalysisTamilTemplate as ResponseTemplate,
 };
 
 // Helper function to get system prompt based on template

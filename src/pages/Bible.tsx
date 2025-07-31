@@ -130,7 +130,7 @@ export default function Bible() {
     if (selectedBook) {
       loadChapter();
     }
-  }, [selectedBook, selectedChapter, selectedLanguage]);
+  }, [selectedBook, selectedChapter, selectedLanguage, selectedTranslation]);
 
   const loadTamilBookNames = async () => {
     try {

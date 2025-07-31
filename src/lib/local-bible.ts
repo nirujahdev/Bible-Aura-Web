@@ -45,9 +45,12 @@ export interface BibleChapter {
 // Cache for loaded Bible data
 let bibleCache: Record<TranslationCode, Record<string, any> | null> = {
   KJV: null,
-  ESV: null,
   NIV: null,
+  ESV: null,
   NLT: null,
+  NASB: null,
+  NKJV: null,
+  NET: null,
   ASV: null,
   WEB: null,
   TAMIL: null
