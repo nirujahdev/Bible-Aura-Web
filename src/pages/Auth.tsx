@@ -168,9 +168,9 @@ export default function Auth() {
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Auto-redirect to chat on successful login
+        // Auto-redirect to dashboard on successful login
         setAuthError(null);
-        navigate('/chat', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     } catch (error) {
       console.error('Sign in error:', error);

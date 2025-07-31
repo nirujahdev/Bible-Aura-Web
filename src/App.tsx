@@ -7,6 +7,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { queryClient } from "./lib/queryClient";
 import { Suspense, lazy } from "react";
 import LoadingScreen from "./components/LoadingScreen";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // Lazy load all page components for better performance
 const Auth = lazy(() => import("./pages/Auth"));
@@ -275,6 +277,8 @@ function App() {
         {/* React Query DevTools - only shows in development */}
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
+      <Analytics />
+      <SpeedInsights />
     </ErrorBoundary>
   );
 }

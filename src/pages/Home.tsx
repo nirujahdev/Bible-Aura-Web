@@ -9,6 +9,8 @@ import {
   Shield, Eye, Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks";
+import { ManualContextualLinks } from "@/components/ContextualLinks";
 
 const Home = () => {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -358,6 +360,21 @@ const Home = () => {
             <span className="text-orange-600 mr-2">✦</span>
             START YOUR JOURNEY
           </Button>
+        </div>
+      </section>
+
+      {/* Quick Action Links for SEO */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+              Start Your Bible Study Journey
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Choose from our powerful Bible study tools to deepen your understanding of Scripture
+            </p>
+          </div>
+          <QuickActionSEOLinks />
         </div>
       </section>
 
@@ -777,6 +794,9 @@ const Home = () => {
           </div>
         </div>
       </footer>
+
+      {/* SEO Internal Links Section */}
+      <SEOBacklinks currentPage="/" category="general" />
     </div>
   );
 };

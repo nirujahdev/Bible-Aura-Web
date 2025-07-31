@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { SEOBacklinks } from "@/components/SEOBacklinks";
+import { ManualContextualLinks } from "@/components/ContextualLinks";
 
 const Blog = () => {
   // SEO optimization
@@ -365,6 +367,24 @@ const Blog = () => {
           </div>
         </div>
       </section>
+
+      {/* Related Content Section for SEO */}
+      <section className="py-12 bg-gray-50">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+              Explore More Bible Resources
+            </h2>
+            <p className="text-gray-600">
+              Discover related tools and insights to enhance your Bible study experience
+            </p>
+          </div>
+          <ManualContextualLinks context="ai-features" limit={6} />
+        </div>
+      </section>
+
+      {/* SEO Internal Links */}
+      <SEOBacklinks currentPage="/blog" category="blog" />
 
       {/* Footer */}
       <footer className="bg-black text-white py-16">

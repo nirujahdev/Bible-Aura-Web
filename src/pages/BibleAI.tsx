@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { SEOBacklinks, SEOBreadcrumbs } from "@/components/SEOBacklinks";
+import { ManualContextualLinks } from "@/components/ContextualLinks";
 
 const BibleAI = () => {
   // SEO optimization
@@ -276,6 +278,16 @@ const BibleAI = () => {
           </div>
         </div>
       </section>
+
+      {/* Related AI Bible Tools for SEO */}
+      <section className="py-12 bg-gray-50">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
+          <ManualContextualLinks context="ai-features" limit={6} />
+        </div>
+      </section>
+
+      {/* SEO Internal Links */}
+      <SEOBacklinks currentPage="/bible-ai" category="ai" />
 
       {/* Footer */}
       <footer className="bg-black text-white py-16">
