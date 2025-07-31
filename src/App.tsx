@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider, useAuth } from "./hooks/useAuth";
@@ -47,224 +47,169 @@ const Features = lazy(() => import("./pages/Features"));
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ModernLayout } from "./components/ModernLayout";
 
-function AppLayout() {
-  // Component to handle root route - shows landing page or dashboard based on auth
-  const LandingOrDashboard = () => {
-    const { user } = useAuth();
-    
-    if (user) {
-      // User is authenticated, show dashboard with consistent layout
-      return (
-        <ModernLayout>
-          <Dashboard />
-        </ModernLayout>
-      );
-    } else {
-      // User is not authenticated, show landing page
-      return <Home />;
-    }
-  };
-  const location = useLocation();
-
-  // Define routes that should use landing layout (no sidebar)
-  const landingRoutes = [
-    '/auth',
-    '/about', 
-    '/contact',
-    '/terms',
-    '/privacy',
-    '/pricing',
-    '/funding',
-    '/features',
-    '/bible-ai',
-    '/ai-bible-study',
-    '/bible-chat',
-    '/digital-bible',
-    '/bible-journal',
-    '/blog'
-  ];
-
-  // Check if current path is a blog post
-  const isBlogPost = location.pathname.startsWith('/blog/');
-
-  const isLandingPage = landingRoutes.includes(location.pathname) || isBlogPost;
+function AppRoutes() {
+  const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white">
-      {isLandingPage ? (
-        // Landing page layout for static pages
-        <main>
-          <Suspense fallback={<LoadingScreen />}>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/funding" element={<Navigate to="/pricing" replace />} />
-              <Route path="/features" element={<Features />} />
-              
-              {/* SEO-Optimized Landing Pages */}
-              <Route path="/bible-ai" element={<BibleAI />} />
-              <Route path="/ai-bible-study" element={<BibleAI />} />
-              <Route path="/bible-chat" element={<BibleAI />} />
-              <Route path="/digital-bible" element={<BibleAI />} />
-              <Route path="/bible-journal" element={<BibleAI />} />
-              
-              {/* Blog Pages */}
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
-              <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
-              <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
-              <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
-              <Route path="/blog/ai-bible-chat-features" element={<BibleAI />} />
-              <Route path="/blog/smart-bible-search-techniques" element={<BibleAI />} />
-              <Route path="/blog/biblical-ai-assistant-guide" element={<BibleAI />} />
-              <Route path="/blog/christian-ai-technology-future" element={<BibleAI />} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </main>
-      ) : (
-        // Modern app layout with sidebar for all app pages
-        <Suspense fallback={<LoadingScreen />}>
-          <Routes>
-            {/* Root route - Landing page for non-authenticated, Dashboard for authenticated */}
-            <Route path="/" element={<LandingOrDashboard />} />
-            
-            {/* Dashboard route */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Dashboard />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            {/* All other app routes */}
-            <Route path="/bible" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Bible />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/songs" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Songs />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/study" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <StudyHub />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/study-hub" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <StudyHub />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/bible-qa" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <StudyHub />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/bible-characters" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <BibleCharacters />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/sermons" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Sermons />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/sermon-writer" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <SermonWriter />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/topical-study" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <StudyHub />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/sermon-library" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <StudyHub />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/parables-study" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <StudyHub />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/favorites" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Favorites />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/journal" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Journal />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <ModernLayout>
-                  <Profile />
-                </ModernLayout>
-              </ProtectedRoute>
-            } />
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        {/* Public landing pages - no authentication required */}
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/features" element={<Features />} />
+        
+        {/* SEO-Optimized Landing Pages */}
+        <Route path="/bible-ai" element={<BibleAI />} />
+        <Route path="/ai-bible-study" element={<BibleAI />} />
+        <Route path="/bible-chat" element={<BibleAI />} />
+        <Route path="/digital-bible" element={<BibleAI />} />
+        <Route path="/bible-journal" element={<BibleAI />} />
+        
+        {/* Blog Pages */}
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
+        <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
+        <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
+        <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
+        <Route path="/blog/ai-bible-chat-features" element={<BibleAI />} />
+        <Route path="/blog/smart-bible-search-techniques" element={<BibleAI />} />
+        <Route path="/blog/biblical-ai-assistant-guide" element={<BibleAI />} />
+        <Route path="/blog/christian-ai-technology-future" element={<BibleAI />} />
 
-            {/* Legacy chat route redirects to home */}
-            <Route path="/chat" element={<Navigate to="/" replace />} />
-            
-            {/* Fallback route redirects to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      )}
-    </div>
+        {/* Protected app routes - authentication required */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Dashboard />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/bible" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Bible />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/songs" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Songs />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/study" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <StudyHub />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/study-hub" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <StudyHub />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/bible-qa" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <StudyHub />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/bible-characters" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <BibleCharacters />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/sermons" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Sermons />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/sermon-writer" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <SermonWriter />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/topical-study" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <StudyHub />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/sermon-library" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <StudyHub />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/parables-study" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <StudyHub />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/favorites" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Favorites />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/journal" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Journal />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ModernLayout>
+              <Profile />
+            </ModernLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Legacy redirects */}
+        <Route path="/chat" element={<Navigate to="/" replace />} />
+        <Route path="/funding" element={<Navigate to="/pricing" replace />} />
+
+        {/* 404 fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 }
 
@@ -274,8 +219,10 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Router>
-            <AppLayout />
-            <Toaster />
+            <div className="min-h-screen bg-white">
+              <AppRoutes />
+              <Toaster />
+            </div>
           </Router>
         </AuthProvider>
         {/* React Query DevTools - only shows in development */}
