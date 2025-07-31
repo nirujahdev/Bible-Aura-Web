@@ -1,0 +1,69 @@
+{
+  "mode": "character",
+  "name": "Bible Character Profiles",
+  "purpose": "Comprehensive character studies with life lessons",
+  "responseStructure": {
+    "format": "profile_structure",
+    "mainTitle": "CHARACTER PROFILE: [Name]",
+    "sections": [
+      {
+        "icon": "🎯",
+        "title": "Quick Overview",
+        "content": "Essential character summary",
+        "requirements": [
+          "Who they were (role, tribe, occupation)",
+          "Time period and location",
+          "Key verse that defines them",
+          "One-sentence character summary"
+        ]
+      },
+      {
+        "icon": "⏰",
+        "title": "Timeline & Key Events",
+        "content": "Major life events in chronological order",
+        "requirements": [
+          "List 3-5 most important events",
+          "Include scripture references",
+          "Show character development arc",
+          "Highlight turning points"
+        ]
+      },
+      {
+        "icon": "💎",
+        "title": "Lessons for Today",
+        "content": "What modern believers can learn",
+        "requirements": [
+          "Extract 2-3 key life lessons",
+          "Show both positive and negative examples",
+          "Make applications practical",
+          "Connect to Christian living"
+        ]
+      },
+      {
+        "icon": "📚",
+        "title": "Key Scripture References",
+        "content": "Important passages about this character",
+        "requirements": [
+          "List 3-5 essential verses/passages",
+          "Include chapter references for longer stories",
+          "Prioritize character-defining moments",
+          "Include both mentions and actions"
+        ]
+      }
+    ]
+  },
+  "examples": {
+    "goodResponse": {
+      "character": "David",
+      "fullResponse": "CHARACTER PROFILE: King David\n\n🎯 Quick Overview\nShepherd boy who became Israel's greatest king, known as \"a man after God's own heart.\" Warrior, poet, and flawed leader who experienced both triumph and failure.\n\n⏰ Timeline & Key Events\n• Young shepherd protecting flocks (1 Samuel 16-17)\n• Anointed by Samuel as future king (1 Samuel 16:13)\n• Defeated Goliath with faith and a sling (1 Samuel 17)\n• Fled from jealous King Saul for years (1 Samuel 18-31)\n• Became king of Judah, then all Israel (2 Samuel 1-5)\n• Committed adultery with Bathsheba, arranged Uriah's death (2 Samuel 11)\n• Faced rebellion from son Absalom (2 Samuel 15-18)\n• Final years preparing for Solomon's reign (1 Kings 1-2)\n\n💎 Lessons for Today\n• Courage in Crisis: Faced giants with faith, not fear\n• Authentic Worship: Wrote honest psalms expressing real emotions\n• Consequences Matter: Even forgiven sin has lasting effects\n• Genuine Repentance: Took responsibility when confronted with sin\n• God's Grace: Despite failures, remained in God's plan\n\n📚 Key Scripture References\n• 1 Samuel 13:14 - \"A man after God's own heart\"\n• Psalm 23 - \"The Lord is my shepherd\"\n• Psalm 51 - David's prayer of repentance\n• 2 Samuel 7:16 - God's covenant with David"
+    }
+  },
+  "tone": "biographical, inspiring, balanced",
+  "visualFormat": "Use tree structure with ├── and └── symbols",
+  "restrictions": [
+    "Include both strengths and weaknesses",
+    "Always provide scripture references",
+    "Focus on character development",
+    "Make lessons practical for modern life"
+  ]
+} 

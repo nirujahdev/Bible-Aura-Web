@@ -7,20 +7,36 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
 import { 
   BookOpen, Plus, Edit3, Trash2, Search, 
   Save, Calendar as CalendarIcon, X,
   ChevronLeft, ChevronRight, RefreshCw, 
-  AlertCircle, Clock, FileText
+  AlertCircle, Clock, FileText, Sparkles
 } from "lucide-react";
 
 interface JournalEntry {
   id: string;
   title: string | null;
   content: string;
+  mood: string | null;
+  spiritual_state?: string | null;
+  verse_reference?: string | null;
+  verse_text?: string | null;
+  verse_references?: string[];
+  tags?: string[];
+  is_private?: boolean;
+  entry_date?: string;
   created_at: string;
   updated_at: string;
   user_id: string;
+  word_count?: number;
+  reading_time?: number;
+  language?: 'english' | 'tamil' | 'sinhala';
+  category?: string;
+  metadata?: any;
+  is_pinned?: boolean;
+  template_used?: string;
 }
 
 const Journal = () => {
@@ -37,10 +53,10 @@ const Journal = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Editor state
-  const [entryTitle, setEntryTitle] = useState("");
-  const [entryContent, setEntryContent] = useState("");
+  const [showEditor, setShowEditor] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [editingEntry, setEditingEntry] = useState<Partial<JournalEntry> | null>(null);
+  const [useEnhancedEditor, setUseEnhancedEditor] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -59,10 +75,10 @@ const Journal = () => {
       
       const { data, error } = await supabase
         .from('journal_entries')
-        .select('id, title, content, created_at, updated_at, user_id')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(20); // Limit to recent 20 entries
+        .limit(50); // Increased limit for better UX
 
       if (error) {
         console.error('Supabase error:', error);
@@ -85,7 +101,7 @@ const Journal = () => {
     }
   };
 
-  const handleSaveEntry = async () => {
+  const handleSaveEntry = async (entryData: Omit<JournalEntry, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -95,31 +111,32 @@ const Journal = () => {
       return;
     }
 
-    if (!entryContent.trim()) {
-      toast({
-        title: "Missing content",
-        description: "Please write some content for your entry",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setSaving(true);
     
     try {
-      const entryData = {
-        user_id: user.id,
-        title: entryTitle.trim() || null,
-        content: entryContent.trim(),
-        updated_at: new Date().toISOString()
-      };
+              const finalData = {
+          user_id: user.id,
+          title: entryData.title?.trim() || null,
+          content: entryData.content.trim(),
+          mood: entryData.mood,
+          spiritual_state: entryData.spiritual_state || null,
+          verse_references: entryData.verse_references || [],
+          tags: entryData.tags || [],
+          is_private: entryData.is_private ?? true,
+          entry_date: entryData.entry_date || new Date().toISOString().split('T')[0],
+          word_count: entryData.word_count || 0,
+          reading_time: entryData.reading_time || 0,
+          language: entryData.language || 'english',
+          category: entryData.category || 'personal',
+          updated_at: new Date().toISOString()
+        };
 
-      if (isEditing && editingEntryId) {
-        console.log('Updating entry:', editingEntryId);
+      if (isEditing && editingEntry?.id) {
+        console.log('Updating entry:', editingEntry.id);
         const { error } = await supabase
           .from('journal_entries')
-          .update(entryData)
-          .eq('id', editingEntryId)
+          .update(finalData)
+          .eq('id', editingEntry.id)
           .eq('user_id', user.id);
 
         if (error) {
@@ -132,10 +149,10 @@ const Journal = () => {
           description: "Your journal entry has been saved successfully",
         });
       } else {
-        console.log('Creating new entry with data:', entryData);
+        console.log('Creating new entry with data:', finalData);
         const { data, error } = await supabase
           .from('journal_entries')
-          .insert(entryData)
+          .insert(finalData)
           .select()
           .single();
 
@@ -151,9 +168,9 @@ const Journal = () => {
         });
       }
 
-      // Clear the editor after saving
-      clearEditor();
-      await loadEntries(); // Reload entries to show the new/updated entry
+      // Close editor and reload entries
+      handleCloseEditor();
+      await loadEntries();
     } catch (error) {
       console.error('Error saving entry:', error);
       toast({
@@ -184,9 +201,9 @@ const Journal = () => {
         description: "Your journal entry has been deleted",
       });
       
-      // If we're editing the deleted entry, clear the editor
-      if (editingEntryId === entryId) {
-        clearEditor();
+      // If we're editing the deleted entry, close the editor
+      if (editingEntry?.id === entryId) {
+        handleCloseEditor();
       }
       
       await loadEntries();
@@ -202,43 +219,33 @@ const Journal = () => {
     }
   };
 
-  const loadEntryIntoEditor = (entry: JournalEntry) => {
-    setEntryTitle(entry.title || "");
-    setEntryContent(entry.content);
+  const handleEditEntry = (entry: JournalEntry) => {
+    setEditingEntry(entry);
     setIsEditing(true);
-    setEditingEntryId(entry.id);
-    setSelectedEntry(entry);
+    setShowEditor(true);
   };
 
-  const clearEditor = () => {
-    setEntryTitle("");
-    setEntryContent("");
+  const handleNewEntry = () => {
+    setEditingEntry(null);
     setIsEditing(false);
-    setEditingEntryId(null);
-    setSelectedEntry(null);
+    setShowEditor(true);
   };
 
-  const startNewEntry = () => {
-    clearEditor();
+  const handleCloseEditor = () => {
+    setShowEditor(false);
+    setIsEditing(false);
+    setEditingEntry(null);
+    setSelectedEntry(null);
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const entryDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    
-    if (entryDate.getTime() === today.getTime()) {
-      return 'Today';
-    } else if (entryDate.getTime() === today.getTime() - 86400000) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    }
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   const formatTime = (dateString: string) => {
@@ -248,6 +255,14 @@ const Journal = () => {
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  const getLanguageFlag = (language?: string) => {
+    switch (language) {
+      case 'tamil': return '🇮🇳';
+      case 'sinhala': return '🇱🇰';
+      default: return '🇺🇸';
+    }
   };
 
   if (!user) {
@@ -272,12 +287,40 @@ const Journal = () => {
     );
   }
 
+  // Show enhanced editor when editing or creating
+  if (showEditor) {
+    return (
+      <EnhancedJournalEditor
+        initialEntry={editingEntry || undefined}
+        onSave={handleSaveEntry}
+        onCancel={handleCloseEditor}
+        isEditing={isEditing}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Left Container - Small Side (Calendar & Recent Journals) */}
+        {/* Left Container - Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200 p-4">
           <div className="h-full flex flex-col space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <BookOpen className="h-6 w-6 text-orange-600" />
+                My Journal
+              </h1>
+              <Button
+                onClick={handleNewEntry}
+                size="sm"
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                New
+              </Button>
+            </div>
+
             {/* Calendar Section */}
             <Card className="border-orange-200">
               <CardHeader className="pb-2">
@@ -317,7 +360,7 @@ const Journal = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Clock className="h-4 w-4 text-orange-600" />
-                    Recent Journals
+                    Recent Entries ({entries.length})
                   </CardTitle>
                   <Button
                     onClick={loadEntries}
@@ -348,7 +391,7 @@ const Journal = () => {
                     <div className="p-4 text-center">
                       <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                       <p className="text-gray-500 text-xs mb-1">No entries yet</p>
-                      <p className="text-gray-400 text-xs">Start writing →</p>
+                      <p className="text-gray-400 text-xs">Start writing your first entry!</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-100">
@@ -358,23 +401,39 @@ const Journal = () => {
                           className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
                             selectedEntry?.id === entry.id ? 'bg-orange-50 border-r-2 border-orange-500' : ''
                           }`}
-                          onClick={() => loadEntryIntoEditor(entry)}
+                          onClick={() => setSelectedEntry(entry)}
                         >
                           <div className="flex justify-between items-start mb-1">
-                            <h3 className="font-medium text-gray-800 truncate flex-1 text-sm">
-                              {entry.title || "Untitled Entry"}
-                            </h3>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteEntry(entry.id);
-                              }}
-                              className="h-5 w-5 p-0 text-gray-400 hover:text-red-600 ml-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <div className="flex items-center gap-1 flex-1">
+                              <span className="text-xs">{getLanguageFlag(entry.language)}</span>
+                              <h3 className="font-medium text-gray-800 truncate text-sm">
+                                {entry.title || "Untitled Entry"}
+                              </h3>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditEntry(entry);
+                                }}
+                                className="h-5 w-5 p-0 text-gray-400 hover:text-orange-600"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteEntry(entry.id);
+                                }}
+                                className="h-5 w-5 p-0 text-gray-400 hover:text-red-600"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           <p className="text-xs text-gray-600 line-clamp-2 mb-1">
                             {entry.content}
@@ -383,6 +442,18 @@ const Journal = () => {
                             <span>{formatDate(entry.created_at)}</span>
                             <span>{formatTime(entry.created_at)}</span>
                           </div>
+                          {entry.tags && entry.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {entry.tags.slice(0, 2).map((tag, index) => (
+                                <span key={index} className="inline-block bg-orange-100 text-orange-700 text-xs px-1 py-0.5 rounded">
+                                  {tag}
+                                </span>
+                              ))}
+                              {entry.tags.length > 2 && (
+                                <span className="text-xs text-gray-400">+{entry.tags.length - 2}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -393,96 +464,122 @@ const Journal = () => {
           </div>
         </div>
 
-        {/* Right Container - Large Side (Journal Writing Area) */}
+        {/* Right Container - Entry Display */}
         <div className="flex-1 bg-white p-8">
           <div className="h-full flex flex-col max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-orange-100">
-                    <BookOpen className="h-7 w-7 text-orange-600" />
+            {selectedEntry ? (
+              <div className="h-full flex flex-col">
+                {/* Entry Header */}
+                <div className="mb-6 pb-4 border-b border-gray-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{getLanguageFlag(selectedEntry.language)}</span>
+                      <h1 className="text-2xl font-bold text-gray-800">
+                        {selectedEntry.title || "Untitled Entry"}
+                      </h1>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEditEntry(selectedEntry)}
+                        variant="outline"
+                        size="sm"
+                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                      >
+                        <Edit3 className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteEntry(selectedEntry.id)}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
-                  {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
-                </h1>
-                {isEditing && (
+                  
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span>{formatDate(selectedEntry.created_at)}</span>
+                    <span>•</span>
+                    <span>{formatTime(selectedEntry.created_at)}</span>
+                    {selectedEntry.word_count && (
+                      <>
+                        <span>•</span>
+                        <span>{selectedEntry.word_count} words</span>
+                      </>
+                    )}
+                    {selectedEntry.reading_time && (
+                      <>
+                        <span>•</span>
+                        <span>{selectedEntry.reading_time} min read</span>
+                      </>
+                    )}
+                  </div>
+
+                  {selectedEntry.mood && (
+                    <div className="mt-2">
+                      <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
+                        Mood: {selectedEntry.mood}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedEntry.tags && selectedEntry.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedEntry.tags.map((tag, index) => (
+                        <span key={index} className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Entry Content */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="prose prose-gray max-w-none">
+                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                      {selectedEntry.content.split('\n').map((line, index) => {
+                        // Simple markdown rendering
+                        let processedLine = line
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                        
+                        if (line.startsWith('• ')) {
+                          return (
+                            <div key={index} className="flex items-start gap-2 mb-1">
+                              <span className="mt-1.5 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
+                              <span dangerouslySetInnerHTML={{ __html: processedLine.substring(2) }} />
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div key={index} dangerouslySetInnerHTML={{ __html: processedLine || '<br/>' }} />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center">
+                  <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                  <h2 className="text-xl font-semibold text-gray-600 mb-2">Select an entry to read</h2>
+                  <p className="text-gray-500 mb-4">Choose from your recent journal entries or create a new one</p>
                   <Button
-                    onClick={startNewEntry}
-                    variant="outline"
-                    className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                    onClick={handleNewEntry}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    New Entry
+                    Write New Entry
                   </Button>
-                )}
+                </div>
               </div>
-              <p className="text-gray-600 mt-3 text-lg">
-                {isEditing ? 'Make changes to your journal entry' : 'Write your thoughts, prayers, and reflections'}
-              </p>
-            </div>
-
-            {/* Editor Form */}
-            <div className="flex-1 flex flex-col space-y-6">
-              {/* Title Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Title (optional)
-                </label>
-                <Input
-                  value={entryTitle}
-                  onChange={(e) => setEntryTitle(e.target.value)}
-                  placeholder="Enter a title for your entry..."
-                  className="text-lg border-gray-200 focus:border-orange-300 focus:ring-orange-200"
-                />
-              </div>
-
-              {/* Content Textarea */}
-              <div className="flex-1 flex flex-col">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Content
-                </label>
-                <Textarea
-                  value={entryContent}
-                  onChange={(e) => setEntryContent(e.target.value)}
-                  placeholder="Write your thoughts, reflections, prayers..."
-                  className="flex-1 min-h-[500px] text-base border-gray-200 focus:border-orange-300 focus:ring-orange-200 resize-none leading-relaxed"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-between pt-6 border-t">
-                {isEditing && (
-                  <Button
-                    onClick={clearEditor}
-                    variant="outline"
-                    size="lg"
-                    className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </Button>
-                )}
-                {!isEditing && <div></div>}
-                
-                <Button 
-                  onClick={handleSaveEntry}
-                  disabled={saving || !entryContent.trim()}
-                  size="lg"
-                  className="bg-orange-500 hover:bg-orange-600 text-white min-w-[140px]"
-                >
-                  {saving ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      {isEditing ? 'Update Entry' : 'Save Entry'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

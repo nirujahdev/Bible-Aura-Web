@@ -16,7 +16,8 @@ import {
   Clock,
   User,
   Bot,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +30,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { generateSystemPrompt, AI_RESPONSE_TEMPLATES } from '../lib/ai-response-templates';
 
 interface Message {
   id: string;
@@ -46,7 +49,39 @@ interface Conversation {
   updated_at: string;
 }
 
-const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>, abortController?: AbortController) => {
+// Chat modes using the detailed JSON templates
+const CHAT_MODES = {
+  chat: {
+    name: AI_RESPONSE_TEMPLATES.chat.name,
+    description: AI_RESPONSE_TEMPLATES.chat.purpose,
+  },
+  verse: {
+    name: AI_RESPONSE_TEMPLATES.verse.name,
+    description: AI_RESPONSE_TEMPLATES.verse.purpose,
+  },
+  parable: {
+    name: AI_RESPONSE_TEMPLATES.parable.name,
+    description: AI_RESPONSE_TEMPLATES.parable.purpose,
+  },
+  character: {
+    name: AI_RESPONSE_TEMPLATES.character.name,
+    description: AI_RESPONSE_TEMPLATES.character.purpose,
+  },
+  topical: {
+    name: AI_RESPONSE_TEMPLATES.topical.name,
+    description: AI_RESPONSE_TEMPLATES.topical.purpose,
+  },
+  qa: {
+    name: AI_RESPONSE_TEMPLATES.qa.name,
+    description: AI_RESPONSE_TEMPLATES.qa.purpose,
+  }
+};
+
+const callBiblicalAI = async (
+  messages: Array<{role: 'user' | 'assistant', content: string}>, 
+  mode: keyof typeof CHAT_MODES = 'chat',
+  abortController?: AbortController
+) => {
   try {
     const controller = abortController || new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -62,11 +97,11 @@ const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', conte
         messages: [
           {
             role: "system",
-            content: "You are Bible Aura AI, a specialized biblical assistant. Follow these formatting guidelines strictly:\n\n1. Format ALL responses in clean, simple text using Montserrat Medium Bold font weight\n2. Structure responses in numbered points format\n3. NO markdown symbols (#, *, etc.) - use plain text only\n4. ALWAYS quote the relevant Bible verse at the beginning or end of your response\n5. Use this structure for verse explanations:\n\n1. [Quote the Bible verse with reference]\n2. [Historical context in simple points]\n3. [Theological meaning in simple points]\n4. [Practical application in simple points]\n\nFor general biblical questions:\n1. [Always include a relevant Bible verse quote]\n2. [Answer in clear, numbered points]\n3. [Provide practical application]\n\nUse simple, accessible language. Keep responses concise and focused. Always maintain reverence for scripture."
+            content: generateSystemPrompt(mode)
           },
           ...messages
         ],
-        max_tokens: 1000,
+        max_tokens: AI_RESPONSE_TEMPLATES[mode]?.maxWords ? AI_RESPONSE_TEMPLATES[mode].maxWords * 2 : 1000,
         temperature: 0.7,
         stream: false
       }),
@@ -107,6 +142,7 @@ export default function EnhancedAIChat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [selectedMode, setSelectedMode] = useState<keyof typeof CHAT_MODES>('chat');
   
   // History state
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -116,6 +152,7 @@ export default function EnhancedAIChat() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load conversations on component mount
   useEffect(() => {
@@ -260,7 +297,7 @@ export default function EnhancedAIChat() {
         content: msg.content
       }));
 
-      const aiResponse = await callBiblicalAI(conversationHistory, abortControllerRef.current);
+      const aiResponse = await callBiblicalAI(conversationHistory, selectedMode, abortControllerRef.current);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -618,13 +655,37 @@ export default function EnhancedAIChat() {
         {/* Input Area */}
         <div className="border-t bg-white p-4">
           <div className="max-w-4xl mx-auto">
+            {/* Mode Selection */}
+            <div className="mb-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Settings className="h-4 w-4" />
+                <span>Response Mode:</span>
+                <Select value={selectedMode} onValueChange={(value: keyof typeof CHAT_MODES) => setSelectedMode(value)}>
+                  <SelectTrigger className="w-auto min-w-[180px] h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{mode.name}</span>
+                          <span className="text-xs text-gray-500">{mode.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Input Row */}
             <div className="flex gap-2 items-end">
               <div className="flex-1 relative">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask me anything about the Bible..."
+                  placeholder={`Ask me anything about the Bible... (${CHAT_MODES[selectedMode].name})`}
                   disabled={isLoading || !user}
                   className="pr-12 rounded-xl border-2 focus:border-primary/50 min-h-[48px] resize-none"
                 />

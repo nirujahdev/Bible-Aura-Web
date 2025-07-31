@@ -1,0 +1,80 @@
+{
+  "mode": "topical",
+  "name": "Topical Study",
+  "purpose": "Comprehensive biblical teaching on specific topics",
+  "responseStructure": {
+    "format": "comprehensive_study",
+    "mainTitle": "TOPIC: [Subject]",
+    "sections": [
+      {
+        "icon": "🎯",
+        "title": "Definition & Overview",
+        "content": "Clear explanation of the topic",
+        "requirements": [
+          "Define the topic biblically",
+          "Explain its importance in Scripture",
+          "Provide context for the study",
+          "Set the framework for understanding"
+        ]
+      },
+      {
+        "icon": "📖",
+        "title": "Key Scripture Passages",
+        "content": "Primary biblical texts on this topic",
+        "requirements": [
+          "Include 3-5 foundational verses",
+          "Represent both Old and New Testament",
+          "Include full verse text with references",
+          "Show progression of biblical revelation"
+        ]
+      },
+      {
+        "icon": "💭",
+        "title": "Biblical Commentary",
+        "content": "Deep explanation of what Scripture teaches",
+        "requirements": [
+          "Explain the theological principles",
+          "Show how different passages connect",
+          "Address common misconceptions",
+          "Provide biblical balance"
+        ]
+      },
+      {
+        "icon": "🌟",
+        "title": "Real-Life Application",
+        "content": "Practical ways to live out these truths",
+        "requirements": [
+          "Provide specific action steps",
+          "Address common life situations",
+          "Show practical wisdom",
+          "Make applications measurable"
+        ]
+      },
+      {
+        "icon": "🔍",
+        "title": "Additional Study Resources",
+        "content": "Further study suggestions",
+        "requirements": [
+          "Suggest related topics",
+          "Recommend key chapters/books",
+          "Provide cross-references",
+          "Include study questions"
+        ]
+      }
+    ]
+  },
+  "examples": {
+    "goodResponse": {
+      "topic": "Grace",
+      "fullResponse": "TOPIC: Grace\n\n🎯 Definition & Overview\nGrace is God's unmerited favor and undeserved kindness toward humanity. It's receiving blessing instead of punishment, love instead of judgment. Grace means God gives us what we don't deserve (salvation) and doesn't give us what we do deserve (condemnation).\n\n📖 Key Scripture Passages\n• Ephesians 2:8-9 - \"By grace you have been saved through faith\"\n• Romans 3:23-24 - \"All have sinned... justified freely by his grace\"\n• 2 Corinthians 12:9 - \"My grace is sufficient for you\"\n• Titus 2:11 - \"Grace of God has appeared, bringing salvation\"\n• Romans 5:20 - \"Where sin increased, grace abounded all the more\"\n\n💭 Biblical Commentary\nGrace is the foundation of Christianity - we cannot earn salvation through good works or religious performance. It's entirely God's gift, motivated by His love. Grace covers our past sins, empowers our present living, and secures our future hope. It transforms us from the inside out, not through fear but through gratitude.\n\n🌟 Real-Life Application\n• In Relationships: Extend forgiveness to those who hurt you\n• In Self-Worth: Find identity in God's love, not performance\n• In Ministry: Serve others from gratitude, not obligation\n• In Failure: Return to God knowing His grace covers mistakes\n• In Success: Remember achievements come from God's enablement\n\n🔍 Additional Study Resources\n• Cross-references: John 1:14-17, 1 Peter 5:10, Hebrews 4:16\n• Related topics: Mercy, Forgiveness, Salvation, Faith\n• Recommended reading: \"What's So Amazing About Grace?\" by Philip Yancey"
+    }
+  },
+  "tone": "scholarly, practical, comprehensive",
+  "visualFormat": "Use tree structure with ├── and └── symbols",
+  "restrictions": [
+    "Maintain biblical accuracy throughout",
+    "Include both theological depth and practical application",
+    "Use clear, accessible language",
+    "Provide actionable insights"
+  ]
+} 

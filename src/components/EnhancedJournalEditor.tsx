@@ -10,9 +10,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { loadBibleVerse } from '@/lib/ai-bible-system';
 import {
   Save,
   RefreshCw,
@@ -43,7 +45,13 @@ import {
   Check,
   Edit3,
   Settings,
-  BarChart3
+  BarChart3,
+  Bold,
+  Italic,
+  List,
+  Search,
+  Globe,
+  Shield
 } from 'lucide-react';
 
 interface JournalEntry {
@@ -51,13 +59,15 @@ interface JournalEntry {
   title: string;
   content: string;
   mood: string | null;
-  spiritual_state: string | null;
-  verse_references: string[];
-  tags: string[];
-  is_private: boolean;
-  entry_date: string;
+  spiritual_state?: string | null;
+  verse_references?: string[];
+  tags?: string[];
+  is_private?: boolean;
+  entry_date?: string;
   word_count?: number;
   reading_time?: number;
+  language?: 'english' | 'tamil' | 'sinhala';
+  category?: string;
 }
 
 interface WritingStats {
@@ -72,6 +82,14 @@ interface AIAssistance {
   verseRecommendations: string[];
   themes: string[];
   sentiment: 'positive' | 'negative' | 'neutral';
+}
+
+interface BibleVerseResult {
+  book: string;
+  chapter: number;
+  verse: number;
+  text: string;
+  language: 'english' | 'tamil' | 'sinhala';
 }
 
 interface EnhancedJournalEditorProps {
@@ -102,6 +120,7 @@ export function EnhancedJournalEditor({
     tags: [],
     is_private: true,
     entry_date: new Date().toISOString().split('T')[0],
+    language: 'english',
     ...initialEntry
   });
 
@@ -112,6 +131,18 @@ export function EnhancedJournalEditor({
   const [autoSave, setAutoSave] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);
+
+  // Bible verse insertion
+  const [showVerseDialog, setShowVerseDialog] = useState(false);
+  const [verseSearch, setVerseSearch] = useState('');
+  const [selectedBook, setSelectedBook] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('');
+  const [selectedVerse, setSelectedVerse] = useState('');
+  const [verseResults, setVerseResults] = useState<BibleVerseResult[]>([]);
+  const [loadingVerse, setLoadingVerse] = useState(false);
+
+  // Multi-language support
+  const [currentLanguage, setCurrentLanguage] = useState<'english' | 'tamil' | 'sinhala'>('english');
 
   // AI assistance
   const [aiAssistance, setAiAssistance] = useState<AIAssistance>({
@@ -155,13 +186,95 @@ export function EnhancedJournalEditor({
     "Questioning", "Experiencing breakthrough", "Walking in faith", "Serving others"
   ];
 
-  const quickActions = [
-    { icon: Quote, label: "Add Quote", action: () => insertText('"..."') },
-    { icon: Hash, label: "Add Verse", action: () => insertText('[Verse Reference]') },
-    { icon: Heart, label: "Gratitude", action: () => insertText('🙏 I am grateful for: ') },
-    { icon: Target, label: "Prayer Request", action: () => insertText('🙏 Prayer: ') },
-    { icon: Lightbulb, label: "Insight", action: () => insertText('💡 Insight: ') },
-    { icon: BookOpen, label: "Scripture Study", action: () => insertText('📖 Scripture Study: ') }
+  // Language translations
+  const translations = {
+    english: {
+      newEntry: 'New Journal Entry',
+      editEntry: 'Edit Journal Entry',
+      title: 'Title',
+      content: 'Content',
+      titlePlaceholder: 'Enter your journal title...',
+      contentPlaceholder: 'Write your thoughts, prayers, and reflections here...',
+      save: 'Save Entry',
+      cancel: 'Cancel',
+      addVerse: 'Add Bible Verse',
+      bold: 'Bold',
+      italic: 'Italic',
+      bulletList: 'Bullet List',
+      private: 'Private Entry',
+      mood: 'Mood',
+      spiritualState: 'Spiritual State',
+      tags: 'Tags',
+      search: 'Search...',
+      book: 'Book',
+      chapter: 'Chapter',
+      verse: 'Verse',
+      insertVerse: 'Insert Verse',
+      encrypted: 'All entries are encrypted and stored securely'
+    },
+    tamil: {
+      newEntry: 'புதிய நாட்குறிப்பு',
+      editEntry: 'நாட்குறிப்பை திருத்து',
+      title: 'தலைப்பு',
+      content: 'உள்ளடக்கம்',
+      titlePlaceholder: 'உங்கள் நாட்குறிப்பு தலைப்பை உள்ளிடவும்...',
+      contentPlaceholder: 'உங்கள் எண்ணங்கள், பிரார்த்தனைகள் மற்றும் சிந்தனைகளை எழுதுங்கள்...',
+      save: 'சேமிக்க',
+      cancel: 'ரத்து செய்',
+      addVerse: 'வேத வசனம் சேர்க்க',
+      bold: 'தடிமன்',
+      italic: 'சாய்வு',
+      bulletList: 'புள்ளி பட்டியல்',
+      private: 'தனிப்பட்ட',
+      mood: 'மனநிலை',
+      spiritualState: 'ஆன்மீக நிலை',
+      tags: 'குறிச்சொற்கள்',
+      search: 'தேடு...',
+      book: 'புத்தகம்',
+      chapter: 'அத்தியாயம்',
+      verse: 'வசனம்',
+      insertVerse: 'வசனம் சேர்க்க',
+      encrypted: 'அனைத்து நாட்குறிப்புகளும் குறியாக்கம் செய்யப்பட்டு பாதுகாப்பாக சேமிக்கப்படுகின்றன'
+    },
+    sinhala: {
+      newEntry: 'නව දිනපොත ඇතුළත් කිරීම',
+      editEntry: 'දිනපොත සංස්කරණය',
+      title: 'මාතෘකාව',
+      content: 'අන්තර්ගතය',
+      titlePlaceholder: 'ඔබේ දිනපොත මාතෘකාව ඇතුළත් කරන්න...',
+      contentPlaceholder: 'ඔබේ සිතුවිලි, යාච්ඤා සහ චින්තන ලියන්න...',
+      save: 'සුරකින්න',
+      cancel: 'අවලංගු කරන්න',
+      addVerse: 'බයිබල් පදය එක් කරන්න',
+      bold: 'තදකර',
+      italic: 'ඇලකර',
+      bulletList: 'බුලට් ලැයිස්තුව',
+      private: 'පෞද්ගලික',
+      mood: 'මනෝභාවය',
+      spiritualState: 'අධ්‍යාත්මික තත්වය',
+      tags: 'ටැග්',
+      search: 'සොයන්න...',
+      book: 'පොත',
+      chapter: 'පරිච්ඡේදය',
+      verse: 'පදය',
+      insertVerse: 'පදය ඇතුළත් කරන්න',
+      encrypted: 'සියලුම ඇතුළත් කිරීම් සංකේතනය කර ආරක්ෂිතව ගබඩා කර ඇත'
+    }
+  };
+
+  const t = translations[currentLanguage];
+
+  // Bible books for verse insertion
+  const bibleBooks = [
+    'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth',
+    '1 Samuel', '2 Samuel', '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles', 'Ezra',
+    'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Songs',
+    'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel', 'Amos',
+    'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah',
+    'Malachi', 'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans', '1 Corinthians',
+    '2 Corinthians', 'Galatians', 'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
+    '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews', 'James',
+    '1 Peter', '2 Peter', '1 John', '2 John', '3 John', 'Jude', 'Revelation'
   ];
 
   // URL parameter handling for daily verse integration
@@ -179,6 +292,13 @@ export function EnhancedJournalEditor({
       }));
     }
   }, []);
+
+  // Initialize language from entry or browser
+  useEffect(() => {
+    if (initialEntry?.language) {
+      setCurrentLanguage(initialEntry.language);
+    }
+  }, [initialEntry]);
 
   // Calculate writing stats
   useEffect(() => {
@@ -340,19 +460,133 @@ Journal content: "${entry.content}"`
       title: entry.title.trim(),
       content: entry.content.trim(),
       mood: entry.mood,
-      spiritual_state: entry.spiritual_state,
+      spiritual_state: entry.spiritual_state || null,
       verse_references: entry.verse_references || [],
       tags: entry.tags || [],
       is_private: entry.is_private ?? true,
       entry_date: entry.entry_date || new Date().toISOString().split('T')[0],
       word_count: stats.wordCount,
-      reading_time: stats.readingTime
+      reading_time: stats.readingTime,
+      language: currentLanguage,
+      category: 'personal'
     };
 
     onSave(finalEntry);
   };
 
   const selectedMood = moods.find(m => m.value === entry.mood);
+
+  // Text formatting functions
+  const formatText = (format: 'bold' | 'italic' | 'bullet') => {
+    if (!textareaRef.current) return;
+    
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentContent = entry.content || '';
+    const selectedText = currentContent.substring(start, end);
+    
+    let formattedText = '';
+    
+    switch (format) {
+      case 'bold':
+        formattedText = selectedText ? `**${selectedText}**` : '**bold text**';
+        break;
+      case 'italic':
+        formattedText = selectedText ? `*${selectedText}*` : '*italic text*';
+        break;
+      case 'bullet':
+        const lines = selectedText ? selectedText.split('\n') : ['bullet point'];
+        formattedText = lines.map(line => line.trim() ? `• ${line.trim()}` : '•').join('\n');
+        break;
+    }
+    
+    const newContent = currentContent.substring(0, start) + formattedText + currentContent.substring(end);
+    setEntry(prev => ({ ...prev, content: newContent }));
+    
+    // Focus and set cursor position
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + formattedText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  // Bible verse search and insertion
+  const searchBibleVerse = async () => {
+    if (!selectedBook || !selectedChapter || !selectedVerse) {
+      toast({
+        title: "Incomplete reference",
+        description: "Please select book, chapter, and verse",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingVerse(true);
+    try {
+      const verseRef = {
+        book: selectedBook,
+        chapter: parseInt(selectedChapter),
+        verse: parseInt(selectedVerse)
+      };
+
+      const verse = await loadBibleVerse(verseRef, currentLanguage);
+      
+      if (verse) {
+        setVerseResults([verse]);
+      } else {
+        toast({
+          title: "Verse not found",
+          description: "Could not find the specified verse",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error searching verse:', error);
+      toast({
+        title: "Search failed",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingVerse(false);
+    }
+  };
+
+  const insertBibleVerse = (verse: BibleVerseResult) => {
+    const verseText = `\n\n"${verse.text}"\n- ${verse.book} ${verse.chapter}:${verse.verse}\n\n`;
+    const currentContent = entry.content || '';
+    const newContent = currentContent + verseText;
+    
+    setEntry(prev => ({ 
+      ...prev, 
+      content: newContent,
+      verse_references: [...(prev.verse_references || []), `${verse.book} ${verse.chapter}:${verse.verse}`]
+    }));
+    
+    setShowVerseDialog(false);
+    setVerseResults([]);
+    setSelectedBook('');
+    setSelectedChapter('');
+    setSelectedVerse('');
+    
+    toast({
+      title: "Verse added",
+      description: "Bible verse has been inserted into your journal",
+    });
+  };
+
+  const quickActions = [
+    { icon: Quote, label: t.addVerse, action: () => setShowVerseDialog(true) },
+    { icon: Bold, label: t.bold, action: () => formatText('bold') },
+    { icon: Italic, label: t.italic, action: () => formatText('italic') },
+    { icon: List, label: t.bulletList, action: () => formatText('bullet') },
+    { icon: Heart, label: "Gratitude", action: () => insertText('🙏 I am grateful for: ') },
+    { icon: Target, label: "Prayer Request", action: () => insertText('🙏 Prayer: ') },
+    { icon: Lightbulb, label: "Insight", action: () => insertText('💡 Insight: ') },
+    { icon: BookOpen, label: "Scripture Study", action: () => insertText('📖 Scripture Study: ') }
+  ];
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -367,9 +601,28 @@ Journal content: "${entry.content}"`
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <PenTool className="h-5 w-5" />
-                    {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
+                    {isEditing ? t.editEntry : t.newEntry}
                   </CardTitle>
                   <div className="flex items-center gap-2">
+                    {/* Language Selector */}
+                    <Select
+                      value={currentLanguage}
+                      onValueChange={(value: 'english' | 'tamil' | 'sinhala') => {
+                        setCurrentLanguage(value);
+                        setEntry(prev => ({ ...prev, language: value }));
+                      }}
+                    >
+                      <SelectTrigger className="w-32">
+                        <Globe className="h-4 w-4 mr-1" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="tamil">தமிழ்</SelectItem>
+                        <SelectItem value="sinhala">සිංහල</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
                     <Button
                       variant="outline"
                       size="sm"
@@ -384,13 +637,19 @@ Journal content: "${entry.content}"`
                     )}
                   </div>
                 </div>
+                
+                {/* Security Badge */}
+                <div className="flex items-center gap-2 text-xs text-green-600 mt-2">
+                  <Shield className="h-3 w-3" />
+                  <span>{t.encrypted}</span>
+                </div>
               </CardHeader>
 
               <CardContent className="p-6">
                 {/* Title Input */}
                 <div className="mb-4">
                   <Input
-                    placeholder="Enter your journal title..."
+                    placeholder={t.titlePlaceholder}
                     value={entry.title || ''}
                     onChange={(e) => setEntry(prev => ({ ...prev, title: e.target.value }))}
                     className={`text-lg font-semibold ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`}
@@ -425,7 +684,25 @@ Journal content: "${entry.content}"`
                     >
                       {entry.content ? (
                         <div className="whitespace-pre-wrap">
-                          {entry.content}
+                          {entry.content.split('\n').map((line, index) => {
+                            // Simple markdown rendering
+                            let processedLine = line
+                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                              .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                            
+                            if (line.startsWith('• ')) {
+                              return (
+                                <div key={index} className="flex items-start gap-2 mb-1">
+                                  <span className="mt-1.5 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
+                                  <span dangerouslySetInnerHTML={{ __html: processedLine.substring(2) }} />
+                                </div>
+                              );
+                            }
+                            
+                            return (
+                              <div key={index} dangerouslySetInnerHTML={{ __html: processedLine || '<br/>' }} />
+                            );
+                          })}
                         </div>
                       ) : (
                         <div className="text-gray-500 italic">Start writing to see preview...</div>
@@ -434,7 +711,7 @@ Journal content: "${entry.content}"`
                   ) : (
                     <Textarea
                       ref={textareaRef}
-                      placeholder="Write your thoughts, prayers, and reflections here..."
+                      placeholder={t.contentPlaceholder}
                       value={entry.content || ''}
                       onChange={(e) => setEntry(prev => ({ ...prev, content: e.target.value }))}
                       className={`min-h-[400px] resize-none ${
@@ -447,7 +724,7 @@ Journal content: "${entry.content}"`
 
                 {/* Tags */}
                 <div className="mb-4">
-                  <Label className="text-sm font-medium mb-2 block">Tags</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t.tags}</Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {entry.tags?.map((tag, index) => (
                       <Badge key={index} variant="secondary" className="flex items-center gap-1">
@@ -482,10 +759,10 @@ Journal content: "${entry.content}"`
                       ) : (
                         <Save className="h-4 w-4 mr-2" />
                       )}
-                      Save Entry
+                      {t.save}
                     </Button>
                     <Button variant="outline" onClick={onCancel}>
-                      Cancel
+                      {t.cancel}
                     </Button>
                   </div>
 
@@ -557,7 +834,7 @@ Journal content: "${entry.content}"`
 
                 {/* Mood */}
                 <div>
-                  <Label className="text-sm">Mood</Label>
+                  <Label className="text-sm">{t.mood}</Label>
                   <Select
                     value={entry.mood || ''}
                     onValueChange={(value) => setEntry(prev => ({ ...prev, mood: value }))}
@@ -582,7 +859,7 @@ Journal content: "${entry.content}"`
 
                 {/* Spiritual State */}
                 <div>
-                  <Label className="text-sm">Spiritual State</Label>
+                  <Label className="text-sm">{t.spiritualState}</Label>
                   <Select
                     value={entry.spiritual_state || ''}
                     onValueChange={(value) => setEntry(prev => ({ ...prev, spiritual_state: value }))}
@@ -602,7 +879,7 @@ Journal content: "${entry.content}"`
 
                 {/* Privacy */}
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">Private Entry</Label>
+                  <Label className="text-sm">{t.private}</Label>
                   <Switch
                     checked={entry.is_private ?? true}
                     onCheckedChange={(checked) => setEntry(prev => ({ ...prev, is_private: checked }))}
@@ -689,6 +966,99 @@ Journal content: "${entry.content}"`
           </div>
         </div>
       </div>
+
+      {/* Bible Verse Dialog */}
+      <Dialog open={showVerseDialog} onOpenChange={setShowVerseDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              {t.addVerse}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label className="text-sm">{t.book}</Label>
+                <Select value={selectedBook} onValueChange={setSelectedBook}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select book..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bibleBooks.map((book) => (
+                      <SelectItem key={book} value={book}>
+                        {book}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-sm">{t.chapter}</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={selectedChapter}
+                  onChange={(e) => setSelectedChapter(e.target.value)}
+                  placeholder="1"
+                />
+              </div>
+              
+              <div>
+                <Label className="text-sm">{t.verse}</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={selectedVerse}
+                  onChange={(e) => setSelectedVerse(e.target.value)}
+                  placeholder="1"
+                />
+              </div>
+            </div>
+            
+            <Button 
+              onClick={searchBibleVerse} 
+              disabled={loadingVerse || !selectedBook || !selectedChapter || !selectedVerse}
+              className="w-full"
+            >
+              {loadingVerse ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4 mr-2" />
+              )}
+              Search Verse
+            </Button>
+            
+            {verseResults.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Search Results:</Label>
+                {verseResults.map((verse, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="space-y-2">
+                      <div className="font-medium text-sm">
+                        {verse.book} {verse.chapter}:{verse.verse}
+                      </div>
+                      <div className="text-sm text-gray-700 leading-relaxed">
+                        "{verse.text}"
+                      </div>
+                      <Button
+                        onClick={() => insertBibleVerse(verse)}
+                        size="sm"
+                        className="mt-2"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {t.insertVerse}
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 
