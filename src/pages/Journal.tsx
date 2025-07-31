@@ -190,7 +190,7 @@ const Journal = () => {
       console.error('Error filtering entries:', error);
       setError('Error filtering entries. Please try refreshing.');
     }
-  }, [entries, selectedCategory, searchQuery, selectedDate, sortBy]);
+  }, [entries, selectedCategory, searchQuery, selectedDate, sortBy, activeView]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -199,25 +199,47 @@ const Journal = () => {
   }, [selectedBook, selectedChapter, selectedLanguage]);
 
   const loadEntries = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user authenticated for loading entries');
+      return;
+    }
     
     setLoading(true);
     setError(null);
     try {
+      console.log('Loading journal entries for user:', user.id);
+      
       const { data, error } = await supabase
         .from('journal_entries')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Loaded entries:', data?.length || 0);
       setEntries(data || []);
+      
+      if (data?.length === 0) {
+        console.log('No journal entries found for this user');
+      }
     } catch (error) {
       console.error('Error loading entries:', error);
-      setError('Failed to load journal entries');
+      
+      let errorMessage = 'Failed to load journal entries';
+      if (error.message?.includes('relation "journal_entries" does not exist')) {
+        errorMessage = 'Journal database table not found. Please contact support.';
+      } else if (error.message?.includes('permission denied')) {
+        errorMessage = 'Permission denied. Please sign in again.';
+      }
+      
+      setError(errorMessage);
       toast({
         title: "Error loading entries",
-        description: "Please refresh the page to try again",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -261,12 +283,16 @@ const Journal = () => {
       );
     }
 
-    // Filter by selected date
-    const selectedDateStr = selectedDate.toISOString().split('T')[0];
-    filtered = filtered.filter(entry => {
-      const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
-      return entryDate === selectedDateStr;
-    });
+    // Only filter by date if activeView is 'calendar' or if user specifically wants date filtering
+    // Remove the restrictive date filtering that was preventing entries from showing
+    if (activeView === 'calendar' && selectedDate) {
+      const selectedDateStr = selectedDate.toISOString().split('T')[0];
+      filtered = filtered.filter(entry => {
+        // Check both entry_date and created_at for date matching
+        const entryDate = entry.entry_date || new Date(entry.created_at).toISOString().split('T')[0];
+        return entryDate === selectedDateStr;
+      });
+    }
 
     // Apply sorting
     switch (sortBy) {
@@ -287,7 +313,16 @@ const Journal = () => {
   };
 
   const handleSaveEntry = async () => {
-    if (!user || !entryTitle.trim() || !entryContent.trim()) {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save journal entries",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!entryTitle.trim() || !entryContent.trim()) {
       toast({
         title: "Missing information",
         description: "Please fill in both title and content",
@@ -298,6 +333,13 @@ const Journal = () => {
     
     setLoading(true);
     try {
+      // Prepare metadata object properly
+      const metadata = {
+        prayer_requests: prayerRequests.filter(p => p.trim()),
+        gratitude_items: gratitudeItems.filter(g => g.trim()),
+        template_used: selectedTemplate
+      };
+
       const entryData = {
         user_id: user.id,
         title: entryTitle.trim(),
@@ -308,11 +350,7 @@ const Journal = () => {
         verse_text: selectedVerse?.text || null,
         entry_date: selectedDate.toISOString().split('T')[0],
         updated_at: new Date().toISOString(),
-        metadata: JSON.stringify({
-          prayer_requests: prayerRequests.filter(p => p.trim()),
-          gratitude_items: gratitudeItems.filter(g => g.trim()),
-          template_used: selectedTemplate
-        }) as any
+        metadata: metadata // Send as object, not stringified
       };
 
       if (editingEntry) {
@@ -322,7 +360,10 @@ const Journal = () => {
           .eq('id', editingEntry.id)
           .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         
         toast({
           title: "Entry updated",
@@ -335,7 +376,10 @@ const Journal = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         
         toast({
           title: "Entry created",
@@ -347,9 +391,19 @@ const Journal = () => {
       loadEntries();
     } catch (error) {
       console.error('Error saving entry:', error);
+      
+      let errorMessage = "Please try again";
+      if (error.message?.includes('relation "journal_entries" does not exist')) {
+        errorMessage = "Database not set up properly. Please contact support.";
+      } else if (error.message?.includes('invalid input syntax')) {
+        errorMessage = "Invalid data format. Please check your input.";
+      } else if (error.message?.includes('permission denied')) {
+        errorMessage = "Permission denied. Please sign in again.";
+      }
+      
       toast({
         title: "Error saving entry",
-        description: "Please try again",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -415,41 +469,30 @@ const Journal = () => {
       setEntryTitle(entry.title);
       setEntryContent(entry.content);
       setEntryCategory(entry.category || 'personal');
-      setEntryMood(entry.mood || "");
+      setEntryMood(entry.mood || '');
+      setSelectedTemplate(template || null);
       
-      setPrayerRequests([]);
-      setGratitudeItems([]);
-      setSelectedTemplate(null);
-      
-      if (entry.verse_text) {
-        setSelectedVerse({
-          id: 'existing',
-          chapter: 0,
-          verse: 0,
-          text: entry.verse_text,
-          book_name: entry.verse_reference?.split(' ')[0] || ''
-        });
+      // Parse metadata if it exists
+      try {
+        const metadata = typeof entry.metadata === 'string' 
+          ? JSON.parse(entry.metadata) 
+          : entry.metadata || {};
+        setPrayerRequests(metadata.prayer_requests || []);
+        setGratitudeItems(metadata.gratitude_items || []);
+      } catch (error) {
+        console.error('Error parsing entry metadata:', error);
+        setPrayerRequests([]);
+        setGratitudeItems([]);
       }
     } else {
       setEditingEntry(null);
       setEntryTitle("");
-      setEntryContent("");
+      setEntryContent(template ? journalTemplates.find(t => t.id === template)?.prompts.join('\n\n') || "" : "");
       setEntryCategory("personal");
       setEntryMood("");
-      setSelectedVerse(null);
+      setSelectedTemplate(template || null);
       setPrayerRequests([]);
       setGratitudeItems([]);
-      
-      if (template) {
-        setSelectedTemplate(template);
-        const templateData = journalTemplates.find(t => t.id === template);
-        if (templateData) {
-          setEntryTitle(templateData.name);
-          setEntryContent(templateData.prompts.join('\n\n'));
-        }
-      } else {
-        setSelectedTemplate(null);
-      }
     }
     setShowEntryDialog(true);
   };
@@ -461,11 +504,23 @@ const Journal = () => {
     setEntryContent("");
     setEntryCategory("personal");
     setEntryMood("");
-    setSelectedVerse(null);
-    setShowVerseSelector(false);
     setSelectedTemplate(null);
     setPrayerRequests([]);
     setGratitudeItems([]);
+    setSelectedVerse(null);
+  };
+
+  // Debug information
+  const debugInfo = {
+    userAuthenticated: !!user,
+    entriesCount: entries.length,
+    filteredEntriesCount: filteredEntries.length,
+    activeView,
+    selectedCategory,
+    searchQuery,
+    selectedDate: selectedDate.toISOString().split('T')[0],
+    loading,
+    error
   };
 
   const formatDate = (date: Date) => {
@@ -504,16 +559,28 @@ const Journal = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center">
-        <Card className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-sm border-orange-200">
-          <CardContent className="p-8 text-center">
-            <Feather className="h-16 w-16 mx-auto mb-4 text-orange-500" />
-            <h2 className="text-2xl font-bold mb-2 text-gray-800">Sign In Required</h2>
-            <p className="text-gray-600">
-              Please sign in to access your spiritual journal.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="max-w-4xl mx-auto pt-20">
+          <Card className="text-center p-8">
+            <CardHeader>
+              <CardTitle className="text-2xl text-gray-800">
+                <BookOpen className="h-8 w-8 mx-auto mb-4 text-blue-600" />
+                Journal Access Required
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Please sign in to access your personal journal.
+              </p>
+              <Button 
+                onClick={() => window.location.href = '/auth'}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -544,749 +611,286 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      <div className="flex h-[calc(100vh-120px)]">
-        {/* Enhanced Sidebar */}
-        <div className="w-80 bg-white/95 backdrop-blur-sm border-r border-orange-200 flex flex-col">
-          {/* Header */}
-          <div className="p-6 bg-gradient-to-r from-orange-500 to-amber-600 text-white">
-            <div className="flex items-center gap-3 mb-4">
-              <Feather className="h-8 w-8 text-orange-100" />
-              <div>
-                <h2 className="text-xl font-bold">My Journal</h2>
-                <p className="text-orange-100 text-sm">Capture your spiritual journey</p>
-              </div>
-            </div>
-            <Button
-              onClick={() => openEntryDialog()}
-              className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
-              size="lg"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Entry
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Debug Panel - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 z-50 bg-white p-4 rounded-lg shadow-lg border text-xs max-w-xs">
+          <h4 className="font-bold mb-2">Debug Info</h4>
+          <pre className="text-xs overflow-auto max-h-32">
+            {JSON.stringify(debugInfo, null, 2)}
+          </pre>
+        </div>
+      )}
 
-          {/* Navigation Tabs */}
-          <Tabs value={activeView} onValueChange={setActiveView} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-2 m-4 mb-0">
-              <TabsTrigger value="entries" className="text-sm">
-                <FileText className="h-4 w-4 mr-2" />
-                Entries
-              </TabsTrigger>
-              <TabsTrigger value="calendar" className="text-sm">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                Calendar
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="flex-1 overflow-auto">
-              <TabsContent value="entries" className="p-4 mt-0">
-                <div className="space-y-4">
-                  {/* Search */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search entries..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 border-orange-200 focus:border-orange-400"
-                    />
-                  </div>
-
-                  {/* Categories */}
-                  <div>
-                    <h4 className="text-sm font-medium mb-3 text-gray-700">Categories</h4>
-                    <div className="space-y-1">
-                      <Button
-                        variant={selectedCategory === 'all' ? "default" : "ghost"}
-                        className={`w-full justify-start h-9 text-sm ${
-                          selectedCategory === 'all' 
-                            ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                            : 'hover:bg-orange-50'
-                        }`}
-                        onClick={() => setSelectedCategory('all')}
-                      >
-                        <FileText className="h-4 w-4 mr-3" />
-                        All Entries
-                        <Badge variant="secondary" className="ml-auto bg-orange-100 text-orange-800">
-                          {entries.length}
-                        </Badge>
-                      </Button>
-                      
-                      {categories.map((category) => {
-                        const Icon = category.icon;
-                        const entryCount = entries.filter(e => (e.category || 'personal') === category.id).length;
-                        
-                        if (entryCount === 0) return null;
-                        
-                        return (
-                          <Button
-                            key={category.id}
-                            variant={selectedCategory === category.id ? "default" : "ghost"}
-                            className={`w-full justify-between h-9 text-sm ${
-                              selectedCategory === category.id 
-                                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                                : 'hover:bg-orange-50'
-                            }`}
-                            onClick={() => setSelectedCategory(category.id)}
-                          >
-                            <div className="flex items-center">
-                              <Icon className="h-4 w-4 mr-3" />
-                              {category.name}
-                            </div>
-                            <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
-                              {entryCount}
-                            </Badge>
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Templates */}
-                  <div>
-                    <h4 className="text-sm font-medium mb-3 text-gray-700">Templates</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {journalTemplates.map((template) => (
-                        <Button
-                          key={template.id}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEntryDialog(undefined, template.id)}
-                          className="flex flex-col items-center p-3 h-auto border-orange-200 hover:bg-orange-50 hover:border-orange-300"
-                        >
-                          <span className="text-lg mb-1">{template.icon}</span>
-                          <span className="text-xs text-center">{template.name}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="calendar" className="p-4 mt-0">
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium text-gray-800">
-                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </h3>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 hover:bg-orange-100"
-                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 hover:bg-orange-100"
-                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(date)}
-                    month={currentMonth}
-                    onMonthChange={setCurrentMonth}
-                    className="w-full"
-                    modifiers={{
-                      hasEntry: (date) => getEntriesForDate(date).length > 0
-                    }}
-                    modifiersStyles={{
-                      hasEntry: { 
-                        backgroundColor: '#f97316', 
-                        color: 'white',
-                        borderRadius: '50%'
-                      }
-                    }}
-                  />
-                </div>
-              </TabsContent>
-            </div>
-          </Tabs>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+            <BookOpen className="h-10 w-10 text-blue-600" />
+            My Journal
+          </h1>
+          <p className="text-lg text-gray-600">
+            Document your spiritual journey and reflections
+          </p>
         </div>
 
-        {/* Entries List */}
-        <div className="w-96 bg-orange-50/50 backdrop-blur-sm border-r border-orange-200 overflow-y-auto">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800">
-                  {formatDate(selectedDate)}
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {filteredEntries.length} {filteredEntries.length === 1 ? 'entry' : 'entries'}
-                </p>
+        {error && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-red-800">
+                <AlertCircle className="h-5 w-5" />
+                <span className="font-medium">Error:</span>
+                <span>{error}</span>
               </div>
-              
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-32 h-8 border-orange-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="oldest">Oldest</SelectItem>
-                  <SelectItem value="alphabetical">A-Z</SelectItem>
-                  <SelectItem value="category">Category</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <Button 
+                onClick={loadEntries}
+                variant="outline"
+                className="mt-2 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Retry Loading
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-            <div className="space-y-3">
-              {filteredEntries.length > 0 ? (
-                filteredEntries.map((entry) => {
-                  const Icon = getCategoryIcon(entry.category || 'personal');
-                  const category = categories.find(cat => cat.id === (entry.category || 'personal'));
-                  
-                  return (
-                    <Card
-                      key={entry.id}
-                      className={`cursor-pointer transition-all hover:shadow-md border-orange-200 ${
-                        selectedEntry?.id === entry.id ? 'ring-2 ring-orange-500 bg-orange-50' : 'hover:bg-orange-25'
-                      } ${entry.is_pinned ? 'border-l-4 border-l-orange-400' : ''}`}
-                      onClick={() => setSelectedEntry(entry)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <div className="text-center min-w-[40px]">
-                            <div className="text-xl font-bold text-orange-600">
-                              {formatDay(new Date(entry.created_at))}
-                            </div>
-                            <div className="text-xs text-orange-500">
-                              {formatDayName(new Date(entry.created_at)).slice(0, 3)}
-                            </div>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Icon className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                              <h3 className="font-medium text-gray-800 text-sm truncate">
-                                {entry.title}
-                              </h3>
-                              {entry.is_pinned && (
-                                <Pin className="h-3 w-3 text-orange-500 flex-shrink-0" />
-                              )}
-                            </div>
-                            
-                            <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                              {entry.content}
-                            </p>
-                            
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {category && (
-                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
-                                  {category.name}
-                                </Badge>
-                              )}
-                              
-                              {entry.mood && (
-                                <Badge variant="outline" className={`text-xs ${getMoodColor(entry.mood)}`}>
-                                  {moods.find(m => m.value === entry.mood)?.label}
-                                </Badge>
-                              )}
-                              
-                              {entry.verse_text && (
-                                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
-                                  <Book className="h-3 w-3 mr-1" />
-                                  Verse
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              ) : (
-                <div className="text-center py-12">
-                  <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-orange-300" />
-                  <p className="text-gray-500 text-sm mb-4">No entries for this date</p>
-                  <Button
-                    size="sm"
-                    onClick={() => openEntryDialog()}
-                    className="bg-orange-500 hover:bg-orange-600"
-                  >
-                    Create Entry
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Show message when no entries are found */}
+        {!loading && entries.length === 0 && !error && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="p-6 text-center">
+              <BookOpen className="h-12 w-12 mx-auto mb-4 text-blue-400" />
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                Start Your Spiritual Journey
+              </h3>
+              <p className="text-blue-600 mb-4">
+                You haven't created any journal entries yet. Create your first entry to begin documenting your faith journey.
+              </p>
+              <Button 
+                onClick={() => openEntryDialog()}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Entry
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Entry Detail */}
-        <div className="flex-1 bg-white/95 backdrop-blur-sm overflow-y-auto">
-          {selectedEntry ? (
-            <div className="p-8 max-w-4xl mx-auto">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                      {selectedEntry.title}
-                    </h1>
-                    {selectedEntry.is_pinned && (
-                      <Pin className="h-5 w-5 text-orange-500" />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>{formatDayName(new Date(selectedEntry.created_at))}, {formatDate(new Date(selectedEntry.created_at))}</span>
-                    <span>•</span>
-                    <span>{selectedEntry.content.split(' ').length} words</span>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => togglePin(selectedEntry)}
-                    className="hover:bg-orange-50"
-                  >
-                    <Pin className={`h-4 w-4 ${selectedEntry.is_pinned ? 'text-orange-500' : ''}`} />
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(`${selectedEntry.title}\n\n${selectedEntry.content}`);
-                      toast({ title: "Copied!", description: "Entry copied to clipboard" });
-                    }}
-                    className="hover:bg-orange-50"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openEntryDialog(selectedEntry)}
-                    className="border-orange-200 hover:bg-orange-50"
-                  >
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteEntry(selectedEntry.id)}
-                    className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-
-              {/* Entry Metadata */}
-              <div className="flex items-center gap-4 mb-6">
-                {selectedEntry.category && (
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                    {categories.find(cat => cat.id === selectedEntry.category)?.name || selectedEntry.category}
-                  </Badge>
-                )}
-                
-                {selectedEntry.mood && (
-                  <Badge className={getMoodColor(selectedEntry.mood)}>
-                    {moods.find(m => m.value === selectedEntry.mood)?.label || selectedEntry.mood}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Bible Verse */}
-              {selectedEntry.verse_text && (
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-l-4 border-orange-500 p-6 mb-6 rounded-r-xl">
-                  <div className="flex items-start gap-3">
-                    <Quote className="h-5 w-5 text-orange-500 mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="text-gray-700 italic mb-3 text-lg leading-relaxed">
-                        "{selectedEntry.verse_text}"
-                      </p>
-                      <p className="text-sm font-semibold text-orange-600">
-                        — {selectedEntry.verse_reference}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Entry Content */}
-              <div className="prose max-w-none mb-8">
-                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">
-                  {selectedEntry.content}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md">
-                <Feather className="h-16 w-16 mx-auto mb-4 text-orange-300" />
-                <h3 className="text-xl font-medium text-gray-600 mb-2">
-                  Your Spiritual Journey Awaits
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  Select an entry to read or create a new one to capture your thoughts, prayers, and reflections.
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <Button 
-                    onClick={() => openEntryDialog()} 
-                    className="bg-orange-500 hover:bg-orange-600"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Entry
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => openEntryDialog(undefined, 'daily-reflection')}
-                    className="border-orange-200 hover:bg-orange-50"
-                  >
-                    📝 Daily Reflection
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Enhanced Entry Dialog */}
-      <Dialog open={showEntryDialog} onOpenChange={(open) => !open && closeEntryDialog()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2 text-orange-700">
-              {selectedTemplate && (
-                <span className="text-2xl">
-                  {journalTemplates.find(t => t.id === selectedTemplate)?.icon}
-                </span>
-              )}
-              {editingEntry ? 'Edit Entry' : selectedTemplate ? journalTemplates.find(t => t.id === selectedTemplate)?.name : 'New Journal Entry'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            {/* Template Selection */}
-            {!editingEntry && !selectedTemplate && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Choose a Template (Optional)</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {journalTemplates.map((template) => (
-                    <Button
-                      key={template.id}
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedTemplate(template.id);
-                        setEntryTitle(template.name);
-                        setEntryContent(template.prompts.join('\n\n'));
-                      }}
-                      className="flex flex-col items-center p-4 h-auto border-orange-200 hover:bg-orange-50"
-                    >
-                      <span className="text-2xl mb-2">{template.icon}</span>
-                      <span className="font-medium">{template.name}</span>
-                      <span className="text-xs text-gray-500 mt-1">{template.description}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Title</label>
-              <Input
-                value={entryTitle}
-                onChange={(e) => setEntryTitle(e.target.value)}
-                placeholder="What's on your heart today?"
-                className="h-11 border-orange-200 focus:border-orange-400"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                <Select value={entryCategory} onValueChange={setEntryCategory}>
-                  <SelectTrigger className="h-11 border-orange-200">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => {
-                      const Icon = category.icon;
-                      return (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center">
-                            <Icon className="h-4 w-4 mr-2" />
-                            {category.name}
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Mood Selection */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Mood (optional)</label>
-                <Select value={entryMood} onValueChange={setEntryMood}>
-                  <SelectTrigger className="h-11 border-orange-200">
-                    <SelectValue placeholder="How are you feeling?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No mood selected</SelectItem>
-                    {moods.map(mood => (
-                      <SelectItem key={mood.value} value={mood.value}>
-                        {mood.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Bible Verse Selector */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium">Bible Verse (optional)</label>
-                <Button
+        {/* Show message when entries exist but none match current filters */}
+        {!loading && entries.length > 0 && filteredEntries.length === 0 && !error && (
+          <Card className="mb-6 border-yellow-200 bg-yellow-50">
+            <CardContent className="p-6 text-center">
+              <Search className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
+              <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                No Entries Match Current Filters
+              </h3>
+              <p className="text-yellow-700 mb-4">
+                You have {entries.length} total entries, but none match your current search or filters. 
+                Try adjusting your filters or search terms.
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('all');
+                    setActiveView('entries');
+                  }}
                   variant="outline"
-                  size="sm"
-                  onClick={() => setShowVerseSelector(!showVerseSelector)}
-                  className="border-orange-200 hover:bg-orange-50"
+                  className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
                 >
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  {selectedVerse ? 'Change Verse' : 'Add Verse'}
-                  <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showVerseSelector ? 'rotate-180' : ''}`} />
+                  Clear Filters
+                </Button>
+                <Button 
+                  onClick={() => openEntryDialog()}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Entry
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        )}
 
-              {selectedVerse && (
-                <div className="bg-orange-50 rounded-lg p-4 mb-3 border-l-4 border-orange-400">
-                  <p className="text-sm italic text-gray-700 mb-2">"{selectedVerse.text}"</p>
-                  <p className="text-xs font-medium text-orange-600">
-                    — {selectedVerse.book_name} {selectedVerse.chapter}:{selectedVerse.verse}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedVerse(null)}
-                    className="text-red-600 hover:text-red-700 mt-2 p-0 h-auto"
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Remove verse
-                  </Button>
-                </div>
-              )}
+                 <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
+           <TabsList className="grid w-full grid-cols-2">
+             <TabsTrigger value="entries">All Entries</TabsTrigger>
+             <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+           </TabsList>
 
-              {showVerseSelector && (
-                <Card className="p-4 border border-orange-200">
-                  <div className="space-y-4">
-                    {/* Language Selection */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Language</label>
-                      <Select value={selectedLanguage} onValueChange={(value: any) => setSelectedLanguage(value)}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {languages.map(lang => (
-                            <SelectItem key={lang.value} value={lang.value}>
-                              {lang.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+           <TabsContent value="entries" className="space-y-6">
+             <div className="flex flex-col sm:flex-row gap-4 mb-6">
+               <div className="relative flex-1">
+                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                 <Input
+                   placeholder="Search entries..."
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   className="pl-10"
+                 />
+               </div>
+               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                 <SelectTrigger className="w-full sm:w-48">
+                   <SelectValue placeholder="Filter by category" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="all">All Categories</SelectItem>
+                   {categories.map(category => (
+                     <SelectItem key={category.id} value={category.id}>
+                       {category.name}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+               <Button onClick={() => openEntryDialog()} className="bg-blue-600 hover:bg-blue-700">
+                 <Plus className="h-4 w-4 mr-2" />
+                 New Entry
+               </Button>
+             </div>
 
-                    {/* Book Selection */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Book</label>
-                      <Select value={selectedBook?.id || ""} onValueChange={(bookId) => {
-                        const book = bibleBooks.find(b => b.id === bookId);
-                        setSelectedBook(book || null);
-                        setSelectedChapter(1);
-                      }}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select a book" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {bibleBooks.map(book => (
-                            <SelectItem key={book.id} value={book.id}>
-                              {book.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+             {loading && (
+               <div className="flex justify-center py-8">
+                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+               </div>
+             )}
 
-                    {/* Chapter Selection */}
-                    {selectedBook && (
-                      <div>
-                        <label className="block text-xs font-medium mb-1">Chapter</label>
-                        <Select value={selectedChapter.toString()} onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}>
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: selectedBook.chapters }, (_, i) => (
-                              <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                Chapter {i + 1}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+             <div className="grid gap-4">
+               {filteredEntries.map((entry) => (
+                 <Card key={entry.id} className="hover:shadow-md transition-shadow">
+                   <CardContent className="p-6">
+                     <div className="flex justify-between items-start mb-4">
+                       <div>
+                         <h3 className="text-xl font-semibold text-gray-800 mb-2">{entry.title}</h3>
+                         <p className="text-gray-600 line-clamp-3">{entry.content}</p>
+                       </div>
+                       <div className="flex gap-2 ml-4">
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => openEntryDialog(entry)}
+                         >
+                           <Edit3 className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleDeleteEntry(entry.id)}
+                           className="text-red-600 hover:text-red-700"
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </div>
+                     </div>
+                     <div className="flex items-center gap-4 text-sm text-gray-500">
+                       <span>{new Date(entry.created_at).toLocaleDateString()}</span>
+                       {entry.category && (
+                         <Badge variant="secondary">{entry.category}</Badge>
+                       )}
+                       {entry.mood && (
+                         <Badge variant="outline">{entry.mood}</Badge>
+                       )}
+                     </div>
+                   </CardContent>
+                 </Card>
+               ))}
+             </div>
+           </TabsContent>
 
-                    {/* Verse Selection */}
-                    {chapterVerses.length > 0 && (
-                      <div>
-                        <label className="block text-xs font-medium mb-2">Select Verse</label>
-                        <div className="max-h-40 overflow-y-auto border rounded border-orange-200">
-                          {chapterVerses.map(verse => (
-                            <button
-                              key={verse.id}
-                              onClick={() => {
-                                setSelectedVerse(verse);
-                                setShowVerseSelector(false);
-                              }}
-                              className="w-full text-left p-2 hover:bg-orange-50 border-b last:border-b-0 text-xs"
-                            >
-                              <span className="font-medium text-orange-600">{verse.verse}.</span> {verse.text}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              )}
-            </div>
+           <TabsContent value="calendar" className="space-y-6">
+             <Card>
+               <CardContent className="p-6">
+                 <Calendar
+                   mode="single"
+                   selected={selectedDate}
+                   onSelect={(date) => date && setSelectedDate(date)}
+                   className="rounded-md border"
+                 />
+               </CardContent>
+             </Card>
+           </TabsContent>
+         </Tabs>
 
-            {/* Additional Fields for specific templates */}
-            {(selectedTemplate === 'prayer-journal' || entryCategory === 'prayer') && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Prayer Requests</label>
-                <div className="space-y-2">
-                  {prayerRequests.map((request, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={request}
-                        onChange={(e) => {
-                          const updated = [...prayerRequests];
-                          updated[index] = e.target.value;
-                          setPrayerRequests(updated);
-                        }}
-                        placeholder="Enter prayer request..."
-                        className="border-orange-200"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const updated = prayerRequests.filter((_, i) => i !== index);
-                          setPrayerRequests(updated);
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPrayerRequests([...prayerRequests, ''])}
-                    className="border-orange-200 hover:bg-orange-50"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Prayer Request
-                  </Button>
-                </div>
-              </div>
-            )}
+         {/* Entry Dialog */}
+         <Dialog open={showEntryDialog} onOpenChange={(open) => !open && closeEntryDialog()}>
+           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+             <DialogHeader>
+               <DialogTitle>
+                 {editingEntry ? 'Edit Entry' : 'New Journal Entry'}
+               </DialogTitle>
+             </DialogHeader>
+             
+             <div className="space-y-6">
+               <div>
+                 <label className="block text-sm font-medium mb-2">Title</label>
+                 <Input
+                   value={entryTitle}
+                   onChange={(e) => setEntryTitle(e.target.value)}
+                   placeholder="Enter a title for your entry..."
+                 />
+               </div>
 
-            {(selectedTemplate === 'gratitude' || entryCategory === 'gratitude') && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Gratitude Items</label>
-                <div className="space-y-2">
-                  {gratitudeItems.map((item, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={item}
-                        onChange={(e) => {
-                          const updated = [...gratitudeItems];
-                          updated[index] = e.target.value;
-                          setGratitudeItems(updated);
-                        }}
-                        placeholder="Something you're grateful for..."
-                        className="border-orange-200"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const updated = gratitudeItems.filter((_, i) => i !== index);
-                          setGratitudeItems(updated);
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setGratitudeItems([...gratitudeItems, ''])}
-                    className="border-orange-200 hover:bg-orange-50"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Gratitude Item
-                  </Button>
-                </div>
-              </div>
-            )}
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="block text-sm font-medium mb-2">Category</label>
+                   <Select value={entryCategory} onValueChange={setEntryCategory}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Select category" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {categories.map(category => (
+                         <SelectItem key={category.id} value={category.id}>
+                           {category.name}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                 </div>
 
-            {/* Content */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Content</label>
-              <Textarea
-                value={entryContent}
-                onChange={(e) => setEntryContent(e.target.value)}
-                placeholder="Share your thoughts, reflections, prayers, or experiences..."
-                className="min-h-[300px] resize-none border-orange-200 focus:border-orange-400"
-                rows={12}
-              />
-            </div>
+                 <div>
+                   <label className="block text-sm font-medium mb-2">Mood (optional)</label>
+                   <Select value={entryMood} onValueChange={setEntryMood}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Select mood" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="">No mood</SelectItem>
+                       {moods.map(mood => (
+                         <SelectItem key={mood.value} value={mood.value}>
+                           {mood.label}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                 </div>
+               </div>
 
-            {/* Actions */}
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={closeEntryDialog} className="border-gray-300">
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSaveEntry}
-                disabled={loading || !entryTitle.trim() || !entryContent.trim()}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {loading ? 'Saving...' : editingEntry ? 'Update Entry' : 'Save Entry'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
+               <div>
+                 <label className="block text-sm font-medium mb-2">Content</label>
+                 <Textarea
+                   value={entryContent}
+                   onChange={(e) => setEntryContent(e.target.value)}
+                   placeholder="Write your thoughts, reflections, prayers..."
+                   className="min-h-[200px]"
+                   rows={8}
+                 />
+               </div>
 
-export default Journal;
+               <div className="flex justify-between pt-4">
+                 <Button variant="outline" onClick={closeEntryDialog}>
+                   Cancel
+                 </Button>
+                 <Button 
+                   onClick={handleSaveEntry}
+                   disabled={loading || !entryTitle.trim() || !entryContent.trim()}
+                   className="bg-blue-600 hover:bg-blue-700"
+                 >
+                   {loading ? 'Saving...' : editingEntry ? 'Update Entry' : 'Save Entry'}
+                 </Button>
+               </div>
+             </div>
+           </DialogContent>
+         </Dialog>
+       </div>
+     </div>
+   );
+ };
+
+ export default Journal;
