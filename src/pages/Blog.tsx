@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { SEOBacklinks } from "@/components/SEOBacklinks";
-import { ManualContextualLinks } from "@/components/ContextualLinks";
+
 
 const Blog = () => {
   // SEO optimization
@@ -343,46 +343,7 @@ const Blog = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Experience Bible AI Yourself
-          </h2>
-          <p className="text-lg md:text-xl mb-8 opacity-90 max-w-3xl mx-auto">
-            Ready to transform your Bible study with AI? Join thousands who are already discovering deeper biblical insights.
-          </p>
-          <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-            <Button asChild size="lg" variant="secondary" className="bg-white text-indigo-600 hover:bg-gray-100 text-lg px-8 py-6 rounded-xl shadow-lg w-full sm:w-auto">
-              <Link to="/bible-ai">
-                <Bot className="mr-2 h-5 w-5" />
-                Try Bible AI Free
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-indigo-600 text-lg px-8 py-6 rounded-xl w-full sm:w-auto">
-              <Link to="/auth">
-                <ArrowRight className="mr-2 h-5 w-5" />
-                Get Started
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
-      {/* Related Content Section for SEO */}
-      <section className="py-12 bg-gray-50">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              Explore More Bible Resources
-            </h2>
-            <p className="text-gray-600">
-              Discover related tools and insights to enhance your Bible study experience
-            </p>
-          </div>
-          <ManualContextualLinks context="ai-features" limit={6} />
-        </div>
-      </section>
 
       {/* SEO Internal Links */}
       <SEOBacklinks currentPage="/blog" category="blog" />
