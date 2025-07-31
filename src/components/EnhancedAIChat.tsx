@@ -84,7 +84,7 @@ const callBiblicalAI = async (
 ) => {
   try {
     const controller = abortController || new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // Reduced from 30s to 15s
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -101,8 +101,8 @@ const callBiblicalAI = async (
           },
           ...messages
         ],
-        max_tokens: AI_RESPONSE_TEMPLATES[mode]?.maxWords ? AI_RESPONSE_TEMPLATES[mode].maxWords * 2 : 1000,
-        temperature: 0.7,
+        max_tokens: 600, // Reduced from 1000 for faster responses
+        temperature: 0.5, // Reduced for more focused responses
         stream: false
       }),
       signal: controller.signal
@@ -122,8 +122,11 @@ const callBiblicalAI = async (
       throw new Error('Invalid API response structure');
     }
 
+    // Clean response content
+    const cleanContent = cleanResponseText(data.choices[0].message.content);
+
     return {
-      content: data.choices[0].message.content,
+      content: cleanContent,
       model: data.model || 'deepseek-chat'
     };
 
@@ -131,6 +134,19 @@ const callBiblicalAI = async (
     console.error('AI API Error:', error);
     throw error;
   }
+};
+
+// Function to clean response text from unwanted formatting
+const cleanResponseText = (text: string): string => {
+  return text
+    // Remove emojis
+    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+    // Remove markdown formatting
+    .replace(/[#*$]/g, '')
+    // Clean up multiple spaces
+    .replace(/\s+/g, ' ')
+    // Trim whitespace
+    .trim();
 };
 
 export default function EnhancedAIChat() {
@@ -402,15 +418,16 @@ export default function EnhancedAIChat() {
 
   // History Sidebar Component
   const HistorySidebar = () => (
-    <div className="w-80 border-r bg-gray-50/50 flex flex-col h-full">
+    <div className="w-80 border-r bg-gray-50/50 flex flex-col h-full" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
       <div className="p-4 border-b bg-white">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Chat History</h2>
+          <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>Chat History</h2>
           <Button
             variant="outline"
             size="sm"
             onClick={startNewConversation}
             className="gap-2"
+            style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
           >
             <Plus className="h-4 w-4" />
             New Chat
@@ -432,14 +449,14 @@ export default function EnhancedAIChat() {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 truncate" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                     {conversation.title}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                     {format(new Date(conversation.updated_at), 'MMM d, h:mm a')}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                       {conversation.messages?.length || 0} messages
                     </Badge>
                   </div>
@@ -499,7 +516,7 @@ export default function EnhancedAIChat() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="border-b bg-white p-4">
+        <div className="border-b bg-white p-4" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Mobile history toggle */}
@@ -515,8 +532,8 @@ export default function EnhancedAIChat() {
               <div className="flex items-center gap-2">
                 <span className="text-2xl">✦</span>
                 <div>
-                  <h1 className="text-xl font-semibold">Bible Aura AI</h1>
-                  <p className="text-sm text-gray-500">Your Biblical Study Assistant</p>
+                  <h1 className="text-xl font-semibold" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>Bible Aura AI</h1>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>Your Biblical Study Assistant</p>
                 </div>
               </div>
             </div>
@@ -527,6 +544,7 @@ export default function EnhancedAIChat() {
                 size="sm"
                 onClick={startNewConversation}
                 className="gap-2"
+                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
               >
                 <Plus className="h-4 w-4" />
                 New Chat
@@ -536,16 +554,16 @@ export default function EnhancedAIChat() {
         </div>
 
         {/* Chat Messages Area */}
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-hidden relative" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
           {messages.length === 0 ? (
             // Welcome Screen
             <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
               <div className="text-center mb-8">
                 <div className="text-6xl mb-4 text-orange-500">✦</div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>
                   Hello {getUserName()}!
                 </h2>
-                <p className="text-xl text-gray-600">
+                <p className="text-xl text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                   How can I assist you with your biblical studies today?
                 </p>
               </div>
@@ -558,7 +576,7 @@ export default function EnhancedAIChat() {
                     onClick={() => sendMessage(prompt)}
                   >
                     <CardContent className="p-4">
-                      <p className="text-sm text-gray-700">{prompt}</p>
+                      <p className="text-sm text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>{prompt}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -567,9 +585,12 @@ export default function EnhancedAIChat() {
           ) : (
             // Chat Messages
             <div 
-              className="flex-1 overflow-y-auto" 
+              className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" 
               ref={scrollViewportRef}
-              style={{ scrollBehavior: 'smooth' }}
+              style={{ 
+                scrollBehavior: 'smooth',
+                maxHeight: 'calc(100vh - 200px)'
+              }}
             >
               <div className="max-w-4xl mx-auto p-4 space-y-6">
                 {messages.map((message) => (
@@ -589,20 +610,18 @@ export default function EnhancedAIChat() {
                           ? 'bg-primary text-primary-foreground ml-auto'
                           : 'bg-gray-100 text-gray-900'
                       }`}>
-                        <p className={`whitespace-pre-wrap leading-relaxed ${
-                          message.role === 'assistant' ? 'font-medium' : ''
-                        }`} style={{
-                          fontFamily: message.role === 'assistant' ? 'Montserrat, sans-serif' : 'inherit',
-                          fontWeight: message.role === 'assistant' ? '600' : 'normal'
+                        <p className="whitespace-pre-wrap leading-relaxed" style={{
+                          fontFamily: 'Montserrat, sans-serif',
+                          fontWeight: '500'
                         }}>
                           {message.content}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                         <Clock className="h-3 w-3" />
                         {format(new Date(message.timestamp), 'h:mm a')}
                         {message.model && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                             {message.model}
                           </Badge>
                         )}
@@ -630,7 +649,7 @@ export default function EnhancedAIChat() {
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150"></div>
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-300"></div>
                         </div>
-                        <span className="text-sm text-gray-600">Thinking...</span>
+                        <span className="text-sm text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>Thinking...</span>
                       </div>
                     </div>
                   </div>
@@ -653,19 +672,19 @@ export default function EnhancedAIChat() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t bg-white p-4">
+        <div className="border-t bg-white p-4" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
           <div className="max-w-4xl mx-auto">
             {/* Input Row with Mode Selector */}
             <div className="flex gap-2 items-end">
               {/* Mode Selector */}
               <div className="flex-shrink-0">
                 <Select value={selectedMode} onValueChange={(value: keyof typeof CHAT_MODES) => setSelectedMode(value)}>
-                  <SelectTrigger className="w-auto min-w-[120px] h-12 text-sm border-2 rounded-xl">
+                  <SelectTrigger className="w-auto min-w-[120px] h-12 text-sm border-2 rounded-xl" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(CHAT_MODES).map(([key, mode]) => (
-                      <SelectItem key={key} value={key}>
+                      <SelectItem key={key} value={key} style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                         <span className="font-medium">{mode.name}</span>
                       </SelectItem>
                     ))}
@@ -682,6 +701,7 @@ export default function EnhancedAIChat() {
                   placeholder={`Ask me anything about the Bible... (${CHAT_MODES[selectedMode].name})`}
                   disabled={isLoading || !user}
                   className="pr-12 rounded-xl border-2 focus:border-primary/50 min-h-[48px] resize-none"
+                  style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
                 />
               </div>
 
@@ -691,6 +711,7 @@ export default function EnhancedAIChat() {
                 disabled={!input.trim() || isLoading || !user}
                 size="lg"
                 className="rounded-xl px-6 min-h-[48px] gap-2"
+                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
               >
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -704,7 +725,7 @@ export default function EnhancedAIChat() {
             </div>
             
             {!user && (
-              <p className="text-sm text-gray-500 mt-2 text-center">
+              <p className="text-sm text-gray-500 mt-2 text-center" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                 Please sign in to start chatting with Bible Aura AI
               </p>
             )}
