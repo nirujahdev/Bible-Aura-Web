@@ -8,6 +8,24 @@ const Privacy = () => {
 
   const sections = [
     {
+      title: "Google User Data Collection & Use",
+      icon: Shield,
+      content: [
+        {
+          subtitle: "Google Account Information",
+          text: "When you sign in with Google, we collect your email address and basic profile information (name) solely for account verification, user authentication, and to provide personalized Bible study experiences. This data is used exclusively within Bible Aura and is never shared with third parties."
+        },
+        {
+          subtitle: "Data Usage Limitations",
+          text: "We strictly adhere to Google's Limited Use Requirements. Your Google user data is used only to provide or improve user-facing features that are prominent in Bible Aura's interface. We do not use your data for advertising, selling to data brokers, AI model training, or any purposes beyond our core Bible study functionality."
+        },
+        {
+          subtitle: "API Request Management",
+          text: "We use your Google account information to manage API request quotas, determine pricing tier eligibility, and ensure fair usage of our AI-powered biblical insights service. This helps us provide reliable service to all users."
+        }
+      ]
+    },
+    {
       title: "Information We Collect",
       icon: Eye,
       content: [
@@ -76,6 +94,42 @@ const Privacy = () => {
         {
           subtitle: "Deletion",
           text: "You can request deletion of your personal information, subject to certain legal obligations and legitimate business interests."
+        }
+      ]
+    },
+    {
+      title: "Data Sharing & Third Parties",
+      icon: Lock,
+      content: [
+        {
+          subtitle: "No Data Selling",
+          text: "We do not sell, rent, or trade your personal information or Google user data to any third parties for any purpose. Your data stays within Bible Aura's secure environment."
+        },
+        {
+          subtitle: "No AI Training Use",
+          text: "We do not use your personal information, Google user data, or any content you create within Bible Aura to train artificial intelligence models, machine learning algorithms, or any automated systems. Your data is used solely for providing our service to you."
+        },
+        {
+          subtitle: "Limited Exceptions",
+          text: "We may share your information only in the following limited circumstances: (1) with your explicit consent, (2) to comply with legal obligations, (3) to protect our rights or safety, or (4) as part of a business transaction with prior user consent."
+        }
+      ]
+    },
+    {
+      title: "Data Retention & Deletion",
+      icon: Calendar,
+      content: [
+        {
+          subtitle: "Retention Period",
+          text: "We retain your personal information only as long as necessary to provide our services, comply with legal obligations, resolve disputes, and enforce our agreements. Google user data is retained only while your account is active or as needed to provide services."
+        },
+        {
+          subtitle: "Account Deletion",
+          text: "When you delete your account, we promptly delete your personal information and Google user data from our active systems within 30 days, except where longer retention is required by law or for legitimate business purposes."
+        },
+        {
+          subtitle: "Data Export",
+          text: "Before account deletion, you can request an export of your personal data in a portable format. Contact us at bibleaura.contact@gmail.com to request data export or deletion."
         }
       ]
     }
@@ -249,6 +303,30 @@ const Privacy = () => {
                 </Link>
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Google API Services Compliance */}
+        <Card className="mt-8 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">Google API Services Data Use</h3>
+            <p className="text-blue-700 text-sm mb-3">
+              Bible Aura's use of information received from Google APIs adheres to the{" "}
+              <a 
+                href="https://developers.google.com/terms/api-services-user-data-policy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline hover:text-blue-900"
+              >
+                Google API Services User Data Policy
+              </a>
+              , including the Limited Use requirements.
+            </p>
+            <p className="text-blue-700 text-sm">
+              We comply with all Google OAuth 2.0 policies and do not use Google user data for purposes 
+              beyond providing our core Bible study functionality. Your Google account information is 
+              handled with the highest security standards and is never shared with unauthorized parties.
+            </p>
           </CardContent>
         </Card>
 
