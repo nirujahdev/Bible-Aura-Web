@@ -460,51 +460,7 @@ const Funding = () => {
           </Card>
         </div>
 
-        {/* FAQ Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Frequently Asked Questions</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card>
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-blue-600" />
-                  Why not completely free?
-                </h4>
-                <p className="text-gray-600 text-sm">AI processing, secure storage, and content licensing require ongoing costs. We keep basic features free for everyone.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-green-600" />
-                  How is this different from commercial apps?
-                </h4>
-                <p className="text-gray-600 text-sm">We're a ministry, not a business. Every rupee supports the mission - no profit margins or shareholders.</p>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-purple-600" />
-                  Can I see how my money is used?
-                </h4>
-                <p className="text-gray-600 text-sm">Absolutely! We provide complete transparency with detailed cost breakdowns and impact reports.</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-red-600" />
-                  What if I can't afford it?
-                </h4>
-                <p className="text-gray-600 text-sm">Contact us about our scholarship program. We believe financial constraints shouldn't limit Bible study.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
 
         {/* Final Call to Action */}
         <div className="text-center">

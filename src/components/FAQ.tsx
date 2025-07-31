@@ -150,6 +150,69 @@ const faqData: FAQItem[] = [
     answer: "We welcome your feedback! You can contact us through the Contact page on our website, send an email to bibleaura.contact@gmail.com, or use the feedback feature within the platform. For technical issues, please include details about your device, browser, and the specific problem. For feature suggestions, describe how the feature would improve your Bible study experience. We review all feedback and prioritize improvements based on user needs and Biblical faithfulness.",
     category: 'platform',
     keywords: ['bible aura support', 'report issues', 'feedback bible aura', 'suggest improvements']
+  },
+  {
+    id: 21,
+    question: "Is Bible Aura completely free to use?",
+    answer: "Yes! Bible Aura offers a comprehensive free tier with access to core features including Bible reading, basic AI insights, and study tools. Premium features are available for enhanced functionality including unlimited AI conversations, advanced study features, and priority support.",
+    category: 'platform',
+    keywords: ['bible aura pricing', 'free bible app', 'bible aura cost', 'premium bible features']
+  },
+  {
+    id: 22,
+    question: "How quickly do you respond to messages?",
+    answer: "We typically respond to all inquiries within 24 hours during business days. For urgent technical issues, we aim to provide initial response within 12 hours. Our support team is dedicated to helping you get the most out of your Bible study experience.",
+    category: 'platform',
+    keywords: ['support response time', 'customer service', 'bible aura support', 'help desk']
+  },
+  {
+    id: 23,
+    question: "Do you offer technical support?",
+    answer: "Yes, we provide comprehensive technical support for all our users through email and chat. Our support includes help with account setup, troubleshooting, feature guidance, and device compatibility. Premium users receive priority support with faster response times.",
+    category: 'technical',
+    keywords: ['technical support', 'bible aura help', 'troubleshooting', 'customer support']
+  },
+  {
+    id: 24,
+    question: "Can I schedule a demo?",
+    answer: "Absolutely! Contact us to schedule a personalized demo of Bible Aura's features. Our team can walk you through the AI capabilities, study tools, and show you how to maximize your Bible study experience. Demos are available for individuals, churches, and ministries.",
+    category: 'platform',
+    keywords: ['bible aura demo', 'product demonstration', 'guided tour', 'feature overview']
+  },
+  {
+    id: 25,
+    question: "Do you offer partnership opportunities?",
+    answer: "We're always open to discussing partnerships with churches, ministries, and educational institutions. We offer special pricing for bulk subscriptions, custom integrations, and collaborative ministry opportunities. Contact us to explore how we can support your organization's Bible study needs.",
+    category: 'platform',
+    keywords: ['partnerships', 'church discounts', 'ministry collaboration', 'bulk pricing']
+  },
+  {
+    id: 26,
+    question: "Why not completely free?",
+    answer: "AI processing, secure data storage, and content licensing require ongoing operational costs. We keep core Bible reading and basic features free for everyone, while premium features help sustain and improve the platform for all users. As a ministry-focused platform, every contribution supports expanding access to biblical resources.",
+    category: 'platform',
+    keywords: ['pricing model', 'operational costs', 'sustainability', 'ministry funding']
+  },
+  {
+    id: 27,
+    question: "How is this different from commercial apps?",
+    answer: "We're a ministry, not a business. Every contribution supports the mission of providing accessible Bible study tools - no profit margins or shareholders. Our focus is on faithful biblical content, user privacy, and advancing digital ministry rather than maximizing revenue.",
+    category: 'platform',
+    keywords: ['ministry vs business', 'non-profit bible app', 'mission driven', 'bible aura mission']
+  },
+  {
+    id: 28,
+    question: "Can I see how my money is used?",
+    answer: "Absolutely! We believe in complete transparency with detailed cost breakdowns and impact reports. Premium subscribers receive regular updates showing how their contributions support server costs, AI development, content creation, and expanding access to biblical resources worldwide.",
+    category: 'platform',
+    keywords: ['financial transparency', 'impact reports', 'cost breakdown', 'donation usage']
+  },
+  {
+    id: 29,
+    question: "What if I can't afford it?",
+    answer: "Contact us about our scholarship program. We believe financial constraints shouldn't limit Bible study access. We offer reduced-rate subscriptions, extended free trials, and community-sponsored accounts for students, seniors, and those experiencing financial hardship.",
+    category: 'platform',
+    keywords: ['scholarship program', 'financial assistance', 'free access', 'bible study accessibility']
   }
 ];
 

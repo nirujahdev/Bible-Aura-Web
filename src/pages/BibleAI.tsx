@@ -258,7 +258,7 @@ const BibleAI = () => {
       <section className="py-16 md:py-24 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
         <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Start Your Bible AI Journey Today
+            Transform Your Bible Study Experience
           </h2>
           <p className="text-lg md:text-xl mb-8 opacity-90 max-w-3xl mx-auto">
             Join thousands of believers who are transforming their Bible study with AI-powered insights and intelligent spiritual guidance.

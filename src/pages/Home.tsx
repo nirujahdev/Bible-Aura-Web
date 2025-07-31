@@ -15,11 +15,7 @@ import FAQ from "@/components/FAQ";
 
 
 const Home = () => {
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
-  const toggleFaq = (index: number) => {
-    setExpandedFaq(expandedFaq === index ? null : index);
-  };
 
   const featureCategories = [
     {
@@ -108,28 +104,7 @@ const Home = () => {
     }
   ];
 
-  const faqItems = [
-    {
-      question: "Is Bible Aura completely free to use?",
-      answer: "Yes! Bible Aura offers a comprehensive free tier with access to core features including Bible reading, basic AI insights, and study tools. Premium features are available for enhanced functionality."
-    },
-    {
-      question: "How accurate are the AI-generated insights?",
-      answer: "Our AI is trained on sound theological resources and biblical scholarship. All insights are generated to align with orthodox Christian doctrine, though we always recommend comparing with trusted commentaries and pastoral guidance."
-    },
-    {
-      question: "Can I use Bible Aura offline?",
-      answer: "Yes! Bible Aura includes offline capabilities for core features like Bible reading and personal notes. Some AI features require an internet connection for the most up-to-date insights."
-    },
-    {
-      question: "What Bible translations are available?",
-      answer: "Bible Aura supports multiple popular translations including KJV, NIV, ESV, NASB, and many others. You can easily switch between translations for comparison and deeper study."
-    },
-    {
-      question: "How does the AI Chat feature work?",
-      answer: "Our AI Chat Oracle is trained on biblical knowledge and can answer questions about Scripture, provide spiritual guidance, and help with Bible study. It's like having a knowledgeable biblical scholar available 24/7."
-    }
-  ];
+
 
   return (
     <div className="min-h-screen bg-background w-full">
@@ -375,7 +350,7 @@ const Home = () => {
               Start Your Bible Study Journey
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Choose from our powerful Bible study tools to deepen your understanding of Scripture
+              Discover Bible Aura AI-powered biblical insights to deepen your understanding of Scripture
             </p>
           </div>
           <QuickActionSEOLinks />
@@ -562,56 +537,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FAQ Section - Expandable */}
-      <section className="py-12 md:py-20 bg-white">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <div className="inline-flex items-center justify-center w-14 md:w-16 h-14 md:h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 md:mb-8">
-              <MessageCircle className="h-6 md:h-8 w-6 md:w-8" />
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 px-4">
-              Frequently Asked Questions
-            </h2>
-            <div className="w-20 md:w-24 h-1 bg-gradient-to-r from-orange-500 to-purple-500 mx-auto mb-4 md:mb-6"></div>
-            <p className="text-lg md:text-xl text-gray-600 px-4">
-              Get answers to common questions about Bible Aura
-            </p>
-          </div>
 
-          {/* FAQ Items - Expandable */}
-          <div className="space-y-3 md:space-y-4">
-            {faqItems.map((faq, index) => (
-              <Card key={index} className="border border-orange-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                <CardContent className="p-0">
-                  <button
-                    onClick={() => toggleFaq(index)}
-                    className="w-full p-4 md:p-6 text-left hover:bg-orange-50 transition-colors duration-200 flex justify-between items-center"
-                  >
-                    <h3 className="text-base md:text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
-                    <div className="text-orange-500 flex-shrink-0">
-                      {expandedFaq === index ? (
-                        <ChevronUp className="h-4 md:h-5 w-4 md:w-5" />
-                      ) : (
-                        <ChevronDown className="h-4 md:h-5 w-4 md:w-5" />
-                      )}
-                    </div>
-                  </button>
-                  
-                  {/* Expandable Content */}
-                  <div className={`transition-all duration-300 overflow-hidden ${
-                    expandedFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                  }`}>
-                    <div className="px-4 md:px-6 pb-4 md:pb-6 border-t border-orange-100">
-                      <p className="text-gray-600 leading-relaxed pt-4 text-sm md:text-base">{faq.answer}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
 
 

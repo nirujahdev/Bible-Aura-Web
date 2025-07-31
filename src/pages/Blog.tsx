@@ -20,7 +20,7 @@ const Blog = () => {
       id: 1,
       title: "How AI Transforms Bible Study: Complete Guide",
       slug: "how-ai-transforms-bible-study",
-      excerpt: "Discover how artificial intelligence is revolutionizing biblical study with smart insights, contextual analysis, and personalized learning experiences.",
+      excerpt: "Discover how Bible Aura AI-powered biblical insights revolutionize biblical study with smart analysis, contextual understanding, and personalized learning experiences.",
       category: "AI Bible Study",
       readTime: "12 min read",
       publishDate: "December 20, 2024",
@@ -34,7 +34,7 @@ const Blog = () => {
       id: 2,
       title: "Bible AI vs Traditional Study: Which is Better?",
       slug: "bible-ai-vs-traditional-study",
-      excerpt: "Compare AI-powered Bible study with traditional methods. Learn the benefits and limitations of each approach for modern believers.",
+      excerpt: "Compare Bible Aura AI-powered biblical insights with traditional study methods. Learn the benefits and limitations of each approach for modern believers.",
       category: "Comparison",
       readTime: "10 min read",
       publishDate: "December 19, 2024",
@@ -48,7 +48,7 @@ const Blog = () => {
       id: 3,
       title: "10 Benefits of Using AI for Bible Study",
       slug: "bible-study-ai-benefits",
-      excerpt: "Explore the top 10 advantages of incorporating AI into your Bible study routine for deeper understanding and spiritual growth.",
+      excerpt: "Explore the top 10 advantages of incorporating Bible Aura AI-powered biblical insights into your Bible study routine for deeper understanding and spiritual growth.",
       category: "Benefits",
       readTime: "8 min read",
       publishDate: "December 18, 2024",
@@ -62,7 +62,7 @@ const Blog = () => {
       id: 4,
       title: "Are AI Bible Insights Accurate? Truth About Biblical AI",
       slug: "ai-bible-insights-accuracy",
-      excerpt: "Examining the accuracy and reliability of AI-generated biblical insights. What you need to know about Biblical AI limitations and strengths.",
+      excerpt: "Examining the accuracy and reliability of Bible Aura AI-powered biblical insights. What you need to know about Biblical AI limitations and strengths.",
       category: "Accuracy",
       readTime: "15 min read",
       publishDate: "December 17, 2024",
@@ -76,7 +76,7 @@ const Blog = () => {
       id: 5,
       title: "Ultimate Guide to AI Bible Chat Features",
       slug: "ai-bible-chat-features",
-      excerpt: "Master the art of AI Bible chat with our comprehensive guide to features, best practices, and advanced techniques for spiritual inquiry.",
+      excerpt: "Master the art of Bible Aura AI-powered biblical insights chat with our comprehensive guide to features, best practices, and advanced techniques for spiritual inquiry.",
       category: "Features",
       readTime: "11 min read",
       publishDate: "December 16, 2024",
@@ -90,7 +90,7 @@ const Blog = () => {
       id: 6,
       title: "Smart Bible Search Techniques with AI",
       slug: "smart-bible-search-techniques",
-      excerpt: "Learn advanced Bible search techniques using AI to find relevant scriptures, themes, and connections you never knew existed.",
+      excerpt: "Learn advanced Bible search techniques using Bible Aura AI-powered biblical insights to find relevant scriptures, themes, and connections you never knew existed.",
       category: "Techniques",
       readTime: "9 min read",
       publishDate: "December 15, 2024",
@@ -104,7 +104,7 @@ const Blog = () => {
       id: 7,
       title: "Complete Guide to Biblical AI Assistant",
       slug: "biblical-ai-assistant-guide",
-      excerpt: "Everything you need to know about using a Biblical AI assistant for study, prayer, and spiritual guidance in your daily life.",
+      excerpt: "Everything you need to know about using Bible Aura AI-powered biblical insights assistant for study, prayer, and spiritual guidance in your daily life.",
       category: "Guide",
       readTime: "13 min read",
       publishDate: "December 14, 2024",
@@ -163,6 +163,12 @@ const Blog = () => {
                   Blog
                 </span>
               </h1>
+              
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                <span className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm lg:text-base font-medium">
+                  Bible Aura AI-Powered Biblical Insights
+                </span>
+              </div>
               
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
                 Expert insights on AI-powered Bible study, digital biblical analysis, and the future of Christian technology.

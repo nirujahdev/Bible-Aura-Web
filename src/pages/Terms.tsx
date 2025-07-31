@@ -79,7 +79,15 @@ const Terms = () => {
 
   return (
     <div className="min-h-screen bg-background w-full">
-
+      {/* Back Button */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-8">
+        <Button asChild variant="ghost" className="text-gray-600 hover:text-orange-600">
+          <Link to="/" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </Button>
+      </div>
 
       {/* Hero Section */}
               <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
