@@ -11,8 +11,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
   // Show loading screen while authentication is being determined
+  // But only for a reasonable amount of time
   if (loading) {
-    return <LoadingScreen message="Verifying your access..." />;
+    return <LoadingScreen message="Checking your authentication..." />;
   }
 
   // If not authenticated, redirect to auth page
@@ -21,6 +22,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     try {
       sessionStorage.removeItem('navigation-state');
       sessionStorage.removeItem('auth-redirect');
+      localStorage.removeItem('supabase.auth.token');
     } catch (error) {
       console.error('Error clearing navigation state:', error);
     }
@@ -36,6 +38,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // Clear potentially corrupted auth state
     try {
       sessionStorage.clear();
+      localStorage.removeItem('supabase.auth.token');
     } catch (clearError) {
       console.error('Error clearing session storage:', clearError);
     }

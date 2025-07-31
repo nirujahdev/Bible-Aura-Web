@@ -41,13 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     
-    // Increase timeout to 5 seconds for production stability
+    // Reduced timeout to 2 seconds for better UX
     const loadingTimeout = setTimeout(() => {
       if (isMounted) {
         console.log('Auth loading timeout, setting loading to false');
         setLoading(false);
       }
-    }, 5000);
+    }, 2000);
 
     const initializeAuth = async () => {
       try {
@@ -60,13 +60,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Check for existing session first
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Check for existing session first with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session check timeout')), 3000)
+        );
+
+        const { data: { session }, error: sessionError } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
         
         if (sessionError) {
           console.error('Session error:', sessionError);
           // Don't fail completely on session errors in production
           if (isMounted) {
+            clearTimeout(loadingTimeout);
             setLoading(false);
             setSession(null);
             setUser(null);
@@ -169,11 +178,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const { data, error } = await supabase
+      // Add timeout to profile fetch
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+
+      const { data, error } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]) as any;
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);
