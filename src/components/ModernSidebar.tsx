@@ -327,11 +327,17 @@ function IconSidebar() {
   )
 }
 
-// Mobile Navigation Component
+// Mobile Navigation Component - New Modern Design
 function MobileNavigation() {
   const location = useLocation()
   const { user, profile, signOut } = useAuth()
   const [open, setOpen] = useState(false)
+
+  const getDisplayName = () => {
+    if (profile?.display_name) return profile.display_name.split(' ')[0];
+    if (user?.email) return user.email.split('@')[0];
+    return 'User';
+  };
 
   return (
     <div className="lg:hidden">
@@ -340,108 +346,117 @@ function MobileNavigation() {
           <Button
             variant="ghost"
             size="sm"
-            className="fixed top-4 left-4 z-[60] h-12 w-12 p-0 bg-white/95 backdrop-blur-sm border-2 border-orange-500/20 shadow-lg hover:bg-orange-50/5 hover:border-orange-500/40 rounded-xl transition-all duration-300 active:scale-95"
+            className="fixed top-4 left-4 z-[60] h-12 w-12 p-0 bg-white/95 backdrop-blur-sm border shadow-lg hover:bg-gray-50 rounded-2xl transition-all duration-300"
           >
-            <div className="relative">
-              <Menu className="h-5 w-5 text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 text-xs font-bold text-orange-500">✦</span>
-            </div>
+            <Menu className="h-5 w-5 text-gray-600" />
           </Button>
         </SheetTrigger>
         
-        <SheetContent side="left" className="w-[320px] p-0 bg-white">
-          {/* Enhanced Mobile Header */}
-          <div className="p-6 bg-gradient-to-r from-orange-500 to-amber-500 text-white">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-3 backdrop-blur-sm">
-                <span className="text-xl font-bold">✦</span>
+        <SheetContent side="left" className="w-[280px] p-0 bg-white border-r">
+          {/* Clean Header */}
+          <div className="p-6 border-b">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">✦</span>
               </div>
-              <h1 className="text-xl font-bold">Bible Aura</h1>
-              <p className="text-sm text-white/80 mt-1">Biblical Wisdom AI</p>
+              <div>
+                <h1 className="font-semibold text-gray-900">Bible Aura</h1>
+                <p className="text-xs text-gray-500">v1.0</p>
+              </div>
             </div>
           </div>
 
-          {/* Mobile Navigation */}
-          <div className="flex-1 overflow-y-auto px-4 py-4">
+          {/* Tab Selection */}
+          <div className="px-6 py-4 border-b">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button className="flex-1 bg-blue-500 text-white text-sm font-medium py-2 px-4 rounded-md">
+                PERSONAL
+              </button>
+              <button className="flex-1 text-gray-600 text-sm font-medium py-2 px-4 rounded-md hover:bg-gray-200">
+                BUSINESS
+              </button>
+            </div>
+          </div>
+
+          {/* Navigation Items */}
+          <div className="flex-1 overflow-y-auto px-6 py-4">
             <div className="space-y-1">
               {allNavigationItems.map((item) => (
                 <Link
                   key={item.title}
                   to={item.url}
                   onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 ${
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 ${
                     location.pathname === item.url 
-                      ? 'bg-orange-50 border-l-4 border-orange-500 shadow-sm' 
-                      : 'hover:translate-x-1'
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="relative flex items-center">
-                    <item.icon className={`h-5 w-5 ${
-                      location.pathname === item.url 
-                        ? 'text-orange-500' 
-                        : 'text-gray-600'
-                    }`} />
-                    {location.pathname === item.url && (
-                      <span className="absolute -top-1 -right-1 text-xs font-bold text-orange-500">✦</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className={`font-medium text-sm ${
-                      location.pathname === item.url 
-                        ? 'text-orange-500 font-semibold' 
-                        : 'text-gray-700'
-                    }`}>
-                      {item.title}
+                  <item.icon className={`h-5 w-5`} />
+                  <span className="font-medium text-sm">{item.title}</span>
+                  {item.title === 'Chat' && (
+                    <div className="ml-auto">
+                      <span className="bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">1</span>
                     </div>
-                  </div>
+                  )}
+                  {item.title === 'Notifications' && (
+                    <div className="ml-auto">
+                      <span className="bg-green-500 text-white text-xs font-bold rounded-full px-2 py-0.5">24</span>
+                    </div>
+                  )}
                 </Link>
               ))}
             </div>
+
+            {/* Account Section */}
+            <div className="mt-8 pt-6 border-t">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">ACCOUNT</h3>
+              <div className="space-y-1">
+                <Link
+                  to="/profile"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                >
+                  <Settings className="h-5 w-5" />
+                  <span className="font-medium text-sm">Settings</span>
+                </Link>
+              </div>
+            </div>
           </div>
 
-          {/* Mobile Footer */}
-          <div className="p-4 border-t bg-gray-50/50">
+          {/* User Profile Footer */}
+          <div className="p-6 border-t bg-gray-50/50">
             {user ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border shadow-sm">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={profile?.avatar_url} />
-                    <AvatarFallback className="bg-orange-500/10 text-orange-500 text-sm font-semibold">
-                      {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm text-gray-800 truncate">
-                      {profile?.display_name || 'User'}
-                    </div>
-                    <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={profile?.avatar_url} />
+                  <AvatarFallback className="bg-blue-500 text-white text-sm font-semibold">
+                    {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-gray-900 truncate">
+                    {getDisplayName()}
                   </div>
+                  <div className="text-xs text-gray-500 truncate">{user?.email}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link to="/profile">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <User className="h-4 w-4 mr-1" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Button variant="outline" size="sm" onClick={signOut} className="w-full text-red-600 border-red-200 hover:bg-red-50">
-                    <LogOut className="h-4 w-4 mr-1" />
-                    Sign Out
-                  </Button>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="text-center p-3 bg-white rounded-xl">
-                  <div className="inline-flex items-center justify-center w-8 h-8 bg-orange-500/10 rounded-lg mb-2">
-                    <span className="text-sm font-bold text-orange-500">✦</span>
-                  </div>
-                  <p className="text-sm text-gray-700 font-medium mb-1">Welcome to Bible Aura</p>
-                  <p className="text-xs text-gray-500">Sign in to unlock all features</p>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <User className="h-4 w-4 text-gray-500" />
                 </div>
+                <p className="text-sm text-gray-600 mb-3">Sign in to access all features</p>
                 <Link to="/auth">
-                  <Button size="sm" className="w-full bg-orange-500 hover:bg-orange-600 text-white shadow-sm">
-                    <LogIn className="h-4 w-4 mr-2" />
+                  <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
                     Sign In
                   </Button>
                 </Link>

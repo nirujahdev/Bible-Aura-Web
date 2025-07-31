@@ -52,28 +52,28 @@ interface Conversation {
 // Chat modes using the detailed JSON templates
 const CHAT_MODES = {
   chat: {
-    name: AI_RESPONSE_TEMPLATES.chat.name,
+    name: "AI Chat",
     description: AI_RESPONSE_TEMPLATES.chat.purpose,
   },
   verse: {
-    name: AI_RESPONSE_TEMPLATES.verse.name,
+    name: "AI Analysis",
     description: AI_RESPONSE_TEMPLATES.verse.purpose,
   },
+  qa: {
+    name: "Q&A",
+    description: AI_RESPONSE_TEMPLATES.qa.purpose,
+  },
   parable: {
-    name: AI_RESPONSE_TEMPLATES.parable.name,
+    name: "Parables",
     description: AI_RESPONSE_TEMPLATES.parable.purpose,
   },
   character: {
-    name: AI_RESPONSE_TEMPLATES.character.name,
+    name: "Character",
     description: AI_RESPONSE_TEMPLATES.character.purpose,
   },
   topical: {
-    name: AI_RESPONSE_TEMPLATES.topical.name,
+    name: "Study",
     description: AI_RESPONSE_TEMPLATES.topical.purpose,
-  },
-  qa: {
-    name: AI_RESPONSE_TEMPLATES.qa.name,
-    description: AI_RESPONSE_TEMPLATES.qa.purpose,
   }
 };
 
@@ -655,31 +655,25 @@ export default function EnhancedAIChat() {
         {/* Input Area */}
         <div className="border-t bg-white p-4">
           <div className="max-w-4xl mx-auto">
-            {/* Mode Selection */}
-            <div className="mb-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Settings className="h-4 w-4" />
-                <span>Response Mode:</span>
+            {/* Input Row with Mode Selector */}
+            <div className="flex gap-2 items-end">
+              {/* Mode Selector */}
+              <div className="flex-shrink-0">
                 <Select value={selectedMode} onValueChange={(value: keyof typeof CHAT_MODES) => setSelectedMode(value)}>
-                  <SelectTrigger className="w-auto min-w-[180px] h-8 text-sm">
+                  <SelectTrigger className="w-auto min-w-[120px] h-12 text-sm border-2 rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(CHAT_MODES).map(([key, mode]) => (
                       <SelectItem key={key} value={key}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{mode.name}</span>
-                          <span className="text-xs text-gray-500">{mode.description}</span>
-                        </div>
+                        <span className="font-medium">{mode.name}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Input Row */}
-            <div className="flex gap-2 items-end">
+              {/* Input Field */}
               <div className="flex-1 relative">
                 <Input
                   value={input}
@@ -690,16 +684,21 @@ export default function EnhancedAIChat() {
                   className="pr-12 rounded-xl border-2 focus:border-primary/50 min-h-[48px] resize-none"
                 />
               </div>
+
+              {/* Send Button with AI Logo */}
               <Button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading || !user}
                 size="lg"
-                className="rounded-xl px-6"
+                className="rounded-xl px-6 min-h-[48px] gap-2"
               >
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <>
+                    <span className="text-lg">✦</span>
+                    <Send className="h-4 w-4" />
+                  </>
                 )}
               </Button>
             </div>
