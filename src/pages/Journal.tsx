@@ -75,7 +75,6 @@ const Journal = () => {
     setError(null);
     
     try {
-      console.log('Loading entries for user:', user.id);
       
       const { data, error } = await supabase
         .from('journal_entries')
@@ -89,7 +88,7 @@ const Journal = () => {
         throw error;
       }
       
-      console.log('Loaded entries:', data?.length || 0);
+      
       setEntries(data || []);
       
     } catch (error) {
@@ -150,10 +149,10 @@ const Journal = () => {
         updated_at: new Date().toISOString()
       };
 
-      console.log('Saving entry with data:', finalData);
+      
 
       if (isEditing && editingEntry?.id) {
-        console.log('Updating entry:', editingEntry.id);
+        
         const { error } = await supabase
           .from('journal_entries')
           .update(finalData)
@@ -170,7 +169,7 @@ const Journal = () => {
           description: "Your journal entry has been saved successfully",
         });
       } else {
-        console.log('Creating new entry with data:', finalData);
+        
         const { data, error } = await supabase
           .from('journal_entries')
           .insert(finalData)
@@ -182,7 +181,7 @@ const Journal = () => {
           throw error;
         }
         
-        console.log('Entry created successfully:', data);
+        
         toast({
           title: "Entry created",
           description: "Your new journal entry has been saved",

@@ -146,11 +146,11 @@ const translations = {
   }
 };
 
-export function EnhancedJournalEditor({ 
-  initialEntry, 
-  onSave, 
-  onCancel, 
-  isEditing = false 
+export function EnhancedJournalEditor({
+  initialEntry,
+  onSave,
+  onCancel,
+  isEditing = false
 }: EnhancedJournalEditorProps) {
   const { user } = useAuth();
   const { toast } = useToast();
