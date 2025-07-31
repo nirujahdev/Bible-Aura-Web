@@ -18,7 +18,6 @@ interface JournalEntry {
   id: string;
   title: string | null;
   content: string;
-  entry_date?: string | null;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -60,7 +59,7 @@ const Journal = () => {
       
       const { data, error } = await supabase
         .from('journal_entries')
-        .select('id, title, content, entry_date, created_at, updated_at, user_id')
+        .select('id, title, content, created_at, updated_at, user_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20); // Limit to recent 20 entries
@@ -112,7 +111,6 @@ const Journal = () => {
         user_id: user.id,
         title: entryTitle.trim() || null,
         content: entryContent.trim(),
-        entry_date: selectedDate.toISOString().split('T')[0],
         updated_at: new Date().toISOString()
       };
 
@@ -277,103 +275,12 @@ const Journal = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Left Container - Journal Writing Area */}
-        <div className="w-1/2 bg-white border-r border-gray-200 p-6">
-          <div className="h-full flex flex-col">
-            {/* Header */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-orange-100">
-                    <BookOpen className="h-6 w-6 text-orange-600" />
-                  </div>
-                  {isEditing ? 'Edit Entry' : 'New Journal Entry'}
-                </h1>
-                {isEditing && (
-                  <Button
-                    onClick={startNewEntry}
-                    variant="outline"
-                    className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Entry
-                  </Button>
-                )}
-              </div>
-              <p className="text-gray-600 mt-2">
-                {isEditing ? 'Make changes to your journal entry' : 'Write your thoughts, prayers, and reflections'}
-              </p>
-            </div>
-
-            {/* Editor Form */}
-            <div className="flex-1 flex flex-col space-y-4">
-              {/* Title Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Title (optional)
-                </label>
-                <Input
-                  value={entryTitle}
-                  onChange={(e) => setEntryTitle(e.target.value)}
-                  placeholder="Enter a title for your entry..."
-                  className="border-gray-200 focus:border-orange-300 focus:ring-orange-200"
-                />
-              </div>
-
-              {/* Content Textarea */}
-              <div className="flex-1 flex flex-col">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Content
-                </label>
-                <Textarea
-                  value={entryContent}
-                  onChange={(e) => setEntryContent(e.target.value)}
-                  placeholder="Write your thoughts, reflections, prayers..."
-                  className="flex-1 min-h-[400px] border-gray-200 focus:border-orange-300 focus:ring-orange-200 resize-none"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-between pt-4 border-t">
-                {isEditing && (
-                  <Button
-                    onClick={clearEditor}
-                    variant="outline"
-                    className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </Button>
-                )}
-                {!isEditing && <div></div>}
-                
-                <Button 
-                  onClick={handleSaveEntry}
-                  disabled={saving || !entryContent.trim()}
-                  className="bg-orange-500 hover:bg-orange-600 text-white min-w-[120px]"
-                >
-                  {saving ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      {isEditing ? 'Update Entry' : 'Save Entry'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Container - Calendar & Recent Journals */}
-        <div className="w-1/2 bg-white p-6">
-          <div className="h-full flex flex-col space-y-6">
+        {/* Left Container - Small Side (Calendar & Recent Journals) */}
+        <div className="w-80 bg-white border-r border-gray-200 p-4">
+          <div className="h-full flex flex-col space-y-4">
             {/* Calendar Section */}
             <Card className="border-orange-200">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5 text-orange-600" />
                   {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -392,10 +299,10 @@ const Journal = () => {
                     month: "w-full",
                     table: "w-full border-collapse",
                     head_row: "flex w-full",
-                    head_cell: "text-gray-500 rounded-md w-9 font-normal text-xs",
+                    head_cell: "text-gray-500 rounded-md w-8 font-normal text-xs",
                     row: "flex w-full mt-1",
-                    cell: "text-center text-sm p-0 relative w-9 h-9",
-                    day: "h-9 w-9 p-0 font-normal",
+                    cell: "text-center text-sm p-0 relative w-8 h-8",
+                    day: "h-8 w-8 p-0 font-normal text-xs",
                     day_selected: "bg-orange-500 text-white hover:bg-orange-600",
                     day_today: "bg-orange-50 text-orange-600 font-semibold",
                     day_outside: "text-gray-300",
@@ -406,10 +313,10 @@ const Journal = () => {
 
             {/* Recent Journals Section */}
             <Card className="flex-1 border-orange-200">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-orange-600" />
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-orange-600" />
                     Recent Journals
                   </CardTitle>
                   <Button
@@ -418,60 +325,58 @@ const Journal = () => {
                     size="sm"
                     disabled={loading}
                   >
-                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="max-h-[400px] overflow-y-auto">
+                <div className="max-h-96 overflow-y-auto">
                   {loading ? (
-                    <div className="flex justify-center py-8">
-                      <RefreshCw className="h-6 w-6 animate-spin text-orange-500" />
+                    <div className="flex justify-center py-6">
+                      <RefreshCw className="h-5 w-5 animate-spin text-orange-500" />
                     </div>
                   ) : error ? (
-                    <div className="p-6 text-center">
-                      <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-400" />
-                      <p className="text-red-600 mb-4">{error}</p>
-                      <Button onClick={loadEntries} size="sm" variant="outline">
-                        <RefreshCw className="h-4 w-4 mr-2" />
+                    <div className="p-4 text-center">
+                      <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
+                      <p className="text-red-600 text-xs mb-2">{error}</p>
+                      <Button onClick={loadEntries} size="sm" variant="outline" className="text-xs">
+                        <RefreshCw className="h-3 w-3 mr-1" />
                         Retry
                       </Button>
                     </div>
                   ) : entries.length === 0 ? (
-                    <div className="p-6 text-center">
-                      <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-gray-500 mb-4">No journal entries yet</p>
-                      <p className="text-sm text-gray-400">Start writing your first entry using the editor on the left</p>
+                    <div className="p-4 text-center">
+                      <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-gray-500 text-xs mb-1">No entries yet</p>
+                      <p className="text-gray-400 text-xs">Start writing →</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-100">
                       {entries.map((entry) => (
                         <div
                           key={entry.id}
-                          className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                          className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
                             selectedEntry?.id === entry.id ? 'bg-orange-50 border-r-2 border-orange-500' : ''
                           }`}
                           onClick={() => loadEntryIntoEditor(entry)}
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-800 truncate flex-1">
+                          <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-medium text-gray-800 truncate flex-1 text-sm">
                               {entry.title || "Untitled Entry"}
                             </h3>
-                            <div className="flex items-center gap-1 ml-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteEntry(entry.id);
-                                }}
-                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteEntry(entry.id);
+                              }}
+                              className="h-5 w-5 p-0 text-gray-400 hover:text-red-600 ml-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
-                          <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                          <p className="text-xs text-gray-600 line-clamp-2 mb-1">
                             {entry.content}
                           </p>
                           <div className="flex justify-between items-center text-xs text-gray-500">
@@ -485,6 +390,99 @@ const Journal = () => {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Right Container - Large Side (Journal Writing Area) */}
+        <div className="flex-1 bg-white p-8">
+          <div className="h-full flex flex-col max-w-4xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-orange-100">
+                    <BookOpen className="h-7 w-7 text-orange-600" />
+                  </div>
+                  {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
+                </h1>
+                {isEditing && (
+                  <Button
+                    onClick={startNewEntry}
+                    variant="outline"
+                    className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Entry
+                  </Button>
+                )}
+              </div>
+              <p className="text-gray-600 mt-3 text-lg">
+                {isEditing ? 'Make changes to your journal entry' : 'Write your thoughts, prayers, and reflections'}
+              </p>
+            </div>
+
+            {/* Editor Form */}
+            <div className="flex-1 flex flex-col space-y-6">
+              {/* Title Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Title (optional)
+                </label>
+                <Input
+                  value={entryTitle}
+                  onChange={(e) => setEntryTitle(e.target.value)}
+                  placeholder="Enter a title for your entry..."
+                  className="text-lg border-gray-200 focus:border-orange-300 focus:ring-orange-200"
+                />
+              </div>
+
+              {/* Content Textarea */}
+              <div className="flex-1 flex flex-col">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Content
+                </label>
+                <Textarea
+                  value={entryContent}
+                  onChange={(e) => setEntryContent(e.target.value)}
+                  placeholder="Write your thoughts, reflections, prayers..."
+                  className="flex-1 min-h-[500px] text-base border-gray-200 focus:border-orange-300 focus:ring-orange-200 resize-none leading-relaxed"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-between pt-6 border-t">
+                {isEditing && (
+                  <Button
+                    onClick={clearEditor}
+                    variant="outline"
+                    size="lg"
+                    className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {!isEditing && <div></div>}
+                
+                <Button 
+                  onClick={handleSaveEntry}
+                  disabled={saving || !entryContent.trim()}
+                  size="lg"
+                  className="bg-orange-500 hover:bg-orange-600 text-white min-w-[140px]"
+                >
+                  {saving ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      {isEditing ? 'Update Entry' : 'Save Entry'}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
