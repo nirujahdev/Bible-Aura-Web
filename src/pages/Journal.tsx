@@ -3,57 +3,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  BookOpen, Plus, Edit3, Trash2, Search, FileText, 
-  Save, Calendar as CalendarIcon, Quote, X, Menu,
-  User, MapPin, Briefcase, PartyPopper, Heart,
-  Filter, Clock, Hand as Pray, Sparkles, Book,
-  ChevronLeft, ChevronRight, Settings, Star,
-  RefreshCw, AlertCircle, MoreHorizontal, Pin
+  BookOpen, Plus, Edit3, Trash2, Search, 
+  Save, Calendar as CalendarIcon, X, Menu,
+  ChevronLeft, ChevronRight, RefreshCw, 
+  AlertCircle, MoreHorizontal
 } from "lucide-react";
-import type { Json } from "@/integrations/supabase/types";
 
 interface JournalEntry {
   id: string;
-  title: string;
+  title: string | null;
   content: string;
-  category?: string;
-  verse_reference?: string;
-  verse_text?: string;
-  mood?: string;
-  entry_date?: string;
+  entry_date?: string | null;
   created_at: string;
   updated_at: string;
-  is_pinned?: boolean;
-  metadata?: Json;
   user_id: string;
 }
-
-const categories = [
-  { id: 'work', name: 'Work', icon: Briefcase, color: 'text-orange-600 bg-orange-50' },
-  { id: 'events', name: 'Events', icon: PartyPopper, color: 'text-orange-600 bg-orange-50' },
-  { id: 'personal', name: 'Personal', icon: User, color: 'text-orange-600 bg-orange-50' },
-  { id: 'trips', name: 'Trips', icon: MapPin, color: 'text-orange-600 bg-orange-50' },
-  { id: 'education', name: 'Education', icon: BookOpen, color: 'text-orange-600 bg-orange-50' },
-  { id: 'social', name: 'Social', icon: Heart, color: 'text-orange-600 bg-orange-50' },
-];
-
-const moods = [
-  { value: "joyful", label: "😊 Joyful", color: "bg-orange-50 text-orange-800" },
-  { value: "peaceful", label: "😌 Peaceful", color: "bg-orange-100 text-orange-800" },
-  { value: "grateful", label: "🙏 Grateful", color: "bg-orange-200 text-orange-900" },
-  { value: "contemplative", label: "🤔 Contemplative", color: "bg-orange-300 text-orange-900" },
-  { value: "hopeful", label: "✨ Hopeful", color: "bg-orange-400 text-white" },
-  { value: "blessed", label: "🙌 Blessed", color: "bg-orange-500 text-white" },
-];
 
 const Journal = () => {
   const { user } = useAuth();
@@ -63,7 +33,6 @@ const Journal = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,8 +44,6 @@ const Journal = () => {
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [entryTitle, setEntryTitle] = useState("");
   const [entryContent, setEntryContent] = useState("");
-  const [entryCategory, setEntryCategory] = useState("personal");
-  const [entryMood, setEntryMood] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -86,7 +53,7 @@ const Journal = () => {
 
   useEffect(() => {
     filterEntries();
-  }, [entries, selectedCategory, searchQuery]);
+  }, [entries, searchQuery]);
 
   const loadEntries = async () => {
     if (!user) return;
@@ -99,7 +66,7 @@ const Journal = () => {
       
       const { data, error } = await supabase
         .from('journal_entries')
-        .select('*')
+        .select('id, title, content, entry_date, created_at, updated_at, user_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -111,7 +78,7 @@ const Journal = () => {
       console.log('Loaded entries:', data?.length || 0);
       setEntries(data || []);
       
-      // Auto-select first entry if none selected
+      // Auto-select first entry if none selected and entries exist
       if (data && data.length > 0 && !selectedEntry) {
         setSelectedEntry(data[0]);
       }
@@ -132,13 +99,9 @@ const Journal = () => {
   const filterEntries = () => {
     let filtered = entries;
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(entry => entry.category === selectedCategory);
-    }
-
     if (searchQuery) {
       filtered = filtered.filter(entry =>
-        entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (entry.title && entry.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
         entry.content.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -156,10 +119,10 @@ const Journal = () => {
       return;
     }
 
-    if (!entryTitle.trim() || !entryContent.trim()) {
+    if (!entryContent.trim()) {
       toast({
-        title: "Missing information",
-        description: "Please fill in both title and content",
+        title: "Missing content",
+        description: "Please write some content for your entry",
         variant: "destructive",
       });
       return;
@@ -170,37 +133,43 @@ const Journal = () => {
     try {
       const entryData = {
         user_id: user.id,
-        title: entryTitle.trim(),
+        title: entryTitle.trim() || null,
         content: entryContent.trim(),
-        category: entryCategory,
-        mood: entryMood || null,
         entry_date: selectedDate.toISOString().split('T')[0],
-        updated_at: new Date().toISOString(),
-        metadata: {}
+        updated_at: new Date().toISOString()
       };
 
       if (editingEntry) {
+        console.log('Updating entry:', editingEntry.id);
         const { error } = await supabase
           .from('journal_entries')
           .update(entryData)
           .eq('id', editingEntry.id)
           .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         
         toast({
           title: "Entry updated",
           description: "Your journal entry has been saved successfully",
         });
       } else {
+        console.log('Creating new entry with data:', entryData);
         const { data, error } = await supabase
           .from('journal_entries')
           .insert(entryData)
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         
+        console.log('Entry created successfully:', data);
         toast({
           title: "Entry created",
           description: "Your new journal entry has been saved",
@@ -208,12 +177,12 @@ const Journal = () => {
       }
 
       closeEntryDialog();
-      loadEntries();
+      await loadEntries(); // Reload entries to show the new/updated entry
     } catch (error) {
       console.error('Error saving entry:', error);
       toast({
         title: "Error saving entry",
-        description: "Please try again",
+        description: error.message || "Please try again",
         variant: "destructive",
       });
     } finally {
@@ -225,6 +194,7 @@ const Journal = () => {
     if (!user) return;
     
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('journal_entries')
         .delete()
@@ -239,7 +209,7 @@ const Journal = () => {
       });
       
       setSelectedEntry(null);
-      loadEntries();
+      await loadEntries();
     } catch (error) {
       console.error('Error deleting entry:', error);
       toast({
@@ -247,22 +217,20 @@ const Journal = () => {
         description: "Please try again",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const openEntryDialog = (entry?: JournalEntry) => {
     if (entry) {
       setEditingEntry(entry);
-      setEntryTitle(entry.title);
+      setEntryTitle(entry.title || "");
       setEntryContent(entry.content);
-      setEntryCategory(entry.category || 'personal');
-      setEntryMood(entry.mood || '');
     } else {
       setEditingEntry(null);
       setEntryTitle("");
       setEntryContent("");
-      setEntryCategory("personal");
-      setEntryMood("");
     }
     setShowNewEntryDialog(true);
   };
@@ -272,8 +240,6 @@ const Journal = () => {
     setEditingEntry(null);
     setEntryTitle("");
     setEntryContent("");
-    setEntryCategory("personal");
-    setEntryMood("");
   };
 
   const formatDate = (dateString: string) => {
@@ -304,11 +270,6 @@ const Journal = () => {
     };
   };
 
-  const getCategoryIcon = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.icon : FileText;
-  };
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -334,39 +295,15 @@ const Journal = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Left Sidebar - Categories & Calendar */}
+        {/* Left Sidebar - Simple Navigation */}
         <div className="w-64 bg-white border-r border-gray-200 p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-6">Journals</h2>
           
-          {/* Categories */}
+          {/* Simple All Entries button */}
           <div className="space-y-2 mb-8">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedCategory === 'all' 
-                  ? 'bg-orange-50 text-orange-600' 
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
+            <button className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium bg-orange-50 text-orange-600">
               All Entries
             </button>
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedCategory === category.id 
-                      ? 'bg-orange-50 text-orange-600' 
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {category.name}
-                </button>
-              );
-            })}
           </div>
 
           {/* Add New Button */}
@@ -443,6 +380,15 @@ const Journal = () => {
               <div className="flex justify-center py-8">
                 <RefreshCw className="h-6 w-6 animate-spin text-orange-500" />
               </div>
+            ) : error ? (
+              <div className="p-6 text-center">
+                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-400" />
+                <p className="text-red-600 mb-4">{error}</p>
+                <Button onClick={loadEntries} size="sm" variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+              </div>
             ) : filteredEntries.length === 0 ? (
               <div className="p-6 text-center">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -468,23 +414,12 @@ const Journal = () => {
                         <div className="flex flex-col items-center text-center min-w-[40px]">
                           <span className="text-2xl font-bold text-gray-800">{dateInfo.day}</span>
                           <span className="text-xs text-gray-500 uppercase">{dateInfo.weekday}</span>
-                          {entry.is_pinned && <Star className="h-3 w-3 text-orange-500 mt-1" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-800 truncate">{entry.title}</h3>
+                          <h3 className="font-semibold text-gray-800 truncate">
+                            {entry.title || "Untitled Entry"}
+                          </h3>
                           <p className="text-sm text-gray-600 mt-1 line-clamp-2">{entry.content}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            {entry.category && (
-                              <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-600">
-                                {categories.find(cat => cat.id === entry.category)?.name || entry.category}
-                              </Badge>
-                            )}
-                            {entry.mood && (
-                              <Badge variant="outline" className="text-xs">
-                                {moods.find(m => m.value === entry.mood)?.label || entry.mood}
-                              </Badge>
-                            )}
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -502,7 +437,9 @@ const Journal = () => {
               {/* Header */}
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h1 className="text-2xl font-bold text-gray-800">{selectedEntry.title}</h1>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {selectedEntry.title || "Untitled Entry"}
+                  </h1>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
@@ -526,16 +463,6 @@ const Journal = () => {
                 
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span>{formatDate(selectedEntry.created_at)}</span>
-                  {selectedEntry.category && (
-                    <Badge variant="secondary" className="bg-orange-50 text-orange-600">
-                      {categories.find(cat => cat.id === selectedEntry.category)?.name || selectedEntry.category}
-                    </Badge>
-                  )}
-                  {selectedEntry.mood && (
-                    <Badge variant="outline">
-                      {moods.find(m => m.value === selectedEntry.mood)?.label || selectedEntry.mood}
-                    </Badge>
-                  )}
                 </div>
               </div>
 
@@ -546,19 +473,6 @@ const Journal = () => {
                     {selectedEntry.content}
                   </div>
                 </div>
-
-                {/* Verse Reference */}
-                {selectedEntry.verse_reference && (
-                  <div className="mt-6 p-4 bg-orange-50 border-l-4 border-orange-300 rounded-r-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Book className="h-5 w-5 text-orange-600" />
-                      <span className="font-semibold text-orange-800">{selectedEntry.verse_reference}</span>
-                    </div>
-                    {selectedEntry.verse_text && (
-                      <p className="text-orange-700 italic">"{selectedEntry.verse_text}"</p>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           ) : (
@@ -584,48 +498,13 @@ const Journal = () => {
           
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Title</label>
+              <label className="block text-sm font-medium mb-2">Title (optional)</label>
               <Input
                 value={entryTitle}
                 onChange={(e) => setEntryTitle(e.target.value)}
                 placeholder="Enter a title for your entry..."
                 className="border-gray-200 focus:border-orange-300 focus:ring-orange-200"
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                <Select value={entryCategory} onValueChange={setEntryCategory}>
-                  <SelectTrigger className="border-gray-200 focus:border-orange-300 focus:ring-orange-200">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Mood (optional)</label>
-                <Select value={entryMood} onValueChange={setEntryMood}>
-                  <SelectTrigger className="border-gray-200 focus:border-orange-300 focus:ring-orange-200">
-                    <SelectValue placeholder="Select mood" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No mood</SelectItem>
-                    {moods.map(mood => (
-                      <SelectItem key={mood.value} value={mood.value}>
-                        {mood.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div>
@@ -645,7 +524,7 @@ const Journal = () => {
               </Button>
               <Button 
                 onClick={handleSaveEntry}
-                disabled={loading || !entryTitle.trim() || !entryContent.trim()}
+                disabled={loading || !entryContent.trim()}
                 className="bg-orange-500 hover:bg-orange-600 text-white"
               >
                 {loading ? (
