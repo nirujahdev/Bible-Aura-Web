@@ -27,6 +27,7 @@ const ParablesStudy = lazy(() => import("./pages/ParablesStudy"));
 const TopicalStudy = lazy(() => import("./pages/TopicalStudy"));
 const StudyHub = lazy(() => import("./pages/StudyHub"));
 const Sermons = lazy(() => import("./pages/Sermons"));
+const SermonWriter = lazy(() => import("./pages/SermonWriter"));
 const Songs = lazy(() => import("./pages/Songs"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -157,6 +158,14 @@ function AppLayout() {
               <ProtectedRoute>
                 <ModernLayout>
                   <Sermons />
+                </ModernLayout>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/sermon-writer" element={
+              <ProtectedRoute>
+                <ModernLayout>
+                  <SermonWriter />
                 </ModernLayout>
               </ProtectedRoute>
             } />
