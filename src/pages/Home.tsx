@@ -346,12 +346,6 @@ const Home = () => {
       <section className="py-12 md:py-16 bg-white">
         <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              Start Your Bible Study Journey
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Discover Bible Aura AI-powered biblical insights to deepen your understanding of Scripture
-            </p>
           </div>
           <QuickActionSEOLinks />
         </div>

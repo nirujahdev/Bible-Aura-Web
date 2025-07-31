@@ -175,21 +175,7 @@ const Blog = () => {
               </p>
             </div>
 
-            {/* Blog Stats */}
-            <div className="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-4xl mx-auto">
-              <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-indigo-600 mb-1">{blogPosts.length}+</div>
-                <div className="text-gray-600 text-sm lg:text-base">Expert Articles</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-purple-600 mb-1">50K+</div>
-                <div className="text-gray-600 text-sm lg:text-base">Monthly Readers</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-green-600 mb-1">Weekly</div>
-                <div className="text-gray-600 text-sm lg:text-base">New Content</div>
-              </div>
-            </div>
+
           </div>
         </div>
       </section>

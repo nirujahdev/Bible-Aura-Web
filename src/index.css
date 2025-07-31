@@ -16,9 +16,30 @@ Simple, Clean Design Philosophy
 */
 
 @layer base {
-  /* Smooth scrolling removed to prevent auto-scroll on navigation */
+  /* Mobile Performance Optimizations */
   html {
-    /* scroll-behavior: smooth; */
+    /* scroll-behavior: smooth; */ /* Removed for mobile performance */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  
+  /* Mobile-first responsive improvements */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+  
+  /* Optimize font loading for mobile */
+  @font-face {
+    font-family: 'Montserrat';
+    font-display: swap;
   }
   
   :root {
@@ -758,4 +779,90 @@ Simple, Clean Design Philosophy
 
 .animate-slide-up {
   animation: slide-up 0.5s ease-out;
+}
+
+/* Mobile Performance Optimization Utilities */
+.gpu-accelerated {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.touch-optimized {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mobile-optimized {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Enhanced mobile typography */
+.mobile-text {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fast animations for mobile */
+.fast-transition {
+  transition: all 0.15s ease-out;
+  will-change: transform, opacity;
+}
+
+/* Mobile-first containers */
+.mobile-container {
+  padding: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .mobile-container {
+    padding: 2rem;
+  }
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .gpu-accelerated {
+    will-change: auto;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce expensive box-shadows on mobile */
+  .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Optimize gradients for mobile performance */
+  .bg-gradient-to-r, .bg-gradient-to-br {
+    background-attachment: scroll;
+  }
+  
+  /* Faster transforms on mobile */
+  .hover\:scale-105:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Improve text readability on mobile */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }

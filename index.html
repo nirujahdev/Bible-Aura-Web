@@ -5,8 +5,12 @@
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="sXivHJW38d2I7ni6jgSOg9OXYp6fIrhkVjoXsVPay1M" />
     
-    <!-- Viewport and Mobile Optimization -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <!-- Enhanced Mobile Optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+    <meta http-equiv="x-dns-prefetch-control" content="on" />
     
     <!-- Primary SEO Meta Tags -->
     <title>✦ Bible Aura • AI-Powered Biblical Insight & Digital Bible Study Platform</title>
@@ -48,10 +52,13 @@
     <meta name="msapplication-TileColor" content="#f97316" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
     
-    <!-- Preconnect for Performance -->
+    <!-- Enhanced Performance Preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
     
     <!-- OpenGraph / Facebook Meta Tags -->
     <meta property="og:title" content="✦ Bible Aura • AI-Powered Biblical Insight & Digital Bible Study Platform" />
@@ -283,7 +290,7 @@
     <meta name="format-detection" content="email=no" />
     
     <style>
-      /* Initial loading screen to prevent white flash */
+      /* Critical CSS for mobile performance */
       #initial-loader {
         position: fixed;
         top: 0;
@@ -296,6 +303,11 @@
         justify-content: center;
         z-index: 9999;
         font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        will-change: opacity;
       }
       
       .loader-content {

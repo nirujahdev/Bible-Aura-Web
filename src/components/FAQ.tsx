@@ -14,205 +14,72 @@ const faqData: FAQItem[] = [
   {
     id: 1,
     question: "What is Bible AI and how does it work?",
-    answer: "Bible AI is an advanced artificial intelligence system specifically trained on Biblical texts, theological commentaries, and religious literature. Our Bible AI uses natural language processing to understand your questions and provide accurate, contextually relevant answers based on Scripture. It can analyze verses, explain Biblical concepts, provide cross-references, and offer insights while maintaining theological accuracy. The AI has been trained on multiple Bible translations, concordances, and scholarly resources to ensure comprehensive and reliable responses.",
+    answer: "Bible AI is an advanced artificial intelligence system trained on Biblical texts and theological resources. It uses natural language processing to provide accurate, contextually relevant answers about Scripture, analyze verses, and offer theological insights while maintaining doctrinal accuracy.",
     category: 'ai',
     keywords: ['bible ai', 'ai bible assistant', 'biblical artificial intelligence', 'how bible ai works']
   },
   {
     id: 2,
-    question: "Is Bible Aura's AI theologically accurate and reliable?",
-    answer: "Yes, our Bible AI is designed with theological accuracy as a top priority. The system has been trained on trusted Biblical commentaries, theological works, and cross-referenced with multiple Bible translations. We have a team of theological scholars who review and validate the AI's responses. However, we always recommend using AI insights as a supplement to, not a replacement for, personal Bible study, prayer, and consultation with pastoral guidance for important spiritual decisions.",
-    category: 'ai',
-    keywords: ['bible ai accuracy', 'theological accuracy', 'reliable bible ai', 'bible ai trustworthy']
+    question: "Is Bible Aura free to use?",
+    answer: "Yes! Bible Aura offers a comprehensive free tier with Bible reading, basic AI insights, and study tools. Premium features include unlimited AI conversations, advanced study features, and priority support.",
+    category: 'platform',
+    keywords: ['bible aura pricing', 'free bible app', 'bible aura cost', 'premium bible features']
   },
   {
     id: 3,
-    question: "Can I ask Bible AI questions about specific Bible verses?",
-    answer: "Absolutely! Bible AI excels at verse-specific analysis. You can ask questions like 'What does John 3:16 mean?', 'Explain the context of Romans 8:28', or 'What are the cross-references for Psalm 23:1?'. The AI will provide detailed explanations including historical context, original language insights, theological interpretations, and related verses. You can also ask comparative questions about different translations or request connections between verses.",
-    category: 'ai',
-    keywords: ['bible verse analysis', 'verse explanation ai', 'bible verse questions', 'scripture analysis ai']
-  },
-  {
-    id: 4,
-    question: "What Bible translations does Bible Aura support?",
-    answer: "Bible Aura supports over 50 Bible translations including KJV (King James Version), NIV (New International Version), ESV (English Standard Version), NASB (New American Standard Bible), NLT (New Living Translation), CSB (Christian Standard Bible), and many others. Our AI can compare translations, explain differences, and help you understand why certain translations use different wording. We also support original language resources for Hebrew and Greek text analysis.",
+    question: "What Bible translations are supported?",
+    answer: "Bible Aura supports over 50 translations including KJV, NIV, ESV, NASB, NLT, and CSB. Our AI can compare translations and explain differences to help you understand various interpretations.",
     category: 'bible',
     keywords: ['bible translations', 'bible versions', 'kjv niv esv', 'multiple bible translations']
   },
   {
+    id: 4,
+    question: "Can I ask questions about specific Bible verses?",
+    answer: "Absolutely! Ask questions like 'What does John 3:16 mean?' or 'Explain Romans 8:28'. The AI provides detailed explanations with historical context, theological interpretations, and cross-references.",
+    category: 'ai',
+    keywords: ['bible verse analysis', 'verse explanation ai', 'bible verse questions', 'scripture analysis ai']
+  },
+  {
     id: 5,
-    question: "How is Bible Aura different from other Bible study apps?",
-    answer: "Bible Aura is unique because it combines traditional Bible study tools with advanced AI technology. Unlike other apps that simply provide text and basic commentaries, our platform offers intelligent, conversational Bible study through AI chat, personalized insights, advanced search capabilities, and dynamic cross-referencing. Our AI understands context and can provide explanations tailored to your spiritual maturity level and specific questions.",
-    category: 'platform',
-    keywords: ['bible aura features', 'ai bible app', 'unique bible study app', 'bible aura vs others']
+    question: "How accurate is Bible AI?",
+    answer: "Our Bible AI achieves 94%+ accuracy compared to established Biblical commentaries. It's designed with theological accuracy as a priority, but we recommend using it alongside traditional study methods and pastoral guidance.",
+    category: 'ai',
+    keywords: ['bible ai accuracy', 'theological accuracy', 'reliable bible ai', '94 percent accuracy']
   },
   {
     id: 6,
-    question: "Is Bible Aura free to use?",
-    answer: "Bible Aura offers both free and premium features. The free tier includes access to basic Bible reading, limited AI chat interactions, and essential study tools. Our premium subscription unlocks unlimited AI conversations, advanced study features, sermon tools, detailed verse analysis, cross-references, and priority support. We believe everyone should have access to God's Word, so core Bible reading functionality remains free forever.",
-    category: 'platform',
-    keywords: ['bible aura pricing', 'free bible app', 'bible aura cost', 'premium bible features']
-  },
-  {
-    id: 7,
-    question: "Can Bible AI help me understand difficult Bible passages?",
-    answer: "Yes! Bible AI specializes in explaining difficult or complex Biblical passages. Whether you're struggling with Old Testament prophecies, Paul's theological arguments, symbolic language in Revelation, or any challenging scripture, the AI can break down complex concepts into understandable explanations. It provides historical context, cultural background, theological interpretations, and practical applications to help make difficult passages more accessible.",
-    category: 'ai',
-    keywords: ['difficult bible passages', 'bible ai explanation', 'complex scripture', 'bible interpretation ai']
-  },
-  {
-    id: 8,
     question: "Does Bible Aura work offline?",
-    answer: "Bible Aura is primarily a web-based platform that requires an internet connection for AI features and real-time updates. However, we offer a Progressive Web App (PWA) that can cache basic Bible text for offline reading. For full functionality including AI chat, verse analysis, and advanced features, an internet connection is required. We're working on expanding offline capabilities in future updates.",
+    answer: "Bible Aura is web-based and requires internet for AI features. However, our Progressive Web App (PWA) can cache basic Bible text for offline reading. Full functionality needs an internet connection.",
     category: 'technical',
     keywords: ['bible aura offline', 'offline bible reading', 'bible app offline', 'internet required']
   },
   {
-    id: 9,
-    question: "How do I start a conversation with Bible AI?",
-    answer: "Starting a conversation with Bible AI is simple! Navigate to the Bible AI section and type your question in natural language. You can ask things like 'What does it mean to have faith?', 'Explain the parable of the sower', or 'Find verses about forgiveness'. The AI understands context, so you can have flowing conversations and ask follow-up questions. There's no need for special commands or formatting - just ask as you would ask a knowledgeable friend.",
-    category: 'features',
-    keywords: ['bible ai chat', 'how to use bible ai', 'bible ai conversation', 'ask bible questions']
-  },
-  {
-    id: 10,
-    question: "Can Bible AI help with sermon preparation?",
-    answer: "Absolutely! Bible AI is an excellent tool for sermon preparation. You can ask for verse explanations, historical context, theological insights, illustration ideas, and outline suggestions. The AI can help you find related scriptures, understand original language meanings, and explore different interpretational perspectives. However, we encourage pastors to use AI as a research and brainstorming tool while ensuring their sermons reflect their personal study, prayer, and divine inspiration.",
-    category: 'features',
-    keywords: ['ai sermon preparation', 'bible ai preaching', 'sermon writing ai', 'pastoral tools ai']
-  },
-  {
-    id: 11,
-    question: "Is my data safe and private on Bible Aura?",
-    answer: "Yes, we take your privacy and data security very seriously. Bible Aura uses enterprise-grade encryption to protect your data. We don't sell your personal information to third parties. Your Bible study notes, questions, and conversations are private and secure. We only use aggregated, anonymized data to improve our AI system. You can delete your account and data at any time. For detailed information, please review our Privacy Policy.",
-    category: 'privacy',
-    keywords: ['bible aura privacy', 'data security', 'private bible study', 'secure bible app']
-  },
-  {
-    id: 12,
-    question: "Can I save and organize my Bible study notes?",
-    answer: "Yes! Bible Aura includes a comprehensive Bible journal feature where you can save notes, insights, prayer requests, and reflections. You can organize notes by books, chapters, verses, or custom topics. The AI can also suggest relevant verses and insights based on your notes. Your journal is private, searchable, and can be exported for backup. Premium users get unlimited storage and advanced organization features.",
+    id: 7,
+    question: "Can I save my Bible study notes?",
+    answer: "Yes! Bible Aura includes a comprehensive journal feature for saving notes, insights, and reflections. Organize by books, chapters, or topics. Your journal is private, searchable, and exportable.",
     category: 'features',
     keywords: ['bible journal', 'bible study notes', 'save bible notes', 'organize bible study']
   },
   {
-    id: 13,
-    question: "Does Bible AI provide different denominational perspectives?",
-    answer: "Bible AI aims to provide balanced, biblically-grounded responses that respect different Christian traditions. While the AI doesn't advocate for specific denominational positions, it can explain different interpretational approaches when relevant. For denominationally-specific questions, we recommend consulting your pastor or denominational resources. Our goal is to provide insights that help all Christians grow in their understanding of God's Word while respecting theological diversity within orthodox Christianity.",
-    category: 'ai',
-    keywords: ['denominational perspectives', 'bible ai theology', 'christian traditions', 'theological balance']
-  },
-  {
-    id: 14,
-    question: "Can Bible AI help me with Bible reading plans?",
-    answer: "Yes! Bible AI can suggest personalized Bible reading plans based on your interests, spiritual goals, and available time. Whether you want to read through the entire Bible in a year, focus on specific themes like prayer or faith, or study particular books, the AI can create customized plans. It can also track your progress, provide daily insights, and adjust plans based on your pace and preferences.",
+    id: 8,
+    question: "How do I start using Bible AI?",
+    answer: "Simply navigate to the Bible AI section and type your question in natural language. Ask anything like 'What does faith mean?' or 'Explain the parable of the sower'. No special formatting required.",
     category: 'features',
-    keywords: ['bible reading plans', 'ai reading plans', 'personalized bible study', 'bible study schedule']
+    keywords: ['bible ai chat', 'how to use bible ai', 'bible ai conversation', 'ask bible questions']
   },
   {
-    id: 15,
-    question: "How accurate is Bible AI compared to human Bible scholars?",
-    answer: "Bible AI achieves approximately 94%+ accuracy when compared to established Biblical commentaries and scholarly sources. However, AI should complement, not replace, human scholarship and pastoral guidance. While AI excels at quickly accessing vast amounts of information and making connections, human scholars bring wisdom, spiritual discernment, and pastoral care that AI cannot provide. We recommend using AI insights alongside traditional study methods and pastoral counsel.",
-    category: 'ai',
-    keywords: ['bible ai accuracy rate', 'ai vs scholars', 'bible ai reliability', '94 percent accuracy']
+    id: 9,
+    question: "Is my data safe and private?",
+    answer: "Yes, we use enterprise-grade encryption and never sell your personal information. Your Bible study notes and conversations are private and secure. You can delete your account and data anytime.",
+    category: 'privacy',
+    keywords: ['bible aura privacy', 'data security', 'private bible study', 'secure bible app']
   },
   {
-    id: 16,
-    question: "Can I use Bible Aura for group Bible studies?",
-    answer: "Absolutely! Bible Aura is excellent for group Bible studies. You can use the AI to prepare study questions, get background information on passages, explore different interpretations, and find relevant cross-references. The platform can help group leaders prepare engaging discussions and provide instant answers to participant questions. We're also developing specific group study features for sharing notes and collaborative learning.",
-    category: 'features',
-    keywords: ['group bible study', 'bible study groups', 'collaborative bible study', 'bible study leader tools']
-  },
-  {
-    id: 17,
-    question: "What devices can I use Bible Aura on?",
-    answer: "Bible Aura works on all modern devices including desktop computers, laptops, tablets, and smartphones. Our web-based platform is responsive and optimizes for your screen size. We also offer a Progressive Web App (PWA) that provides an app-like experience on mobile devices. The platform works on Windows, Mac, iOS, Android, and Linux systems through any modern web browser.",
-    category: 'technical',
-    keywords: ['bible aura devices', 'mobile bible app', 'bible aura compatibility', 'cross-platform bible']
-  },
-  {
-    id: 18,
-    question: "How often is Bible AI updated and improved?",
-    answer: "We continuously update and improve Bible AI based on user feedback, new theological resources, and advancing AI technology. Major updates are released quarterly, with smaller improvements and bug fixes deployed regularly. We add new features, expand language support, improve accuracy, and enhance user experience based on community input. Premium users get early access to new features and priority support for feature requests.",
-    category: 'platform',
-    keywords: ['bible ai updates', 'platform improvements', 'new features', 'bible aura development']
-  },
-  {
-    id: 19,
-    question: "Can Bible AI help with original language study (Hebrew/Greek)?",
-    answer: "Yes! Bible AI has been trained on Hebrew and Greek texts and can provide insights into original language meanings, word studies, and translation nuances. You can ask about specific Hebrew or Greek words, their meanings in context, and how they're translated across different Bible versions. While not a replacement for formal language study, it's an excellent tool for understanding the richness of the original Biblical languages.",
-    category: 'features',
-    keywords: ['hebrew greek study', 'original language bible', 'word study ai', 'biblical languages ai']
-  },
-  {
-    id: 20,
-    question: "How do I report issues or suggest improvements for Bible Aura?",
-    answer: "We welcome your feedback! You can contact us through the Contact page on our website, send an email to bibleaura.contact@gmail.com, or use the feedback feature within the platform. For technical issues, please include details about your device, browser, and the specific problem. For feature suggestions, describe how the feature would improve your Bible study experience. We review all feedback and prioritize improvements based on user needs and Biblical faithfulness.",
-    category: 'platform',
-    keywords: ['bible aura support', 'report issues', 'feedback bible aura', 'suggest improvements']
-  },
-  {
-    id: 21,
-    question: "Is Bible Aura completely free to use?",
-    answer: "Yes! Bible Aura offers a comprehensive free tier with access to core features including Bible reading, basic AI insights, and study tools. Premium features are available for enhanced functionality including unlimited AI conversations, advanced study features, and priority support.",
-    category: 'platform',
-    keywords: ['bible aura pricing', 'free bible app', 'bible aura cost', 'premium bible features']
-  },
-  {
-    id: 22,
-    question: "How quickly do you respond to messages?",
-    answer: "We typically respond to all inquiries within 24 hours during business days. For urgent technical issues, we aim to provide initial response within 12 hours. Our support team is dedicated to helping you get the most out of your Bible study experience.",
-    category: 'platform',
-    keywords: ['support response time', 'customer service', 'bible aura support', 'help desk']
-  },
-  {
-    id: 23,
+    id: 10,
     question: "Do you offer technical support?",
-    answer: "Yes, we provide comprehensive technical support for all our users through email and chat. Our support includes help with account setup, troubleshooting, feature guidance, and device compatibility. Premium users receive priority support with faster response times.",
+    answer: "Yes, we provide comprehensive technical support through email and chat. This includes help with account setup, troubleshooting, and feature guidance. Premium users get priority support.",
     category: 'technical',
     keywords: ['technical support', 'bible aura help', 'troubleshooting', 'customer support']
-  },
-  {
-    id: 24,
-    question: "Can I schedule a demo?",
-    answer: "Absolutely! Contact us to schedule a personalized demo of Bible Aura's features. Our team can walk you through the AI capabilities, study tools, and show you how to maximize your Bible study experience. Demos are available for individuals, churches, and ministries.",
-    category: 'platform',
-    keywords: ['bible aura demo', 'product demonstration', 'guided tour', 'feature overview']
-  },
-  {
-    id: 25,
-    question: "Do you offer partnership opportunities?",
-    answer: "We're always open to discussing partnerships with churches, ministries, and educational institutions. We offer special pricing for bulk subscriptions, custom integrations, and collaborative ministry opportunities. Contact us to explore how we can support your organization's Bible study needs.",
-    category: 'platform',
-    keywords: ['partnerships', 'church discounts', 'ministry collaboration', 'bulk pricing']
-  },
-  {
-    id: 26,
-    question: "Why not completely free?",
-    answer: "AI processing, secure data storage, and content licensing require ongoing operational costs. We keep core Bible reading and basic features free for everyone, while premium features help sustain and improve the platform for all users. As a ministry-focused platform, every contribution supports expanding access to biblical resources.",
-    category: 'platform',
-    keywords: ['pricing model', 'operational costs', 'sustainability', 'ministry funding']
-  },
-  {
-    id: 27,
-    question: "How is this different from commercial apps?",
-    answer: "We're a ministry, not a business. Every contribution supports the mission of providing accessible Bible study tools - no profit margins or shareholders. Our focus is on faithful biblical content, user privacy, and advancing digital ministry rather than maximizing revenue.",
-    category: 'platform',
-    keywords: ['ministry vs business', 'non-profit bible app', 'mission driven', 'bible aura mission']
-  },
-  {
-    id: 28,
-    question: "Can I see how my money is used?",
-    answer: "Absolutely! We believe in complete transparency with detailed cost breakdowns and impact reports. Premium subscribers receive regular updates showing how their contributions support server costs, AI development, content creation, and expanding access to biblical resources worldwide.",
-    category: 'platform',
-    keywords: ['financial transparency', 'impact reports', 'cost breakdown', 'donation usage']
-  },
-  {
-    id: 29,
-    question: "What if I can't afford it?",
-    answer: "Contact us about our scholarship program. We believe financial constraints shouldn't limit Bible study access. We offer reduced-rate subscriptions, extended free trials, and community-sponsored accounts for students, seniors, and those experiencing financial hardship.",
-    category: 'platform',
-    keywords: ['scholarship program', 'financial assistance', 'free access', 'bible study accessibility']
   }
 ];
 
