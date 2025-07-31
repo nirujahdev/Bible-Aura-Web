@@ -327,11 +327,10 @@ function IconSidebar() {
   )
 }
 
-// Mobile Navigation Component - New Modern Design
+// Mobile Navigation Component - Vertical Sidebar Design
 function MobileNavigation() {
   const location = useLocation()
   const { user, profile, signOut } = useAuth()
-  const [open, setOpen] = useState(false)
 
   const getDisplayName = () => {
     if (profile?.display_name) return profile.display_name.split(' ')[0];
@@ -339,132 +338,228 @@ function MobileNavigation() {
     return 'User';
   };
 
+  const mobileNavItems = [
+    { icon: BookOpen, path: "/bible", tooltip: "Bible" },
+    { icon: MessageCircle, path: "/study-hub", tooltip: "Study Hub" },
+    { icon: FileText, path: "/journal", tooltip: "Journal" },
+    { icon: Music, path: "/songs", tooltip: "Songs" },
+    { icon: Users, path: "/bible-characters", tooltip: "Characters" },
+    { icon: Headphones, path: "/sermons", tooltip: "Sermons" },
+    { icon: Heart, path: "/favorites", tooltip: "Favorites" },
+    { icon: Settings, path: "/profile", tooltip: "Settings" }
+  ];
+
   return (
-    <div className="lg:hidden">
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="fixed top-4 left-4 z-[60] h-12 w-12 p-0 bg-white/95 backdrop-blur-sm border shadow-lg hover:bg-gray-50 rounded-2xl transition-all duration-300"
+    <div className="lg:hidden fixed left-0 top-0 h-full w-16 bg-white border-r border-gray-200 z-50 flex flex-col">
+      {/* Traffic Light Dots */}
+      <div className="flex justify-center items-center py-4">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+          <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+          <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+        </div>
+      </div>
+
+      {/* Logo/Brand */}
+      <div className="flex justify-center py-3">
+        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-sm">✦</span>
+        </div>
+      </div>
+
+      {/* Navigation Icons */}
+      <div className="flex-1 flex flex-col items-center py-4 space-y-4">
+        {mobileNavItems.slice(0, -1).map((item, index) => (
+          <div key={index} className="relative group">
+            <Link
+              to={item.path}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                location.pathname === item.path
+                  ? 'bg-black text-white'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <item.icon className="h-5 w-5" />
+            </Link>
+            
+            {/* Tooltip */}
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              {item.tooltip}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom Section */}
+      <div className="flex flex-col items-center space-y-3 pb-4">
+        {/* Settings */}
+        <div className="relative group">
+          <Link
+            to="/profile"
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+              location.pathname === '/profile'
+                ? 'bg-black text-white'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+            }`}
           >
-            <Menu className="h-5 w-5 text-gray-600" />
-          </Button>
-        </SheetTrigger>
-        
-        <SheetContent side="left" className="w-[280px] p-0 bg-white border-r">
-          {/* Clean Header */}
-          <div className="p-6 border-b">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">✦</span>
-              </div>
-              <div>
-                <h1 className="font-semibold text-gray-900">Bible Aura</h1>
-                <p className="text-xs text-gray-500">v1.0</p>
-              </div>
+            <Settings className="h-5 w-5" />
+          </Link>
+          
+          {/* Tooltip */}
+          <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            Settings
+          </div>
+        </div>
+
+        {/* User Avatar */}
+        {user ? (
+          <div className="relative group">
+            <Link
+              to="/profile"
+              className="w-10 h-10 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-gray-400 transition-all duration-200"
+            >
+              <Avatar className="w-full h-full">
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback className="bg-gray-600 text-white text-sm font-semibold">
+                  {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+            
+            {/* Tooltip */}
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              {getDisplayName()}
             </div>
           </div>
-
-          {/* Tab Selection */}
-          <div className="px-6 py-4 border-b">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button className="flex-1 bg-blue-500 text-white text-sm font-medium py-2 px-4 rounded-md">
-                PERSONAL
-              </button>
-              <button className="flex-1 text-gray-600 text-sm font-medium py-2 px-4 rounded-md hover:bg-gray-200">
-                BUSINESS
-              </button>
+        ) : (
+          <div className="relative group">
+            <Link
+              to="/auth"
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
+            >
+              <User className="h-5 w-5" />
+            </Link>
+            
+            {/* Tooltip */}
+            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              Sign In
             </div>
           </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
-          {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="space-y-1">
-              {allNavigationItems.map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.url}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 ${
-                    location.pathname === item.url 
-                      ? 'bg-blue-50 text-blue-600' 
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <item.icon className={`h-5 w-5`} />
-                  <span className="font-medium text-sm">{item.title}</span>
-                  {item.title === 'Chat' && (
-                    <div className="ml-auto">
-                      <span className="bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">1</span>
-                    </div>
-                  )}
-                  {item.title === 'Notifications' && (
-                    <div className="ml-auto">
-                      <span className="bg-green-500 text-white text-xs font-bold rounded-full px-2 py-0.5">24</span>
-                    </div>
-                  )}
-                </Link>
-              ))}
-            </div>
+// Mobile Right Sidebar Component with Page-Specific Options
+function MobileRightSidebar() {
+  const location = useLocation()
+  const { user } = useAuth()
 
-            {/* Account Section */}
-            <div className="mt-8 pt-6 border-t">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">ACCOUNT</h3>
-              <div className="space-y-1">
-                <Link
-                  to="/profile"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
-                >
-                  <Settings className="h-5 w-5" />
-                  <span className="font-medium text-sm">Settings</span>
-                </Link>
-              </div>
+  // Define page-specific options
+  const getPageOptions = () => {
+    switch (location.pathname) {
+      case '/bible':
+        return [
+          { icon: BookOpen, tooltip: "Reading Plan", action: () => {} },
+          { icon: Heart, tooltip: "Bookmark", action: () => {} },
+          { icon: MessageCircle, tooltip: "Commentary", action: () => {} },
+          { icon: Settings, tooltip: "Text Settings", action: () => {} }
+        ];
+      case '/study-hub':
+        return [
+          { icon: Plus, tooltip: "New Study", action: () => {} },
+          { icon: FileText, tooltip: "Notes", action: () => {} },
+          { icon: Star, tooltip: "Favorites", action: () => {} },
+          { icon: Settings, tooltip: "AI Settings", action: () => {} }
+        ];
+      case '/journal':
+        return [
+          { icon: Plus, tooltip: "New Entry", action: () => {} },
+          { icon: FileText, tooltip: "Templates", action: () => {} },
+          { icon: Heart, tooltip: "Favorites", action: () => {} },
+          { icon: Settings, tooltip: "Journal Settings", action: () => {} }
+        ];
+      case '/songs':
+        return [
+          { icon: Plus, tooltip: "Add Song", action: () => {} },
+          { icon: Heart, tooltip: "Favorites", action: () => {} },
+          { icon: Music, tooltip: "Playlist", action: () => {} },
+          { icon: Settings, tooltip: "Audio Settings", action: () => {} }
+        ];
+      case '/bible-characters':
+        return [
+          { icon: Plus, tooltip: "Add Character", action: () => {} },
+          { icon: BookOpen, tooltip: "Study Guide", action: () => {} },
+          { icon: Heart, tooltip: "Favorites", action: () => {} },
+          { icon: Settings, tooltip: "View Settings", action: () => {} }
+        ];
+      case '/sermons':
+        return [
+          { icon: Plus, tooltip: "Add Sermon", action: () => {} },
+          { icon: Headphones, tooltip: "Audio", action: () => {} },
+          { icon: Heart, tooltip: "Favorites", action: () => {} },
+          { icon: Settings, tooltip: "Playback Settings", action: () => {} }
+        ];
+      default:
+        return [
+          { icon: Home, tooltip: "Home", action: () => window.location.href = '/' },
+          { icon: MessageCircle, tooltip: "AI Chat", action: () => window.location.href = '/study-hub' },
+          { icon: Heart, tooltip: "Favorites", action: () => window.location.href = '/favorites' },
+          { icon: Settings, tooltip: "Settings", action: () => window.location.href = '/profile' }
+        ];
+    }
+  };
+
+  const pageOptions = getPageOptions();
+
+  return (
+    <div className="lg:hidden fixed right-0 top-0 h-full w-16 bg-white border-l border-gray-200 z-40 flex flex-col">
+      {/* Page Actions */}
+      <div className="flex-1 flex flex-col items-center py-8 space-y-4">
+        {pageOptions.map((option, index) => (
+          <div key={index} className="relative group">
+            <button
+              onClick={option.action}
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            >
+              <option.icon className="h-5 w-5" />
+            </button>
+            
+            {/* Tooltip */}
+            <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              {option.tooltip}
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* User Profile Footer */}
-          <div className="p-6 border-t bg-gray-50/50">
-            {user ? (
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-blue-500 text-white text-sm font-semibold">
-                    {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-gray-900 truncate">
-                    {getDisplayName()}
-                  </div>
-                  <div className="text-xs text-gray-500 truncate">{user?.email}</div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={signOut}
-                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center">
-                <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                </div>
-                <p className="text-sm text-gray-600 mb-3">Sign in to access all features</p>
-                <Link to="/auth">
-                  <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-                    Sign In
-                  </Button>
-                </Link>
-              </div>
-            )}
+      {/* Quick Actions - Bottom */}
+      <div className="flex flex-col items-center space-y-3 pb-8">
+        {/* Search */}
+        <div className="relative group">
+          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200">
+            <HelpCircle className="h-5 w-5" />
+          </button>
+          
+          {/* Tooltip */}
+          <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            Search
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+
+        {/* Menu Toggle */}
+        <div className="relative group">
+          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200">
+            <Grid3X3 className="h-5 w-5" />
+          </button>
+          
+          {/* Tooltip */}
+          <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            Menu
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -473,12 +568,15 @@ function MobileNavigation() {
 export function ModernSidebar() {
   const isMobile = useIsMobile()
   
-  // For mobile, show mobile navigation + main content
+  // For mobile, show mobile navigation + main content with proper spacing
   if (isMobile) {
     return (
       <div className="h-screen bg-gray-900">
         <MobileNavigation />
-        <MainContent />
+        <div className="pl-16 pr-16"> {/* Add left and right padding for fixed sidebars */}
+          <MainContent />
+        </div>
+        <MobileRightSidebar />
       </div>
     )
   }
