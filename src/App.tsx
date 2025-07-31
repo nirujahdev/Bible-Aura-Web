@@ -34,7 +34,7 @@ const Careers = lazy(() => import("./pages/Careers"));
 
 // Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
-import { ModernSidebar } from "./components/ModernSidebar";
+import { ModernLayout } from "./components/ModernLayout";
 
 function AppLayout() {
   // Component to handle root route - shows landing page or dashboard based on auth
@@ -44,9 +44,9 @@ function AppLayout() {
     if (user) {
       // User is authenticated, show dashboard with consistent layout
       return (
-        <ModernSidebar>
+        <ModernLayout>
           <Dashboard />
-        </ModernSidebar>
+        </ModernLayout>
       );
     } else {
       // User is not authenticated, show landing page
@@ -98,114 +98,114 @@ function AppLayout() {
             {/* Dashboard route */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Dashboard />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             {/* All other app routes */}
             <Route path="/bible" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Bible />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/songs" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Songs />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/study" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <StudyHub />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/study-hub" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <StudyHub />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/bible-qa" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <StudyHub />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/bible-characters" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <BibleCharacters />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/sermons" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Sermons />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/topical-study" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <StudyHub />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/sermon-library" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <StudyHub />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/parables-study" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <StudyHub />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/favorites" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Favorites />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/journal" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Journal />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
             
             <Route path="/profile" element={
               <ProtectedRoute>
-                <ModernSidebar>
+                <ModernLayout>
                   <Profile />
-                </ModernSidebar>
+                </ModernLayout>
               </ProtectedRoute>
             } />
 
