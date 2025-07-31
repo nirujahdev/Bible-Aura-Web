@@ -1,15 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
-import { Heart, Target, Star, Crown, BookOpen, Brain, MessageCircle, Shield } from "lucide-react";
+import { Heart, Target, Star, Crown, BookOpen, Brain, MessageCircle, Shield, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { SEOBacklinks } from "@/components/SEOBacklinks";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { useAuth } from "@/hooks/useAuth";
 
 const About = () => {
   // SEO optimization
   useSEO(SEO_CONFIG.ABOUT);
+  const { user, loading } = useAuth();
+  
   const founder = {
     name: "Benaiah Nicholas Nimal",
     role: "Founder & Developer",
@@ -21,6 +24,19 @@ const About = () => {
     <div className="min-h-screen bg-background w-full">
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
+
+      {/* Quick Status Check */}
+      <section className="py-4 bg-green-50 border-b border-green-200">
+        <div className="w-full px-4 sm:px-6 lg:px-8 text-center">
+          <div className="flex items-center justify-center gap-2 text-green-700">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">✅ Routing Fixed! This page loaded successfully</span>
+          </div>
+          <p className="text-sm text-green-600 mt-1">
+            Auth Status: {loading ? 'Loading...' : (user ? `Logged in as ${user.email}` : 'Not logged in')}
+          </p>
+        </div>
+      </section>
 
       {/* Hero Section */}
       <section className="py-24 pt-32 bg-gradient-to-br from-orange-50 to-white">
