@@ -28,16 +28,21 @@ import {
   getChapterVerses, 
   searchVerses, 
   saveBookmark, 
-  getUserBookmarks 
+  getUserBookmarks,
+  BIBLE_TRANSLATIONS,
+  TranslationCode
 } from '@/lib/local-bible';
 import { NoteTaking } from '@/components/NoteTaking';
 import { AIAnalysis } from '@/components/AIAnalysis';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 const LANGUAGES = [
-  { value: 'english', label: 'English (KJV)' },
+  { value: 'english', label: 'English' },
   { value: 'tamil', label: 'Tamil' }
 ];
+
+// English translations available
+const ENGLISH_TRANSLATIONS = BIBLE_TRANSLATIONS.filter(t => t.language === 'english');
 
 const READING_PLANS = [
   { id: 'bible-year', name: 'Bible in a Year', duration: '365 days', description: 'Complete the Bible in one year' },
@@ -75,6 +80,7 @@ export default function Bible() {
   const [selectedBook, setSelectedBook] = useState<BibleBook | null>(null);
   const [selectedChapter, setSelectedChapter] = useState(1);
   const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
+  const [selectedTranslation, setSelectedTranslation] = useState<TranslationCode>('KJV');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -169,7 +175,12 @@ export default function Bible() {
     
     setLoading(true);
     try {
-      const chapterVerses = await getChapterVerses(selectedBook.name, selectedChapter, selectedLanguage);
+      const chapterVerses = await getChapterVerses(
+        selectedBook.name, 
+        selectedChapter, 
+        selectedLanguage,
+        selectedLanguage === 'english' ? selectedTranslation : 'TAMIL'
+      );
       setVerses(chapterVerses);
       updateReadingProgress();
     } catch (error) {
@@ -276,7 +287,12 @@ export default function Bible() {
     if (!searchQuery.trim()) return;
     
     try {
-      let results = await searchVerses(searchQuery, selectedLanguage);
+      let results = await searchVerses(
+        searchQuery, 
+        selectedLanguage,
+        searchFilters.book !== 'all' ? searchFilters.book : undefined,
+        selectedLanguage === 'english' ? selectedTranslation : 'TAMIL'
+      );
       
       // Apply filters
       if (searchFilters.testament !== 'all') {
@@ -284,10 +300,6 @@ export default function Bible() {
           const book = books.find(b => b.name === verse.book_name);
           return book?.testament === searchFilters.testament;
         });
-      }
-      
-      if (searchFilters.book !== 'all') {
-        results = results.filter(verse => verse.book_name === searchFilters.book);
       }
       
       if (searchFilters.exactMatch) {
@@ -473,7 +485,6 @@ export default function Bible() {
 
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
   const newTestamentBooks = books.filter(book => book.testament === 'new');
-  const currentTranslation = LANGUAGES.find(t => t.value === selectedLanguage);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
@@ -573,24 +584,67 @@ export default function Bible() {
                   </div>
                 )}
 
-                {/* Language Selection */}
-                <div className="mb-4">
-                  <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                    <Languages className="h-4 w-4" />
-                    Translation
-                  </label>
-                  <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map(language => (
-                        <SelectItem key={language.value} value={language.value}>
-                          {language.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Language and Translation Selection */}
+                <div className="mb-4 space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                      <Languages className="h-4 w-4" />
+                      Language
+                    </label>
+                    <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => {
+                      setSelectedLanguage(value);
+                      if (value === 'tamil') {
+                        setSelectedTranslation('TAMIL');
+                      } else {
+                        setSelectedTranslation('KJV');
+                      }
+                    }}>
+                      <SelectTrigger className="h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES.map(language => (
+                          <SelectItem key={language.value} value={language.value}>
+                            {language.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedLanguage === 'english' && (
+                    <div>
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        Translation
+                      </label>
+                      <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ENGLISH_TRANSLATIONS.map(translation => (
+                            <SelectItem key={translation.code} value={translation.code}>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{translation.code}</span>
+                                <span className="text-xs text-gray-500">-</span>
+                                <span className="text-xs">{translation.name}</span>
+                                {translation.public_domain && (
+                                  <span className="text-xs bg-green-100 text-green-600 px-1 rounded">Free</span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {BIBLE_TRANSLATIONS.find(t => t.code === selectedTranslation)?.public_domain 
+                          ? '✓ Public Domain - Free to use' 
+                          : '⚠️ Copyrighted - For personal study only'
+                        }
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Book Selection with Expandable Sections */}
@@ -794,7 +848,10 @@ export default function Bible() {
                         {getBookDisplayName(selectedBook.name)} {selectedChapter}
                       </h1>
                       <p className="text-orange-100 text-sm">
-                        {currentTranslation?.label}
+                        {selectedLanguage === 'english' 
+                          ? BIBLE_TRANSLATIONS.find(t => t.code === selectedTranslation)?.name || selectedTranslation
+                          : 'Tamil Bible'
+                        }
                       </p>
                     </div>
                   </div>

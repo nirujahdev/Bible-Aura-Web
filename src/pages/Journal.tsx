@@ -33,7 +33,7 @@ interface JournalEntry {
   user_id: string;
   word_count?: number;
   reading_time?: number;
-  language?: 'english' | 'tamil' | 'sinhala';
+  language?: string; // Changed from 'english' | 'tamil' | 'sinhala' to string
   category?: string;
   metadata?: any;
   is_pinned?: boolean;
@@ -115,24 +115,42 @@ const Journal = () => {
       return;
     }
 
+    if (!entryData.title?.trim() || !entryData.content?.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please add a title and content to your journal entry",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     
     try {
+      // Prepare data with all required fields
       const finalData = {
         user_id: user.id,
-        title: entryData.title?.trim() || null,
+        title: entryData.title.trim(),
         content: entryData.content.trim(),
-        mood: null, // Always null since we removed mood
-        spiritual_state: null, // Always null since we removed spiritual state
+        mood: entryData.mood || null,
+        spiritual_state: entryData.spiritual_state || null,
         verse_references: entryData.verse_references || [],
-        tags: [], // Always empty since we removed tags
-        is_private: true, // Always private
+        verse_reference: entryData.verse_reference || null,
+        verse_text: entryData.verse_text || null,
+        tags: entryData.tags || [],
+        is_private: entryData.is_private !== undefined ? entryData.is_private : true,
         entry_date: entryData.entry_date || new Date().toISOString().split('T')[0],
         word_count: entryData.word_count || 0,
-        reading_time: entryData.reading_time || 0,
+        reading_time: entryData.reading_time || 1,
         language: entryData.language || 'english',
+        category: entryData.category || 'personal',
+        is_pinned: entryData.is_pinned || false,
+        template_used: entryData.template_used || null,
+        metadata: entryData.metadata || null,
         updated_at: new Date().toISOString()
       };
+
+      console.log('Saving entry with data:', finalData);
 
       if (isEditing && editingEntry?.id) {
         console.log('Updating entry:', editingEntry.id);
@@ -174,11 +192,22 @@ const Journal = () => {
       // Close editor and reload entries
       handleCloseEditor();
       await loadEntries();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving entry:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Please try again";
+      if (error.message?.includes('column')) {
+        errorMessage = "Database schema issue. Please refresh the page and try again.";
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.message?.includes('permission') || error.message?.includes('access')) {
+        errorMessage = "Permission denied. Please sign in again.";
+      }
+      
       toast({
         title: "Error saving entry",
-        description: error.message || "Please try again",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

@@ -28,8 +28,45 @@ import {
 // Rich Text Editor (will be dynamically imported)
 const ReactQuill = React.lazy(() => import('react-quill'));
 
-// Enhanced Sermon Generation with DeepSeek Direct API
-import { AI_CONFIG } from '@/lib/ai-bible-system';
+// Enhanced Sermon Generation with AI Direct API
+const generateSermon = async (
+  topic: string,
+  verses: string[],
+  outline: SermonOutline,
+  style: string,
+  duration: number
+) => {
+  try {
+    // Mock sermon generation for demo purposes
+    // In production, this would connect to your preferred AI service
+    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000)); // Simulate processing time
+    
+    const sermonTemplate = `
+**Introduction:**
+This sermon explores the profound theme of "${topic}" as revealed in Scripture. Through careful examination of God's Word, we will discover practical truths for our spiritual journey.
+
+**Main Points:**
+${outline.points.map((point, index) => `
+${index + 1}. ${point.title}
+   ${point.content}
+   Supporting Scripture: ${verses[index] || 'Various passages'}
+`).join('')}
+
+**Conclusion:**
+As we conclude this message on "${topic}", let us remember that God's Word is a lamp unto our feet and a light unto our path. May these truths transform our hearts and guide our daily walk with Christ.
+
+**Call to Action:**
+Take time this week to meditate on these truths and apply them to your life. Consider how God is calling you to grow in this area.
+
+*This is a demonstration sermon. In the full version, you would receive comprehensive, biblically-grounded sermons tailored to your specific needs.*
+    `;
+    
+    return { content: sermonTemplate };
+  } catch (error) {
+    console.error('Sermon generation error:', error);
+    throw error;
+  }
+};
 
 // Christian theology database
 const CHRISTIAN_THEOLOGICAL_KNOWLEDGE = {
@@ -53,249 +90,6 @@ const CHRISTIAN_THEOLOGICAL_KNOWLEDGE = {
     "Max Lucado": ["Grace for the Moment", "Inspirational Writing", "Pastoral Care"],
     "Philip Yancey": ["What's So Amazing About Grace", "Apologetics", "Doubt and Faith"],
     "Francis Chan": ["Crazy Love", "Radical Discipleship", "Missional Living"]
-  }
-};
-
-// Enhanced sermon generation function
-const generateEnhancedSermon = async (topic: string, scripture: string, settings: { style: string; length: string; audience: string; includeQuotes: boolean }) => {
-  try {
-    // Search for relevant Bible verses using our Bible API
-    const relevantVerses = await searchRelevantVerses(topic, scripture);
-    
-    // Get theological insights from Christian authors
-    const theologicalInsights = getTheologicalInsights(topic);
-    
-    // Create enhanced prompt for sermon generation
-    const enhancedPrompt = createSermonPrompt(topic, scripture, settings, relevantVerses, theologicalInsights);
-    
-    // Call AI with enhanced context
-    const aiResponse = await callSermonGenerationAPI(enhancedPrompt);
-    
-    // Parse and structure the response
-    return parseSermonResponse(aiResponse, topic, scripture, settings);
-    
-  } catch (error) {
-    console.error('Error in enhanced sermon generation:', error);
-    throw error;
-  }
-};
-
-// Search for relevant Bible verses based on topic
-const searchRelevantVerses = async (topic: string, scripture: string): Promise<string[]> => {
-  try {
-    const bibleApi = (await import('@/lib/bible-api')).default;
-    const verses: string[] = [];
-    
-    // If specific scripture is provided, fetch it
-    if (scripture) {
-      const verse = await bibleApi.getVerseByReference(scripture, 'kjv');
-      if (verse) {
-        verses.push(`"${verse.text}" (${verse.reference})`);
-      }
-    }
-    
-    // Search for topic-related verses
-    if (topic) {
-      const searchResults = await bibleApi.searchVerses(topic, 'kjv', 5);
-      searchResults.forEach(verse => {
-        verses.push(`"${verse.text}" (${verse.reference})`);
-      });
-    }
-    
-    return verses.slice(0, 8); // Limit to 8 most relevant verses
-  } catch (error) {
-    console.error('Error searching verses:', error);
-    return [];
-  }
-};
-
-// Get theological insights from Christian authors
-const getTheologicalInsights = (topic: string): string[] => {
-  const insights: string[] = [];
-  const topicLower = topic.toLowerCase();
-  
-  // Map topics to relevant authors and their works
-  const topicMappings: Record<string, string[]> = {
-    'grace': ['Augustine - Grace and Free Will', 'John Calvin - Irresistible Grace', 'Philip Yancey - What\'s So Amazing About Grace'],
-    'faith': ['Martin Luther - Justification by Faith', 'John Stott - Basic Christianity', 'Tim Keller - The Reason for God'],
-    'love': ['C.S. Lewis - The Four Loves', 'A.W. Tozer - The Pursuit of God', 'Max Lucado - Grace for the Moment'],
-    'salvation': ['John Calvin - Reformed Soteriology', 'John Wesley - Methodist Salvation', 'Tim Keller - Gospel-Centered Ministry'],
-    'discipleship': ['Dietrich Bonhoeffer - The Cost of Discipleship', 'Francis Chan - Crazy Love', 'John Stott - Basic Christianity'],
-    'prayer': ['A.W. Tozer - The Pursuit of God', 'John Wesley - Methodist Prayer', 'Tim Keller - Prayer'],
-    'suffering': ['C.S. Lewis - The Problem of Pain', 'Philip Yancey - Where Is God When It Hurts', 'Dietrich Bonhoeffer - Letters from Prison'],
-    'hope': ['N.T. Wright - Surprised by Hope', 'C.S. Lewis - Mere Christianity', 'Max Lucado - Anxious for Nothing']
-  };
-  
-  // Find relevant insights
-  Object.keys(topicMappings).forEach(key => {
-    if (topicLower.includes(key)) {
-      insights.push(...topicMappings[key]);
-    }
-  });
-  
-  // Add general theological perspectives if no specific matches
-  if (insights.length === 0) {
-    insights.push(
-      'Augustine - The importance of Scripture in understanding God\'s will',
-      'John Calvin - The sovereignty of God in all aspects of life',
-      'C.S. Lewis - The practical application of Christian truth'
-    );
-  }
-  
-  return insights.slice(0, 5);
-};
-
-// Create enhanced sermon prompt
-const createSermonPrompt = (topic: string, scripture: string, settings: { style: string; length: string; audience: string; includeQuotes: boolean }, verses: string[], insights: string[]): string => {
-  return `You are an expert Christian theologian and preacher tasked with creating a comprehensive sermon.
-
-SERMON REQUIREMENTS:
-- Topic: ${topic || 'Biblical teaching'}
-- Primary Scripture: ${scripture || 'To be determined'}
-- Length: ${settings.length} minutes
-- Audience: ${settings.audience}
-- Tone: ${settings.tone}
-- Application Focus: ${settings.application_focus}
-
-BIBLICAL FOUNDATION:
-${verses.map(verse => `- ${verse}`).join('\n')}
-
-THEOLOGICAL INSIGHTS FROM CHRISTIAN AUTHORS:
-${insights.map(insight => `- ${insight}`).join('\n')}
-
-Please create a detailed sermon with:
-1. Compelling title
-2. Strong introduction with hook
-3. 3-4 main points with biblical support
-4. Practical applications for daily life
-5. Powerful conclusion with call to action
-6. Additional scripture references throughout
-
-The sermon should be thoroughly biblical, theologically sound, and practically relevant for modern believers.
-
-Format your response as JSON with these keys:
-- title: Sermon title
-- introduction: Opening section
-- mainPoints: Array of {title, content, scriptureSupport, application}
-- conclusion: Closing thoughts
-- callToAction: Specific next steps
-- additionalScriptures: Array of relevant verse references`;
-};
-
-// Call DeepSeek Direct API for sermon generation
-const callSermonGenerationAPI = async (prompt: string): Promise<string> => {
-  try {
-    const response = await fetch(`${AI_CONFIG.baseURL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${AI_CONFIG.apiKey}`,
-        "User-Agent": "Bible-Aura/1.0",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "model": AI_CONFIG.model,
-        "messages": [
-          {
-            "role": "system",
-            "content": "You are a master Christian theologian and preacher with deep knowledge of Scripture, church history, and contemporary Christian authors. Generate biblically faithful, theologically sound, and practically relevant sermons using advanced reasoning capabilities."
-          },
-          {
-            "role": "user",
-            "content": prompt
-          }
-        ],
-        "temperature": 0.8,
-        "max_tokens": 3000
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || "";
-  } catch (error) {
-    console.error('Sermon generation API error:', error);
-    throw error;
-  }
-};
-
-// Parse sermon response into structured format
-const parseSermonResponse = (aiResponse: string, topic: string, scripture: string, settings: { style: string; length: string; audience: string; includeQuotes: boolean }) => {
-  try {
-    // Try to parse JSON response
-    const parsed = JSON.parse(aiResponse);
-    
-    // Create structured sermon content
-    const mainPoints = parsed.mainPoints || [
-      { title: "Understanding the Context", content: "Biblical and historical background", duration: parseInt(settings.length) / 3 },
-      { title: "Personal Application", content: "How this applies to our lives today", duration: parseInt(settings.length) / 3 },
-      { title: "Living it Out", content: "Practical steps for implementation", duration: parseInt(settings.length) / 3 }
-    ];
-    
-    const fullContent = `
-# ${parsed.title || `Sermon on ${topic || scripture}`}
-
-## Introduction
-${parsed.introduction || `Today we explore the profound truths found in ${scripture || topic}...`}
-
-## Main Points
-
-        ${mainPoints.map((point: string, index: number) => `
-### ${index + 1}. ${point.title}
-${point.content}
-
-**Scripture Support:** ${point.scriptureSupport || 'See primary text'}
-**Application:** ${point.application || 'Consider how this applies to your daily walk with Christ'}
-`).join('')}
-
-## Conclusion
-${parsed.conclusion || 'As we conclude, let us remember the transformative power of God\'s Word in our lives...'}
-
-## Call to Action
-${parsed.callToAction || 'This week, I challenge you to apply these biblical truths in practical ways...'}
-
-## Additional Scripture References
-${(parsed.additionalScriptures || []).map((ref: string) => `- ${ref}`).join('\n')}
-`;
-
-    return {
-      title: parsed.title || `Sermon on ${topic || scripture}`,
-      content: fullContent,
-      outline: {
-        introduction: parsed.introduction || `Introduction to ${topic || scripture}`,
-        mainPoints: mainPoints,
-        conclusion: parsed.conclusion || "Summary and call to action",
-        callToAction: parsed.callToAction || "Practical next steps for the congregation"
-      },
-      scripture_references: [
-        ...(scripture ? [scripture] : []),
-        ...(parsed.additionalScriptures || [])
-      ],
-      tags: [settings.audience, settings.application_focus, "AI Generated", "Biblically Based"]
-    };
-    
-  } catch (error) {
-    console.error('Error parsing sermon response:', error);
-    
-    // Fallback to simple structure if JSON parsing fails
-    return {
-      title: `Sermon on ${topic || scripture}`,
-      content: aiResponse || `A comprehensive sermon exploring ${topic || scripture} with biblical insights and practical applications.`,
-      outline: {
-        introduction: `Introduction to ${topic || scripture}`,
-        mainPoints: [
-          { title: "Biblical Foundation", content: "Exploring the scriptural basis", duration: parseInt(settings.length) / 3 },
-          { title: "Theological Insights", content: "Learning from Christian scholars", duration: parseInt(settings.length) / 3 },
-          { title: "Practical Application", content: "Living out these truths", duration: parseInt(settings.length) / 3 }
-        ],
-        conclusion: "Summary and call to action",
-        callToAction: "Practical next steps for spiritual growth"
-      },
-      scripture_references: scripture ? [scripture] : [],
-      tags: [settings.audience, settings.application_focus, "AI Generated", "Biblically Based"]
-    };
   }
 };
 
@@ -629,7 +423,7 @@ const Sermons = () => {
     setGenerateLoading(true);
     try {
       // Enhanced AI sermon generation with biblical and theological knowledge
-      const sermon = await generateEnhancedSermon(aiPrompt, aiScripture, aiSettings);
+      const sermon = await generateSermon(aiPrompt, aiScripture, outline, aiSettings.tone, parseInt(aiSettings.length));
 
       setTitle(sermon.title);
       setRichContent(sermon.content);

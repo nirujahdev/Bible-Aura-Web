@@ -35,25 +35,11 @@ export type SupportedLanguage = 'english' | 'tamil' | 'sinhala';
 // AI CONFIGURATION
 // =============================================================================
 
-export const AI_CONFIG = {
-  // DeepSeek API Configuration
-  apiKey: "sk-6251eb1f9fb8476cb2aba1431ab3c114",
-  model: "deepseek-chat",
-  baseURL: "https://api.deepseek.com",
-  
-  // Request parameters
-  defaultParams: {
-    temperature: 0.7,
-    max_tokens: 400,
-  },
-
-  // Request headers
-  headers: {
-    "User-Agent": "Bible-Aura/1.0",
-    "Content-Type": "application/json",
-    "HTTP-Referer": "https://bible-aura.app",
-    "X-Title": "✦Bible Aura - AI Chat"
-  }
+// AI Configuration
+const AI_CONFIG = {
+  model: "ai-chat",
+  baseURL: "https://api.openai.com",
+  apiKey: process.env.VITE_AI_API_KEY || 'demo-key'
 };
 
 // =============================================================================
@@ -287,7 +273,7 @@ export async function getVerseExplanationFromAI(
   try {
     const prompt = createVerseExplanationPrompt(verse, language);
     
-    const response = await fetch(`${AI_CONFIG.baseURL}/chat/completions`, {
+    const response = await fetch(`${AI_CONFIG.baseURL}/v1/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${AI_CONFIG.apiKey}`,

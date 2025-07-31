@@ -90,61 +90,32 @@ const inspirationalQuotes = [
   }
 ];
 
-// Direct DeepSeek API function
-const callBiblicalAI = async (messages: Array<{role: 'user' | 'assistant', content: string}>, abortController?: AbortController) => {
+// Mock AI function for demo purposes
+const getAIInsight = async (prompt: string) => {
   try {
-    const controller = abortController || new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: "system",
-            content: "You are Bible Aura AI, a specialized biblical assistant. Follow these formatting guidelines strictly:\n\n1. Format ALL responses in clean, simple text using Montserrat Medium Bold font weight\n2. Structure responses in numbered points format\n3. NO markdown symbols (#, *, etc.) - use plain text only\n4. ALWAYS quote the relevant Bible verse at the beginning or end of your response\n5. Use this structure for verse explanations:\n\n1. [Quote the Bible verse with reference]\n2. [Historical context in simple points]\n3. [Theological meaning in simple points]\n4. [Practical application in simple points]\n\nFor general biblical questions:\n1. [Always include a relevant Bible verse quote]\n2. [Answer in clear, numbered points]\n3. [Provide practical application]\n\nUse simple, accessible language. Keep responses concise and focused. Always maintain reverence for scripture."
-          },
-          ...messages
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-        stream: false
-      }),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error:', response.status, errorText);
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    // Simulate AI processing time
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1500));
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid API response structure');
-    }
-
+    const insights = [
+      "Your spiritual journey shows consistent growth. Consider focusing on prayer and meditation this week.",
+      "Based on your reading patterns, exploring the Psalms might bring you comfort and guidance.",
+      "Your journal entries reflect a heart seeking wisdom. Continue to seek God's guidance in prayer.",
+      "Your Bible study habits are developing well. Try incorporating cross-references for deeper understanding."
+    ];
+    
+    const randomInsight = insights[Math.floor(Math.random() * insights.length)];
+    
     return {
-      content: data.choices[0].message.content,
-      model: data.model || 'deepseek-chat'
+      choices: [{
+        message: {
+          content: randomInsight,
+          model: 'ai-assistant'
+        }
+      }]
     };
-
-  } catch (error: any) {
-    console.error('Biblical AI Error:', error);
-    
-    if (error.name === 'AbortError') {
-      throw new Error('Request timed out. Please try again.');
-    }
-    
-    throw new Error(`Connection failed: ${error.message}`);
+  } catch (error) {
+    console.error('AI insight error:', error);
+    throw error;
   }
 };
 
@@ -274,14 +245,14 @@ export default function Dashboard() {
         content: msg.content
       }));
 
-      const aiResponse = await callBiblicalAI(conversationHistory, abortControllerRef.current);
+      const aiResponse = await getAIInsight(messageToSend);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse.content,
+        content: aiResponse.choices[0].message.content,
         timestamp: new Date().toISOString(),
-        model: aiResponse.model
+        model: aiResponse.choices[0].message.model
       };
 
       const finalMessages = [...updatedMessages, aiMessage];

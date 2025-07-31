@@ -307,20 +307,44 @@ export default function EnhancedAIChat() {
     setIsLoading(true);
 
     try {
-      // Keep only last 10 messages for context
-      const conversationHistory = updatedMessages.slice(-10).map(msg => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content
-      }));
+      // Send message to AI
+      const sendToAI = async (message: string) => {
+        try {
+          // Mock AI response for demo purposes
+          // In production, this would connect to your preferred AI service
+          await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000)); // Simulate processing time
+          
+          const responses = [
+            "This is a wonderful spiritual question. Let me share some biblical insight...",
+            "The Bible teaches us many things about this topic. Consider these verses...",
+            "From a theological perspective, this touches on several important themes...",
+            "I can help you explore this biblical concept further. Here's what Scripture says...",
+            "This is an excellent question for spiritual growth. Let me provide some guidance..."
+          ];
+          
+          const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+          
+          return {
+            choices: [{
+              message: {
+                content: randomResponse + " Please note: This is a demonstration of the AI chat feature. In the full version, you would receive comprehensive biblical insights and theological guidance."
+              }
+            }]
+          };
+        } catch (error) {
+          console.error('AI request error:', error);
+          throw error;
+        }
+      };
 
-      const aiResponse = await callBiblicalAI(conversationHistory, selectedMode, abortControllerRef.current);
+      const aiResponse = await sendToAI(messageToSend);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse.content,
+        content: aiResponse.choices[0].message.content,
         timestamp: new Date().toISOString(),
-        model: aiResponse.model
+        model: 'local-ai' // Indicate it's a local simulation
       };
 
       const finalMessages = [...updatedMessages, aiMessage];

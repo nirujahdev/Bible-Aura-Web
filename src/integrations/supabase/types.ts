@@ -161,14 +161,21 @@ export type Database = {
           entry_date: string | null
           id: string
           is_pinned: boolean | null
+          is_private: boolean | null
+          language: string | null
           metadata: Json | null
           mood: string | null
+          reading_time: number | null
+          spiritual_state: string | null
+          tags: string[] | null
           template_used: string | null
           title: string | null
           updated_at: string
           user_id: string
           verse_reference: string | null
+          verse_references: string[] | null
           verse_text: string | null
+          word_count: number | null
         }
         Insert: {
           category?: string | null
@@ -177,14 +184,21 @@ export type Database = {
           entry_date?: string | null
           id?: string
           is_pinned?: boolean | null
+          is_private?: boolean | null
+          language?: string | null
           metadata?: Json | null
           mood?: string | null
+          reading_time?: number | null
+          spiritual_state?: string | null
+          tags?: string[] | null
           template_used?: string | null
           title?: string | null
           updated_at?: string
           user_id: string
           verse_reference?: string | null
+          verse_references?: string[] | null
           verse_text?: string | null
+          word_count?: number | null
         }
         Update: {
           category?: string | null
@@ -193,14 +207,60 @@ export type Database = {
           entry_date?: string | null
           id?: string
           is_pinned?: boolean | null
+          is_private?: boolean | null
+          language?: string | null
           metadata?: Json | null
           mood?: string | null
+          reading_time?: number | null
+          spiritual_state?: string | null
+          tags?: string[] | null
           template_used?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string
           verse_reference?: string | null
+          verse_references?: string[] | null
           verse_text?: string | null
+          word_count?: number | null
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          id: string
+          user_id: string
+          verse_id: string
+          title: string | null
+          content: string
+          category: string
+          tags: string[]
+          is_favorite: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          verse_id: string
+          title?: string | null
+          content: string
+          category?: string
+          tags?: string[]
+          is_favorite?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          verse_id?: string
+          title?: string | null
+          content?: string
+          category?: string
+          tags?: string[]
+          is_favorite?: boolean
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

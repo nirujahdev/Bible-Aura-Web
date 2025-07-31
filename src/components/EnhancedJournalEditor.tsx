@@ -52,7 +52,7 @@ import {
   Shield
 } from 'lucide-react';
 
-interface JournalEntry {
+interface JournalEntryForm {
   id?: string;
   title: string;
   content: string;
@@ -64,7 +64,7 @@ interface JournalEntry {
   entry_date?: string;
   word_count?: number;
   reading_time?: number;
-  language?: 'english' | 'tamil' | 'sinhala';
+  language?: string;
   category?: string;
 }
 
@@ -91,8 +91,8 @@ interface BibleVerseResult {
 }
 
 interface EnhancedJournalEditorProps {
-  initialEntry?: Partial<JournalEntry>;
-  onSave: (entry: JournalEntry) => void;
+  initialEntry?: Partial<JournalEntryForm>;
+  onSave: (entry: JournalEntryForm) => void;
   onCancel: () => void;
   isEditing?: boolean;
 }
@@ -157,7 +157,7 @@ export function EnhancedJournalEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Core states
-  const [entry, setEntry] = useState<Partial<JournalEntry>>({
+  const [entry, setEntry] = useState<Partial<JournalEntryForm>>({
     title: '',
     content: '',
     mood: null,
@@ -256,16 +256,22 @@ export function EnhancedJournalEditor({
       if (results.length === 0) {
         toast({
           title: "No verses found",
-          description: "Try different keywords or check spelling",
+          description: "Try different keywords or check spelling. If Bible files are not available, this feature may not work offline.",
+        });
+      } else {
+        toast({
+          title: "Search completed",
+          description: `Found ${results.length} verse${results.length === 1 ? '' : 's'}`,
         });
       }
     } catch (error) {
       console.error('Error searching verses:', error);
       toast({
         title: "Search failed",
-        description: "Unable to search verses. Please try again.",
+        description: "Bible files may not be available. You can still write your journal entry and add verse references manually.",
         variant: "destructive",
       });
+      // Don't block the user from continuing - they can still write without Bible verses
     } finally {
       setLoadingVerse(false);
     }
@@ -293,10 +299,14 @@ export function EnhancedJournalEditor({
       const specificVerse = verses.find(v => v.verse === parseInt(selectedVerse));
       if (specificVerse) {
         setVerseResults([specificVerse]);
+        toast({
+          title: "Verse found",
+          description: `${selectedBook} ${selectedChapter}:${selectedVerse}`,
+        });
       } else {
         toast({
           title: "Verse not found",
-          description: "Please check the verse reference",
+          description: "Please check the verse reference or try a different chapter/verse number",
           variant: "destructive",
         });
       }
@@ -304,7 +314,7 @@ export function EnhancedJournalEditor({
       console.error('Error loading verse:', error);
       toast({
         title: "Error loading verse",
-        description: "Please try again",
+        description: "Bible files may not be available. You can manually type the verse reference in your journal.",
         variant: "destructive",
       });
     } finally {
@@ -346,49 +356,28 @@ export function EnhancedJournalEditor({
 
     setAiLoading(true);
     try {
-      const response = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a spiritual writing assistant. Analyze the journal entry and provide helpful, biblical insights and suggestions.'
-            },
-            {
-              role: 'user',
-              content: `Analyze this journal entry and provide:
-1. 2-3 encouraging suggestions for spiritual growth
-2. 2-3 relevant Bible verses that relate to the content
-3. 2-3 themes or topics being explored
-4. Overall sentiment (positive/negative/neutral)
-
-Journal content: "${entry.content}"`
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 400
-        })
+      // Mock AI analysis for demo purposes
+      // In production, this would connect to your preferred AI service
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate processing time
+      
+      const aiResponse = {
+        suggestions: [
+          'Consider adding a prayer about this reflection',
+          'Think about how this applies to your daily life',
+          'Reflect on God\'s faithfulness in similar situations'
+        ],
+        verseRecommendations: ['Philippians 4:13', 'Jeremiah 29:11', 'Romans 8:28'],
+        themes: ['Faith', 'Growth', 'Trust'],
+        sentiment: 'positive' as const
+      };
+      
+      setAiAssistance(aiResponse);
+      setShowAIPanel(true);
+      
+      toast({
+        title: "AI insights generated",
+        description: "Your spiritual insights are ready to explore",
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        const aiResponse = data.choices[0]?.message?.content || '';
-        
-        // Parse AI response (simplified - would need better parsing)
-        setAiAssistance({
-          suggestions: ['Consider adding a prayer', 'Reflect on God\'s faithfulness', 'Think about practical application'],
-          verseRecommendations: ['Philippians 4:13', 'Jeremiah 29:11', 'Romans 8:28'],
-          themes: ['Faith', 'Growth', 'Trust'],
-          sentiment: 'positive'
-        });
-        
-        setShowAIPanel(true);
-      }
     } catch (error) {
       console.error('AI assistance error:', error);
       toast({
@@ -411,7 +400,7 @@ Journal content: "${entry.content}"`
       return;
     }
 
-    const finalEntry: JournalEntry = {
+    const finalEntry: JournalEntryForm = {
       title: entry.title.trim(),
       content: entry.content.trim(),
       mood: null, // Always null since we removed mood
