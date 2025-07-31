@@ -22,6 +22,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const HowAITransformsBibleStudy = lazy(() => import("./pages/blog/HowAITransformsBibleStudy"));
 const BibleAIVsTraditionalStudy = lazy(() => import("./pages/blog/BibleAIVsTraditionalStudy"));
 const BibleStudyAIBenefits = lazy(() => import("./pages/blog/BibleStudyAIBenefits"));
+const AIBibleInsightsAccuracy = lazy(() => import("./pages/blog/AIBibleInsightsAccuracy"));
 
 const Journal = lazy(() => import("./pages/Journal"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -83,7 +84,10 @@ function AppLayout() {
     '/blog'
   ];
 
-  const isLandingPage = landingRoutes.includes(location.pathname);
+  // Check if current path is a blog post
+  const isBlogPost = location.pathname.startsWith('/blog/');
+
+  const isLandingPage = landingRoutes.includes(location.pathname) || isBlogPost;
 
   return (
     <div className="min-h-screen bg-white">
@@ -113,7 +117,7 @@ function AppLayout() {
               <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
               <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
               <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
-              <Route path="/blog/ai-bible-insights-accuracy" element={<BibleAI />} />
+              <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
               <Route path="/blog/ai-bible-chat-features" element={<BibleAI />} />
               <Route path="/blog/smart-bible-search-techniques" element={<BibleAI />} />
               <Route path="/blog/biblical-ai-assistant-guide" element={<BibleAI />} />

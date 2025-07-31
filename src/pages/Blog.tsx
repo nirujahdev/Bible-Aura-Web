@@ -6,6 +6,7 @@ import {
   TrendingUp, Search, CheckCircle, Lightbulb, Target, Brain, FileText
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { SEOBacklinks } from "@/components/SEOBacklinks";
 import { ManualContextualLinks } from "@/components/ContextualLinks";
@@ -385,76 +386,7 @@ const Blog = () => {
 
       {/* SEO Internal Links */}
       <SEOBacklinks currentPage="/blog" category="blog" />
-
-      {/* Footer */}
-      <footer className="bg-black text-white py-16">
-        <div className="w-full px-4 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-            {/* Brand Section */}
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-orange-400 mb-3">
-                ✦Bible Aura
-              </h3>
-              <p className="text-gray-400 text-base">
-                AI-Powered Biblical Insight
-              </p>
-            </div>
-            
-            {/* Menu Section */}
-            <div className="text-center md:text-left">
-              <h4 className="text-xl font-semibold text-white mb-6">Bible AI</h4>
-              <nav className="space-y-3">
-                <Link to="/bible-ai" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  Bible AI Platform
-                </Link>
-                <Link to="/ai-bible-study" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Bible Study
-                </Link>
-                <Link to="/bible-chat" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  Bible Chat
-                </Link>
-                <Link to="/digital-bible" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  Digital Bible
-                </Link>
-              </nav>
-            </div>
-            
-            {/* Blog Section */}
-            <div className="text-center md:text-left">
-              <h4 className="text-xl font-semibold text-white mb-6">Popular Articles</h4>
-              <nav className="space-y-3">
-                <Link to="/blog/how-ai-transforms-bible-study" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Bible Study Guide
-                </Link>
-                <Link to="/blog/bible-ai-vs-traditional-study" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI vs Traditional Study
-                </Link>
-                <Link to="/blog/ai-bible-insights-accuracy" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Insights Accuracy
-                </Link>
-                <Link to="/blog/ai-bible-chat-features" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Chat Features
-                </Link>
-              </nav>
-            </div>
-          </div>
-
-          {/* Bottom Section */}
-          <div className="border-t border-gray-800 mt-12 pt-8">
-            <div className="text-center text-gray-400 text-sm">
-              <span>&copy; 2024 ✦Bible Aura. All rights reserved. Bible AI Blog by </span>
-              <a 
-                href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
-              >
-                Benaiah Nicholas Nimal
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

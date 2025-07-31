@@ -7,6 +7,7 @@ import {
   Clock, Shield, Lightbulb, Heart, Search, FileText
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { SEOBacklinks, SEOBreadcrumbs } from "@/components/SEOBacklinks";
 import { ManualContextualLinks } from "@/components/ContextualLinks";
@@ -286,73 +287,8 @@ const BibleAI = () => {
         </div>
       </section>
 
-      {/* SEO Internal Links */}
       <SEOBacklinks currentPage="/bible-ai" category="ai" />
-
-      {/* Footer */}
-      <footer className="bg-black text-white py-16">
-        <div className="w-full px-4 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-            {/* Brand Section */}
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-orange-400 mb-3">
-                ✦Bible Aura
-              </h3>
-              <p className="text-gray-400 text-base">
-                AI-Powered Biblical Insight
-              </p>
-            </div>
-            
-            {/* Menu Section */}
-            <div className="text-center md:text-left">
-              <h4 className="text-xl font-semibold text-white mb-6">Bible AI Features</h4>
-              <nav className="space-y-3">
-                <Link to="/bible" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Bible Study
-                </Link>
-                <Link to="/study" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  Smart Scripture Analysis
-                </Link>
-                <Link to="/journal" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Bible Chat
-                </Link>
-                <Link to="/sermons" className="block text-gray-400 hover:text-orange-400 transition-colors duration-300">
-                  AI Sermon Assistant
-                </Link>
-              </nav>
-            </div>
-            
-            {/* Contact Section */}
-            <div className="text-center md:text-left">
-              <h4 className="text-xl font-semibold text-white mb-6">Contact</h4>
-              <div className="space-y-3">
-                <p className="text-gray-400">@bible_aura.ai</p>
-                <a 
-                  href="mailto:bibleaura.contact@gmail.com" 
-                  className="block text-gray-400 hover:text-orange-400 transition-colors duration-300"
-                >
-                  bibleaura.contact@gmail.com
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Section */}
-          <div className="border-t border-gray-800 mt-12 pt-8">
-            <div className="text-center text-gray-400 text-sm">
-              <span>&copy; 2024 ✦Bible Aura. All rights reserved. Bible AI Technology by </span>
-              <a 
-                href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-orange-400 hover:text-orange-300 transition-colors duration-300 underline"
-              >
-                Benaiah Nicholas Nimal
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
