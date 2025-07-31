@@ -114,22 +114,21 @@ const Journal = () => {
     setSaving(true);
     
     try {
-              const finalData = {
-          user_id: user.id,
-          title: entryData.title?.trim() || null,
-          content: entryData.content.trim(),
-          mood: entryData.mood,
-          spiritual_state: entryData.spiritual_state || null,
-          verse_references: entryData.verse_references || [],
-          tags: entryData.tags || [],
-          is_private: entryData.is_private ?? true,
-          entry_date: entryData.entry_date || new Date().toISOString().split('T')[0],
-          word_count: entryData.word_count || 0,
-          reading_time: entryData.reading_time || 0,
-          language: entryData.language || 'english',
-          category: entryData.category || 'personal',
-          updated_at: new Date().toISOString()
-        };
+      const finalData = {
+        user_id: user.id,
+        title: entryData.title?.trim() || null,
+        content: entryData.content.trim(),
+        mood: null, // Always null since we removed mood
+        spiritual_state: null, // Always null since we removed spiritual state
+        verse_references: entryData.verse_references || [],
+        tags: [], // Always empty since we removed tags
+        is_private: true, // Always private
+        entry_date: entryData.entry_date || new Date().toISOString().split('T')[0],
+        word_count: entryData.word_count || 0,
+        reading_time: entryData.reading_time || 0,
+        language: entryData.language || 'english',
+        updated_at: new Date().toISOString()
+      };
 
       if (isEditing && editingEntry?.id) {
         console.log('Updating entry:', editingEntry.id);
@@ -442,15 +441,15 @@ const Journal = () => {
                             <span>{formatDate(entry.created_at)}</span>
                             <span>{formatTime(entry.created_at)}</span>
                           </div>
-                          {entry.tags && entry.tags.length > 0 && (
+                          {entry.verse_references && entry.verse_references.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {entry.tags.slice(0, 2).map((tag, index) => (
-                                <span key={index} className="inline-block bg-orange-100 text-orange-700 text-xs px-1 py-0.5 rounded">
-                                  {tag}
+                              {entry.verse_references.slice(0, 2).map((verse, index) => (
+                                <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
+                                  📖 {verse.split(' ').slice(-1)[0]}
                                 </span>
                               ))}
-                              {entry.tags.length > 2 && (
-                                <span className="text-xs text-gray-400">+{entry.tags.length - 2}</span>
+                              {entry.verse_references.length > 2 && (
+                                <span className="text-xs text-gray-400">+{entry.verse_references.length - 2}</span>
                               )}
                             </div>
                           )}
@@ -518,19 +517,11 @@ const Journal = () => {
                     )}
                   </div>
 
-                  {selectedEntry.mood && (
-                    <div className="mt-2">
-                      <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                        Mood: {selectedEntry.mood}
-                      </span>
-                    </div>
-                  )}
-
-                  {selectedEntry.tags && selectedEntry.tags.length > 0 && (
+                  {selectedEntry.verse_references && selectedEntry.verse_references.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedEntry.tags.map((tag, index) => (
-                        <span key={index} className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">
-                          {tag}
+                      {selectedEntry.verse_references.map((verse, index) => (
+                        <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
+                          📖 {verse}
                         </span>
                       ))}
                     </div>

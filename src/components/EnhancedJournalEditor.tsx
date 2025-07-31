@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { loadBibleVerse } from '@/lib/ai-bible-system';
+import { searchVerses, getAllBooks, getChapterVerses, BibleVerse, BibleBook } from '@/lib/local-bible';
 import {
   Save,
   RefreshCw,
@@ -99,6 +97,55 @@ interface EnhancedJournalEditorProps {
   isEditing?: boolean;
 }
 
+// Language translations
+const translations = {
+  english: {
+    title: 'Journal Entry',
+    save: 'Save Entry',
+    cancel: 'Cancel',
+    content: 'Write your thoughts...',
+    addVerse: 'Add Bible Verse',
+    book: 'Book',
+    chapter: 'Chapter',
+    verse: 'Verse',
+    searchVerse: 'Search Verses',
+    insertVerse: 'Insert Verse',
+    wordCount: 'Word Count',
+    readingTime: 'Reading Time',
+    aiInsights: 'AI Insights'
+  },
+  tamil: {
+    title: 'பத்திரிகை பதிவு',
+    save: 'பதிவு சேமி',
+    cancel: 'ரத்து செய்',
+    content: 'உங்கள் எண்ணங்களை எழுதுங்கள்...',
+    addVerse: 'வேதபகுதி சேர்',
+    book: 'புத்தகம்',
+    chapter: 'அத்தியாயம்',
+    verse: 'வசனம்',
+    searchVerse: 'வசனங்களை தேடு',
+    insertVerse: 'வசனம் சேர்',
+    wordCount: 'சொல் எண்ணிக்கை',
+    readingTime: 'வாசிப்பு நேரம்',
+    aiInsights: 'AI நுண்ணறிவு'
+  },
+  sinhala: {
+    title: 'දිනපොත ප්‍රවේශය',
+    save: 'ඇතුළත් කිරීම සුරකින්න',
+    cancel: 'අවලංගු කරන්න',
+    content: 'ඔබේ සිතිවිලි ලියන්න...',
+    addVerse: 'බයිබල් පදය එක් කරන්න',
+    book: 'පොත',
+    chapter: 'පරිච්ඡේදය',
+    verse: 'පදය',
+    searchVerse: 'පදය සොයන්න',
+    insertVerse: 'පදය ඇතුළු කරන්න',
+    wordCount: 'වචන ගණන',
+    readingTime: 'කියවීමේ කාලය',
+    aiInsights: 'AI තීක්ෂණතා'
+  }
+};
+
 export function EnhancedJournalEditor({ 
   initialEntry, 
   onSave, 
@@ -108,9 +155,8 @@ export function EnhancedJournalEditor({
   const { user } = useAuth();
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Entry state
+  // Core states
   const [entry, setEntry] = useState<Partial<JournalEntry>>({
     title: '',
     content: '',
@@ -121,28 +167,30 @@ export function EnhancedJournalEditor({
     is_private: true,
     entry_date: new Date().toISOString().split('T')[0],
     language: 'english',
+    category: 'personal',
     ...initialEntry
   });
 
-  // Editor settings
-  const [fontSize, setFontSize] = useState(14);
-  const [darkMode, setDarkMode] = useState(false);
-  const [showStats, setShowStats] = useState(true);
-  const [autoSave, setAutoSave] = useState(true);
-  const [focusMode, setFocusMode] = useState(false);
-  const [voiceRecording, setVoiceRecording] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<'english' | 'tamil' | 'sinhala'>('english');
+  
+  // Writing stats
+  const [stats, setStats] = useState<WritingStats>({
+    wordCount: 0,
+    charCount: 0,
+    readingTime: 0,
+    paragraphs: 0
+  });
 
-  // Bible verse insertion
+  // Bible verse functionality
   const [showVerseDialog, setShowVerseDialog] = useState(false);
-  const [verseSearch, setVerseSearch] = useState('');
+  const [verseSearchQuery, setVerseSearchQuery] = useState('');
+  const [verseResults, setVerseResults] = useState<BibleVerse[]>([]);
+  const [loadingVerse, setLoadingVerse] = useState(false);
+  const [bibleBooks, setBibleBooks] = useState<BibleBook[]>([]);
   const [selectedBook, setSelectedBook] = useState('');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedVerse, setSelectedVerse] = useState('');
-  const [verseResults, setVerseResults] = useState<BibleVerseResult[]>([]);
-  const [loadingVerse, setLoadingVerse] = useState(false);
-
-  // Multi-language support
-  const [currentLanguage, setCurrentLanguage] = useState<'english' | 'tamil' | 'sinhala'>('english');
 
   // AI assistance
   const [aiAssistance, setAiAssistance] = useState<AIAssistance>({
@@ -154,243 +202,150 @@ export function EnhancedJournalEditor({
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Writing stats
-  const [stats, setStats] = useState<WritingStats>({
-    wordCount: 0,
-    charCount: 0,
-    readingTime: 0,
-    paragraphs: 0
-  });
-
-  // UI state
-  const [saving, setSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [currentTag, setCurrentTag] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
-
-  // Predefined data
-  const moods = [
-    { value: "joyful", label: "😊 Joyful", color: "bg-yellow-100 text-yellow-800" },
-    { value: "peaceful", label: "😌 Peaceful", color: "bg-blue-100 text-blue-800" },
-    { value: "grateful", label: "🙏 Grateful", color: "bg-green-100 text-green-800" },
-    { value: "contemplative", label: "🤔 Contemplative", color: "bg-purple-100 text-purple-800" },
-    { value: "challenged", label: "😰 Challenged", color: "bg-orange-100 text-orange-800" },
-    { value: "hopeful", label: "✨ Hopeful", color: "bg-pink-100 text-pink-800" },
-    { value: "struggling", label: "😔 Struggling", color: "bg-gray-100 text-gray-800" },
-    { value: "blessed", label: "🙌 Blessed", color: "bg-indigo-100 text-indigo-800" }
-  ];
-
-  const spiritualStates = [
-    "Growing closer to God", "Seeking guidance", "Feeling blessed", "In prayer",
-    "Learning patience", "Finding peace", "Trusting God's plan", "Feeling distant",
-    "Questioning", "Experiencing breakthrough", "Walking in faith", "Serving others"
-  ];
-
-  // Language translations
-  const translations = {
-    english: {
-      newEntry: 'New Journal Entry',
-      editEntry: 'Edit Journal Entry',
-      title: 'Title',
-      content: 'Content',
-      titlePlaceholder: 'Enter your journal title...',
-      contentPlaceholder: 'Write your thoughts, prayers, and reflections here...',
-      save: 'Save Entry',
-      cancel: 'Cancel',
-      addVerse: 'Add Bible Verse',
-      bold: 'Bold',
-      italic: 'Italic',
-      bulletList: 'Bullet List',
-      private: 'Private Entry',
-      mood: 'Mood',
-      spiritualState: 'Spiritual State',
-      tags: 'Tags',
-      search: 'Search...',
-      book: 'Book',
-      chapter: 'Chapter',
-      verse: 'Verse',
-      insertVerse: 'Insert Verse',
-      encrypted: 'All entries are encrypted and stored securely'
-    },
-    tamil: {
-      newEntry: 'புதிய நாட்குறிப்பு',
-      editEntry: 'நாட்குறிப்பை திருத்து',
-      title: 'தலைப்பு',
-      content: 'உள்ளடக்கம்',
-      titlePlaceholder: 'உங்கள் நாட்குறிப்பு தலைப்பை உள்ளிடவும்...',
-      contentPlaceholder: 'உங்கள் எண்ணங்கள், பிரார்த்தனைகள் மற்றும் சிந்தனைகளை எழுதுங்கள்...',
-      save: 'சேமிக்க',
-      cancel: 'ரத்து செய்',
-      addVerse: 'வேத வசனம் சேர்க்க',
-      bold: 'தடிமன்',
-      italic: 'சாய்வு',
-      bulletList: 'புள்ளி பட்டியல்',
-      private: 'தனிப்பட்ட',
-      mood: 'மனநிலை',
-      spiritualState: 'ஆன்மீக நிலை',
-      tags: 'குறிச்சொற்கள்',
-      search: 'தேடு...',
-      book: 'புத்தகம்',
-      chapter: 'அத்தியாயம்',
-      verse: 'வசனம்',
-      insertVerse: 'வசனம் சேர்க்க',
-      encrypted: 'அனைத்து நாட்குறிப்புகளும் குறியாக்கம் செய்யப்பட்டு பாதுகாப்பாக சேமிக்கப்படுகின்றன'
-    },
-    sinhala: {
-      newEntry: 'නව දිනපොත ඇතුළත් කිරීම',
-      editEntry: 'දිනපොත සංස්කරණය',
-      title: 'මාතෘකාව',
-      content: 'අන්තර්ගතය',
-      titlePlaceholder: 'ඔබේ දිනපොත මාතෘකාව ඇතුළත් කරන්න...',
-      contentPlaceholder: 'ඔබේ සිතුවිලි, යාච්ඤා සහ චින්තන ලියන්න...',
-      save: 'සුරකින්න',
-      cancel: 'අවලංගු කරන්න',
-      addVerse: 'බයිබල් පදය එක් කරන්න',
-      bold: 'තදකර',
-      italic: 'ඇලකර',
-      bulletList: 'බුලට් ලැයිස්තුව',
-      private: 'පෞද්ගලික',
-      mood: 'මනෝභාවය',
-      spiritualState: 'අධ්‍යාත්මික තත්වය',
-      tags: 'ටැග්',
-      search: 'සොයන්න...',
-      book: 'පොත',
-      chapter: 'පරිච්ඡේදය',
-      verse: 'පදය',
-      insertVerse: 'පදය ඇතුළත් කරන්න',
-      encrypted: 'සියලුම ඇතුළත් කිරීම් සංකේතනය කර ආරක්ෂිතව ගබඩා කර ඇත'
-    }
-  };
-
   const t = translations[currentLanguage];
 
-  // Bible books for verse insertion
-  const bibleBooks = [
-    'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth',
-    '1 Samuel', '2 Samuel', '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles', 'Ezra',
-    'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Songs',
-    'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel', 'Amos',
-    'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah',
-    'Malachi', 'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans', '1 Corinthians',
-    '2 Corinthians', 'Galatians', 'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
-    '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews', 'James',
-    '1 Peter', '2 Peter', '1 John', '2 John', '3 John', 'Jude', 'Revelation'
-  ];
-
-  // URL parameter handling for daily verse integration
+  // Load Bible books on mount
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const isDailyVerse = urlParams.get('daily_verse');
-    const preContent = urlParams.get('content');
-    const theme = urlParams.get('theme');
-
-    if (isDailyVerse && preContent) {
-      setEntry(prev => ({
-        ...prev,
-        content: decodeURIComponent(preContent),
-        tags: theme ? [theme] : []
-      }));
-    }
+    const loadBibleBooks = async () => {
+      try {
+        const books = await getAllBooks();
+        setBibleBooks(books);
+      } catch (error) {
+        console.error('Error loading Bible books:', error);
+      }
+    };
+    loadBibleBooks();
   }, []);
-
-  // Initialize language from entry or browser
-  useEffect(() => {
-    if (initialEntry?.language) {
-      setCurrentLanguage(initialEntry.language);
-    }
-  }, [initialEntry]);
 
   // Calculate writing stats
   useEffect(() => {
     const content = entry.content || '';
-    const words = content.trim().split(/\s+/).filter(word => word.length > 0).length;
-    const chars = content.length;
-    const paragraphs = content.split('\n\n').filter(p => p.trim().length > 0).length;
-    const readingTime = Math.ceil(words / 200); // 200 words per minute
+    const words = content.trim().split(/\s+/).filter(word => word.length > 0);
+    const readingTimeMinutes = Math.ceil(words.length / 200); // Average reading speed
 
     setStats({
-      wordCount: words,
-      charCount: chars,
-      readingTime,
-      paragraphs
+      wordCount: words.length,
+      charCount: content.length,
+      readingTime: readingTimeMinutes,
+      paragraphs: content.split('\n\n').filter(p => p.trim().length > 0).length
     });
   }, [entry.content]);
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (autoSave && entry.content && entry.content.length > 10) {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-      
-      autoSaveTimeoutRef.current = setTimeout(() => {
-        handleAutoSave();
-      }, 3000);
+  // Bible verse search by keyword
+  const searchBibleVersesByKeyword = async () => {
+    if (!verseSearchQuery.trim()) {
+      toast({
+        title: "Search query required",
+        description: "Please enter a keyword to search for verses",
+        variant: "destructive",
+      });
+      return;
     }
 
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, [entry.content, autoSave]);
-
-  const handleAutoSave = async () => {
-    if (!user || !entry.content) return;
-    
+    setLoadingVerse(true);
     try {
-      setSaving(true);
-      // Auto-save logic would go here
-      setLastSaved(new Date());
+      const results = await searchVerses(
+        verseSearchQuery,
+        currentLanguage === 'tamil' ? 'tamil' : 'english',
+        selectedBook || undefined
+      );
+      
+      // Limit results to first 20 for performance
+      setVerseResults(results.slice(0, 20));
+      
+      if (results.length === 0) {
+        toast({
+          title: "No verses found",
+          description: "Try different keywords or check spelling",
+        });
+      }
     } catch (error) {
-      console.error('Auto-save failed:', error);
+      console.error('Error searching verses:', error);
+      toast({
+        title: "Search failed",
+        description: "Unable to search verses. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setSaving(false);
+      setLoadingVerse(false);
     }
   };
 
-  const insertText = (text: string) => {
-    if (!textareaRef.current) return;
-    
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentContent = entry.content || '';
-    
-    const newContent = currentContent.substring(0, start) + text + currentContent.substring(end);
-    
-    setEntry(prev => ({ ...prev, content: newContent }));
-    
-    // Focus and set cursor position
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + text.length, start + text.length);
-    }, 0);
+  // Search specific verse by reference
+  const searchSpecificVerse = async () => {
+    if (!selectedBook || !selectedChapter || !selectedVerse) {
+      toast({
+        title: "Complete reference required",
+        description: "Please select book, chapter, and verse",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingVerse(true);
+    try {
+      const verses = await getChapterVerses(
+        selectedBook,
+        parseInt(selectedChapter),
+        currentLanguage === 'tamil' ? 'tamil' : 'english'
+      );
+      
+      const specificVerse = verses.find(v => v.verse === parseInt(selectedVerse));
+      if (specificVerse) {
+        setVerseResults([specificVerse]);
+      } else {
+        toast({
+          title: "Verse not found",
+          description: "Please check the verse reference",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error loading verse:', error);
+      toast({
+        title: "Error loading verse",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingVerse(false);
+    }
   };
 
-  const addTag = () => {
-    if (!currentTag.trim() || entry.tags?.includes(currentTag.trim())) return;
+  // Insert Bible verse into content
+  const insertBibleVerse = (verse: BibleVerse) => {
+    const verseReference = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+    const verseText = `\n\n"${verse.text}" - ${verseReference}\n\n`;
     
     setEntry(prev => ({
       ...prev,
-      tags: [...(prev.tags || []), currentTag.trim()]
+      content: (prev.content || '') + verseText,
+      verse_references: [...(prev.verse_references || []), verseReference]
     }));
-    setCurrentTag('');
+
+    setShowVerseDialog(false);
+    setVerseResults([]);
+    setVerseSearchQuery('');
+    
+    toast({
+      title: "Verse added",
+      description: `${verseReference} has been added to your journal`,
+    });
   };
 
-  const removeTag = (tagToRemove: string) => {
-    setEntry(prev => ({
-      ...prev,
-      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
-    }));
-  };
-
+  // Get AI assistance
   const getAIAssistance = async () => {
-    if (!entry.content || aiLoading) return;
-    
+    if (!entry.content?.trim()) {
+      toast({
+        title: "No content to analyze",
+        description: "Please write some content first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setAiLoading(true);
     try {
-      // Generate AI suggestions based on content
       const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
@@ -459,11 +414,11 @@ Journal content: "${entry.content}"`
     const finalEntry: JournalEntry = {
       title: entry.title.trim(),
       content: entry.content.trim(),
-      mood: entry.mood,
-      spiritual_state: entry.spiritual_state || null,
+      mood: null, // Always null since we removed mood
+      spiritual_state: null, // Always null since we removed spiritual state
       verse_references: entry.verse_references || [],
-      tags: entry.tags || [],
-      is_private: entry.is_private ?? true,
+      tags: [], // Always empty since we removed tags
+      is_private: true, // Always private
       entry_date: entry.entry_date || new Date().toISOString().split('T')[0],
       word_count: stats.wordCount,
       reading_time: stats.readingTime,
@@ -473,8 +428,6 @@ Journal content: "${entry.content}"`
 
     onSave(finalEntry);
   };
-
-  const selectedMood = moods.find(m => m.value === entry.mood);
 
   // Text formatting functions
   const formatText = (format: 'bold' | 'italic' | 'bullet') => {
@@ -504,250 +457,106 @@ Journal content: "${entry.content}"`
     const newContent = currentContent.substring(0, start) + formattedText + currentContent.substring(end);
     setEntry(prev => ({ ...prev, content: newContent }));
     
-    // Focus and set cursor position
+    // Reset cursor position
     setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + formattedText.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      if (textareaRef.current) {
+        const newCursorPos = start + formattedText.length;
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+      }
     }, 0);
   };
 
-  // Bible verse search and insertion
-  const searchBibleVerse = async () => {
-    if (!selectedBook || !selectedChapter || !selectedVerse) {
-      toast({
-        title: "Incomplete reference",
-        description: "Please select book, chapter, and verse",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoadingVerse(true);
-    try {
-      const verseRef = {
-        book: selectedBook,
-        chapter: parseInt(selectedChapter),
-        verse: parseInt(selectedVerse)
-      };
-
-      const verse = await loadBibleVerse(verseRef, currentLanguage);
-      
-      if (verse) {
-        setVerseResults([verse]);
-      } else {
-        toast({
-          title: "Verse not found",
-          description: "Could not find the specified verse",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error searching verse:', error);
-      toast({
-        title: "Search failed",
-        description: "Please try again",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingVerse(false);
-    }
-  };
-
-  const insertBibleVerse = (verse: BibleVerseResult) => {
-    const verseText = `\n\n"${verse.text}"\n- ${verse.book} ${verse.chapter}:${verse.verse}\n\n`;
-    const currentContent = entry.content || '';
-    const newContent = currentContent + verseText;
-    
-    setEntry(prev => ({ 
-      ...prev, 
-      content: newContent,
-      verse_references: [...(prev.verse_references || []), `${verse.book} ${verse.chapter}:${verse.verse}`]
-    }));
-    
-    setShowVerseDialog(false);
-    setVerseResults([]);
-    setSelectedBook('');
-    setSelectedChapter('');
-    setSelectedVerse('');
-    
-    toast({
-      title: "Verse added",
-      description: "Bible verse has been inserted into your journal",
-    });
-  };
-
-  const quickActions = [
-    { icon: Quote, label: t.addVerse, action: () => setShowVerseDialog(true) },
-    { icon: Bold, label: t.bold, action: () => formatText('bold') },
-    { icon: Italic, label: t.italic, action: () => formatText('italic') },
-    { icon: List, label: t.bulletList, action: () => formatText('bullet') },
-    { icon: Heart, label: "Gratitude", action: () => insertText('🙏 I am grateful for: ') },
-    { icon: Target, label: "Prayer Request", action: () => insertText('🙏 Prayer: ') },
-    { icon: Lightbulb, label: "Insight", action: () => insertText('💡 Insight: ') },
-    { icon: BookOpen, label: "Scripture Study", action: () => insertText('📖 Scripture Study: ') }
-  ];
-
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50'
-    } ${focusMode ? 'bg-gray-100' : ''}`}>
-      <div className="w-full p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Editor */}
-          <div className="lg:col-span-3">
-            <Card className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} shadow-lg`}>
-              <CardHeader className="border-b">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <PenTool className="h-5 w-5" />
-                    {isEditing ? t.editEntry : t.newEntry}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {/* Language Selector */}
-                    <Select
-                      value={currentLanguage}
-                      onValueChange={(value: 'english' | 'tamil' | 'sinhala') => {
-                        setCurrentLanguage(value);
-                        setEntry(prev => ({ ...prev, language: value }));
-                      }}
-                    >
-                      <SelectTrigger className="w-32">
-                        <Globe className="h-4 w-4 mr-1" />
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="tamil">தமிழ்</SelectItem>
-                        <SelectItem value="sinhala">සිංහල</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPreview(!showPreview)}
-                    >
-                      {showPreview ? <Edit3 className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                    {autoSave && lastSaved && (
-                      <span className="text-xs text-green-600">
-                        Saved {lastSaved.toLocaleTimeString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Security Badge */}
-                <div className="flex items-center gap-2 text-xs text-green-600 mt-2">
-                  <Shield className="h-3 w-3" />
-                  <span>{t.encrypted}</span>
-                </div>
-              </CardHeader>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <FileText className="h-8 w-8 text-orange-600" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                {isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
+              </h1>
+              <p className="text-gray-600">Express your thoughts and spiritual reflections</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={currentLanguage} onValueChange={(value: 'english' | 'tamil' | 'sinhala') => setCurrentLanguage(value)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="english">🇺🇸 English</SelectItem>
+                <SelectItem value="tamil">🇮🇳 Tamil</SelectItem>
+                <SelectItem value="sinhala">🇱🇰 Sinhala</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content Area */}
+          <div className="lg:col-span-3">
+            <Card className="h-full">
               <CardContent className="p-6">
-                {/* Title Input */}
+                {/* Title */}
                 <div className="mb-4">
                   <Input
-                    placeholder={t.titlePlaceholder}
+                    placeholder="Entry title..."
                     value={entry.title || ''}
                     onChange={(e) => setEntry(prev => ({ ...prev, title: e.target.value }))}
-                    className={`text-lg font-semibold ${darkMode ? 'bg-gray-700 border-gray-600' : ''}`}
-                    style={{ fontSize: `${fontSize + 2}px` }}
+                    className="text-lg font-medium border-0 px-0 focus-visible:ring-0 placeholder:text-gray-400"
                   />
                 </div>
 
-                {/* Quick Actions */}
-                <div className="mb-4 flex flex-wrap gap-2">
-                  {quickActions.map((action, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      onClick={action.action}
-                      className="text-xs"
-                    >
-                      <action.icon className="h-3 w-3 mr-1" />
-                      {action.label}
-                    </Button>
-                  ))}
+                {/* Formatting Toolbar */}
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => formatText('bold')}
+                    className="h-8"
+                  >
+                    <Bold className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => formatText('italic')}
+                    className="h-8"
+                  >
+                    <Italic className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => formatText('bullet')}
+                    className="h-8"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Separator orientation="vertical" className="h-6" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowVerseDialog(true)}
+                    className="h-8 text-blue-600 hover:text-blue-700"
+                  >
+                    <Quote className="h-4 w-4 mr-1" />
+                    Add Bible Verse
+                  </Button>
                 </div>
 
                 {/* Content Editor */}
                 <div className="mb-4">
-                  {showPreview ? (
-                    <div 
-                      className={`min-h-[400px] p-4 border rounded-lg ${
-                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50'
-                      }`}
-                      style={{ fontSize: `${fontSize}px` }}
-                    >
-                      {entry.content ? (
-                        <div className="whitespace-pre-wrap">
-                          {entry.content.split('\n').map((line, index) => {
-                            // Simple markdown rendering
-                            let processedLine = line
-                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                              .replace(/\*(.*?)\*/g, '<em>$1</em>');
-                            
-                            if (line.startsWith('• ')) {
-                              return (
-                                <div key={index} className="flex items-start gap-2 mb-1">
-                                  <span className="mt-1.5 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
-                                  <span dangerouslySetInnerHTML={{ __html: processedLine.substring(2) }} />
-                                </div>
-                              );
-                            }
-                            
-                            return (
-                              <div key={index} dangerouslySetInnerHTML={{ __html: processedLine || '<br/>' }} />
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="text-gray-500 italic">Start writing to see preview...</div>
-                      )}
-                    </div>
-                  ) : (
-                    <Textarea
-                      ref={textareaRef}
-                      placeholder={t.contentPlaceholder}
-                      value={entry.content || ''}
-                      onChange={(e) => setEntry(prev => ({ ...prev, content: e.target.value }))}
-                      className={`min-h-[400px] resize-none ${
-                        darkMode ? 'bg-gray-700 border-gray-600' : ''
-                      } ${focusMode ? 'border-primary' : ''}`}
-                      style={{ fontSize: `${fontSize}px` }}
-                    />
-                  )}
-                </div>
-
-                {/* Tags */}
-                <div className="mb-4">
-                  <Label className="text-sm font-medium mb-2 block">{t.tags}</Label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {entry.tags?.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {tag}
-                        <X
-                          className="h-3 w-3 cursor-pointer hover:text-red-500"
-                          onClick={() => removeTag(tag)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add tag..."
-                      value={currentTag}
-                      onChange={(e) => setCurrentTag(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                      className="flex-1"
-                    />
-                    <Button onClick={addTag} size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Textarea
+                    ref={textareaRef}
+                    placeholder={t.content}
+                    value={entry.content || ''}
+                    onChange={(e) => setEntry(prev => ({ ...prev, content: e.target.value }))}
+                    className="min-h-[400px] border-0 px-0 resize-none focus-visible:ring-0 placeholder:text-gray-400 text-base leading-relaxed"
+                  />
                 </div>
 
                 {/* Action Buttons */}
@@ -783,40 +592,38 @@ Journal content: "${entry.content}"`
             </Card>
           </div>
 
-          {/* Sidebar */}
+          {/* Right Sidebar */}
           <div className="lg:col-span-1 space-y-4">
             {/* Writing Stats */}
-            {showStats && (
-              <Card className={darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Writing Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span>Words:</span>
-                    <span className="font-medium">{stats.wordCount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Characters:</span>
-                    <span className="font-medium">{stats.charCount}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Reading time:</span>
-                    <span className="font-medium">{stats.readingTime} min</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Paragraphs:</span>
-                    <span className="font-medium">{stats.paragraphs}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Writing Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Words:</span>
+                  <span className="font-medium">{stats.wordCount}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Characters:</span>
+                  <span className="font-medium">{stats.charCount}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Reading time:</span>
+                  <span className="font-medium">{stats.readingTime} min</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Paragraphs:</span>
+                  <span className="font-medium">{stats.paragraphs}</span>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Entry Details */}
-            <Card className={darkMode ? 'bg-gray-800 border-gray-700' : ''}>
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">Entry Details</CardTitle>
               </CardHeader>
@@ -831,110 +638,12 @@ Journal content: "${entry.content}"`
                     className="mt-1"
                   />
                 </div>
-
-                {/* Mood */}
-                <div>
-                  <Label className="text-sm">{t.mood}</Label>
-                  <Select
-                    value={entry.mood || ''}
-                    onValueChange={(value) => setEntry(prev => ({ ...prev, mood: value }))}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select mood..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {moods.map((mood) => (
-                        <SelectItem key={mood.value} value={mood.value}>
-                          {mood.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedMood && (
-                    <Badge className={`mt-2 ${selectedMood.color}`}>
-                      {selectedMood.label}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Spiritual State */}
-                <div>
-                  <Label className="text-sm">{t.spiritualState}</Label>
-                  <Select
-                    value={entry.spiritual_state || ''}
-                    onValueChange={(value) => setEntry(prev => ({ ...prev, spiritual_state: value }))}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select state..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {spiritualStates.map((state) => (
-                        <SelectItem key={state} value={state}>
-                          {state}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Privacy */}
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">{t.private}</Label>
-                  <Switch
-                    checked={entry.is_private ?? true}
-                    onCheckedChange={(checked) => setEntry(prev => ({ ...prev, is_private: checked }))}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Editor Settings */}
-            <Card className={darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Editor Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Font Size */}
-                <div>
-                  <Label className="text-sm mb-2 block">Font Size: {fontSize}px</Label>
-                  <Slider
-                    value={[fontSize]}
-                    onValueChange={(value) => setFontSize(value[0])}
-                    min={12}
-                    max={20}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Settings Toggles */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Dark Mode</Label>
-                    <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Show Stats</Label>
-                    <Switch checked={showStats} onCheckedChange={setShowStats} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Auto Save</Label>
-                    <Switch checked={autoSave} onCheckedChange={setAutoSave} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">Focus Mode</Label>
-                    <Switch checked={focusMode} onCheckedChange={setFocusMode} />
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
             {/* AI Assistance Panel */}
             {showAIPanel && (
-              <Card className={`border-blue-200 ${darkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
+              <Card className="border-blue-200 bg-blue-50">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-blue-600" />
@@ -969,7 +678,7 @@ Journal content: "${entry.content}"`
 
       {/* Bible Verse Dialog */}
       <Dialog open={showVerseDialog} onOpenChange={setShowVerseDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
@@ -977,68 +686,117 @@ Journal content: "${entry.content}"`
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label className="text-sm">{t.book}</Label>
-                <Select value={selectedBook} onValueChange={setSelectedBook}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select book..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {bibleBooks.map((book) => (
-                      <SelectItem key={book} value={book}>
-                        {book}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <Tabs defaultValue="search" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="search">Search by Keyword</TabsTrigger>
+              <TabsTrigger value="reference">Find by Reference</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="search" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Search for verses by keyword (e.g., 'love', 'faith', 'hope')"
+                    value={verseSearchQuery}
+                    onChange={(e) => setVerseSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && searchBibleVersesByKeyword()}
+                    className="flex-1"
+                  />
+                  <Select value={selectedBook} onValueChange={setSelectedBook}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Filter by book (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Books</SelectItem>
+                      {bibleBooks.map((book) => (
+                        <SelectItem key={book.id} value={book.name}>
+                          {book.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button 
+                  onClick={searchBibleVersesByKeyword} 
+                  disabled={loadingVerse || !verseSearchQuery.trim()}
+                  className="w-full"
+                >
+                  {loadingVerse ? (
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4 mr-2" />
+                  )}
+                  Search Verses
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="reference" className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm">{t.book}</Label>
+                  <Select value={selectedBook} onValueChange={setSelectedBook}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select book..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bibleBooks.map((book) => (
+                        <SelectItem key={book.id} value={book.name}>
+                          {book.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-sm">{t.chapter}</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={selectedChapter}
+                    onChange={(e) => setSelectedChapter(e.target.value)}
+                    placeholder="1"
+                  />
+                </div>
+                
+                <div>
+                  <Label className="text-sm">{t.verse}</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={selectedVerse}
+                    onChange={(e) => setSelectedVerse(e.target.value)}
+                    placeholder="1"
+                  />
+                </div>
               </div>
               
-              <div>
-                <Label className="text-sm">{t.chapter}</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={selectedChapter}
-                  onChange={(e) => setSelectedChapter(e.target.value)}
-                  placeholder="1"
-                />
-              </div>
-              
-              <div>
-                <Label className="text-sm">{t.verse}</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={selectedVerse}
-                  onChange={(e) => setSelectedVerse(e.target.value)}
-                  placeholder="1"
-                />
-              </div>
-            </div>
-            
-            <Button 
-              onClick={searchBibleVerse} 
-              disabled={loadingVerse || !selectedBook || !selectedChapter || !selectedVerse}
-              className="w-full"
-            >
-              {loadingVerse ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4 mr-2" />
-              )}
-              Search Verse
-            </Button>
-            
-            {verseResults.length > 0 && (
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Search Results:</Label>
+              <Button 
+                onClick={searchSpecificVerse} 
+                disabled={loadingVerse || !selectedBook || !selectedChapter || !selectedVerse}
+                className="w-full"
+              >
+                {loadingVerse ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4 mr-2" />
+                )}
+                Find Verse
+              </Button>
+            </TabsContent>
+          </Tabs>
+          
+          {verseResults.length > 0 && (
+            <div className="space-y-3 mt-6">
+              <Label className="text-sm font-medium">Search Results:</Label>
+              <div className="max-h-96 overflow-y-auto space-y-3">
                 {verseResults.map((verse, index) => (
                   <Card key={index} className="p-4">
                     <div className="space-y-2">
-                      <div className="font-medium text-sm">
-                        {verse.book} {verse.chapter}:{verse.verse}
+                      <div className="font-medium text-sm text-blue-600">
+                        {verse.book_name} {verse.chapter}:{verse.verse}
                       </div>
                       <div className="text-sm text-gray-700 leading-relaxed">
                         "{verse.text}"
@@ -1055,8 +813,8 @@ Journal content: "${entry.content}"`
                   </Card>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
