@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { 
   Eye, 
   EyeOff, 
@@ -26,6 +27,9 @@ import {
 } from 'lucide-react';
 
 export default function Auth() {
+  // SEO optimization
+  useSEO(SEO_CONFIG.AUTH);
+  
   const { user, signIn, signInWithMagicLink, signInWithGoogle, signUp, loading } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);

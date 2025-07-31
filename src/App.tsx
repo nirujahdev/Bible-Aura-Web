@@ -41,7 +41,7 @@ const SermonWriter = lazy(() => import("./pages/SermonWriter"));
 const Songs = lazy(() => import("./pages/Songs"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Pricing = lazy(() => import("./pages/Pricing"));
-const Careers = lazy(() => import("./pages/Careers"));
+const Features = lazy(() => import("./pages/Features"));
 
 // Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -75,7 +75,7 @@ function AppLayout() {
     '/privacy',
     '/pricing',
     '/funding',
-    '/careers',
+    '/features',
     '/bible-ai',
     '/ai-bible-study',
     '/bible-chat',
@@ -103,7 +103,7 @@ function AppLayout() {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/funding" element={<Navigate to="/pricing" replace />} />
-              <Route path="/careers" element={<Careers />} />
+              <Route path="/features" element={<Features />} />
               
               {/* SEO-Optimized Landing Pages */}
               <Route path="/bible-ai" element={<BibleAI />} />

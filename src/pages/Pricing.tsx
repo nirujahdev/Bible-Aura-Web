@@ -6,8 +6,12 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { useState } from "react";
+import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const Funding = () => {
+  // SEO optimization
+  useSEO(SEO_CONFIG.PRICING);
+  
   const [selectedPlan, setSelectedPlan] = useState("pro");
 
   // Pricing Plans
@@ -441,49 +445,6 @@ const Funding = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Financial Assistance */}
-        <div className="mb-16">
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-            <CardContent className="p-8 text-center">
-              <Heart className="h-12 w-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">💝 Financial Assistance Available</h3>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                If cost is a barrier to your Bible study journey, please contact us about our scholarship program. 
-                No one should be prevented from growing in God's Word due to financial constraints.
-              </p>
-              <Button asChild variant="outline" className="border-green-500 text-green-700 hover:bg-green-50">
-                <Link to="/contact">Request Scholarship</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-
-
-        {/* Final Call to Action */}
-        <div className="text-center">
-          <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-            <CardContent className="p-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Begin Your Partnership</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-                Join thousands worldwide in supporting accessible Bible study. 
-                Your partnership enables deep spiritual growth for believers everywhere.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-3">
-                  <Heart className="mr-2 h-5 w-5" />
-                  Support This Ministry
-                </Button>
-                <Button size="lg" variant="outline" className="border-orange-200 hover:bg-orange-50" asChild>
-                  <Link to="/auth">
-                    Start Free Trial
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

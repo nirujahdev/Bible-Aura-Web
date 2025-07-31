@@ -125,10 +125,40 @@ export const useSEO = ({
 // SEO configurations for all pages
 export const SEO_CONFIG = {
   HOME: {
-    title: "✦ Bible Aura • AI-Powered Biblical Insight & Digital Bible Study Platform",
-    description: "Experience divine biblical wisdom through AI-powered insights, spiritual guidance, and sacred study tools. The ultimate Bible AI companion for Bible study, journal, and spiritual growth. Free AI Bible chat with personalized insights.",
-    keywords: "Bible AI, AI Bible study, Bible chat, digital Bible, Bible journal, Bible verse analysis, AI biblical insights, Bible AI assistant, Christian AI, Bible study tools, biblical AI companion, scripture AI, Bible chatbot",
+    title: "Bible Aura | AI-Powered Biblical Insights",
+    description: "Understand Bible verses instantly with AI. Bible Aura explains Scripture with history, context, and theology—built for daily Bible study.",
+    keywords: "AI Bible verse explanation, Bible AI, AI Bible study, Bible chat, digital Bible, Bible journal, Bible verse analysis, AI biblical insights, Bible AI assistant, Christian AI, Bible study tools, biblical AI companion, scripture AI, Bible chatbot",
     canonicalUrl: "https://bibleaura.xyz/"
+  },
+  ABOUT: {
+    title: "About Bible Aura | Why We Built an AI Bible Assistant",
+    description: "Discover the story behind Bible Aura—how faith and technology came together to build an AI tool for deeper Bible understanding.",
+    keywords: "about Bible Aura, Bible AI story, Christian technology, AI Bible development, faith and technology, Bible app creators",
+    canonicalUrl: "https://bibleaura.xyz/about"
+  },
+  FEATURES: {
+    title: "Features | AI Tools for Explaining Bible Verses & Devotions",
+    description: "Explore Bible Aura features: verse explanation, cross-references, theology insights, and daily devotionals—powered by AI.",
+    keywords: "Bible study AI tools, Bible verse explanation tools, AI Bible features, Bible study app features, Christian AI tools",
+    canonicalUrl: "https://bibleaura.xyz/features"
+  },
+  BLOG: {
+    title: "Bible Aura Blog | Bible Study Tips & AI Verse Insights",
+    description: "Read verse breakdowns, study tips, and how AI helps you understand Scripture. Fresh articles on Bible learning and spiritual growth.",
+    keywords: "Bible study tips, AI Bible insights, Scripture study guides, Bible learning articles, Christian study tips",
+    canonicalUrl: "https://bibleaura.xyz/blog"
+  },
+  PRICING: {
+    title: "Bible Aura Pricing | Free & Pro AI Bible Study Plans",
+    description: "Start free with AI-powered verse explanations, or go Pro for deeper Bible study tools. Choose your plan and grow in the Word.",
+    keywords: "Bible app pricing, AI Bible study plans, Christian app subscription, Bible study premium features",
+    canonicalUrl: "https://bibleaura.xyz/pricing"
+  },
+  AUTH: {
+    title: "Login to Bible Aura | Continue Your Bible Study",
+    description: "Sign in to Bible Aura and access your personal AI-powered Bible tools, devotionals, and Scripture insights.",
+    keywords: "login Bible Aura, Bible app login, Christian app sign in, Bible study account",
+    canonicalUrl: "https://bibleaura.xyz/auth"
   },
   BIBLE_AI: {
     title: "Bible AI - AI-Powered Biblical Study & Scripture Analysis | Bible Aura",
@@ -159,18 +189,6 @@ export const SEO_CONFIG = {
     description: "Explore our AI-curated sermon library with powerful biblical messages, inspirational teachings, and spiritual guidance. Find sermons by topic, scripture, or theme.",
     keywords: "sermons, Christian sermons, biblical sermons, AI sermons, sermon library, inspirational messages, biblical teachings, spiritual guidance",
     canonicalUrl: "https://bibleaura.xyz/sermons"
-  },
-  BLOG: {
-    title: "Bible AI Blog - Expert Insights on AI-Powered Bible Study | Bible Aura",
-    description: "Discover expert insights on Bible AI, AI-powered Bible study, and digital biblical analysis. Learn how artificial intelligence transforms modern Bible study and spiritual growth.",
-    keywords: "Bible AI blog, AI Bible study insights, biblical AI articles, Christian AI technology, Bible study tips, AI spiritual guidance",
-    canonicalUrl: "https://bibleaura.xyz/blog"
-  },
-  ABOUT: {
-    title: "About Bible Aura - AI-Powered Biblical Insight Platform | Bible Aura",
-    description: "Learn about Bible Aura's mission to transform Bible study through AI technology. Discover our story, values, and commitment to providing authentic biblical insights.",
-    keywords: "about Bible Aura, Bible AI platform, Christian AI company, biblical AI technology, Bible study platform",
-    canonicalUrl: "https://bibleaura.xyz/about"
   },
   CONTACT: {
     title: "Contact Bible Aura - Get Support for Bible AI Platform | Bible Aura",
