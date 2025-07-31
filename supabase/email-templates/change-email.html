@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✦Bible Aura - Confirm Email Change</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>✦Bible Aura - Email Change</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,15 +17,16 @@
             line-height: 1.6;
             color: #333;
             background: linear-gradient(135deg, #f8f9fa 0%, #fff5f0 100%);
+            padding: 20px;
         }
         
         .container {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(248, 87, 0, 0.1);
+            box-shadow: 0 15px 50px rgba(248, 87, 0, 0.15);
         }
         
         .header {
@@ -36,161 +37,140 @@
         }
         
         .logo {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             margin-bottom: 8px;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
         .tagline {
-            font-size: 14px;
-            font-weight: 400;
-            opacity: 0.9;
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0.95;
             letter-spacing: 1px;
         }
         
         .content {
             padding: 40px 30px;
+            text-align: center;
         }
         
-        .change-title {
-            font-size: 28px;
+        .title {
+            font-size: 24px;
             font-weight: 700;
             color: #333;
-            margin-bottom: 16px;
-            text-align: center;
+            margin-bottom: 20px;
         }
         
-        .change-text {
+        .message {
             font-size: 16px;
             color: #666;
-            margin-bottom: 24px;
-            text-align: center;
-            line-height: 1.7;
-        }
-        
-        .email-change-info {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 24px 0;
-            border-left: 4px solid #f85700;
-        }
-        
-        .email-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .email-row:last-child {
-            margin-bottom: 0;
-        }
-        
-        .email-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        
-        .email-value {
-            font-size: 14px;
-            color: #666;
-            word-break: break-all;
-        }
-        
-        .new-email {
-            color: #f85700;
-            font-weight: 600;
+            margin-bottom: 35px;
+            line-height: 1.6;
         }
         
         .cta-button {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 32px;
-            padding: 16px 32px;
+            display: inline-block;
+            padding: 18px 40px;
             background: linear-gradient(135deg, #f85700 0%, #ff7f39 100%);
             color: white;
             text-decoration: none;
             border-radius: 50px;
             font-weight: 600;
             font-size: 16px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(248, 87, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(248, 87, 0, 0.3);
             transition: all 0.3s ease;
+            margin-bottom: 30px;
         }
         
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(248, 87, 0, 0.4);
+            box-shadow: 0 12px 35px rgba(248, 87, 0, 0.4);
         }
         
-        .warning-box {
-            background: #fff5f0;
-            border: 2px solid #ff9966;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 32px 0;
+        .email-info {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #f85700;
         }
         
-        .warning-title {
+        .email-info-title {
             font-size: 16px;
             font-weight: 600;
-            color: #d64900;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
+            color: #333;
+            margin-bottom: 15px;
         }
         
-        .warning-icon {
-            margin-right: 8px;
+        .email-info-text {
+            font-size: 14px;
+            color: #666;
+            margin: 8px 0;
+        }
+        
+        .email-highlight {
+            color: #f85700;
+            font-weight: 600;
+        }
+        
+        .security-warning {
+            background: #fff3cd;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 4px solid #ffc107;
         }
         
         .warning-text {
             font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        
-        .security-note {
-            background: #f8f9fa;
-            border-left: 4px solid #f85700;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 24px 0;
-        }
-        
-        .security-text {
-            font-size: 14px;
-            color: #666;
+            color: #856404;
             margin: 0;
-        }
-        
-        .footer {
-            background: #333;
-            color: white;
-            padding: 30px;
             text-align: center;
         }
         
-        .footer-text {
-            font-size: 14px;
-            margin-bottom: 16px;
+        .footer {
+            background: #2a2a2a;
+            padding: 35px 30px;
+            text-align: center;
+            color: #ccc;
+        }
+        
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f85700;
+            margin-bottom: 8px;
+        }
+        
+        .footer-tagline {
+            font-size: 12px;
+            margin-bottom: 20px;
             opacity: 0.8;
         }
         
         .footer-links {
-            font-size: 12px;
-            opacity: 0.6;
+            margin-bottom: 20px;
         }
         
         .footer-links a {
             color: #f85700;
             text-decoration: none;
-            margin: 0 8px;
+            margin: 0 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .footer-links a:hover {
+            color: #ff7f39;
+        }
+        
+        .copyright {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 15px;
+            border-top: 1px solid #444;
+            padding-top: 15px;
         }
         
         @media (max-width: 600px) {
@@ -203,17 +183,9 @@
                 padding: 30px 20px;
             }
             
-            .logo {
-                font-size: 28px;
-            }
-            
-            .change-title {
-                font-size: 24px;
-            }
-            
-            .email-row {
-                flex-direction: column;
-                align-items: flex-start;
+            .footer-links a {
+                display: block;
+                margin: 5px 0;
             }
         }
     </style>
@@ -222,65 +194,44 @@
     <div class="container">
         <div class="header">
             <div class="logo">✦Bible Aura</div>
-            <div class="tagline">AI-POWERED BIBLICAL INSIGHT</div>
+            <div class="tagline">AI-Powered Biblical Insight</div>
         </div>
         
         <div class="content">
-            <h1 class="change-title">Confirm Your Email Change 📧</h1>
-            <p class="change-text">
-                We received a request to change the email address associated with your ✦Bible Aura account. Please confirm this change to continue accessing your spiritual journey.
+            <h1 class="title">Confirm Email Change</h1>
+            <p class="message">
+                Verify your new email address to complete the change.
             </p>
             
-            <div class="email-change-info">
-                <div class="email-row">
-                    <div>
-                        <div class="email-label">Current Email:</div>
-                        <div class="email-value">{{ .Email }}</div>
-                    </div>
-                </div>
-                <div class="email-row">
-                    <div>
-                        <div class="email-label">New Email:</div>
-                        <div class="email-value new-email">{{ .Data.new_email }}</div>
-                    </div>
-                </div>
-            </div>
-            
             <a href="{{ .ConfirmationURL }}" class="cta-button">
-                Confirm Email Change ✨
+                Confirm New Email
             </a>
             
-            <div class="warning-box">
-                <h3 class="warning-title">
-                    <span class="warning-icon">⚠️</span>
-                    Important Security Notice
-                </h3>
-                <p class="warning-text">
-                    After confirming this change, you'll need to use your new email address to sign in to ✦Bible Aura.
-                </p>
-                <p class="warning-text">
-                    Your prayer journals, reading progress, and all spiritual data will remain safe and accessible.
-                </p>
-                <p class="warning-text">
-                    If you didn't request this change, please contact our support team immediately.
-                </p>
+            <div class="email-info">
+                <h3 class="email-info-title">Email Update</h3>
+                <p class="email-info-text">New email: <span class="email-highlight">{{ .Email }}</span></p>
+                <p class="email-info-text">Requested from your account</p>
             </div>
             
-            <div class="security-note">
-                <p class="security-text">
-                    <strong>Security Notice:</strong> This confirmation link will expire in 24 hours. You can only change your email address once every 24 hours for security purposes.
+            <div class="security-warning">
+                <p class="warning-text">
+                    Didn't request this change? Contact support immediately
                 </p>
             </div>
         </div>
         
         <div class="footer">
-            <p class="footer-text">
-                Keeping your ✦Bible Aura account secure and accessible
-            </p>
+            <div class="footer-logo">✦Bible Aura</div>
+            <div class="footer-tagline">AI-Powered Biblical Insight</div>
+            
             <div class="footer-links">
-                <a href="{{ .SiteURL }}">Visit Website</a> |
-                <a href="{{ .SiteURL }}/privacy">Privacy Policy</a> |
-                <a href="{{ .SiteURL }}/support">Support</a>
+                <a href="{{ .SiteURL }}">Visit Website</a>
+                <a href="{{ .SiteURL }}/privacy">Privacy</a>
+                <a href="{{ .SiteURL }}/terms">Terms of Use</a>
+            </div>
+            
+            <div class="copyright">
+                © 2025 ✦Bible Aura. All rights reserved.
             </div>
         </div>
     </div>

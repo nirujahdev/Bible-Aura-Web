@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { useState } from "react";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { PayHereButton } from "@/components/PayHereButton";
 
 const Funding = () => {
   // SEO optimization
@@ -221,12 +222,12 @@ const Funding = () => {
                   <p className="text-xs sm:text-sm text-gray-600 mt-2">{plan.description}</p>
                 </CardHeader>
                 <CardContent className="px-4 sm:px-6">
-                  <Button 
+                  <PayHereButton 
+                    planId={plan.id}
+                    planName={plan.name}
+                    price={plan.price} 
                     className={`w-full ${plan.popular ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-900 hover:bg-gray-800'} text-white text-sm sm:text-base`}
-                    onClick={() => setSelectedPlan(plan.id)}
-                  >
-                    {plan.price === "0" ? "Get Started Free" : "Choose Plan"}
-                  </Button>
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -383,12 +384,12 @@ const Funding = () => {
                         </div>
                       ))}
                       <div className="pt-4 border-t border-gray-200">
-                        <Button 
+                        <PayHereButton 
+                          planId={plan.id}
+                          planName={plan.name}
+                          price={plan.price}
                           className={`w-full ${plan.popular ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
-                          onClick={() => setSelectedPlan(plan.id)}
-                        >
-                          {plan.price === "0" ? "Get Started Free" : "Choose Plan"}
-                        </Button>
+                        />
                       </div>
                     </CardContent>
                   </Card>

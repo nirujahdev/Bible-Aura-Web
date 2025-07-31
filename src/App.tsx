@@ -42,6 +42,8 @@ const Songs = lazy(() => import("./pages/Songs"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Features = lazy(() => import("./pages/Features"));
+const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
+const SubscriptionCancelled = lazy(() => import("./pages/SubscriptionCancelled"));
 
 // Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -201,6 +203,10 @@ function AppRoutes() {
             </ModernLayout>
           </ProtectedRoute>
         } />
+
+        {/* Subscription Pages */}
+        <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+        <Route path="/subscription/cancelled" element={<SubscriptionCancelled />} />
 
         {/* Legacy redirects */}
         <Route path="/chat" element={<Navigate to="/" replace />} />
