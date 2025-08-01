@@ -1,7 +1,7 @@
 import { 
   Plus, Home, Grid3X3, HelpCircle, Settings, User, MessageCircle, 
   Book, Music, Users, Headphones, BookOpen, Mic, TreePine, Heart, FileText,
-  Star, LogOut, LogIn, LucideIcon, Menu
+  Star, LogOut, LogIn, LucideIcon, Menu, Search, Bookmark, PenTool
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -52,7 +52,7 @@ const gridMenuItems: GridMenuItem[] = [
   },
   {
     label: "Journal",
-    icon: Plus,
+    icon: PenTool,
     path: "/journal",
     isSpecial: true
   },
@@ -62,23 +62,23 @@ const gridMenuItems: GridMenuItem[] = [
     path: "/songs"
   },
   {
-    label: "Characters",
-    icon: Users,
-    path: "/bible-characters"
-  },
-  {
     label: "Sermons",
     icon: Headphones,
     path: "/sermons"
+  },
+  {
+    label: "AI Chat",
+    icon: MessageCircle,
+    path: "/bible-ai"
   }
 ]
 
-// Sidebar icon navigation
+// Sidebar icon navigation - Updated with better icons
 const sidebarTopItems: SidebarIconItem[] = [
-  { icon: Plus, action: "new", tooltip: "New Chat" },
-  { icon: Home, path: "/", tooltip: "Home" },
-  { icon: BookOpen, path: "/study-hub", tooltip: "Study Hub" },
-  { icon: HelpCircle, path: "/study-hub", tooltip: "Help" }
+  { icon: MessageCircle, action: "new", tooltip: "New Chat" },
+  { icon: Home, path: "/dashboard", tooltip: "Dashboard" },
+  { icon: BookOpen, path: "/bible", tooltip: "Bible" },
+  { icon: Search, path: "/study-hub", tooltip: "AI Study" }
 ]
 
 const sidebarBottomItems: SidebarIconItem[] = [
@@ -89,7 +89,7 @@ const sidebarBottomItems: SidebarIconItem[] = [
 const allNavigationItems: NavigationItem[] = [
   {
     title: "Home",
-    url: "/",
+    url: "/dashboard",
     icon: Home,
   },
   {
@@ -105,17 +105,17 @@ const allNavigationItems: NavigationItem[] = [
   {
     title: "Study Hub",
     url: "/study-hub",
-    icon: HelpCircle,
-  },
-  {
-    title: "Characters",
-    url: "/bible-characters",
-    icon: Users,
+    icon: Search,
   },
   {
     title: "Sermons",
     url: "/sermons",
     icon: Headphones,
+  },
+  {
+    title: "AI Chat",
+    url: "/bible-ai",
+    icon: MessageCircle,
   },
   {
     title: "Favorites",
@@ -125,7 +125,7 @@ const allNavigationItems: NavigationItem[] = [
   {
     title: "Journal",
     url: "/journal",
-    icon: FileText,
+    icon: PenTool,
   },
   {
     title: "Profile",
@@ -230,7 +230,7 @@ function MainContent() {
   )
 }
 
-// Icon Sidebar Component
+// Icon Sidebar Component - Updated with better icons
 function IconSidebar() {
   const location = useLocation()
   const { user, profile, signOut } = useAuth()
@@ -328,256 +328,63 @@ function IconSidebar() {
   )
 }
 
-// Mobile Navigation Component - Vertical Sidebar Design
-function MobileNavigation() {
-  const location = useLocation()
-  const { user, profile, signOut } = useAuth()
-
-  const getDisplayName = () => {
-    if (profile?.display_name) return profile.display_name.split(' ')[0];
-    if (user?.email) return user.email.split('@')[0];
-    return 'User';
-  };
-
-  const mobileNavItems = [
-    { icon: BookOpen, path: "/bible", tooltip: "Bible" },
-    { icon: MessageCircle, path: "/study-hub", tooltip: "Study Hub" },
-    { icon: FileText, path: "/journal", tooltip: "Journal" },
-    { icon: Music, path: "/songs", tooltip: "Songs" },
-    { icon: Users, path: "/bible-characters", tooltip: "Characters" },
-    { icon: Headphones, path: "/sermons", tooltip: "Sermons" },
-    { icon: Heart, path: "/favorites", tooltip: "Favorites" },
-    { icon: Settings, path: "/profile", tooltip: "Settings" }
-  ];
-
-  return (
-    <div className="lg:hidden fixed left-0 top-0 h-full w-16 bg-white border-r border-gray-200 z-50 flex flex-col">
-      {/* Traffic Light Dots */}
-      <div className="flex justify-center items-center py-4">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-          <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-          <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-        </div>
-      </div>
-
-      {/* Logo/Brand */}
-      <div className="flex justify-center py-3">
-        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">✦</span>
-        </div>
-      </div>
-
-      {/* Navigation Icons */}
-      <div className="flex-1 flex flex-col items-center py-4 space-y-4">
-        {mobileNavItems.slice(0, -1).map((item, index) => (
-          <div key={index} className="relative group">
-            <Link
-              to={item.path}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
-                location.pathname === item.path
-                  ? 'bg-black text-white'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-            </Link>
-            
-            {/* Tooltip */}
-            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              {item.tooltip}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bottom Section */}
-      <div className="flex flex-col items-center space-y-3 pb-4">
-        {/* Settings */}
-        <div className="relative group">
-          <Link
-            to="/profile"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
-              location.pathname === '/profile'
-                ? 'bg-black text-white'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <Settings className="h-5 w-5" />
-          </Link>
-          
-          {/* Tooltip */}
-          <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-            Settings
-          </div>
-        </div>
-
-        {/* User Avatar */}
-        {user ? (
-          <div className="relative group">
-            <Link
-              to="/profile"
-              className="w-10 h-10 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-gray-400 transition-all duration-200"
-            >
-              <Avatar className="w-full h-full">
-                <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="bg-gray-600 text-white text-sm font-semibold">
-                  {profile?.display_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-            
-            {/* Tooltip */}
-            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              {getDisplayName()}
-            </div>
-          </div>
-        ) : (
-          <div className="relative group">
-            <Link
-              to="/auth"
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
-            >
-              <User className="h-5 w-5" />
-            </Link>
-            
-            {/* Tooltip */}
-            <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              Sign In
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Mobile Right Sidebar Component with Page-Specific Options
-function MobileRightSidebar() {
+// New Clean Mobile Bottom Navigation
+function MobileBottomNavigation() {
   const location = useLocation()
   const { user } = useAuth()
 
-  // Define page-specific options
-  const getPageOptions = () => {
-    switch (location.pathname) {
-      case '/bible':
-        return [
-          { icon: BookOpen, tooltip: "Reading Plan", action: () => {} },
-          { icon: Heart, tooltip: "Bookmark", action: () => {} },
-          { icon: MessageCircle, tooltip: "Commentary", action: () => {} },
-          { icon: Settings, tooltip: "Text Settings", action: () => {} }
-        ];
-      case '/study-hub':
-        return [
-          { icon: Plus, tooltip: "New Study", action: () => {} },
-          { icon: FileText, tooltip: "Notes", action: () => {} },
-          { icon: Star, tooltip: "Favorites", action: () => {} },
-          { icon: Settings, tooltip: "AI Settings", action: () => {} }
-        ];
-      case '/journal':
-        return [
-          { icon: Plus, tooltip: "New Entry", action: () => {} },
-          { icon: FileText, tooltip: "Templates", action: () => {} },
-          { icon: Heart, tooltip: "Favorites", action: () => {} },
-          { icon: Settings, tooltip: "Journal Settings", action: () => {} }
-        ];
-      case '/songs':
-        return [
-          { icon: Plus, tooltip: "Add Song", action: () => {} },
-          { icon: Heart, tooltip: "Favorites", action: () => {} },
-          { icon: Music, tooltip: "Playlist", action: () => {} },
-          { icon: Settings, tooltip: "Audio Settings", action: () => {} }
-        ];
-      case '/bible-characters':
-        return [
-          { icon: Plus, tooltip: "Add Character", action: () => {} },
-          { icon: BookOpen, tooltip: "Study Guide", action: () => {} },
-          { icon: Heart, tooltip: "Favorites", action: () => {} },
-          { icon: Settings, tooltip: "View Settings", action: () => {} }
-        ];
-      case '/sermons':
-        return [
-          { icon: Plus, tooltip: "Add Sermon", action: () => {} },
-          { icon: Headphones, tooltip: "Audio", action: () => {} },
-          { icon: Heart, tooltip: "Favorites", action: () => {} },
-          { icon: Settings, tooltip: "Playback Settings", action: () => {} }
-        ];
-      default:
-        return [
-          { icon: Home, tooltip: "Home", action: () => window.location.href = '/' },
-          { icon: MessageCircle, tooltip: "AI Chat", action: () => window.location.href = '/study-hub' },
-          { icon: Heart, tooltip: "Favorites", action: () => window.location.href = '/favorites' },
-          { icon: Settings, tooltip: "Settings", action: () => window.location.href = '/profile' }
-        ];
-    }
-  };
-
-  const pageOptions = getPageOptions();
+  const mobileNavItems = [
+    { icon: Home, path: "/dashboard", label: "Home" },
+    { icon: BookOpen, path: "/bible", label: "Bible" },
+    { icon: Search, path: "/study-hub", label: "Study" },
+    { icon: PenTool, path: "/journal", label: "Journal" },
+    { icon: User, path: "/profile", label: "Profile" },
+  ];
 
   return (
-    <div className="lg:hidden fixed right-0 top-0 h-full w-16 bg-white border-l border-gray-200 z-40 flex flex-col">
-      {/* Page Actions */}
-      <div className="flex-1 flex flex-col items-center py-8 space-y-4">
-        {pageOptions.map((option, index) => (
-          <div key={index} className="relative group">
-            <button
-              onClick={option.action}
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200"
-            >
-              <option.icon className="h-5 w-5" />
-            </button>
-            
-            {/* Tooltip */}
-            <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              {option.tooltip}
-            </div>
-          </div>
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <div className="flex items-center justify-around py-2">
+        {mobileNavItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all duration-200 ${
+              location.pathname === item.path
+                ? 'text-orange-500'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <item.icon className={`h-6 w-6 mb-1 ${
+              location.pathname === item.path
+                ? 'text-orange-500'
+                : 'text-gray-500'
+            }`} />
+            <span className={`text-xs font-medium ${
+              location.pathname === item.path
+                ? 'text-orange-500'
+                : 'text-gray-500'
+            }`}>
+              {item.label}
+            </span>
+          </Link>
         ))}
-      </div>
-
-      {/* Quick Actions - Bottom */}
-      <div className="flex flex-col items-center space-y-3 pb-8">
-        {/* Search */}
-        <div className="relative group">
-          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200">
-            <HelpCircle className="h-5 w-5" />
-          </button>
-          
-          {/* Tooltip */}
-          <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-            Search
-          </div>
-        </div>
-
-        {/* Menu Toggle */}
-        <div className="relative group">
-          <button className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200">
-            <Grid3X3 className="h-5 w-5" />
-          </button>
-          
-          {/* Tooltip */}
-          <div className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-            Menu
-          </div>
-        </div>
       </div>
     </div>
   )
 }
 
-// Main App Sidebar Export
+// Main App Sidebar Export - Updated for new mobile design
 export function ModernSidebar({ children }: { children?: React.ReactNode }) {
   const isMobile = useIsMobile()
   
-  // For mobile, show mobile navigation + main content with proper spacing
+  // For mobile, show clean bottom navigation with main content
   if (isMobile) {
     return (
       <div className="h-screen bg-gray-900">
-        <MobileNavigation />
-        <div className="pl-16 pr-16"> {/* Add left and right padding for fixed sidebars */}
+        <div className="pb-20"> {/* Add bottom padding for navigation */}
           {children || <MainContent />}
         </div>
-        <MobileRightSidebar />
+        <MobileBottomNavigation />
       </div>
     )
   }

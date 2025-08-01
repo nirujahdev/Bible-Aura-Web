@@ -32,7 +32,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const BibleQA = lazy(() => import("./pages/BibleQA"));
-const BibleCharacters = lazy(() => import("./pages/BibleCharacters"));
 const ParablesStudy = lazy(() => import("./pages/ParablesStudy"));
 const TopicalStudy = lazy(() => import("./pages/TopicalStudy"));
 const StudyHub = lazy(() => import("./pages/StudyHub"));
@@ -135,7 +134,7 @@ function AppRoutes() {
         <Route path="/bible-characters" element={
           <ProtectedRoute>
             <ModernLayout>
-              <BibleCharacters />
+              <StudyHub />
             </ModernLayout>
           </ProtectedRoute>
         } />

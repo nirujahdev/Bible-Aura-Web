@@ -1,395 +1,855 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { 
-  MessageCircle, 
-  Search, 
-  BookOpen, 
-  Heart, 
-  Share, 
-  Star,
-  HelpCircle,
-  Lightbulb,
-  Users,
-  Calendar,
-  Mic,
-  TreePine,
-  Target,
-  Filter,
-  Play,
-  Pause,
-  Download,
-  Bookmark
-} from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  Search, BookOpen, Users, Crown, TreePine, FileText, 
+  Settings, Languages, Grid, Table, Clock, Bot, Bookmark,
+  Heart, Star, Share, Download, Copy, ExternalLink,
+  ChevronRight, ChevronLeft, Plus, Filter, Eye,
+  Mic, Calendar, Target, Lightbulb, Compass, Home,
+  Globe, Shield, Zap, Building, Library, PenTool,
+  MessageCircle, Volume2, Play, Pause, RotateCcw
+} from 'lucide-react';
 
-// Import existing components
-import SermonArchive from '@/components/SermonArchive';
-import ParablesDatabase from '@/components/ParablesDatabase';
-import TopicalBibleStudy from '@/components/TopicalBibleStudy';
-
-interface QAItem {
+// Types
+interface StudyModule {
   id: string;
-  question: string;
-  answer: string;
-  category: string;
-  references: string[];
-  popularity: number;
-  is_favorite: boolean;
-  created_at: string;
+  name: string;
+  icon: React.ElementType;
+  description: string;
+  color: string;
 }
 
-const MOCK_QA: QAItem[] = [
+interface BibleCharacter {
+  id: string;
+  name: string;
+  description: string;
+  period: string;
+  testament: 'Old' | 'New';
+  category: string;
+  key_verses: string[];
+  notable_events: string[];
+  character_traits: string[];
+  image_placeholder: string;
+}
+
+interface Parable {
+  id: string;
+  title: string;
+  reference: string;
+  summary: string;
+  theme: string;
+  difficulty: number;
+  modern_application: string;
+}
+
+interface Topic {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  verse_count: number;
+  key_verses: string[];
+}
+
+// Study Modules Configuration
+const STUDY_MODULES: StudyModule[] = [
   {
-    id: '1',
-    question: 'What does it mean to be born again?',
-    answer: 'Being "born again" refers to the spiritual transformation that occurs when someone accepts Jesus Christ as their Lord and Savior. Jesus explained this concept to Nicodemus in John 3:3, saying that unless one is born again, they cannot see the kingdom of God. This spiritual rebirth involves repentance from sin, faith in Christ, and receiving the Holy Spirit, which creates a new spiritual life within the believer.',
-    category: 'Salvation',
-    references: ['John 3:3-7', '2 Corinthians 5:17', 'Titus 3:5'],
-    popularity: 95,
-    is_favorite: false,
-    created_at: '2024-01-15'
+    id: 'verse-explorer',
+    name: 'Verse Explorer',
+    icon: Search,
+    description: 'Deep dive into individual verses with context and insights',
+    color: 'text-blue-600'
   },
   {
-    id: '2',
-    question: 'How can I know God\'s will for my life?',
-    answer: 'Discovering God\'s will involves prayer, studying Scripture, seeking wise counsel, and being attentive to the Holy Spirit\'s guidance. God promises to direct our paths when we trust in Him. Regular Bible study, prayer, and communion with fellow believers help us understand God\'s character and desires for our lives.',
-    category: 'Christian Living',
-    references: ['Proverbs 3:5-6', 'James 1:5', 'Romans 12:2'],
-    popularity: 88,
-    is_favorite: true,
-    created_at: '2024-01-10'
+    id: 'sermon-builder',
+    name: 'Sermon Builder',
+    icon: Mic,
+    description: 'Create and organize sermons with AI assistance',
+    color: 'text-green-600'
   },
   {
-    id: '3',
-    question: 'What is the difference between grace and mercy?',
-    answer: 'Grace is receiving what we don\'t deserve (God\'s favor and salvation), while mercy is not receiving what we do deserve (punishment for our sins). Grace gives us salvation and eternal life, while mercy spares us from the wrath and judgment we deserve because of our sin.',
-    category: 'Theology',
-    references: ['Ephesians 2:8-9', 'Lamentations 3:22-23', 'Titus 3:5'],
-    popularity: 82,
-    is_favorite: false,
-    created_at: '2024-01-08'
+    id: 'topical-study',
+    name: 'Topical Study',
+    icon: Library,
+    description: 'Explore themes and topics across Scripture',
+    color: 'text-purple-600'
   },
   {
-    id: '4',
-    question: 'How should Christians handle depression and anxiety?',
-    answer: 'Christians dealing with depression and anxiety should seek both spiritual support and professional help when needed. God cares about our mental health. Prayer, Scripture reading, fellowship with believers, and professional counseling can all be part of God\'s healing process. Remember that seeking help is a sign of wisdom, not weakness.',
-    category: 'Christian Living',
-    references: ['Philippians 4:6-7', 'Psalm 34:18', '1 Peter 5:7'],
-    popularity: 91,
-    is_favorite: true,
-    created_at: '2024-01-05'
+    id: 'parables-study',
+    name: 'Parables Study',
+    icon: TreePine,
+    description: 'Study Jesus\' parables with modern applications',
+    color: 'text-orange-600'
   },
   {
-    id: '5',
-    question: 'What happens when we die?',
-    answer: 'According to Scripture, when believers die, their souls immediately go to be with Christ in heaven while their bodies await resurrection. For unbelievers, their souls go to a place of separation from God. At the final judgment, all will be resurrected - believers to eternal life and unbelievers to eternal separation from God.',
-    category: 'Eschatology',
-    references: ['2 Corinthians 5:8', 'Luke 16:19-31', 'Revelation 20:11-15'],
-    popularity: 89,
-    is_favorite: false,
-    created_at: '2024-01-03'
+    id: 'bible-characters',
+    name: 'Bible Characters',
+    icon: Users,
+    description: 'Explore biblical figures and their stories',
+    color: 'text-red-600'
   }
 ];
 
-const QA_CATEGORIES = [
-  'All',
-  'Salvation',
-  'Christian Living',
-  'Theology',
-  'Prayer',
-  'Bible Study',
-  'Relationships',
-  'Eschatology',
-  'Church Life'
+// Mock Data
+const MOCK_CHARACTERS: BibleCharacter[] = [
+  {
+    id: '1',
+    name: 'Moses',
+    description: 'The great prophet who led the Israelites out of Egypt and received the Ten Commandments.',
+    period: '1393-1273 BC',
+    testament: 'Old',
+    category: 'Prophet',
+    key_verses: ['Exodus 3:14', 'Deuteronomy 34:10', 'Numbers 12:3'],
+    notable_events: ['Burning Bush', 'Exodus from Egypt', 'Parting of Red Sea', 'Receiving the Law'],
+    character_traits: ['Humble', 'Faithful', 'Patient', 'Leader'],
+    image_placeholder: 'M'
+  },
+  {
+    id: '2',
+    name: 'Jesus Christ',
+    description: 'The Son of God, Savior of the world, who came to earth to redeem humanity.',
+    period: '4 BC - 30 AD',
+    testament: 'New',
+    category: 'Savior',
+    key_verses: ['John 3:16', 'John 14:6', 'Matthew 28:18'],
+    notable_events: ['Birth in Bethlehem', 'Baptism', 'Sermon on the Mount', 'Crucifixion', 'Resurrection'],
+    character_traits: ['Love', 'Compassion', 'Wisdom', 'Sacrifice'],
+    image_placeholder: 'J'
+  },
+  {
+    id: '3',
+    name: 'David',
+    description: 'The shepherd boy who became Israel\'s greatest king, known as "a man after God\'s own heart".',
+    period: '1040-970 BC',
+    testament: 'Old',
+    category: 'King',
+    key_verses: ['1 Samuel 13:14', 'Psalm 23:1', '2 Samuel 7:16'],
+    notable_events: ['Defeating Goliath', 'Anointed as King', 'Bringing Ark to Jerusalem', 'Bathsheba Incident'],
+    character_traits: ['Courage', 'Worship', 'Repentant', 'Passionate'],
+    image_placeholder: 'D'
+  },
+  {
+    id: '4',
+    name: 'Paul',
+    description: 'Former persecutor who became the greatest missionary and wrote much of the New Testament.',
+    period: '5-67 AD',
+    testament: 'New',
+    category: 'Apostle',
+    key_verses: ['Acts 9:15', 'Philippians 1:21', 'Galatians 2:20'],
+    notable_events: ['Road to Damascus', 'Missionary Journeys', 'Writing Epistles', 'Martyrdom'],
+    character_traits: ['Zealous', 'Devoted', 'Intellectual', 'Perseverant'],
+    image_placeholder: 'P'
+  }
+];
+
+const MOCK_PARABLES: Parable[] = [
+  {
+    id: '1',
+    title: 'The Good Samaritan',
+    reference: 'Luke 10:25-37',
+    summary: 'A story about showing mercy and compassion to those in need, regardless of social barriers.',
+    theme: 'Love & Compassion',
+    difficulty: 2,
+    modern_application: 'Help others regardless of their background, race, or social status.'
+  },
+  {
+    id: '2',
+    title: 'The Prodigal Son',
+    reference: 'Luke 15:11-32',
+    summary: 'A tale of forgiveness, redemption, and a father\'s unconditional love.',
+    theme: 'Forgiveness & Grace',
+    difficulty: 3,
+    modern_application: 'God always welcomes us back with open arms when we repent.'
+  },
+  {
+    id: '3',
+    title: 'The Sower',
+    reference: 'Matthew 13:1-23',
+    summary: 'Different types of soil represent how people receive God\'s word.',
+    theme: 'Kingdom of Heaven',
+    difficulty: 3,
+    modern_application: 'Prepare your heart to receive God\'s truth and let it grow.'
+  }
+];
+
+const MOCK_TOPICS: Topic[] = [
+  {
+    id: '1',
+    name: 'Prayer',
+    description: 'Communication with God through various forms of prayer and worship.',
+    category: 'Spiritual Disciplines',
+    verse_count: 127,
+    key_verses: ['Matthew 6:9-13', '1 Thessalonians 5:17', 'James 5:16']
+  },
+  {
+    id: '2',
+    name: 'Faith',
+    description: 'Trust and belief in God\'s promises and character.',
+    category: 'Core Beliefs',
+    verse_count: 89,
+    key_verses: ['Hebrews 11:1', 'Romans 10:17', 'James 2:17']
+  },
+  {
+    id: '3',
+    name: 'Love',
+    description: 'God\'s love for us and our love for God and others.',
+    category: 'Character Traits',
+    verse_count: 156,
+    key_verses: ['1 John 4:8', '1 Corinthians 13:4-7', 'John 3:16']
+  }
 ];
 
 export default function StudyHub() {
-  // SEO optimization
-  useSEO(SEO_CONFIG.STUDY_HUB);
-  
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('qa');
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+
+  // State Management
+  const [activeModule, setActiveModule] = useState('verse-explorer');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [qaItems, setQaItems] = useState<QAItem[]>(MOCK_QA);
+  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [viewMode, setViewMode] = useState('card');
+  const [showRightPanel, setShowRightPanel] = useState(!isMobile);
+  
+  // Module-specific states
+  const [selectedVerse, setSelectedVerse] = useState('');
+  const [selectedBook, setSelectedBook] = useState('');
+  const [selectedChapter, setSelectedChapter] = useState('');
+  const [verseNumber, setVerseNumber] = useState('');
+  
+  // Character filtering
+  const [characterFilter, setCharacterFilter] = useState('All');
+  const [testamentFilter, setTestamentFilter] = useState('All');
+  
+  // Saved items
+  const [savedNotes, setSavedNotes] = useState<string[]>([]);
+  const [recentStudies, setRecentStudies] = useState<string[]>([]);
 
-  const filteredQAItems = qaItems.filter(item => {
-    const matchesSearch = item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.answer.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Filtered data based on search
+  const filteredCharacters = useMemo(() => {
+    return MOCK_CHARACTERS.filter(character => {
+      const matchesSearch = character.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           character.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = characterFilter === 'All' || character.category === characterFilter;
+      const matchesTestament = testamentFilter === 'All' || character.testament === testamentFilter;
+      return matchesSearch && matchesCategory && matchesTestament;
+    });
+  }, [searchQuery, characterFilter, testamentFilter]);
 
-  const toggleFavorite = (id: string) => {
-    setQaItems(prev => prev.map(item => 
-      item.id === id ? { ...item, is_favorite: !item.is_favorite } : item
-    ));
+  const filteredParables = useMemo(() => {
+    return MOCK_PARABLES.filter(parable => 
+      parable.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      parable.theme.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  const filteredTopics = useMemo(() => {
+    return MOCK_TOPICS.filter(topic => 
+      topic.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      topic.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  // Render module content
+  const renderModuleContent = () => {
+    switch (activeModule) {
+      case 'verse-explorer':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Select value={selectedBook} onValueChange={setSelectedBook}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Book" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="genesis">Genesis</SelectItem>
+                  <SelectItem value="exodus">Exodus</SelectItem>
+                  <SelectItem value="matthew">Matthew</SelectItem>
+                  <SelectItem value="john">John</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="Chapter"
+                value={selectedChapter}
+                onChange={(e) => setSelectedChapter(e.target.value)}
+                type="number"
+              />
+              <Input
+                placeholder="Verse"
+                value={verseNumber}
+                onChange={(e) => setVerseNumber(e.target.value)}
+                type="number"
+              />
+            </div>
+            
+            {selectedBook && selectedChapter && verseNumber && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    {selectedBook} {selectedChapter}:{verseNumber}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-2">Verse Text</h4>
+                    <p className="text-lg leading-relaxed">
+                      "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life."
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">Historical Context</h4>
+                      <p className="text-sm text-gray-600">
+                        Jesus spoke these words to Nicodemus, a Pharisee who came to him at night seeking truth.
+                      </p>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">Theological Insight</h4>
+                      <p className="text-sm text-gray-600">
+                        This verse reveals the heart of the Gospel - God's sacrificial love and the gift of eternal life.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-2">Simple Explanation</h4>
+                    <p className="text-sm text-gray-600">
+                      God loves everyone so much that He sent Jesus to save us. When we believe in Jesus, we get to live forever with God.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 pt-4 border-t">
+                    <Button variant="outline" size="sm">
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Verse
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Bookmark className="h-4 w-4 mr-2" />
+                      Bookmark
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Share className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        );
+
+      case 'sermon-builder':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Sermon Builder</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">Template</Button>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Sermon
+                </Button>
+              </div>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <Input placeholder="Sermon Title" className="text-lg font-semibold" />
+                <Input placeholder="Main Theme" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Main Points</label>
+                  <div className="space-y-2">
+                    <Input placeholder="Point 1: Introduction" />
+                    <Input placeholder="Point 2: Main Message" />
+                    <Input placeholder="Point 3: Application" />
+                    <Button variant="ghost" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Point
+                    </Button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Key Verses</label>
+                  <Textarea placeholder="Add key verses and references..." className="min-h-20" />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Illustrations & Applications</label>
+                  <Textarea placeholder="Real-life examples and modern applications..." className="min-h-24" />
+                </div>
+                
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export PDF
+                  </Button>
+                  <Button variant="outline">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Save to Journal
+                  </Button>
+                  <Button>
+                    <Bot className="h-4 w-4 mr-2" />
+                    AI Assist
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 'topical-study':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Topical Study</h2>
+              <Select value="difficulty" onValueChange={() => {}}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Filter by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="difficulty">Difficulty</SelectItem>
+                  <SelectItem value="testament">Testament</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTopics.map((topic) => (
+                <Card key={topic.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{topic.name}</CardTitle>
+                        <Badge variant="secondary" className="mt-1">{topic.category}</Badge>
+                      </div>
+                      <Badge variant="outline">{topic.verse_count} verses</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-gray-600">{topic.description}</p>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Key Verses</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {topic.key_verses.map((verse, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {verse}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <Button variant="outline" size="sm">Study Now</Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Heart className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Share className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'parables-study':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Parables Study</h2>
+              <Button variant="outline">
+                <TreePine className="h-4 w-4 mr-2" />
+                Similar Parables
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredParables.map((parable) => (
+                <Card key={parable.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{parable.title}</CardTitle>
+                        <Badge variant="secondary" className="mt-1">{parable.theme}</Badge>
+                      </div>
+                      <div className="flex">
+                        {[...Array(parable.difficulty)].map((_, i) => (
+                          <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-amber-50 p-3 rounded-lg">
+                      <h4 className="text-sm font-medium mb-1">Reference</h4>
+                      <p className="text-sm text-gray-600">{parable.reference}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Summary</h4>
+                      <p className="text-sm text-gray-600">{parable.summary}</p>
+                    </div>
+                    
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <h4 className="text-sm font-medium mb-1">Modern Application</h4>
+                      <p className="text-sm text-gray-600">{parable.modern_application}</p>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <Button variant="outline" size="sm">Read Full</Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm">
+                          <BookOpen className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Share className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'bible-characters':
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <h2 className="text-2xl font-bold">Bible Characters</h2>
+              <div className="flex gap-2">
+                <Select value={testamentFilter} onValueChange={setTestamentFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All</SelectItem>
+                    <SelectItem value="Old">Old Testament</SelectItem>
+                    <SelectItem value="New">New Testament</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={characterFilter} onValueChange={setCharacterFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Roles</SelectItem>
+                    <SelectItem value="Prophet">Prophet</SelectItem>
+                    <SelectItem value="King">King</SelectItem>
+                    <SelectItem value="Apostle">Apostle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCharacters.map((character) => (
+                <Card key={character.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {character.image_placeholder}
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{character.name}</CardTitle>
+                        <div className="flex gap-2 mt-1">
+                          <Badge variant="secondary">{character.category}</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {character.testament} Testament
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        <Heart className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {character.description}
+                    </p>
+                    
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <Calendar className="h-3 w-3" />
+                      <span>{character.period}</span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Character Traits</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {character.character_traits.map((trait, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {trait}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Notable Events</h4>
+                      <ul className="space-y-1">
+                        {character.notable_events.slice(0, 2).map((event, index) => (
+                          <li key={index} className="text-xs text-gray-600 flex items-start gap-1">
+                            <span className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                            <span>{event}</span>
+                          </li>
+                        ))}
+                        {character.notable_events.length > 2 && (
+                          <li className="text-xs text-gray-500">
+                            +{character.notable_events.length - 2} more...
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <Button variant="outline" size="sm">Learn More</Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm">
+                          <BookOpen className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Share className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      default:
+        return <div>Select a study module</div>;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="container mx-auto px-4 py-6">
-        {/* Page Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            📚 Study Hub
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Sidebar - Navigation */}
+      <div className={`${isMobile ? 'hidden' : 'w-64'} bg-white border-r border-gray-200 flex flex-col`}>
+        <div className="p-4 border-b">
+          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Library className="h-6 w-6 text-blue-600" />
+            Study Hub
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Your comprehensive resource for Bible study, sermons, Q&A, and spiritual growth
-          </p>
+          <p className="text-sm text-gray-500 mt-1">Advanced Bible Study</p>
+        </div>
+        
+        <ScrollArea className="flex-1 p-2">
+          <div className="space-y-1">
+            {STUDY_MODULES.map((module) => {
+              const Icon = module.icon;
+              return (
+                <Button
+                  key={module.id}
+                  variant={activeModule === module.id ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 h-auto p-3 ${
+                    activeModule === module.id ? 'bg-blue-50 text-blue-700' : ''
+                  }`}
+                  onClick={() => setActiveModule(module.id)}
+                >
+                  <Icon className={`h-5 w-5 ${module.color}`} />
+                  <div className="text-left">
+                    <div className="font-medium">{module.name}</div>
+                    <div className="text-xs text-gray-500 font-normal">
+                      {module.description}
+                    </div>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Navigation Bar */}
+        <div className="bg-white border-b border-gray-200 p-4">
+          <div className="flex items-center gap-4">
+            {/* Search Bar */}
+            <div className="flex-1 relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search any verse, topic or person"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Controls */}
+            <div className="flex items-center gap-2">
+              {/* Language Switcher */}
+              <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                <SelectTrigger className="w-32">
+                  <Languages className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="english">English</SelectItem>
+                  <SelectItem value="tamil">தமிழ்</SelectItem>
+                  <SelectItem value="sinhala">සිංහල</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* View Toggle */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('card')}
+                  className="px-3"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="px-3"
+                >
+                  <Table className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* AI Button */}
+              <Button variant="outline" className="gap-2">
+                <Bot className="h-4 w-4" />
+                AI Explain
+              </Button>
+              
+              {/* Right Panel Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowRightPanel(!showRightPanel)}
+              >
+                <ChevronRight className={`h-4 w-4 transition-transform ${showRightPanel ? 'rotate-180' : ''}`} />
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="qa" className="flex items-center gap-2">
-              <HelpCircle className="h-4 w-4" />
-              Bible Q&A
-            </TabsTrigger>
-            <TabsTrigger value="sermons" className="flex items-center gap-2">
-              <Mic className="h-4 w-4" />
-              Sermons
-            </TabsTrigger>
-            <TabsTrigger value="parables" className="flex items-center gap-2">
-              <TreePine className="h-4 w-4" />
-              Parables
-            </TabsTrigger>
-            <TabsTrigger value="topical" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Topical Study
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Bible Q&A Tab */}
-          <TabsContent value="qa" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5" />
-                  Bible Questions & Answers
-                </CardTitle>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Search questions..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {QA_CATEGORIES.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+        {/* Content Area */}
+        <div className="flex-1 flex">
+          {/* Main Canvas */}
+          <div className="flex-1 p-6 overflow-auto">
+            {renderModuleContent()}
+          </div>
+          
+          {/* Right Panel */}
+          {showRightPanel && (
+            <div className="w-80 bg-white border-l border-gray-200 p-4">
+              <div className="space-y-6">
+                {/* Quick Save */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <PenTool className="h-4 w-4" />
+                    Quick Notes
+                  </h3>
+                  <Textarea 
+                    placeholder="Save thoughts and insights..."
+                    className="min-h-20"
+                  />
+                  <Button size="sm" className="mt-2">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Save to Journal
+                  </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredQAItems.length > 0 ? (
-                    <Accordion type="single" collapsible className="w-full">
-                      {filteredQAItems.map((item) => (
-                        <AccordionItem key={item.id} value={item.id}>
-                          <AccordionTrigger className="text-left">
-                            <div className="flex items-start justify-between w-full pr-4">
-                              <span className="font-medium">{item.question}</span>
-                              <div className="flex items-center gap-2 ml-4">
-                                <Badge variant="secondary" className="text-xs">
-                                  {item.category}
-                                </Badge>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleFavorite(item.id);
-                                  }}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Heart 
-                                    className={`h-4 w-4 ${
-                                      item.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
-                                    }`} 
-                                  />
-                                </Button>
-                              </div>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="space-y-4 pt-4">
-                              <p className="text-gray-700 leading-relaxed">
-                                {item.answer}
-                              </p>
-                              
-                              {item.references.length > 0 && (
-                                <div>
-                                  <h4 className="font-medium text-sm text-gray-900 mb-2">
-                                    Scripture References:
-                                  </h4>
-                                  <div className="flex flex-wrap gap-2">
-                                    {item.references.map((ref, index) => (
-                                      <Badge key={index} variant="outline" className="text-xs">
-                                        {ref}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              <div className="flex items-center justify-between pt-4 border-t">
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                  <span className="flex items-center gap-1">
-                                    <Star className="h-4 w-4" />
-                                    {item.popularity}% helpful
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="h-4 w-4" />
-                                    {new Date(item.created_at).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                
-                                <Button variant="ghost" size="sm">
-                                  <Share className="h-4 w-4 mr-2" />
-                                  Share
-                                </Button>
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  ) : (
-                    <div className="text-center py-12">
-                      <HelpCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        No questions found
-                      </h3>
-                      <p className="text-gray-600">
-                        Try adjusting your search or category filter.
-                      </p>
+                
+                {/* Recent Studies */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Recent Studies
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="p-2 bg-gray-50 rounded text-sm">
+                      <div className="font-medium">John 3:16 Analysis</div>
+                      <div className="text-xs text-gray-500">2 hours ago</div>
                     </div>
-                  )}
-                </div>
-
-                {/* Popular Categories */}
-                <div className="mt-8 pt-8 border-t">
-                  <h3 className="font-medium text-gray-900 mb-4">Popular Categories</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {QA_CATEGORIES.slice(1).map(category => {
-                      const count = qaItems.filter(item => item.category === category).length;
-                      return (
-                        <Button
-                          key={category}
-                          variant="outline"
-                          onClick={() => setSelectedCategory(category)}
-                          className="justify-between h-auto p-3"
-                        >
-                          <span className="text-sm">{category}</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {count}
-                          </Badge>
-                        </Button>
-                      );
-                    })}
+                    <div className="p-2 bg-gray-50 rounded text-sm">
+                      <div className="font-medium">Prayer Topic Study</div>
+                      <div className="text-xs text-gray-500">Yesterday</div>
+                    </div>
+                    <div className="p-2 bg-gray-50 rounded text-sm">
+                      <div className="font-medium">David Character Study</div>
+                      <div className="text-xs text-gray-500">3 days ago</div>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Sermons Tab */}
-          <TabsContent value="sermons">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mic className="h-5 w-5" />
-                  Sermon Library
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SermonArchive />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Parables Tab */}
-          <TabsContent value="parables">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TreePine className="h-5 w-5" />
-                  Parables Study
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ParablesDatabase />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Topical Study Tab */}
-          <TabsContent value="topical">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Topical Bible Study
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TopicalBibleStudy />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Quick Access Cards */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('qa')}>
-            <CardContent className="p-6 text-center">
-              <HelpCircle className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Quick Q&A</h3>
-              <p className="text-sm text-gray-600">Get answers to common Bible questions</p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('sermons')}>
-            <CardContent className="p-6 text-center">
-              <Mic className="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Listen & Learn</h3>
-              <p className="text-sm text-gray-600">Access thousands of inspiring sermons</p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('parables')}>
-            <CardContent className="p-6 text-center">
-              <TreePine className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Story Wisdom</h3>
-              <p className="text-sm text-gray-600">Explore Jesus' parables and their meanings</p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('topical')}>
-            <CardContent className="p-6 text-center">
-              <Target className="h-12 w-12 text-purple-500 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Deep Dive</h3>
-              <p className="text-sm text-gray-600">Study specific topics in depth</p>
-            </CardContent>
-          </Card>
+                
+                {/* Bookmarks */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Bookmark className="h-4 w-4" />
+                    Bookmarks
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="p-2 border rounded text-sm flex items-center justify-between">
+                      <span>Romans 8:28</span>
+                      <Button variant="ghost" size="sm">
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="p-2 border rounded text-sm flex items-center justify-between">
+                      <span>Good Samaritan</span>
+                      <Button variant="ghost" size="sm">
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Suggested Insights */}
+                <div>
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4" />
+                    AI Suggestions
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="p-2 bg-blue-50 rounded text-sm">
+                      <div className="font-medium text-blue-800">Related Topic</div>
+                      <div className="text-blue-600">Explore "Forgiveness" theme</div>
+                    </div>
+                    <div className="p-2 bg-green-50 rounded text-sm">
+                      <div className="font-medium text-green-800">Character Connection</div>
+                      <div className="text-green-600">Study Peter's character arc</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

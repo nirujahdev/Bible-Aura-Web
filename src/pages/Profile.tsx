@@ -221,30 +221,31 @@ const Profile = () => {
       </UnifiedHeader>
 
       {/* Main Content */}
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto">
         {/* Profile Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-20 w-20">
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="pb-4 sm:pb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
                 <AvatarImage 
                   src={profile?.avatar_url || ''} 
                   alt={profile?.display_name || 'User Avatar'} 
                 />
-                <AvatarFallback className="text-lg">
+                <AvatarFallback className="text-base sm:text-lg">
                   {(profile?.display_name || user?.email || 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 {editing ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
                       <label className="text-sm font-medium">Display Name</label>
                       <Input
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         placeholder="Enter your display name"
+                        className="mt-1"
                       />
                     </div>
 
@@ -254,14 +255,14 @@ const Profile = () => {
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
                         placeholder="Tell us about your faith journey..."
-                        className="min-h-[80px]"
+                        className="min-h-[80px] mt-1"
                       />
                     </div>
 
                     <div>
                       <label className="text-sm font-medium">Favorite Bible Translation</label>
                       <Select value={favoriteTranslation} onValueChange={setFavoriteTranslation}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -274,41 +275,41 @@ const Profile = () => {
                       </Select>
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button onClick={saveProfile} disabled={loading}>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button onClick={saveProfile} disabled={loading} className="w-full sm:w-auto">
                         <Save className="h-4 w-4 mr-2" />
                         Save Changes
                       </Button>
-                      <Button variant="outline" onClick={() => setEditing(false)}>
+                      <Button variant="outline" onClick={() => setEditing(false)} className="w-full sm:w-auto">
                         Cancel
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                  <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <h1 className="text-2xl font-bold">
+                        <h1 className="text-xl sm:text-2xl font-bold">
                           {profile?.display_name || user?.email?.split('@')[0] || "User"}
                         </h1>
-                        <p className="text-muted-foreground">{user?.email}</p>
+                        <p className="text-muted-foreground text-sm sm:text-base">{user?.email}</p>
                       </div>
-                      <Button onClick={() => setEditing(true)}>
+                      <Button onClick={() => setEditing(true)} className="w-full sm:w-auto">
                         <Edit3 className="h-4 w-4 mr-2" />
                         Edit Profile
                       </Button>
                     </div>
 
                     {profile?.bio && (
-                      <p className="text-muted-foreground">{profile.bio}</p>
+                      <p className="text-muted-foreground text-sm sm:text-base">{profile.bio}</p>
                     )}
 
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">
+                    <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                      <Badge variant="outline" className="text-xs sm:text-sm">
                         <BookOpen className="h-3 w-3 mr-1" />
                         {profile?.favorite_translation || "ESV"}
                       </Badge>
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="text-xs sm:text-sm">
                         <Calendar className="h-3 w-3 mr-1" />
                         Joined {new Date(profile?.created_at || user.created_at).toLocaleDateString()}
                       </Badge>
@@ -354,27 +355,27 @@ const Profile = () => {
         </Card>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <Heart className="h-4 w-4 text-red-500" />
                 Prayer Life
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 sm:space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total Prayers</span>
-                <span className="text-sm font-medium">{stats.totalPrayers}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Total Prayers</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalPrayers}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Answered</span>
-                <span className="text-sm font-medium">{stats.answeredPrayers}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Answered</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.answeredPrayers}</span>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Answer Rate</span>
-                  <span className="text-sm font-medium">{prayerAnswerRate}%</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">Answer Rate</span>
+                  <span className="text-xs sm:text-sm font-medium">{prayerAnswerRate}%</span>
                 </div>
                 <Progress value={prayerAnswerRate} className="h-2" />
               </div>
@@ -383,46 +384,46 @@ const Profile = () => {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-blue-500" />
                 Study & Growth
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 sm:space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Journal Entries</span>
-                <span className="text-sm font-medium">{stats.totalJournalEntries}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Journal Entries</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalJournalEntries}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Bookmarks</span>
-                <span className="text-sm font-medium">{stats.totalBookmarks}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Bookmarks</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalBookmarks}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">AI Conversations</span>
-                <span className="text-sm font-medium">{stats.totalConversations}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">AI Conversations</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalConversations}</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="sm:col-span-2 lg:col-span-1">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <Award className="h-4 w-4 text-yellow-500" />
                 Ministry & Service
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 sm:space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Sermons Created</span>
-                <span className="text-sm font-medium">{stats.totalSermons}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Sermons Created</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalSermons}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Active Goals</span>
-                <span className="text-sm font-medium">0</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Active Goals</span>
+                <span className="text-xs sm:text-sm font-medium">0</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Achievements</span>
-                <span className="text-sm font-medium">Coming Soon</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Achievements</span>
+                <span className="text-xs sm:text-sm font-medium">Coming Soon</span>
               </div>
             </CardContent>
           </Card>
@@ -430,20 +431,20 @@ const Profile = () => {
 
         {/* Recent Activity */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
               Spiritual Goals
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Set Your Spiritual Goals</h3>
-              <p className="text-muted-foreground mb-4">
+            <div className="text-center py-6 sm:py-8">
+              <Target className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Set Your Spiritual Goals</h3>
+              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 px-2">
                 Track your spiritual growth with personalized goals and milestones.
               </p>
-              <Button variant="outline" disabled>
+              <Button variant="outline" disabled className="w-full sm:w-auto">
                 Coming Soon
               </Button>
             </div>

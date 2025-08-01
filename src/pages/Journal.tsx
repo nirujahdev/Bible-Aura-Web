@@ -332,180 +332,193 @@ const Journal = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex h-screen">
-        {/* Left Container - Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 p-4">
-          <div className="h-full flex flex-col space-y-4">
+      <div className="flex flex-col lg:flex-row h-screen">
+        {/* Left Container - Sidebar - Mobile: Full width, Desktop: Fixed width */}
+        <div className="w-full lg:w-80 bg-white border-r border-gray-200 p-2 lg:p-4">
+          <div className="h-full flex flex-col space-y-2 lg:space-y-4">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <BookOpen className="h-6 w-6 text-orange-600" />
+            <div className="flex items-center justify-between mb-2 lg:mb-4">
+              <h1 className="text-lg lg:text-xl font-bold text-gray-800 flex items-center gap-2">
+                <BookOpen className="h-5 lg:h-6 w-5 lg:w-6 text-orange-600" />
                 My Journal
               </h1>
               <Button
                 onClick={handleNewEntry}
                 size="sm"
-                className="bg-orange-500 hover:bg-orange-600"
+                className="bg-orange-500 hover:bg-orange-600 h-8 lg:h-9 px-2 lg:px-3"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                New
+                <Plus className="h-3 lg:h-4 w-3 lg:w-4 mr-1" />
+                <span className="hidden sm:inline">New</span>
               </Button>
             </div>
 
-            {/* Calendar Section */}
-            <Card className="border-orange-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-orange-600" />
-                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  month={currentMonth}
-                  onMonthChange={setCurrentMonth}
-                  className="w-full"
-                  classNames={{
-                    months: "w-full",
-                    month: "w-full",
-                    table: "w-full border-collapse",
-                    head_row: "flex w-full",
-                    head_cell: "text-gray-500 rounded-md w-8 font-normal text-xs",
-                    row: "flex w-full mt-1",
-                    cell: "text-center text-sm p-0 relative w-8 h-8",
-                    day: "h-8 w-8 p-0 font-normal text-xs",
-                    day_selected: "bg-orange-500 text-white hover:bg-orange-600",
-                    day_today: "bg-orange-50 text-orange-600 font-semibold",
-                    day_outside: "text-gray-300",
-                  }}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Recent Journals Section */}
-            <Card className="flex-1 border-orange-200">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-orange-600" />
-                    Recent Entries ({entries.length})
+            {/* Mobile: Horizontal layout, Desktop: Vertical layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-2 lg:gap-4 lg:flex lg:flex-col lg:space-y-4">
+              {/* Calendar Section - Collapsible on mobile */}
+              <Card className="border-orange-200">
+                <CardHeader className="pb-1 lg:pb-2">
+                  <CardTitle className="text-sm lg:text-lg flex items-center gap-2">
+                    <CalendarIcon className="h-4 lg:h-5 w-4 lg:w-5 text-orange-600" />
+                    <span className="hidden sm:inline">
+                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </span>
+                    <span className="sm:hidden">
+                      {currentMonth.toLocaleDateString('en-US', { month: 'short' })}
+                    </span>
                   </CardTitle>
-                  <Button
-                    onClick={loadEntries}
-                    variant="ghost"
-                    size="sm"
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="max-h-96 overflow-y-auto">
-                  {loading ? (
-                    <div className="flex justify-center py-6">
-                      <RefreshCw className="h-5 w-5 animate-spin text-orange-500" />
-                    </div>
-                  ) : error ? (
-                    <div className="p-4 text-center">
-                      <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
-                      <p className="text-red-600 text-xs mb-2">{error}</p>
-                      <Button onClick={loadEntries} size="sm" variant="outline" className="text-xs">
-                        <RefreshCw className="h-3 w-3 mr-1" />
-                        Retry
-                      </Button>
-                    </div>
-                  ) : entries.length === 0 ? (
-                    <div className="p-4 text-center">
-                      <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p className="text-gray-500 text-xs mb-1">No entries yet</p>
-                      <p className="text-gray-400 text-xs">Start writing your first entry!</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {entries.map((entry) => (
-                        <div
-                          key={entry.id}
-                          className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            selectedEntry?.id === entry.id ? 'bg-orange-50 border-r-2 border-orange-500' : ''
-                          }`}
-                          onClick={() => setSelectedEntry(entry)}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <div className="flex items-center gap-1 flex-1">
-                              <span className="text-xs">{getLanguageFlag(entry.language)}</span>
-                              <h3 className="font-medium text-gray-800 truncate text-sm">
-                                {entry.title || "Untitled Entry"}
-                              </h3>
+                </CardHeader>
+                <CardContent className="p-2 lg:p-6">
+                  <div className="lg:block">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      month={currentMonth}
+                      onMonthChange={setCurrentMonth}
+                      className="w-full"
+                      classNames={{
+                        months: "w-full",
+                        month: "w-full",
+                        table: "w-full border-collapse",
+                        head_row: "flex w-full",
+                        head_cell: "text-gray-500 rounded-md w-6 lg:w-8 font-normal text-xs",
+                        row: "flex w-full mt-1",
+                        cell: "text-center text-sm p-0 relative w-6 lg:w-8 h-6 lg:h-8",
+                        day: "h-6 lg:h-8 w-6 lg:w-8 p-0 font-normal text-xs",
+                        day_selected: "bg-orange-500 text-white hover:bg-orange-600",
+                        day_today: "bg-orange-50 text-orange-600 font-semibold",
+                        day_outside: "text-gray-300",
+                      }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Journals Section */}
+              <Card className="flex-1 lg:flex-1 border-orange-200">
+                <CardHeader className="pb-1 lg:pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Clock className="h-3 lg:h-4 w-3 lg:w-4 text-orange-600" />
+                      <span className="hidden sm:inline">Recent Entries ({entries.length})</span>
+                      <span className="sm:hidden">Recent ({entries.length})</span>
+                    </CardTitle>
+                    <Button
+                      onClick={loadEntries}
+                      variant="ghost"
+                      size="sm"
+                      disabled={loading}
+                      className="h-6 lg:h-8 w-6 lg:w-8 p-0"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="max-h-48 lg:max-h-96 overflow-y-auto">
+                    {loading ? (
+                      <div className="flex justify-center py-4 lg:py-6">
+                        <RefreshCw className="h-4 lg:h-5 w-4 lg:w-5 animate-spin text-orange-500" />
+                      </div>
+                    ) : error ? (
+                      <div className="p-2 lg:p-4 text-center">
+                        <AlertCircle className="h-6 lg:h-8 w-6 lg:w-8 mx-auto mb-2 text-red-400" />
+                        <p className="text-red-600 text-xs mb-2">{error}</p>
+                        <Button onClick={loadEntries} size="sm" variant="outline" className="text-xs h-6">
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Retry
+                        </Button>
+                      </div>
+                    ) : entries.length === 0 ? (
+                      <div className="p-2 lg:p-4 text-center">
+                        <FileText className="h-6 lg:h-8 w-6 lg:w-8 mx-auto mb-2 text-gray-300" />
+                        <p className="text-gray-500 text-xs mb-1">No entries yet</p>
+                        <p className="text-gray-400 text-xs">Start writing your first entry!</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {entries.map((entry) => (
+                          <div
+                            key={entry.id}
+                            className={`p-2 lg:p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                              selectedEntry?.id === entry.id ? 'bg-orange-50 border-r-2 border-orange-500' : ''
+                            }`}
+                            onClick={() => setSelectedEntry(entry)}
+                          >
+                            <div className="flex justify-between items-start mb-1">
+                              <div className="flex items-center gap-1 flex-1">
+                                <span className="text-xs">{getLanguageFlag(entry.language)}</span>
+                                <h3 className="font-medium text-gray-800 truncate text-xs lg:text-sm">
+                                  {entry.title || "Untitled Entry"}
+                                </h3>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditEntry(entry);
+                                  }}
+                                  className="h-4 lg:h-5 w-4 lg:w-5 p-0 text-gray-400 hover:text-orange-600"
+                                >
+                                  <Edit3 className="h-2.5 lg:h-3 w-2.5 lg:w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteEntry(entry.id);
+                                  }}
+                                  className="h-4 lg:h-5 w-4 lg:w-5 p-0 text-gray-400 hover:text-red-600"
+                                >
+                                  <Trash2 className="h-2.5 lg:h-3 w-2.5 lg:w-3" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditEntry(entry);
-                                }}
-                                className="h-5 w-5 p-0 text-gray-400 hover:text-orange-600"
-                              >
-                                <Edit3 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteEntry(entry.id);
-                                }}
-                                className="h-5 w-5 p-0 text-gray-400 hover:text-red-600"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                            <p className="text-xs text-gray-600 line-clamp-2 mb-1">
+                              {entry.content}
+                            </p>
+                            <div className="flex justify-between items-center text-xs text-gray-500">
+                              <span className="hidden sm:inline">{formatDate(entry.created_at)}</span>
+                              <span className="sm:hidden">{formatDate(entry.created_at).split(',')[0]}</span>
+                              <span>{formatTime(entry.created_at)}</span>
                             </div>
+                            {entry.verse_references && entry.verse_references.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {entry.verse_references.slice(0, 2).map((verse, index) => (
+                                  <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
+                                    📖 {verse.split(' ').slice(-1)[0]}
+                                  </span>
+                                ))}
+                                {entry.verse_references.length > 2 && (
+                                  <span className="text-xs text-gray-400">+{entry.verse_references.length - 2}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                            {entry.content}
-                          </p>
-                          <div className="flex justify-between items-center text-xs text-gray-500">
-                            <span>{formatDate(entry.created_at)}</span>
-                            <span>{formatTime(entry.created_at)}</span>
-                          </div>
-                          {entry.verse_references && entry.verse_references.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {entry.verse_references.slice(0, 2).map((verse, index) => (
-                                <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
-                                  📖 {verse.split(' ').slice(-1)[0]}
-                                </span>
-                              ))}
-                              {entry.verse_references.length > 2 && (
-                                <span className="text-xs text-gray-400">+{entry.verse_references.length - 2}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
 
-        {/* Right Container - Entry Display */}
-        <div className="flex-1 bg-white p-8">
+        {/* Right Container - Entry Display - Mobile: Full width below sidebar */}
+        <div className="flex-1 bg-white p-3 lg:p-8">
           <div className="h-full flex flex-col max-w-4xl mx-auto">
             {selectedEntry ? (
               <div className="h-full flex flex-col">
                 {/* Entry Header */}
-                <div className="mb-6 pb-4 border-b border-gray-200">
-                  <div className="flex items-start justify-between mb-2">
+                <div className="mb-4 lg:mb-6 pb-3 lg:pb-4 border-b border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-2 gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{getLanguageFlag(selectedEntry.language)}</span>
-                      <h1 className="text-2xl font-bold text-gray-800">
+                      <span className="text-xl lg:text-2xl">{getLanguageFlag(selectedEntry.language)}</span>
+                      <h1 className="text-lg lg:text-2xl font-bold text-gray-800">
                         {selectedEntry.title || "Untitled Entry"}
                       </h1>
                     </div>
@@ -514,37 +527,37 @@ const Journal = () => {
                         onClick={() => handleEditEntry(selectedEntry)}
                         variant="outline"
                         size="sm"
-                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                        className="border-orange-300 text-orange-600 hover:bg-orange-50 h-8"
                       >
-                        <Edit3 className="h-4 w-4 mr-1" />
+                        <Edit3 className="h-3 lg:h-4 w-3 lg:w-4 mr-1" />
                         Edit
                       </Button>
                       <Button
                         onClick={() => handleDeleteEntry(selectedEntry.id)}
                         variant="outline"
                         size="sm"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
+                        className="border-red-300 text-red-600 hover:bg-red-50 h-8"
                       >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
+                        <Trash2 className="h-3 lg:h-4 w-3 lg:w-4 mr-1" />
+                        <span className="hidden sm:inline">Delete</span>
                       </Button>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-600">
                     <span>{formatDate(selectedEntry.created_at)}</span>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <span>{formatTime(selectedEntry.created_at)}</span>
                     {selectedEntry.word_count && (
                       <>
-                        <span>•</span>
-                        <span>{selectedEntry.word_count} words</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">{selectedEntry.word_count} words</span>
                       </>
                     )}
                     {selectedEntry.reading_time && (
                       <>
-                        <span>•</span>
-                        <span>{selectedEntry.reading_time} min read</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">{selectedEntry.reading_time} min read</span>
                       </>
                     )}
                   </div>
@@ -562,7 +575,7 @@ const Journal = () => {
 
                 {/* Entry Content */}
                 <div className="flex-1 overflow-y-auto">
-                  <div className="prose prose-gray max-w-none">
+                  <div className="prose prose-gray max-w-none prose-sm lg:prose-base">
                     <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
                       {selectedEntry.content.split('\n').map((line, index) => {
                         // Simple markdown rendering
@@ -589,13 +602,13 @@ const Journal = () => {
               </div>
             ) : (
               <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h2 className="text-xl font-semibold text-gray-600 mb-2">Select an entry to read</h2>
-                  <p className="text-gray-500 mb-4">Choose from your recent journal entries or create a new one</p>
+                <div className="text-center px-4">
+                  <BookOpen className="h-12 lg:h-16 w-12 lg:w-16 mx-auto mb-4 text-gray-300" />
+                  <h2 className="text-lg lg:text-xl font-semibold text-gray-600 mb-2">Select an entry to read</h2>
+                  <p className="text-sm lg:text-base text-gray-500 mb-4">Choose from your recent journal entries or create a new one</p>
                   <Button
                     onClick={handleNewEntry}
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Write New Entry

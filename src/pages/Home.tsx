@@ -277,6 +277,30 @@ const Home = () => {
       {/* SEO Backlinks */}
       <SEOBacklinks currentPage="/" category="general" />
 
+      {/* Data Privacy Statement */}
+      <section className="py-8 md:py-12 bg-gray-50 border-t">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm">🔒</span>
+            </div>
+          </div>
+          
+          <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
+            Your Privacy Matters
+          </h3>
+          
+          <div className="space-y-3 text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base">
+              We only ask for your Google email for account verification and security.
+            </p>
+            <p className="text-sm md:text-base">
+              Your personal content - journals, sermons, and chat conversations - are private and never shared with anyone.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

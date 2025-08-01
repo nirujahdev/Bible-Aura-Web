@@ -492,7 +492,7 @@ export default function Bible() {
       <div className="flex h-screen">
         {/* Mobile Chapter Navigation - Right side (keeping this as it's page-specific) */}
         {isMobile && selectedBook && (
-          <div className="fixed top-4 right-20 z-50 flex items-center gap-1">
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-1">
             <Button
               variant="outline"
               size="sm"
@@ -514,7 +514,326 @@ export default function Bible() {
           </div>
         )}
 
-        {/* Bible Content Panel - Desktop */}
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <div className="fixed top-4 left-4 z-50">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-white shadow-lg">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <div className="h-full overflow-auto">
+                  {/* Mobile Navigation Content */}
+                  <Tabs value={activeTab} onValueChange={(value) => {
+                    setActiveTab(value);
+                    if (value === 'read') {
+                      setSearchResults([]);
+                    }
+                  }} className="flex-1 flex flex-col h-full">
+                    <TabsList className="grid w-full grid-cols-3 m-4 mb-0 h-10">
+                      <TabsTrigger value="read" className="text-xs h-8 px-2">
+                        <BookOpen className="h-3 w-3 mr-1" />
+                        Read
+                      </TabsTrigger>
+                      <TabsTrigger value="search" className="text-xs h-8 px-2">
+                        <Search className="h-3 w-3 mr-1" />
+                        Search
+                      </TabsTrigger>
+                      <TabsTrigger value="plans" className="text-xs h-8 px-2">
+                        <Target className="h-3 w-3 mr-1" />
+                        Plans
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <div className="flex-1 overflow-auto">
+                      <TabsContent value="read" className="p-4 mt-0">
+                        {/* Chapter Selection */}
+                        {selectedBook && (
+                          <div className="mb-4">
+                            <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                              <BookOpen className="h-4 w-4" />
+                              Chapters - {getBookDisplayName(selectedBook.name)}
+                            </label>
+                            <div className="grid grid-cols-5 gap-1">
+                              {Array.from({ length: Math.min(selectedBook.chapters, 25) }, (_, i) => i + 1).map(chapter => (
+                                <Button
+                                  key={chapter}
+                                  variant={selectedChapter === chapter ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => setSelectedChapter(chapter)}
+                                  className="text-xs h-8"
+                                >
+                                  {chapter}
+                                </Button>
+                              ))}
+                            </div>
+                            
+                            {selectedBook.chapters > 25 && (
+                              <Select 
+                                value={selectedChapter.toString()} 
+                                onValueChange={(chapter) => setSelectedChapter(parseInt(chapter))}
+                              >
+                                <SelectTrigger className="mt-2 h-10">
+                                  <SelectValue placeholder="More chapters..." />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                  {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map(chapter => (
+                                    <SelectItem key={chapter} value={chapter.toString()}>
+                                      Chapter {chapter}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Language and Translation Selection */}
+                        <div className="mb-4 space-y-3">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                              <Languages className="h-4 w-4" />
+                              Language
+                            </label>
+                            <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => {
+                              setSelectedLanguage(value);
+                              if (value === 'tamil') {
+                                setSelectedTranslation('TAMIL');
+                              } else {
+                                setSelectedTranslation('KJV');
+                              }
+                            }}>
+                              <SelectTrigger className="h-10">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LANGUAGES.map(language => (
+                                  <SelectItem key={language.value} value={language.value}>
+                                    {language.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {selectedLanguage === 'english' && (
+                            <div>
+                              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                                <BookOpen className="h-4 w-4" />
+                                Translation
+                              </label>
+                              <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                                <SelectTrigger className="h-10">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ENGLISH_TRANSLATIONS.map(translation => (
+                                    <SelectItem key={translation.code} value={translation.code}>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">{translation.code}</span>
+                                        <span className="text-xs text-gray-500">-</span>
+                                        <span className="text-xs">{translation.name}</span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Book Selection with Expandable Sections */}
+                        <div className="mb-4">
+                          <label className="text-sm font-medium mb-3 block">Books</label>
+                          <div className="space-y-2">
+                            {/* Old Testament Section */}
+                            <Collapsible open={oldTestamentExpanded} onOpenChange={(open) => {
+                              setOldTestamentExpanded(open);
+                              if (open) setNewTestamentExpanded(false);
+                            }}>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-between p-2 h-10 text-left"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Book className="h-3 w-3 text-orange-600" />
+                                    <span className="font-medium text-sm text-gray-700">
+                                      {selectedLanguage === 'tamil' ? 'பழைய ஏற்பாடு' : 'Old Testament'}
+                                    </span>
+                                    <Badge variant="secondary" className="text-xs h-4">
+                                      {oldTestamentBooks.length}
+                                    </Badge>
+                                  </div>
+                                  {oldTestamentExpanded ? (
+                                    <ChevronUp className="h-3 w-3" />
+                                  ) : (
+                                    <ChevronDown className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="space-y-1 pl-2">
+                                <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto">
+                                  {oldTestamentBooks.map(book => (
+                                    <Button
+                                      key={book.id}
+                                      variant={selectedBook?.name === book.name ? "default" : "ghost"}
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedBook(book);
+                                        setSelectedChapter(1);
+                                      }}
+                                      className="justify-start text-xs h-8 px-2"
+                                    >
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>{getBookDisplayName(book.name)}</span>
+                                        <Badge variant="outline" className="text-xs ml-2 h-4">
+                                          {book.chapters}
+                                        </Badge>
+                                      </div>
+                                    </Button>
+                                  ))}
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+                            
+                            {/* New Testament Section */}
+                            <Collapsible open={newTestamentExpanded} onOpenChange={(open) => {
+                              setNewTestamentExpanded(open);
+                              if (open) setOldTestamentExpanded(false);
+                            }}>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-between p-2 h-10 text-left"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <BookOpen className="h-3 w-3 text-blue-600" />
+                                    <span className="font-medium text-sm text-gray-700">
+                                      {selectedLanguage === 'tamil' ? 'புதிய ஏற்பாடு' : 'New Testament'}
+                                    </span>
+                                    <Badge variant="secondary" className="text-xs h-4">
+                                      {newTestamentBooks.length}
+                                    </Badge>
+                                  </div>
+                                  {newTestamentExpanded ? (
+                                    <ChevronUp className="h-3 w-3" />
+                                  ) : (
+                                    <ChevronDown className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="space-y-1 pl-2">
+                                <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto">
+                                  {newTestamentBooks.map(book => (
+                                    <Button
+                                      key={book.id}
+                                      variant={selectedBook?.name === book.name ? "default" : "ghost"}
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedBook(book);
+                                        setSelectedChapter(1);
+                                      }}
+                                      className="justify-start text-xs h-8 px-2"
+                                    >
+                                      <div className="flex items-center justify-between w-full">
+                                        <span>{getBookDisplayName(book.name)}</span>
+                                        <Badge variant="outline" className="text-xs ml-2 h-4">
+                                          {book.chapters}
+                                        </Badge>
+                                      </div>
+                                    </Button>
+                                  ))}
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="search" className="p-4 mt-0">
+                        <div className="space-y-4">
+                          <div>
+                            <Input
+                              placeholder="Search verses..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                              className="h-10"
+                            />
+                            <Button onClick={handleSearch} className="w-full mt-2 h-10">
+                              <Search className="h-4 w-4 mr-2" />
+                              Search
+                            </Button>
+                          </div>
+
+                          {/* Search Filters */}
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-medium">Filters</h4>
+                            
+                            <div>
+                              <label className="text-xs text-gray-500">Testament</label>
+                              <Select 
+                                value={searchFilters.testament} 
+                                onValueChange={(value) => setSearchFilters(prev => ({ ...prev, testament: value }))}
+                              >
+                                <SelectTrigger className="h-10">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">All</SelectItem>
+                                  <SelectItem value="old">Old Testament</SelectItem>
+                                  <SelectItem value="new">New Testament</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id="exactMatch"
+                                checked={searchFilters.exactMatch}
+                                onChange={(e) => setSearchFilters(prev => ({ ...prev, exactMatch: e.target.checked }))}
+                                className="rounded"
+                              />
+                              <label htmlFor="exactMatch" className="text-xs">Exact match</label>
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="plans" className="p-4 mt-0">
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-medium">Reading Plans</h4>
+                          {READING_PLANS.map(plan => (
+                            <Card key={plan.id} className="cursor-pointer hover:bg-gray-50">
+                              <CardContent className="p-3">
+                                <h5 className="font-medium text-sm">{plan.name}</h5>
+                                <p className="text-xs text-gray-500 mb-1">{plan.duration}</p>
+                                <p className="text-xs text-gray-600">{plan.description}</p>
+                                <Button 
+                                  size="sm" 
+                                  className="mt-2 w-full h-8"
+                                  onClick={() => setReadingPlan(plan.id)}
+                                >
+                                  Start Plan
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        )}
+
+        {/* Bible Content Panel - Desktop Only */}
         {!isMobile && (
           <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm">
 
@@ -836,18 +1155,18 @@ export default function Bible() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Book Header Banner - Moved from top */}
           {selectedBook && (
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 md:p-6 shadow-sm border-b">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 sm:p-4 md:p-6 shadow-sm border-b">
               <div className="max-w-6xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <BookOpen className="h-5 w-5 text-white" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 sm:w-9 md:w-10 h-8 sm:h-9 md:h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <BookOpen className="h-4 sm:h-5 w-4 sm:w-5 text-white" />
                     </div>
                     <div>
-                      <h1 className="text-xl md:text-2xl font-bold">
+                      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">
                         {getBookDisplayName(selectedBook.name)} {selectedChapter}
                       </h1>
-                      <p className="text-orange-100 text-sm">
+                      <p className="text-orange-100 text-xs sm:text-sm">
                         {selectedLanguage === 'english' 
                           ? BIBLE_TRANSLATIONS.find(t => t.code === selectedTranslation)?.name || selectedTranslation
                           : 'Tamil Bible'
@@ -888,16 +1207,16 @@ export default function Bible() {
 
           {/* Verses Display */}
           <div className="flex-1 overflow-auto bg-gray-50">
-            <div className="max-w-5xl mx-auto p-4 md:p-8">
+            <div className="max-w-5xl mx-auto p-2 sm:p-4 md:p-8">
               {searchResults.length > 0 ? (
                 // Search Results
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-                  <div className="mb-6">
-                    <h2 className="text-xl md:text-2xl font-bold mb-2 text-gray-800">Search Results</h2>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 lg:p-8">
+                  <div className="mb-4 sm:mb-6">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 text-gray-800">Search Results</h2>
                     <p className="text-sm md:text-base text-gray-600">Found {searchResults.length} verses for "{searchQuery}"</p>
                   </div>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {searchResults.map((verse) => (
                       <VerseCard 
                         key={verse.id}
@@ -918,8 +1237,8 @@ export default function Bible() {
                 </div>
               ) : verses.length > 0 ? (
                 // Chapter Display
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-                  <div className="space-y-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 lg:p-8">
+                  <div className="space-y-4 sm:space-y-6">
                     {verses.map((verse) => (
                       <VerseCard 
                         key={verse.id}
@@ -940,11 +1259,11 @@ export default function Bible() {
                 </div>
               ) : (
                 // Empty State
-                <div className="flex items-center justify-center py-12 md:py-20">
+                <div className="flex items-center justify-center py-8 sm:py-12 md:py-20">
                   <div className="text-center px-4">
-                    <BookOpen className="h-12 w-12 md:h-16 md:w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-base md:text-lg font-semibold mb-2">Start Reading</h3>
-                    <p className="text-sm md:text-base text-gray-600 mb-4">Select a book and chapter to begin your Bible study journey.</p>
+                    <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold mb-2">Start Reading</h3>
+                    <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-4">Select a book and chapter to begin your Bible study journey.</p>
                     
                     {/* Quick start buttons */}
                     <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -952,30 +1271,24 @@ export default function Bible() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (isMobile) {
-                            // Removed mobile sidebar functionality
-                          }
                           setOldTestamentExpanded(true);
                           setActiveTab('read');
                         }}
                         className="text-xs md:text-sm"
                       >
-                        <Book className="h-4 w-4 mr-2" />
+                        <Book className="h-3 sm:h-4 w-3 sm:w-4 mr-2" />
                         Old Testament
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (isMobile) {
-                            // Removed mobile sidebar functionality
-                          }
                           setNewTestamentExpanded(true);
                           setActiveTab('read');
                         }}
                         className="text-xs md:text-sm"
                       >
-                        <BookOpen className="h-4 w-4 mr-2" />
+                        <BookOpen className="h-3 sm:h-4 w-3 sm:w-4 mr-2" />
                         New Testament
                       </Button>
                     </div>
