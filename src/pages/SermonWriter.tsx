@@ -1,21 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS } from "@/lib/local-bible";
 import { 
-  Mic, Plus, Edit3, Trash2, Search, 
-  Save, Calendar as CalendarIcon, X,
-  ChevronLeft, ChevronRight, RefreshCw, 
-  AlertCircle, Clock, FileText, Sparkles,
-  BookOpen, Users, Volume2, Globe, Quote
+  Mic, Plus, Edit3, Trash2, Save, X, RefreshCw, 
+  AlertCircle, Clock, FileText, BookOpen, 
+  Users, ChevronLeft, ChevronRight, Send, MessageCircle, 
+  Bot, Copy, Download, Maximize2, Minimize2, PanelLeftOpen, 
+  PanelRightOpen, BarChart3, Target, Award
 } from "lucide-react";
+import { format } from 'date-fns';
+import SermonToolbar from '@/components/SermonToolbar';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 interface SermonEntry {
   id: string;
@@ -25,10 +33,11 @@ interface SermonEntry {
   main_points?: string[];
   congregation?: string | null;
   sermon_date?: string;
-  duration?: number; // in minutes
+  duration?: number;
   notes?: string | null;
   tags?: string[];
   is_draft?: boolean;
+  status?: 'draft' | 'ready' | 'delivered' | 'archived';
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -41,39 +50,119 @@ interface SermonEntry {
   applications?: string[];
 }
 
+interface BibleBook {
+  id: string;
+  name: string;
+  testament: 'old' | 'new';
+  chapters: number;
+}
+
+interface BibleVerse {
+  id: string;
+  book_name: string;
+  chapter: number;
+  verse: number;
+  text: string;
+}
+
+interface AIMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+interface SermonStats {
+  total: number;
+  ready: number;
+  delivered: number;
+  drafts: number;
+}
+
 const SermonWriter = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Core state
+  // Core sermon state
   const [sermons, setSermons] = useState<SermonEntry[]>([]);
-  const [selectedSermon, setSelectedSermon] = useState<SermonEntry | null>(null);
+  const [editingSermon, setEditingSermon] = useState<Partial<SermonEntry> | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  
-  // Editor state
-  const [showEditor, setShowEditor] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingSermon, setEditingSermon] = useState<Partial<SermonEntry> | null>(null);
+  const [stats, setStats] = useState<SermonStats>({ total: 0, ready: 0, delivered: 0, drafts: 0 });
+  
+  // Layout state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [activeRightTab, setActiveRightTab] = useState('bible');
+  
+  // Bible state
+  const [books, setBooks] = useState<BibleBook[]>([]);
+  const [selectedBook, setSelectedBook] = useState<BibleBook | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState(1);
+  const [verses, setVerses] = useState<BibleVerse[]>([]);
+  const [selectedTranslation, setSelectedTranslation] = useState<TranslationCode>('KJV');
+  const [bibleLoading, setBibleLoading] = useState(false);
+  
+  // AI Chat state
+  const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  
+  // Advanced editor features
+  const [autoSave, setAutoSave] = useState(true);
+  const [fontSize, setFontSize] = useState(16);
+  const [lineHeight, setLineHeight] = useState(1.6);
+  const [darkMode, setDarkMode] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [wordGoal, setWordGoal] = useState(1500);
+  
+  // Editor refs
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const aiScrollRef = useRef<HTMLDivElement>(null);
+  const autoSaveRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (user) {
       loadSermons();
+      loadBooks();
     }
   }, [user]);
 
+  useEffect(() => {
+    if (selectedBook) {
+      loadChapter();
+    }
+  }, [selectedBook, selectedChapter, selectedTranslation]);
+
+  useEffect(() => {
+    calculateStats();
+  }, [sermons]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (autoSave && editingSermon && editingSermon.content) {
+      if (autoSaveRef.current) {
+        clearTimeout(autoSaveRef.current);
+      }
+      
+      autoSaveRef.current = setTimeout(() => {
+        handleSaveSermon(true);
+      }, 2000); // Auto-save every 2 seconds
+    }
+    
+    return () => {
+      if (autoSaveRef.current) {
+        clearTimeout(autoSaveRef.current);
+      }
+    };
+  }, [editingSermon?.content, autoSave]);
+
   const loadSermons = async () => {
     if (!user) return;
-    
     setLoading(true);
-    setError(null);
-    
     try {
-      console.log('Loading sermons for user:', user.id);
-      
       const { data, error } = await supabase
         .from('sermons')
         .select('*')
@@ -81,24 +170,56 @@ const SermonWriter = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
-      console.log('Loaded sermons:', data?.length || 0);
+      if (error) throw error;
       setSermons((data || []) as SermonEntry[]);
-      
     } catch (error) {
       console.error('Error loading sermons:', error);
-      setError('Failed to load sermons');
       toast({
         title: "Error loading sermons",
-        description: "Please check your connection and try again",
+        description: "Please try again",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateStats = () => {
+    const total = sermons.length;
+    const ready = sermons.filter(s => !s.is_draft && s.content.trim().length > 0).length;
+    const delivered = sermons.filter(s => s.status === 'delivered').length; // Assuming status field exists
+    const drafts = sermons.filter(s => s.is_draft).length;
+    
+    setStats({ total, ready, delivered, drafts });
+  };
+
+  const loadBooks = async () => {
+    try {
+      const booksData = await getAllBooks();
+      setBooks(booksData);
+      if (booksData.length > 0) {
+        setSelectedBook(booksData[0]);
+      }
+    } catch (error) {
+      console.error('Error loading books:', error);
+    }
+  };
+
+  const loadChapter = async () => {
+    if (!selectedBook) return;
+    setBibleLoading(true);
+    try {
+      const chapterVerses = await getChapterVerses(
+        selectedBook.name, 
+        selectedChapter, 
+        'english',
+        selectedTranslation
+      );
+      setVerses(chapterVerses);
+    } catch (error) {
+      console.error('Error loading chapter:', error);
+    } finally {
+      setBibleLoading(false);
     }
   };
 
@@ -113,631 +234,860 @@ const SermonWriter = () => {
       language: 'english'
     });
     setIsEditing(false);
-    setShowEditor(true);
   };
 
-  const handleEditSermon = (sermon: SermonEntry) => {
-    setEditingSermon(sermon);
-    setIsEditing(true);
-    setShowEditor(true);
-  };
+  const handleSaveSermon = useCallback(async (isAutoSave = false) => {
+    if (!user || !editingSermon) return;
 
-  const handleSaveSermon = async (sermonData: any) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to save sermons",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSaving(true);
-    
+    if (!isAutoSave) setSaving(true);
     try {
       const finalData = {
         user_id: user.id,
-        title: sermonData.title?.trim() || null,
-        content: sermonData.content.trim(),
-        scripture_reference: sermonData.scripture_reference || null,
-        congregation: sermonData.congregation || null,
-        sermon_date: sermonData.sermon_date || new Date().toISOString().split('T')[0],
-        is_draft: sermonData.is_draft ?? true,
-        word_count: sermonData.word_count || 0,
-        estimated_time: sermonData.estimated_time || 0,
-        language: sermonData.language || 'english',
+        title: editingSermon.title?.trim() || null,
+        content: editingSermon.content?.trim() || '',
+        scripture_reference: editingSermon.scripture_reference || null,
+        congregation: editingSermon.congregation || null,
+        sermon_date: editingSermon.sermon_date || new Date().toISOString().split('T')[0],
+        is_draft: editingSermon.is_draft ?? true,
+        word_count: editingSermon.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0,
+        estimated_time: Math.ceil((editingSermon.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150),
+        language: editingSermon.language || 'english',
         updated_at: new Date().toISOString()
       };
 
       if (isEditing && editingSermon?.id) {
-        console.log('Updating sermon:', editingSermon.id);
         const { error } = await supabase
           .from('sermons')
           .update(finalData)
           .eq('id', editingSermon.id)
           .eq('user_id', user.id);
 
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
-        }
+        if (error) throw error;
         
-        toast({
-          title: "Sermon updated",
-          description: "Your sermon has been saved successfully",
-        });
+        if (!isAutoSave) {
+          toast({
+            title: "Sermon updated",
+            description: "Your sermon has been saved successfully",
+          });
+        }
       } else {
-        console.log('Creating new sermon with data:', finalData);
         const { data, error } = await supabase
           .from('sermons')
           .insert(finalData)
           .select()
           .single();
 
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
+        if (error) throw error;
         
-        console.log('Sermon created successfully:', data);
-        toast({
-          title: "Sermon created",
-          description: "Your new sermon has been saved",
-        });
+        setEditingSermon(prev => ({ ...prev, id: data.id }));
+        setIsEditing(true);
+        
+        if (!isAutoSave) {
+          toast({
+            title: "Sermon created",
+            description: "Your new sermon has been saved",
+          });
+        }
       }
 
-      // Close editor and reload sermons
-      handleCloseEditor();
       await loadSermons();
     } catch (error) {
       console.error('Error saving sermon:', error);
+      if (!isAutoSave) {
+        toast({
+          title: "Error saving sermon",
+          description: "Please try again",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      if (!isAutoSave) setSaving(false);
+    }
+  }, [user, editingSermon, isEditing, loadSermons]);
+
+  const handleSaveClick = () => {
+    handleSaveSermon(false);
+  };
+
+  const insertVerseIntoSermon = (verse: BibleVerse) => {
+    const verseText = `\n\n"${verse.text}" - ${verse.book_name} ${verse.chapter}:${verse.verse}\n\n`;
+    
+    if (editorRef.current) {
+      const start = editorRef.current.selectionStart;
+      const end = editorRef.current.selectionEnd;
+      const currentContent = editingSermon?.content || '';
+      const newContent = currentContent.slice(0, start) + verseText + currentContent.slice(end);
+      
+      setEditingSermon(prev => ({ ...prev, content: newContent }));
+      
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.focus();
+          editorRef.current.setSelectionRange(start + verseText.length, start + verseText.length);
+        }
+      }, 0);
+    } else {
+      setEditingSermon(prev => ({ 
+        ...prev, 
+        content: (prev?.content || '') + verseText 
+      }));
+    }
+    
+    toast({
+      title: "Verse added",
+      description: `${verse.book_name} ${verse.chapter}:${verse.verse} added to sermon`,
+    });
+  };
+
+  const handleFormatText = (format: string, formattedText?: string) => {
+    if (!editorRef.current || !formattedText) return;
+    
+    const textarea = editorRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentContent = editingSermon?.content || '';
+    
+    const newContent = currentContent.slice(0, start) + formattedText + currentContent.slice(end);
+    setEditingSermon(prev => ({ ...prev, content: newContent }));
+    
+    setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.focus();
+        editorRef.current.setSelectionRange(start + formattedText.length, start + formattedText.length);
+      }
+    }, 0);
+  };
+
+  const handleExportSermon = (format: string) => {
+    if (!editingSermon) return;
+    
+    const title = editingSermon.title || 'Untitled Sermon';
+    const content = `# ${title}\n\n**Scripture:** ${editingSermon.scripture_reference || 'N/A'}\n**Date:** ${editingSermon.sermon_date || 'TBD'}\n**Congregation:** ${editingSermon.congregation || 'N/A'}\n\n---\n\n${editingSermon.content}`;
+    
+    let blob;
+    let filename;
+    
+    switch (format) {
+      case 'txt':
+        blob = new Blob([content], { type: 'text/plain' });
+        filename = `${title}.txt`;
+        break;
+      case 'md':
+        blob = new Blob([content], { type: 'text/markdown' });
+        filename = `${title}.md`;
+        break;
+      case 'html':
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${title}</title>
+    <style>
+        body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #333; border-bottom: 2px solid #333; }
+        h2 { color: #666; }
+        blockquote { border-left: 4px solid #ddd; padding-left: 16px; margin: 16px 0; font-style: italic; }
+    </style>
+</head>
+<body>
+    ${content.replace(/\n/g, '<br>').replace(/# (.*)/g, '<h1>$1</h1>').replace(/## (.*)/g, '<h2>$1</h2>').replace(/> (.*)/g, '<blockquote>$1</blockquote>')}
+</body>
+</html>`;
+        blob = new Blob([htmlContent], { type: 'text/html' });
+        filename = `${title}.html`;
+        break;
+      default:
+        return;
+    }
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const insertQuickText = (text: string) => {
+    if (editorRef.current) {
+      const start = editorRef.current.selectionStart;
+      const currentContent = editingSermon?.content || '';
+      const newContent = currentContent.slice(0, start) + text + currentContent.slice(start);
+      
+      setEditingSermon(prev => ({ ...prev, content: newContent }));
+      
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.focus();
+          editorRef.current.setSelectionRange(start + text.length, start + text.length);
+        }
+      }, 0);
+    }
+  };
+
+  const sendAIMessage = async () => {
+    if (!aiInput.trim() || !user) return;
+
+    const userMessage: AIMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: aiInput,
+      timestamp: new Date().toISOString()
+    };
+
+    setAiMessages(prev => [...prev, userMessage]);
+    setAiInput('');
+    setAiLoading(true);
+
+    try {
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: "system",
+              content: "You are a biblical studies assistant helping with sermon preparation. Provide thoughtful, biblically sound insights."
+            },
+            { role: "user", content: aiInput }
+          ],
+          max_tokens: 500,
+          temperature: 0.7
+        })
+      });
+
+      const data = await response.json();
+      
+      const aiMessage: AIMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.choices[0].message.content,
+        timestamp: new Date().toISOString()
+      };
+
+      setAiMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error sending AI message:', error);
       toast({
-        title: "Error saving sermon",
-        description: error.message || "Please try again",
+        title: "AI Error",
+        description: "Failed to get AI response",
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setAiLoading(false);
     }
   };
 
-  const handleDeleteSermon = async (sermonId: string) => {
-    if (!confirm('Are you sure you want to delete this sermon? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('sermons')
-        .delete()
-        .eq('id', sermonId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sermon deleted",
-        description: "The sermon has been removed successfully",
-      });
-
-      // If the deleted sermon was selected, clear the selection
-      if (selectedSermon?.id === sermonId) {
-        setSelectedSermon(null);
-      }
-
-      // Reload sermons
-      await loadSermons();
-    } catch (error) {
-      console.error('Error deleting sermon:', error);
-      toast({
-        title: "Error deleting sermon",
-        description: "Please try again",
-        variant: "destructive",
-      });
-    }
+  const formatTime = (timeString: string) => {
+    return format(new Date(timeString), 'h:mm a');
   };
 
-  const handleCloseEditor = () => {
-    setShowEditor(false);
-    setEditingSermon(null);
-    setIsEditing(false);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit' 
-    });
-  };
-
-  const getLanguageFlag = (language?: string) => {
-    switch (language) {
-      case 'tamil': return '🇮🇳';
-      case 'sinhala': return '🇱🇰';
-      default: return '🇺🇸';
-    }
-  };
-
-  const getSermonStatus = (sermon: SermonEntry) => {
-    if (sermon.is_draft) {
-      return <Badge variant="secondary">Draft</Badge>;
-    }
-    return <Badge variant="default" className="bg-green-100 text-green-800">Complete</Badge>;
-  };
-
-  // Show editor when editing/creating
-  if (showEditor) {
+  // If no sermon is being edited, show the sermon dashboard
+  if (!editingSermon) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto p-6">
-          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <Mic className="h-8 w-8 text-purple-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {isEditing ? 'Edit Sermon' : 'New Sermon'}
-                </h1>
-                <p className="text-gray-600">Write and organize your sermon content</p>
+                <h1 className="text-2xl font-bold text-gray-800">Sermon Writer</h1>
+                <p className="text-gray-600">Create and manage your sermons</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleCloseEditor}
-                variant="outline"
-                className="border-gray-300"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
+            <Button
+              onClick={handleNewSermon}
+              className="bg-purple-500 hover:bg-purple-600"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Sermon
+            </Button>
+          </div>
+
+          {/* Statistics Dashboard */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                    <p className="text-sm text-gray-600">Total Sermons</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Target className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.ready}</p>
+                    <p className="text-sm text-gray-600">Ready</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Mic className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.delivered}</p>
+                    <p className="text-sm text-gray-600">Delivered</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Edit3 className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.drafts}</p>
+                    <p className="text-sm text-gray-600">Drafts</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sermons Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sermons.map((sermon) => (
+              <Card key={sermon.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg line-clamp-2">
+                    {sermon.title || "Untitled Sermon"}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={sermon.is_draft ? "secondary" : "default"}>
+                      {sermon.is_draft ? "Draft" : "Ready"}
+                    </Badge>
+                    {sermon.scripture_reference && (
+                      <Badge variant="outline" className="text-xs">
+                        {sermon.scripture_reference}
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                    {sermon.content || "No content yet..."}
+                  </p>
+                  <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
+                    <span>{format(new Date(sermon.created_at), 'MMM d, yyyy')}</span>
+                                      <span>{sermon.word_count || 0} words</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                  <div 
+                    className="bg-purple-600 h-2 rounded-full" 
+                    style={{ width: `${Math.min(100, ((sermon.word_count || 0) / wordGoal) * 100)}%` }}
+                  ></div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setEditingSermon(sermon);
+                      setIsEditing(true);
+                    }}
+                    className="flex-1"
+                  >
+                    <Edit3 className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {sermons.length === 0 && !loading && (
+            <div className="text-center py-12">
+              <Mic className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h2 className="text-xl font-semibold text-gray-600 mb-2">No sermons yet</h2>
+              <p className="text-gray-500 mb-4">Start writing your first sermon!</p>
+              <Button onClick={handleNewSermon} className="bg-purple-500 hover:bg-purple-600">
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Sermon
               </Button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Content Area */}
-            <div className="lg:col-span-3">
-              <Card className="h-full">
-                <CardContent className="p-6">
-                  <div className="space-y-6">
-                    {/* Title */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Sermon Title
-                      </label>
-                      <Input
-                        placeholder="Enter sermon title..."
-                        value={editingSermon?.title || ''}
-                        onChange={(e) => setEditingSermon(prev => ({ ...prev, title: e.target.value }))}
-                        className="text-lg"
-                      />
-                    </div>
-
-                    {/* Scripture Reference */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Scripture Reference
-                      </label>
-                      <Input
-                        placeholder="e.g., John 3:16, Romans 8:28-30"
-                        value={editingSermon?.scripture_reference || ''}
-                        onChange={(e) => setEditingSermon(prev => ({ ...prev, scripture_reference: e.target.value }))}
-                      />
-                    </div>
-
-                    {/* Content Editor */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Sermon Content
-                      </label>
-                      <Textarea
-                        placeholder="Write your sermon content here..."
-                        value={editingSermon?.content || ''}
-                        onChange={(e) => setEditingSermon(prev => ({ ...prev, content: e.target.value }))}
-                        className="min-h-[400px] resize-y"
-                      />
-                    </div>
-
-                    {/* Additional Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Congregation
-                        </label>
-                        <Input 
-                          placeholder="e.g., Sunday Service, Youth Group" 
-                          value={editingSermon?.congregation || ''}
-                          onChange={(e) => setEditingSermon(prev => ({ ...prev, congregation: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Sermon Date
-                        </label>
-                        <Input 
-                          type="date" 
-                          value={editingSermon?.sermon_date || ''}
-                          onChange={(e) => setEditingSermon(prev => ({ ...prev, sermon_date: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Save Buttons */}
-                    <div className="flex justify-end gap-2 pt-4 border-t">
-                      <Button
-                        onClick={() => handleSaveSermon({ ...editingSermon, is_draft: true })}
-                        variant="outline"
-                        className="border-purple-300 text-purple-600"
-                        disabled={saving}
-                      >
-                        {saving ? (
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4 mr-2" />
-                        )}
-                        Save as Draft
-                      </Button>
-                      <Button
-                        onClick={() => handleSaveSermon({ ...editingSermon, is_draft: false })}
-                        className="bg-purple-500 hover:bg-purple-600"
-                        disabled={saving}
-                      >
-                        {saving ? (
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <Save className="h-4 w-4 mr-2" />
-                        )}
-                        Save Sermon
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Right Sidebar */}
-            <div className="lg:col-span-1 space-y-4">
-              {/* Sermon Details */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Sermon Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Language
-                    </label>
-                    <select 
-                      className="w-full p-2 border rounded-md text-sm"
-                      value={editingSermon?.language || 'english'}
-                      onChange={(e) => setEditingSermon(prev => ({ ...prev, language: e.target.value as any }))}
-                    >
-                      <option value="english">🇺🇸 English</option>
-                      <option value="tamil">🇮🇳 Tamil</option>
-                      <option value="sinhala">🇱🇰 Sinhala</option>
-                    </select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Sermon Tools */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    Sermon Tools
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <Quote className="h-4 w-4 mr-2" />
-                    Add Scripture
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Study Notes
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Illustrations
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    Timing Guide
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // Main sermon list view
+  // Full-page sermon editor
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex h-screen">
-        {/* Left Container - Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 p-4">
-          <div className="h-full flex flex-col space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <Mic className="h-6 w-6 text-purple-600" />
-                Sermon Writer
+    <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-white flex flex-col`}>
+      {/* Header */}
+      <div className="border-b bg-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditingSermon(null)}
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to Sermons
+            </Button>
+            <Separator orientation="vertical" className="h-6" />
+            <div className="flex items-center gap-2">
+              <Mic className="h-6 w-6 text-purple-600" />
+              <h1 className="text-xl font-semibold">
+                {isEditing ? 'Edit Sermon' : 'New Sermon'}
               </h1>
-              <Button
-                onClick={handleNewSermon}
-                size="sm"
-                className="bg-purple-500 hover:bg-purple-600"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                New
-              </Button>
             </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRightPanelOpen(!rightPanelOpen)}
+            >
+              <PanelRightOpen className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+            >
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+            <Separator orientation="vertical" className="h-6" />
+            <Button
+              onClick={handleSaveClick}
+              disabled={saving}
+              className="bg-purple-500 hover:bg-purple-600"
+            >
+              {saving ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Save
+            </Button>
+          </div>
+        </div>
+      </div>
 
-            {/* Calendar Section */}
-            <Card className="border-purple-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-purple-600" />
-                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                </CardTitle>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel - Sermon Details */}
+        {leftPanelOpen && (
+          <div className="w-80 border-r bg-gray-50 p-4 space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Sermon Details</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  month={currentMonth}
-                  onMonthChange={setCurrentMonth}
-                  className="w-full"
-                  classNames={{
-                    months: "w-full",
-                    month: "w-full",
-                    table: "w-full border-collapse",
-                    head_row: "flex w-full",
-                    head_cell: "text-gray-500 rounded-md w-8 font-normal text-xs",
-                    row: "flex w-full mt-1",
-                    cell: "text-center text-sm p-0 relative w-8 h-8",
-                    day: "h-8 w-8 p-0 font-normal text-xs",
-                    day_selected: "bg-purple-500 text-white hover:bg-purple-600",
-                    day_today: "bg-purple-50 text-purple-600 font-semibold",
-                    day_outside: "text-gray-300",
-                  }}
-                />
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title
+                  </label>
+                  <Input
+                    placeholder="Enter sermon title..."
+                    value={editingSermon?.title || ''}
+                    onChange={(e) => setEditingSermon(prev => ({ ...prev, title: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Scripture Reference
+                  </label>
+                  <Input
+                    placeholder="e.g., John 3:16"
+                    value={editingSermon?.scripture_reference || ''}
+                    onChange={(e) => setEditingSermon(prev => ({ ...prev, scripture_reference: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Congregation
+                  </label>
+                  <Input
+                    placeholder="e.g., Sunday Service"
+                    value={editingSermon?.congregation || ''}
+                    onChange={(e) => setEditingSermon(prev => ({ ...prev, congregation: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={editingSermon?.sermon_date || ''}
+                    onChange={(e) => setEditingSermon(prev => ({ ...prev, sermon_date: e.target.value }))}
+                  />
+                </div>
               </CardContent>
             </Card>
 
-            {/* Recent Sermons Section */}
-            <Card className="flex-1 border-purple-200">
-              <CardHeader className="pb-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Statistics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Words:</span>
+                  <span>{editingSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Estimated Time:</span>
+                  <span>{Math.ceil((editingSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150)} min</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Characters:</span>
+                  <span>{editingSermon?.content?.length || 0}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Progress:</span>
+                  <span>{Math.round(((editingSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / wordGoal) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div 
+                    className="bg-purple-600 h-2 rounded-full transition-all" 
+                    style={{ width: `${Math.min(100, ((editingSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / wordGoal) * 100)}%` }}
+                  ></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Editor Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-purple-600" />
-                    Recent Sermons ({sermons.length})
-                  </CardTitle>
-                  <Button
-                    onClick={loadSermons}
-                    variant="ghost"
-                    size="sm"
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-                  </Button>
+                  <Label htmlFor="auto-save" className="text-sm">Auto-save</Label>
+                  <Switch
+                    id="auto-save"
+                    checked={autoSave}
+                    onCheckedChange={setAutoSave}
+                  />
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="max-h-96 overflow-y-auto">
-                  {loading ? (
-                    <div className="flex justify-center py-6">
-                      <RefreshCw className="h-5 w-5 animate-spin text-purple-500" />
-                    </div>
-                  ) : error ? (
-                    <div className="p-4 text-center">
-                      <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
-                      <p className="text-red-600 text-xs mb-2">{error}</p>
-                      <Button onClick={loadSermons} size="sm" variant="outline" className="text-xs">
-                        <RefreshCw className="h-3 w-3 mr-1" />
-                        Retry
-                      </Button>
-                    </div>
-                  ) : sermons.length === 0 ? (
-                    <div className="p-4 text-center">
-                      <Mic className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p className="text-gray-500 text-xs mb-1">No sermons yet</p>
-                      <p className="text-gray-400 text-xs">Start writing your first sermon!</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-100">
-                      {sermons.map((sermon) => (
-                        <div
-                          key={sermon.id}
-                          className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            selectedSermon?.id === sermon.id ? 'bg-purple-50 border-r-2 border-purple-500' : ''
-                          }`}
-                          onClick={() => setSelectedSermon(sermon)}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <div className="flex items-center gap-1 flex-1">
-                              <span className="text-xs">{getLanguageFlag(sermon.language)}</span>
-                              <h3 className="font-medium text-gray-800 truncate text-sm">
-                                {sermon.title || "Untitled Sermon"}
-                              </h3>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditSermon(sermon);
-                                }}
-                                className="h-5 w-5 p-0 text-gray-400 hover:text-purple-600"
-                              >
-                                <Edit3 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteSermon(sermon.id);
-                                }}
-                                className="h-5 w-5 p-0 text-gray-400 hover:text-red-600"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                            {sermon.content}
-                          </p>
-                          <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
-                            <span>{formatDate(sermon.created_at)}</span>
-                            <span>{formatTime(sermon.created_at)}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            {getSermonStatus(sermon)}
-                            {sermon.scripture_reference && (
-                              <span className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
-                                📖 {sermon.scripture_reference}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="focus-mode" className="text-sm">Focus mode</Label>
+                  <Switch
+                    id="focus-mode"
+                    checked={focusMode}
+                    onCheckedChange={setFocusMode}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm">Font size: {fontSize}px</Label>
+                  <Slider
+                    value={[fontSize]}
+                    onValueChange={(value) => setFontSize(value[0])}
+                    max={24}
+                    min={12}
+                    step={1}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm">Word goal: {wordGoal}</Label>
+                  <Slider
+                    value={[wordGoal]}
+                    onValueChange={(value) => setWordGoal(value[0])}
+                    max={5000}
+                    min={500}
+                    step={100}
+                    className="mt-2"
+                  />
                 </div>
               </CardContent>
             </Card>
           </div>
-        </div>
+        )}
 
-        {/* Right Container - Sermon Display */}
-        <div className="flex-1 bg-white p-8">
-          <div className="h-full flex flex-col max-w-4xl mx-auto">
-            {selectedSermon ? (
-              <div className="h-full flex flex-col">
-                {/* Sermon Header */}
-                <div className="mb-6 pb-4 border-b border-gray-200">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{getLanguageFlag(selectedSermon.language)}</span>
-                      <h1 className="text-2xl font-bold text-gray-800">
-                        {selectedSermon.title || "Untitled Sermon"}
-                      </h1>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleEditSermon(selectedSermon)}
-                        variant="outline"
-                        size="sm"
-                        className="border-purple-300 text-purple-600 hover:bg-purple-50"
-                      >
-                        <Edit3 className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteSermon(selectedSermon.id)}
-                        variant="outline"
-                        size="sm"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                    <span>{formatDate(selectedSermon.created_at)}</span>
-                    <span>•</span>
-                    <span>{formatTime(selectedSermon.created_at)}</span>
-                    {selectedSermon.word_count && (
-                      <>
-                        <span>•</span>
-                        <span>{selectedSermon.word_count} words</span>
-                      </>
-                    )}
-                    {selectedSermon.estimated_time && (
-                      <>
-                        <span>•</span>
-                        <span>{selectedSermon.estimated_time} min read</span>
-                      </>
-                    )}
-                  </div>
-
-                  {selectedSermon.scripture_reference && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                        📖 {selectedSermon.scripture_reference}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mt-2">
-                    {getSermonStatus(selectedSermon)}
-                    {selectedSermon.congregation && (
-                      <Badge variant="outline" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        {selectedSermon.congregation}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sermon Content */}
-                <div className="flex-1 overflow-auto">
-                  <div className="prose prose-lg max-w-none">
-                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                      {selectedSermon.content}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <Mic className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h2 className="text-xl font-semibold text-gray-600 mb-2">No sermon selected</h2>
-                  <p className="text-gray-500 mb-4">Choose a sermon from the sidebar to view or edit it</p>
-                  <Button onClick={handleNewSermon} className="bg-purple-500 hover:bg-purple-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New Sermon
-                  </Button>
-                </div>
-              </div>
-            )}
+        {/* Main Editor */}
+        <div className="flex-1 flex flex-col">
+          <SermonToolbar
+            editorRef={editorRef}
+            onFormatText={handleFormatText}
+            wordCount={editingSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0}
+            estimatedTime={Math.ceil((editingSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150)}
+            sermonContent={editingSermon?.content || ''}
+            sermonTitle={editingSermon?.title || ''}
+            onExport={handleExportSermon}
+            onInsertQuickText={insertQuickText}
+          />
+          <div className={`flex-1 p-6 ${focusMode ? 'bg-gray-100' : ''}`}>
+            <Textarea
+              ref={editorRef}
+              placeholder="Write your sermon content here..."
+              value={editingSermon?.content || ''}
+              onChange={(e) => setEditingSermon(prev => ({ ...prev, content: e.target.value }))}
+              className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white shadow-lg rounded-lg p-8' : ''}`}
+              style={{ 
+                minHeight: 'calc(100vh - 250px)',
+                fontSize: `${fontSize}px`,
+                lineHeight: lineHeight,
+                maxWidth: focusMode ? '800px' : '100%',
+                margin: focusMode ? '0 auto' : '0'
+              }}
+            />
           </div>
         </div>
+
+        {/* Right Panel - Bible & AI */}
+        {rightPanelOpen && (
+          <div className="w-96 border-l bg-white">
+            <Tabs value={activeRightTab} onValueChange={setActiveRightTab} className="h-full flex flex-col">
+              <TabsList className="grid grid-cols-2 m-4 mb-0">
+                <TabsTrigger value="bible" className="gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Bible
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="gap-2">
+                  <Bot className="h-4 w-4" />
+                  AI Chat
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="bible" className="flex-1 flex flex-col m-4 mt-0">
+                <Card className="flex-1 flex flex-col">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      Bible Reference
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col space-y-4">
+                    <div className="space-y-2">
+                      <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BIBLE_TRANSLATIONS.filter(t => t.language === 'english').slice(0, 8).map((trans) => (
+                            <SelectItem key={trans.code} value={trans.code}>
+                              {trans.code} - {trans.name.split(' ').slice(0, 2).join(' ')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={selectedBook?.name || ''} onValueChange={(bookName) => {
+                        const book = books.find(b => b.name === bookName);
+                        if (book) {
+                          setSelectedBook(book);
+                          setSelectedChapter(1);
+                        }
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select book" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {books.map((book) => (
+                            <SelectItem key={book.name} value={book.name}>
+                              {book.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      {selectedBook && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedChapter(Math.max(1, selectedChapter - 1))}
+                            disabled={selectedChapter <= 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Select value={selectedChapter.toString()} onValueChange={(value) => setSelectedChapter(parseInt(value))}>
+                            <SelectTrigger className="flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                                <SelectItem key={chapter} value={chapter.toString()}>
+                                  Chapter {chapter}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedChapter(Math.min(selectedBook.chapters, selectedChapter + 1))}
+                            disabled={selectedChapter >= selectedBook.chapters}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <ScrollArea className="flex-1">
+                      {bibleLoading ? (
+                        <div className="flex justify-center py-4">
+                          <RefreshCw className="h-5 w-5 animate-spin" />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {verses.map((verse) => (
+                            <div
+                              key={verse.id}
+                              className="p-3 rounded-lg border hover:bg-gray-50 cursor-pointer group"
+                              onClick={() => insertVerseIntoSermon(verse)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <span className="font-medium text-purple-600 text-sm">
+                                    {verse.verse}
+                                  </span>
+                                  <p className="text-sm text-gray-700 mt-1">
+                                    {verse.text}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    insertVerseIntoSermon(verse);
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="ai" className="flex-1 flex flex-col m-4 mt-0">
+                <Card className="flex-1 flex flex-col">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Bot className="h-4 w-4" />
+                      AI Assistant
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col">
+                    <ScrollArea className="flex-1 mb-4" ref={aiScrollRef}>
+                      <div className="space-y-4">
+                        {aiMessages.length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">Ask me anything about your sermon!</p>
+                          </div>
+                        )}
+                        
+                        {aiMessages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                          >
+                            {message.role === 'assistant' && (
+                              <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <Bot className="h-3 w-3 text-purple-600" />
+                              </div>
+                            )}
+                            
+                            <div className={`max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
+                              <div className={`rounded-lg px-3 py-2 text-sm ${
+                                message.role === 'user'
+                                  ? 'bg-purple-500 text-white ml-auto'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                <p className="whitespace-pre-wrap">{message.content}</p>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {formatTime(message.timestamp)}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {aiLoading && (
+                          <div className="flex gap-3 justify-start">
+                            <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                              <Bot className="h-3 w-3 text-purple-600" />
+                            </div>
+                            <div className="bg-gray-100 rounded-lg px-3 py-2">
+                              <div className="flex space-x-1">
+                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150"></div>
+                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-300"></div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                    
+                    <div className="flex gap-2">
+                      <Input
+                        value={aiInput}
+                        onChange={(e) => setAiInput(e.target.value)}
+                        placeholder="Ask about sermon ideas..."
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendAIMessage();
+                          }
+                        }}
+                        disabled={aiLoading}
+                      />
+                      <Button
+                        onClick={sendAIMessage}
+                        disabled={!aiInput.trim() || aiLoading}
+                        size="sm"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

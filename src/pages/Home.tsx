@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
-  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap
+  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks";
@@ -173,6 +173,158 @@ const Home = () => {
                 </div>
                 <div className="hidden xl:block absolute top-1/2 -left-8 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center animate-pulse shadow-lg">
                   <MessageCircle className="h-5 w-5 text-purple-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sermon Writing Feature Showcase */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-purple-100 rounded-full">
+                <Mic className="h-8 w-8 text-purple-600" />
+              </div>
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Professional Sermon Writer
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Create compelling sermons with our advanced writing tools, Bible integration, and AI assistance
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <BookOpen className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Integrated Bible Access
+                  </h3>
+                  <p className="text-gray-600">
+                    Access multiple Bible translations instantly. Click any verse to add it directly to your sermon with proper formatting.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Bot className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    AI Writing Assistant
+                  </h3>
+                  <p className="text-gray-600">
+                    Get inspiration, theological insights, and writing suggestions from our biblical AI assistant trained on sound doctrine.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Professional Templates
+                  </h3>
+                  <p className="text-gray-600">
+                    Start with proven sermon structures including three-point sermons, expository preaching, and topical studies.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Smart Analytics
+                  </h3>
+                  <p className="text-gray-600">
+                    Track word count, estimated speaking time, and reading level to perfect your sermon delivery.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
+                >
+                  <Link to="/sermon-writer">
+                    <Mic className="h-5 w-5 mr-2" />
+                    Start Writing Sermons
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="lg:pl-8">
+              <div className="bg-white rounded-xl shadow-2xl p-6 border">
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Mic className="h-5 w-5 text-purple-600" />
+                      <span className="font-semibold text-gray-900">Sermon Writer</span>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="border-b border-gray-200 mb-4">
+                    <div className="flex space-x-1 -mb-px">
+                      <div className="bg-purple-50 text-purple-600 px-3 py-2 text-sm font-medium border-b-2 border-purple-600">
+                        Editor
+                      </div>
+                      <div className="text-gray-500 px-3 py-2 text-sm">
+                        Bible
+                      </div>
+                      <div className="text-gray-500 px-3 py-2 text-sm">
+                        AI Chat
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <span className="font-medium">Title:</span>
+                    <span className="bg-gray-50 px-2 py-1 rounded">The Good Shepherd</span>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-3 rounded-lg text-sm leading-relaxed">
+                    <div className="font-semibold text-gray-900 mb-2"># Introduction</div>
+                    <div className="text-gray-700 mb-3">
+                      Jesus said, "I am the good shepherd. The good shepherd lays down his life for the sheep." - John 10:11
+                    </div>
+                    <div className="font-semibold text-gray-900 mb-1">## Main Point 1: The Shepherd's Love</div>
+                    <div className="text-gray-600 text-xs">The depth of Christ's sacrificial love...</div>
+                  </div>
+                  
+                  <div className="flex justify-between text-xs text-gray-500 pt-2 border-t">
+                    <span>1,247 words • 8 min read</span>
+                    <span className="text-green-600">● Live saved</span>
+                  </div>
                 </div>
               </div>
             </div>
