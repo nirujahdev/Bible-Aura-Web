@@ -382,7 +382,7 @@ const Terms = () => {
             <div className="space-y-3">
               <div className="flex items-center text-gray-700">
                 <Mail className="h-5 w-5 mr-3 text-orange-600" />
-                <span>bibleaura.contact@gmail.com</span>
+                <span>contact@bibleaura.xyz</span>
               </div>
               <div className="flex items-center text-gray-700">
                 <span className="mr-3">📞</span>

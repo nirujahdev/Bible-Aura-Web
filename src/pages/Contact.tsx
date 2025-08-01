@@ -14,8 +14,8 @@ const Contact = () => {
       icon: Mail,
       title: "Email Us",
       description: "Send us a message anytime",
-          contact: "bibleaura.contact@gmail.com",
-    action: "mailto:bibleaura.contact@gmail.com",
+          contact: "contact@bibleaura.xyz",
+    action: "mailto:contact@bibleaura.xyz",
       color: "from-blue-500 to-blue-600"
     },
     {
@@ -91,10 +91,10 @@ const Contact = () => {
               <p className="text-gray-600 text-sm mb-4">Send us a message anytime</p>
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-4 shadow-sm">
                 <a 
-                  href="mailto:bibleaura.contact@gmail.com"
+                  href="mailto:contact@bibleaura.xyz"
                   className="text-blue-600 font-semibold hover:text-blue-700 transition-colors break-all"
                 >
-                  bibleaura.contact@gmail.com
+                  contact@bibleaura.xyz
                 </a>
               </div>
             </CardContent>

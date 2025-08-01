@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Mail, Instagram } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -10,12 +11,29 @@ const Footer = () => {
             <h3 className="text-2xl font-bold text-orange-400 mb-3">
               ✦Bible Aura
             </h3>
-            <p className="text-white text-base mb-4">
+            <p className="text-white text-base mb-6">
               AI-Powered Biblical Insight
             </p>
-            <p className="text-gray-400 text-sm">
-              Transform your spiritual journey with cutting-edge AI technology and deep biblical wisdom.
-            </p>
+            
+            {/* Contact Buttons */}
+            <div className="flex justify-center md:justify-start gap-4 mb-4">
+              <a 
+                href="mailto:contact@bibleaura.xyz"
+                className="flex items-center justify-center w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded-full transition-colors duration-300"
+                aria-label="Email us"
+              >
+                <Mail className="h-5 w-5 text-white" />
+              </a>
+              <a 
+                href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-full transition-all duration-300"
+                aria-label="Follow us on Instagram"
+              >
+                <Instagram className="h-5 w-5 text-white" />
+              </a>
+            </div>
           </div>
           
           {/* Features Section */}
@@ -23,28 +41,19 @@ const Footer = () => {
             <h4 className="text-xl font-semibold text-white mb-6">Features</h4>
             <nav className="space-y-3">
               <Link to="/bible-ai" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Bible AI Assistant
-              </Link>
-              <Link to="/bible" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Digital Bible Reader
-              </Link>
-              <Link to="/study-hub" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Bible Study Hub
-              </Link>
-              <Link to="/journal" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Spiritual Journal
-              </Link>
-              <Link to="/sermons" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Sermon Library
+                Bible AI Features
               </Link>
               <Link to="/sermon-writer" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Sermon Writer
+                Sermon Creation
               </Link>
-              <Link to="/parables-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Parables Study
+              <Link to="/journal" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Personal Tools
               </Link>
-              <Link to="/topical-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Topical Studies
+              <Link to="/blog" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Learning Resources
+              </Link>
+              <Link to="/study-hub" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Advanced Study
               </Link>
             </nav>
           </div>

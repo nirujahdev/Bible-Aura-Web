@@ -138,7 +138,7 @@ const Privacy = () => {
         },
         {
           subtitle: "Data Export",
-          text: "Before account deletion, you can request an export of your personal data in a portable format. Contact us at bibleaura.contact@gmail.com to request data export or deletion."
+          text: "Before account deletion, you can request an export of your personal data in a portable format. Contact us at contact@bibleaura.xyz to request data export or deletion."
         }
       ]
     }
@@ -368,7 +368,7 @@ const Privacy = () => {
             <div className="space-y-3">
               <div className="flex items-center text-gray-700">
                 <Mail className="h-5 w-5 mr-3 text-orange-600" />
-                <span>bibleaura.contact@gmail.com</span>
+                <span>contact@bibleaura.xyz</span>
               </div>
               <div className="flex items-center text-gray-700">
                 <span className="mr-3">📞</span>
