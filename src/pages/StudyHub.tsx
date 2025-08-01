@@ -74,13 +74,6 @@ const STUDY_MODULES: StudyModule[] = [
     color: 'text-blue-600'
   },
   {
-    id: 'sermon-builder',
-    name: 'Sermon Builder',
-    icon: Mic,
-    description: 'Create and organize sermons with AI assistance',
-    color: 'text-green-600'
-  },
-  {
     id: 'topical-study',
     name: 'Topical Study',
     icon: Library,
@@ -351,68 +344,6 @@ export default function StudyHub() {
                 </CardContent>
               </Card>
             )}
-          </div>
-        );
-
-      case 'sermon-builder':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Sermon Builder</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">Template</Button>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Sermon
-                </Button>
-              </div>
-            </div>
-            
-            <Card>
-              <CardHeader>
-                <Input placeholder="Sermon Title" className="text-lg font-semibold" />
-                <Input placeholder="Main Theme" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Main Points</label>
-                  <div className="space-y-2">
-                    <Input placeholder="Point 1: Introduction" />
-                    <Input placeholder="Point 2: Main Message" />
-                    <Input placeholder="Point 3: Application" />
-                    <Button variant="ghost" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Point
-                    </Button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Key Verses</label>
-                  <Textarea placeholder="Add key verses and references..." className="min-h-20" />
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Illustrations & Applications</label>
-                  <Textarea placeholder="Real-life examples and modern applications..." className="min-h-24" />
-                </div>
-                
-                <div className="flex gap-2 pt-4 border-t">
-                  <Button variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export PDF
-                  </Button>
-                  <Button variant="outline">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Save to Journal
-                  </Button>
-                  <Button>
-                    <Bot className="h-4 w-4 mr-2" />
-                    AI Assist
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         );
 

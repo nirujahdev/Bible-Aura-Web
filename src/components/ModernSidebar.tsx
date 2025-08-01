@@ -63,7 +63,7 @@ const gridMenuItems: GridMenuItem[] = [
   },
   {
     label: "Sermons",
-    icon: Headphones,
+    icon: PenTool,
     path: "/sermons"
   },
   {
@@ -116,7 +116,7 @@ const allNavigationItems: NavigationItem[] = [
   {
     title: "Sermons",
     url: "/sermons",
-    icon: Headphones,
+    icon: PenTool,
   },
   {
     title: "Sermon Writer",
