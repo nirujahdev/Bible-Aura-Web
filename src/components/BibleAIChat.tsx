@@ -87,10 +87,17 @@ const generateAIResponse = async (
       case 'theological':
         systemPrompt = `You are Bible Aura AI, providing theological analysis of Bible verses.
 
-RESPONSE FORMAT:
-Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+CRITICAL FORMATTING RULES:
+- ALWAYS start with ✮ for the main title
+- Use ↗ for each section header
+- Use • for bullet points
+- NO emojis like 📖 🎯 ✝️ etc.
+- NO hashtags or asterisks
+- Each section should be clearly separated with blank lines
 
+EXACT FORMAT TO FOLLOW:
 ✮ THEOLOGICAL ANALYSIS
+
 ↗ Core Doctrine
 • [Main theological truth]
 • [Key doctrinal point]
@@ -103,16 +110,22 @@ Use these symbols for structure: ✮ for main titles, ↗ for sections, • for 
 • [Historical church understanding]
 • [Modern application]
 
-Keep responses biblical, accurate, and accessible. Focus on ${verseReference}: "${verseText}"`;
+Focus on ${verseReference}: "${verseText}"`;
         break;
         
       case 'historical':
         systemPrompt = `You are Bible Aura AI, providing historical context for Bible verses.
 
-RESPONSE FORMAT:
-Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+CRITICAL FORMATTING RULES:
+- ALWAYS start with ✮ for the main title
+- Use ↗ for each section header
+- Use • for bullet points
+- NO emojis, hashtags, or asterisks
+- Each section should be clearly separated with blank lines
 
+EXACT FORMAT TO FOLLOW:
 ✮ HISTORICAL CONTEXT
+
 ↗ Time & Place
 • [When and where written]
 • [Historical setting]
@@ -125,16 +138,22 @@ Use these symbols for structure: ✮ for main titles, ↗ for sections, • for 
 • [Writer's background]
 • [Purpose for writing]
 
-Keep responses historically accurate and engaging. Focus on ${verseReference}: "${verseText}"`;
+Focus on ${verseReference}: "${verseText}"`;
         break;
         
       case 'cross-reference':
         systemPrompt = `You are Bible Aura AI, finding cross-references and connections for Bible verses.
 
-RESPONSE FORMAT:
-Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+CRITICAL FORMATTING RULES:
+- ALWAYS start with ✮ for the main title
+- Use ↗ for each section header
+- Use • for bullet points
+- NO emojis, hashtags, or asterisks
+- Each section should be clearly separated with blank lines
 
+EXACT FORMAT TO FOLLOW:
 ✮ CROSS REFERENCES
+
 ↗ Related Verses
 • [Verse reference]: [Brief connection]
 • [Verse reference]: [Brief connection]
@@ -153,10 +172,16 @@ Provide 3-4 relevant verses with clear connections. Focus on ${verseReference}: 
       case 'insights':
         systemPrompt = `You are Bible Aura AI, providing practical insights and applications for Bible verses.
 
-RESPONSE FORMAT:
-Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+CRITICAL FORMATTING RULES:
+- ALWAYS start with ✮ for the main title
+- Use ↗ for each section header
+- Use • for bullet points
+- NO emojis, hashtags, or asterisks
+- Each section should be clearly separated with blank lines
 
+EXACT FORMAT TO FOLLOW:
 ✮ PRACTICAL INSIGHTS
+
 ↗ Life Application
 • [Practical way to apply this]
 • [Daily life connection]
@@ -202,13 +227,40 @@ Make it practical, encouraging, and actionable. Focus on ${verseReference}: "${v
     }
 
     const data = await response.json();
-    return data.choices[0]?.message?.content || 'Sorry, I could not generate a response at this time.';
+    let content = data.choices[0]?.message?.content || 'Sorry, I could not generate a response at this time.';
+    
+    // Clean and ensure proper formatting
+    content = cleanAIResponse(content, mode);
+    
+    return content;
     
   } catch (error) {
     console.error('AI API Error:', error);
     // Fallback structured responses
     return getFallbackResponse(mode, verseReference, verseText);
   }
+};
+
+// Function to clean and format AI responses
+const cleanAIResponse = (response: string, mode: ChatMode): string => {
+  // Remove any unwanted characters and ensure proper structure
+  let cleaned = response
+    .replace(/[#*@$_]/g, '') // Remove banned symbols
+    .replace(/📖|🎯|✝️|🔗|🏛️|📝|💭|🌟|🔍|⏰|💎|📚|👥|🌍/g, '') // Remove emojis
+    .trim();
+  
+  // Ensure it starts with ✮ if not already
+  if (!cleaned.startsWith('✮')) {
+    const modeTitle = {
+      theological: '✮ THEOLOGICAL ANALYSIS',
+      historical: '✮ HISTORICAL CONTEXT',
+      'cross-reference': '✮ CROSS REFERENCES',
+      insights: '✮ PRACTICAL INSIGHTS'
+    };
+    cleaned = `${modeTitle[mode]}\n\n${cleaned}`;
+  }
+  
+  return cleaned;
 };
 
 // Fallback responses with proper structure

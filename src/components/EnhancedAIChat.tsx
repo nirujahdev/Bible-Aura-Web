@@ -698,11 +698,6 @@ export default function EnhancedAIChat() {
                       <div className="flex items-center gap-2 mt-1 text-xs text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
                         <Clock className="h-3 w-3" />
                         {format(new Date(message.timestamp), 'h:mm a')}
-                        {message.model && (
-                          <Badge variant="outline" className="text-xs" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                            {message.model}
-                          </Badge>
-                        )}
                       </div>
                     </div>
 
