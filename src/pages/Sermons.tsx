@@ -880,7 +880,7 @@ const Sermons = () => {
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-orange-600 rounded-lg">
-                  <Mic className="h-5 w-5 text-white" />
+                  <PenTool className="h-5 w-5 text-white" />
                 </div>
                 <div>
                   <h1 className="text-xl font-semibold text-gray-900">
@@ -1266,7 +1266,7 @@ const Sermons = () => {
                           Scripture References
                         </label>
                         <Textarea
-                          placeholder="Add your main scripture references here...&#10;e.g.,&#10;John 3:16 - For God so loved the world...&#10;Romans 8:28 - All things work together for good...&#10;Matthew 5:14 - You are the light of the world..."
+                          placeholder="Add your main scripture references..."
                           value={selectedSermon?.scripture_reference || ''}
                           onChange={(e) => setSelectedSermon(prev => prev ? { ...prev, scripture_reference: e.target.value } : null)}
                           className="border-gray-200 focus:border-orange-500 min-h-[120px] resize-none"
@@ -1315,10 +1315,10 @@ const Sermons = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="draft">📝 Draft</SelectItem>
-                            <SelectItem value="ready">✅ Ready</SelectItem>
-                            <SelectItem value="delivered">🎤 Delivered</SelectItem>
-                            <SelectItem value="archived">📦 Archived</SelectItem>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="ready">Ready</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="archived">Archived</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1638,7 +1638,7 @@ const Sermons = () => {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-orange-600 rounded-xl">
-              <Mic className="h-8 w-8 text-white" />
+              <PenTool className="h-8 w-8 text-white" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -1690,7 +1690,7 @@ const Sermons = () => {
                   <p className="text-2xl font-bold text-orange-600">{stats.delivered}</p>
                   <p className="text-sm text-gray-600">Delivered</p>
                 </div>
-                <Mic className="h-8 w-8 text-orange-400" />
+                <PenTool className="h-8 w-8 text-orange-400" />
               </div>
             </CardContent>
           </Card>
@@ -1796,7 +1796,7 @@ const Sermons = () => {
         {sermons.length === 0 && !loading && (
           <div className="text-center py-20">
             <div className="p-6 bg-gray-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-              <Mic className="h-12 w-12 text-gray-400" />
+              <PenTool className="h-12 w-12 text-gray-400" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Ready to create your first sermon?

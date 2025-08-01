@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Sparkles, Bot, Lightbulb, Target, Users, Heart, BookOpen, 
@@ -69,6 +71,10 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
   const [realTimeSuggestions, setRealTimeSuggestions] = useState<string[]>([]);
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState('');
+  
+  // AI Chat states
+  const [chatMessages, setChatMessages] = useState<{id: string, role: 'user' | 'assistant', content: string, timestamp: string}[]>([]);
+  const [isChatMode, setIsChatMode] = useState(false);
 
   // Analyze content for suggestions
   const analyzeContent = useCallback(async (content: string) => {
@@ -260,11 +266,41 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
       const responses = assistanceTemplates[responseType];
       const response = responses[Math.floor(Math.random() * responses.length)];
       
-      setAiResponse(response);
+      if (isChatMode) {
+        // Add to chat messages
+        const userMessage = {
+          id: Date.now().toString(),
+          role: 'user' as const,
+          content: aiInput,
+          timestamp: new Date().toISOString()
+        };
+        
+        const aiMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant' as const,
+          content: response,
+          timestamp: new Date().toISOString()
+        };
+        
+        setChatMessages(prev => [...prev, userMessage, aiMessage]);
+        setAiInput('');
+      } else {
+        setAiResponse(response);
+      }
     } catch (error) {
       console.error('Error getting assistance:', error);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  // Handle quick helper clicks in chat mode
+  const handleQuickHelperClick = (prompt: string) => {
+    if (isChatMode) {
+      setAiInput(prompt);
+    } else {
+      setAiInput(prompt);
+      getWritingAssistance();
     }
   };
 
@@ -343,10 +379,10 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="expository">📖 Expository</SelectItem>
-                            <SelectItem value="topical">🎯 Topical</SelectItem>
-                            <SelectItem value="narrative">📚 Narrative</SelectItem>
-                            <SelectItem value="biographical">👤 Biographical</SelectItem>
+                            <SelectItem value="expository">Expository</SelectItem>
+                            <SelectItem value="topical">Topical</SelectItem>
+                            <SelectItem value="narrative">Narrative</SelectItem>
+                            <SelectItem value="biographical">Biographical</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -358,11 +394,11 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="general">👥 General Congregation</SelectItem>
-                            <SelectItem value="youth">🧑‍🎓 Youth</SelectItem>
-                            <SelectItem value="adults">👔 Adults</SelectItem>
-                            <SelectItem value="seniors">👵 Seniors</SelectItem>
-                            <SelectItem value="families">👨‍👩‍👧‍👦 Families</SelectItem>
+                            <SelectItem value="general">General Congregation</SelectItem>
+                            <SelectItem value="youth">Youth</SelectItem>
+                            <SelectItem value="adults">Adults</SelectItem>
+                            <SelectItem value="seniors">Seniors</SelectItem>
+                            <SelectItem value="families">Families</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -375,11 +411,11 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="inspiring">✨ Inspiring</SelectItem>
-                          <SelectItem value="challenging">🎯 Challenging</SelectItem>
-                          <SelectItem value="comforting">🤗 Comforting</SelectItem>
-                          <SelectItem value="teaching">📚 Teaching</SelectItem>
-                          <SelectItem value="evangelistic">❤️ Evangelistic</SelectItem>
+                          <SelectItem value="inspiring">Inspiring</SelectItem>
+                          <SelectItem value="challenging">Challenging</SelectItem>
+                          <SelectItem value="comforting">Comforting</SelectItem>
+                          <SelectItem value="teaching">Teaching</SelectItem>
+                          <SelectItem value="evangelistic">Evangelistic</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -474,60 +510,139 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <span className="text-orange-500 text-lg">✦</span>
-                      Writing Assistant
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-orange-500 text-lg">✦</span>
+                        Writing Assistant
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="chat-mode" className="text-sm">Chat Mode</Label>
+                        <Switch
+                          id="chat-mode"
+                          checked={isChatMode}
+                          onCheckedChange={setIsChatMode}
+                        />
+                      </div>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">How can I help?</label>
-                      <Textarea
-                        placeholder="e.g., 'Write a hook about faith' or 'Suggest a transition'"
-                        value={aiInput}
-                        onChange={(e) => setAiInput(e.target.value)}
-                        className="min-h-[80px]"
-                      />
-                    </div>
-
-                    <Button 
-                      onClick={getWritingAssistance}
-                      disabled={isAnalyzing || !aiInput.trim()}
-                      className="w-full bg-orange-500 hover:bg-orange-600"
-                    >
-                      {isAnalyzing ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Thinking...
-                        </>
-                      ) : (
-                        <>
-                          <span className="mr-2">✦</span>
-                          Get Help
-                        </>
-                      )}
-                    </Button>
-
-                    {aiResponse && (
-                      <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                        <h5 className="font-medium text-orange-800 mb-2">✦ Suggestion:</h5>
-                        <p className="text-gray-700 italic">"{aiResponse}"</p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 border-orange-300 text-orange-600 hover:bg-orange-50"
-                          onClick={() => {
-                            onContentUpdate(currentContent + '\n\n' + aiResponse);
-                            toast({
-                              title: "✦ Added",
-                              description: "Added to sermon",
-                            });
-                          }}
-                        >
-                          <span className="mr-2">✦</span>
-                          Add
-                        </Button>
+                    {isChatMode ? (
+                      // Chat Mode Interface
+                      <div className="flex flex-col h-96">
+                        <ScrollArea className="flex-1 p-4 border rounded-lg bg-gray-50">
+                          {chatMessages.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              <span className="text-3xl text-orange-500 block mb-2">✦</span>
+                              <p className="text-sm">Start a conversation about your sermon</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {chatMessages.map((message) => (
+                                <div
+                                  key={message.id}
+                                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  {message.role === 'assistant' && (
+                                    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+                                      <span className="text-white text-sm">✦</span>
+                                    </div>
+                                  )}
+                                  
+                                  <div className={`max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
+                                    <div className={`rounded-xl px-4 py-2 text-sm ${
+                                      message.role === 'user'
+                                        ? 'bg-orange-500 text-white ml-auto'
+                                        : 'bg-white border border-gray-200'
+                                    }`}>
+                                      <p className="whitespace-pre-wrap">{message.content}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </ScrollArea>
+                        
+                        <div className="flex gap-2 mt-4">
+                          <Input
+                            placeholder="Ask me anything about your sermon..."
+                            value={aiInput}
+                            onChange={(e) => setAiInput(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                getWritingAssistance();
+                              }
+                            }}
+                            disabled={isAnalyzing}
+                          />
+                          <Button
+                            onClick={getWritingAssistance}
+                            disabled={isAnalyzing || !aiInput.trim()}
+                            size="sm"
+                            className="bg-orange-500 hover:bg-orange-600"
+                          >
+                            {isAnalyzing ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <span>✦</span>
+                            )}
+                          </Button>
+                        </div>
                       </div>
+                    ) : (
+                      // Regular Mode Interface
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">How can I help?</label>
+                          <Textarea
+                            placeholder="e.g., 'Write a hook about faith' or 'Suggest a transition'"
+                            value={aiInput}
+                            onChange={(e) => setAiInput(e.target.value)}
+                            className="min-h-[80px]"
+                          />
+                        </div>
+
+                        <Button 
+                          onClick={getWritingAssistance}
+                          disabled={isAnalyzing || !aiInput.trim()}
+                          className="w-full bg-orange-500 hover:bg-orange-600"
+                        >
+                          {isAnalyzing ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                              Thinking...
+                            </>
+                          ) : (
+                            <>
+                              <span className="mr-2">✦</span>
+                              Get Help
+                            </>
+                          )}
+                        </Button>
+
+                        {aiResponse && (
+                          <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                            <h5 className="font-medium text-orange-800 mb-2">✦ Suggestion:</h5>
+                            <p className="text-gray-700 italic">"{aiResponse}"</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-3 border-orange-300 text-orange-600 hover:bg-orange-50"
+                              onClick={() => {
+                                onContentUpdate(currentContent + '\n\n' + aiResponse);
+                                toast({
+                                  title: "✦ Added",
+                                  description: "Added to sermon",
+                                });
+                              }}
+                            >
+                              <span className="mr-2">✦</span>
+                              Add
+                            </Button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </CardContent>
                 </Card>
@@ -554,10 +669,7 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                           key={helper.label}
                           variant="outline"
                           className="h-auto p-3 flex flex-col items-center gap-2 hover:bg-orange-50 border-orange-200"
-                          onClick={() => {
-                            setAiInput(helper.prompt);
-                            getWritingAssistance();
-                          }}
+                          onClick={() => handleQuickHelperClick(helper.prompt)}
                         >
                           <span className="text-lg text-orange-500">{helper.icon}</span>
                           <span className="text-sm">{helper.label}</span>
