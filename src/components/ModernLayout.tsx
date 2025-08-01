@@ -29,6 +29,7 @@ const sidebarItems: SidebarItem[] = [
   { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
   { name: 'Study Hub', href: '/study-hub', icon: Library, tooltip: 'Study Hub - Q&A, Sermons, Parables & Bible Characters' },
   { name: 'Sermons', href: '/sermons', icon: Headphones, tooltip: 'Sermons' },
+  { name: 'Sermon Writer', href: '/sermon-writer', icon: Mic, tooltip: 'Enhanced Sermon Writer' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
   { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
 ];

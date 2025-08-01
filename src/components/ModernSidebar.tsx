@@ -68,7 +68,7 @@ const gridMenuItems: GridMenuItem[] = [
   },
   {
     label: "Sermon Writer",
-    icon: PenTool,
+    icon: Mic,
     path: "/sermon-writer",
     isSpecial: true
   },
@@ -121,7 +121,7 @@ const allNavigationItems: NavigationItem[] = [
   {
     title: "Sermon Writer",
     url: "/sermon-writer",
-    icon: PenTool,
+    icon: Mic,
   },
   {
     title: "AI Chat",
