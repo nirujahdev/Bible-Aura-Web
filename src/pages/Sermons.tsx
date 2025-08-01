@@ -100,6 +100,7 @@ const Sermons = () => {
   // Core sermon state
   const [sermons, setSermons] = useState<Sermon[]>([]);
   const [selectedSermon, setSelectedSermon] = useState<Sermon | null>(null);
+  const [viewMode, setViewMode] = useState<'dashboard' | 'editor'>('dashboard');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<SermonStats>({ 
@@ -328,6 +329,7 @@ const Sermons = () => {
     setTags("");
     setSeriesName("");
     setStatus('draft');
+    setViewMode('editor'); // Switch to editor view
   };
 
   const handleEditSermon = (sermon: Sermon) => {
@@ -339,6 +341,7 @@ const Sermons = () => {
     setTags(sermon.tags?.join(', ') || "");
     setSeriesName(sermon.series_name || "");
     setStatus(sermon.status);
+    setViewMode('editor'); // Switch to editor view
   };
 
   const handleDeleteSermon = async (sermonId: string) => {
@@ -352,7 +355,15 @@ const Sermons = () => {
 
       setSermons(prev => prev.filter(s => s.id !== sermonId));
       if (selectedSermon?.id === sermonId) {
-        handleNewSermon();
+        setSelectedSermon(null);
+        setTitle("");
+        setContent("");
+        setScriptureRefs("");
+        setPrivateNotes("");
+        setTags("");
+        setSeriesName("");
+        setStatus('draft');
+        setViewMode('dashboard'); // Return to dashboard after deleting current sermon
       }
 
       toast({
@@ -574,8 +585,8 @@ const Sermons = () => {
 
   const seriesOptions = [...new Set(sermons.map(s => s.series_name).filter(Boolean))];
 
-  // Statistics Dashboard (when no sermon selected)
-  if (!selectedSermon) {
+  // Statistics Dashboard (when in dashboard view)
+  if (viewMode === 'dashboard') {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto p-6">
@@ -760,7 +771,7 @@ const Sermons = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={handleNewSermon}
+            onClick={() => setViewMode('dashboard')}
             className="text-gray-600 hover:text-gray-900"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
