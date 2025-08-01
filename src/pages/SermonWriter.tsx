@@ -30,11 +30,13 @@ interface SermonEntry {
   title: string | null;
   content: string;
   scripture_reference?: string | null;
+  scripture_references?: string[] | null;
   main_points?: string[];
   congregation?: string | null;
   sermon_date?: string;
   duration?: number;
   notes?: string | null;
+  private_notes?: string | null;
   tags?: string[];
   is_draft?: boolean;
   status?: 'draft' | 'ready' | 'delivered' | 'archived';
@@ -43,11 +45,21 @@ interface SermonEntry {
   user_id: string;
   word_count?: number;
   estimated_time?: number;
+  estimated_duration?: number;
   language?: 'english' | 'tamil' | 'sinhala';
   category?: string;
   outline?: string | null;
   illustrations?: string[];
   applications?: string[];
+  series_name?: string | null;
+  template_type?: string | null;
+  ai_generated?: boolean;
+  last_auto_save?: string | null;
+  version?: number;
+  delivered_at?: string | null;
+  recording_url?: string | null;
+  feedback_score?: number | null;
+  view_count?: number;
 }
 
 interface BibleBook {
@@ -243,15 +255,22 @@ const SermonWriter = () => {
     try {
       const finalData = {
         user_id: user.id,
-        title: editingSermon.title?.trim() || null,
+        title: editingSermon.title?.trim() || 'Untitled Sermon',
         content: editingSermon.content?.trim() || '',
         scripture_reference: editingSermon.scripture_reference || null,
+        scripture_references: editingSermon.scripture_reference ? [editingSermon.scripture_reference] : null,
         congregation: editingSermon.congregation || null,
         sermon_date: editingSermon.sermon_date || new Date().toISOString().split('T')[0],
         is_draft: editingSermon.is_draft ?? true,
         word_count: editingSermon.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0,
         estimated_time: Math.ceil((editingSermon.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150),
+        estimated_duration: Math.ceil((editingSermon.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150),
         language: editingSermon.language || 'english',
+        category: editingSermon.category || 'general',
+        tags: editingSermon.tags || [],
+        notes: editingSermon.notes || null,
+        private_notes: editingSermon.private_notes || null,
+        status: editingSermon.status || 'draft',
         updated_at: new Date().toISOString()
       };
 
@@ -262,7 +281,10 @@ const SermonWriter = () => {
           .eq('id', editingSermon.id)
           .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating sermon:', error);
+          throw error;
+        }
         
         if (!isAutoSave) {
           toast({
@@ -273,11 +295,17 @@ const SermonWriter = () => {
       } else {
         const { data, error } = await supabase
           .from('sermons')
-          .insert(finalData)
+          .insert([{
+            ...finalData,
+            created_at: new Date().toISOString()
+          }])
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating sermon:', error);
+          throw error;
+        }
         
         setEditingSermon(prev => ({ ...prev, id: data.id }));
         setIsEditing(true);
@@ -296,7 +324,7 @@ const SermonWriter = () => {
       if (!isAutoSave) {
         toast({
           title: "Error saving sermon",
-          description: "Please try again",
+          description: error.message || "Please try again",
           variant: "destructive",
         });
       }
