@@ -145,7 +145,7 @@ When referencing Bible verses, use the ${language === 'english' ? translation : 
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'deepseek-r1',
+        model: 'deepseek-chat',
         messages: [
           {
             role: "system",
@@ -179,7 +179,7 @@ When referencing Bible verses, use the ${language === 'english' ? translation : 
 
     return {
       content: cleanContent,
-      model: data.model || 'deepseek-r1'
+      model: data.model || 'deepseek-chat'
     };
 
   } catch (error: any) {

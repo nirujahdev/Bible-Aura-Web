@@ -180,7 +180,7 @@ Make it practical, encouraging, and actionable. Focus on ${verseReference}: "${v
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'deepseek-r1',
+        model: 'deepseek-chat',
         messages: [
           {
             role: "system",
