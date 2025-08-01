@@ -477,7 +477,7 @@ const SermonWriter = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'deepseek-r1',
           messages: [
             {
               role: "system",

@@ -98,7 +98,7 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
       // If already highlighted, update it
       if (currentHighlight) {
         const { data, error } = await supabase
-          .from('highlights')
+          .from('verse_highlights')
           .update({
             color: color,
             category: category,
@@ -118,7 +118,7 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
       } else {
         // Create new highlight
         const { data, error } = await supabase
-          .from('highlights')
+          .from('verse_highlights')
           .insert([{
             user_id: user.id,
             verse_id: verseId,
@@ -152,7 +152,7 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
 
     try {
       const { error } = await supabase
-        .from('highlights')
+        .from('verse_highlights')
         .delete()
         .eq('id', currentHighlight.id)
         .eq('user_id', user.id);
@@ -182,7 +182,7 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
       if (currentHighlight) {
         // Update existing highlight favorite status
         const { data, error } = await supabase
-          .from('highlights')
+          .from('verse_highlights')
           .update({
             is_favorite: !currentHighlight.is_favorite,
             category: !currentHighlight.is_favorite ? 'favorite' : currentHighlight.category,
@@ -198,7 +198,7 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
       } else {
         // Create new favorite highlight
         const { data, error } = await supabase
-          .from('highlights')
+          .from('verse_highlights')
           .insert([{
             user_id: user.id,
             verse_id: verseId,

@@ -62,7 +62,7 @@ const CHAT_MODES = {
     language: 'english'
   },
   verse: {
-    name: "AI Analysis",
+    name: "Verse Analysis",
     description: AI_RESPONSE_TEMPLATES.verse.purpose,
     language: 'english'
   },
@@ -93,7 +93,7 @@ const CHAT_MODES = {
     language: 'tamil'
   },
   'verse-tamil': {
-    name: "AI பகுப்பாய்வு",
+    name: "வசன பகுப்பாய்வு",
     description: AI_RESPONSE_TEMPLATES['verse-tamil'].purpose,
     language: 'tamil'
   }
@@ -129,7 +129,12 @@ LANGUAGE & TRANSLATION CONTEXT:
 - Bible Translation: ${language === 'english' ? `${translation} (${BIBLE_TRANSLATIONS.find(t => t.code === translation)?.name || translation})` : 'Tamil Bible'}
 - Clean Mode: ${cleanMode ? 'Enabled - Provide concise, direct responses without extra formatting' : 'Disabled - Use full structured formatting as specified'}
 
-${cleanMode ? 'CLEAN MODE INSTRUCTIONS: Keep responses concise and direct. Avoid excessive formatting. Focus on essential information only.' : ''}
+FORMATTING RULES:
+- Use ✮ for main titles
+- Use ↗ for section headers  
+- Use • for bullet points
+- NO hashtags, asterisks, or markdown symbols
+- Keep responses clean and structured
 
 When referencing Bible verses, use the ${language === 'english' ? translation : 'Tamil'} translation and always include the complete verse reference.`;
 
@@ -140,7 +145,7 @@ When referencing Bible verses, use the ${language === 'english' ? translation : 
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek-r1',
         messages: [
           {
             role: "system",
@@ -174,7 +179,7 @@ When referencing Bible verses, use the ${language === 'english' ? translation : 
 
     return {
       content: cleanContent,
-      model: data.model || 'deepseek-chat'
+      model: data.model || 'deepseek-r1'
     };
 
   } catch (error: any) {

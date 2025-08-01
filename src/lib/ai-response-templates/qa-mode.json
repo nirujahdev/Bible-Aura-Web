@@ -7,8 +7,8 @@
     "format": "simple_qa",
     "sections": [
       {
-        "title": "Direct Answer",
-        "content": "Clear, concise response to the question",
+        "title": "↗ Direct Answer",
+        "content": "Clear, concise response to the question", 
         "requirements": [
           "Answer the question directly",
           "Use simple, accessible language",
@@ -17,22 +17,22 @@
         ]
       },
       {
-        "title": "Supporting Scripture",
+        "title": "↗ Supporting Scripture",
         "content": "Relevant Bible verse with reference",
         "requirements": [
           "Include one key verse that supports the answer",
-          "Provide full verse text and reference",
+          "Provide full verse text and reference", 
           "Choose the most relevant passage",
           "Ensure verse directly relates to answer"
         ]
       },
       {
-        "title": "Brief Explanation",
+        "title": "↗ Brief Explanation",
         "content": "Why this verse supports the answer",
         "requirements": [
           "Explain the connection clearly",
           "Keep explanation concise",
-          "Show how verse proves the point",
+          "Show how verse proves the point", 
           "Provide any necessary context"
         ]
       }
@@ -42,15 +42,15 @@
     "goodResponses": [
       {
         "question": "Is it okay to be angry?",
-        "answer": "Yes, anger itself isn't sinful - even Jesus got angry (Mark 3:5, John 2:15). Ephesians 4:26 says \"Be angry and do not sin,\" showing anger can be righteous when directed at injustice or sin. The key is not letting anger control you or lead to harmful actions. Psalm 37:8 reminds us to \"refrain from anger and turn from wrath.\""
+        "answer": "↗ Direct Answer\nYes, anger itself isn't sinful - even Jesus got angry (Mark 3:5, John 2:15).\n\n↗ Supporting Scripture\nEphesians 4:26 - \"Be angry and do not sin; do not let the sun go down on your anger.\"\n\n↗ Brief Explanation\nThis shows anger can be righteous when directed at injustice or sin. The key is not letting anger control you or lead to harmful actions."
       },
       {
         "question": "What happens when we die?",
-        "answer": "For believers, death means being \"absent from the body and present with the Lord\" (2 Corinthians 5:8). Our spirits go immediately to be with Christ (Luke 23:43, Philippians 1:23). At the resurrection, we'll receive new bodies (1 Corinthians 15:42-44). Death is not the end but a transition to eternal life with God."
+        "answer": "↗ Direct Answer\nFor believers, death means being immediately present with the Lord.\n\n↗ Supporting Scripture\n2 Corinthians 5:8 - \"We are confident and would prefer to be away from the body and at home with the Lord.\"\n\n↗ Brief Explanation\nOur spirits go to be with Christ while we await the resurrection when we'll receive new bodies. Death is transition, not termination."
       },
       {
         "question": "Should Christians tithe?",
-        "answer": "While the 10% tithe was an Old Testament law, the New Testament emphasizes generous, cheerful giving (2 Corinthians 9:7). Jesus praised sacrificial giving (Luke 21:1-4) and taught that our treasure reveals our heart (Matthew 6:21). Give proportionally as God has blessed you (1 Corinthians 16:2), whether that's 10% or another amount."
+        "answer": "↗ Direct Answer\nThe New Testament emphasizes generous, cheerful giving rather than a strict 10% requirement.\n\n↗ Supporting Scripture\n2 Corinthians 9:7 - \"Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion.\"\n\n↗ Brief Explanation\nGive proportionally as God has blessed you, whether that's 10% or another amount, focusing on the heart attitude rather than the percentage."
       }
     ],
     "badResponse": {
@@ -63,8 +63,9 @@
     "Keep responses under 150 words",
     "Answer the specific question asked",
     "Always include one supporting verse",
-    "Avoid theological complexity",
-    "Be practical and applicable"
+    "Avoid theological complexity", 
+    "Be practical and applicable",
+    "Use clean formatting: ✮ ↗ • only, no hashtags or asterisks"
   ],
   "commonQuestionTypes": [
     "What does the Bible say about...?",

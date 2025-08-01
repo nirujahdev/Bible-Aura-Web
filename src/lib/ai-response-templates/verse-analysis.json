@@ -1,22 +1,22 @@
 {
   "mode": "verse",
-  "name": "AI Verse Analysis",
+  "name": "Verse Analysis",
   "purpose": "Deep, structured examination of specific Bible verses",
   "responseStructure": {
     "format": "structured_sections",
     "sections": [
       {
-        "title": "📖 SCRIPTURE",
+        "title": "✮ SCRIPTURE",
         "content": "[Verse Reference & Full Text]",
         "requirements": ["Include complete verse text", "Use proper biblical reference format"]
       },
       {
-        "title": "📝 SIMPLE EXPLANATION",
+        "title": "↗ Simple Explanation",
         "content": "Plain language breakdown with key terms defined",
         "requirements": ["Use accessible language", "Define difficult terms", "Explain context"]
       },
       {
-        "title": "🏛️ HISTORY",
+        "title": "↗ Historical Context",
         "content": "Historical and cultural background",
         "requirements": [
           "When/where it was written",
@@ -25,7 +25,7 @@
         ]
       },
       {
-        "title": "✝️ THEOLOGY",
+        "title": "↗ Theological Significance",
         "content": "Doctrinal significance and biblical narrative placement",
         "requirements": [
           "Explain theological importance",
@@ -34,10 +34,10 @@
         ]
       },
       {
-        "title": "🔗 CROSS REFERENCES",
+        "title": "↗ Cross References",
         "content": "Related verses and supporting passages",
         "requirements": [
-          "Provide 2-3 related verses with references",
+          "Provide 2-3 related verses with references",  
           "Explain connection to main verse",
           "Include both Old and New Testament when applicable"
         ]
@@ -47,14 +47,16 @@
   "examples": {
     "goodResponse": {
       "verse": "John 3:16",
-      "fullResponse": "📖 SCRIPTURE: John 3:16 - \"For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.\"\n\n📝 SIMPLE EXPLANATION:\n• God's love for humanity motivated the ultimate sacrifice - sending Jesus\n• \"Whoever believes\" means salvation is available to all people, not just a select few\n• \"Eternal life\" refers to both quality and quantity - life with God forever\n\n🏛️ HISTORY:\n• Written by John around 85-90 AD to Greek-speaking audience\n• Part of Jesus' conversation with Nicodemus, a Jewish religious leader\n• Cultural context: Jews believed salvation was only for their nation\n\n✝️ THEOLOGY:\n• Central doctrine of substitutionary atonement - Jesus died in our place\n• Demonstrates the Trinity - Father's love, Son's sacrifice, Spirit's work in belief\n• Foundation of salvation by faith alone, not works\n\n🔗 CROSS REFERENCES:\n• Romans 5:8 - \"God demonstrates his own love for us...\"\n• 1 John 4:9-10 - God's love shown through sending His Son\n• Romans 6:23 - \"The gift of God is eternal life...\""
+      "fullResponse": "✮ SCRIPTURE\nJohn 3:16 - \"For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.\"\n\n↗ Simple Explanation\n• God's love for humanity motivated the ultimate sacrifice - sending Jesus\n• \"Whoever believes\" means salvation is available to all people, not just a select few\n• \"Eternal life\" refers to both quality and quantity - life with God forever\n\n↗ Historical Context\n• Written by John around 85-90 AD to Greek-speaking audience\n• Part of Jesus' conversation with Nicodemus, a Jewish religious leader\n• Cultural context: Jews believed salvation was only for their nation\n\n↗ Theological Significance\n• Central doctrine of substitutionary atonement - Jesus died in our place\n• Demonstrates the Trinity - Father's love, Son's sacrifice, Spirit's work in belief\n• Foundation of salvation by faith alone, not works\n\n↗ Cross References\n• Romans 5:8 - \"God demonstrates his own love for us...\"\n• 1 John 4:9-10 - God's love shown through sending His Son\n• Romans 6:23 - \"The gift of God is eternal life...\""
     }
   },
   "tone": "scholarly yet accessible, reverent",
   "restrictions": [
-    "Use emojis as specified for section headers",
+    "Use ✮ for main titles and ↗ for section headers",
+    "Use • for bullet points only",
     "Keep each section focused and concise",
     "Always include the full verse text",
-    "Maintain biblical accuracy"
+    "Maintain biblical accuracy",
+    "No hashtags, asterisks, or markdown symbols"
   ]
 } 

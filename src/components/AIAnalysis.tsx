@@ -194,7 +194,7 @@ export function AIAnalysis({ verseId, verseText, verseReference, isOpen, onClose
     if (!user) {
       toast({
         title: "Sign in required",
-        description: "Please sign in to access AI analysis features",
+        description: "Please sign in to access verse analysis features",
         variant: "destructive",
       });
       return;
@@ -227,44 +227,39 @@ export function AIAnalysis({ verseId, verseText, verseReference, isOpen, onClose
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        <CardHeader className="flex-shrink-0 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-primary">✦</span>
-                <Sparkles className="h-5 w-5 text-primary" />
-                Bible Aura AI Analysis for {verseReference}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1 italic">
-                "{verseText.substring(0, 120)}..."
-              </p>
+      <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+            <div>
+              <CardTitle className="text-xl">Verse Analysis</CardTitle>
+              <p className="text-sm text-muted-foreground">{verseReference}</p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-auto p-6">
+        <CardContent className="flex-1 overflow-hidden">
+          <div className="text-sm text-muted-foreground mb-6 p-4 bg-muted/50 rounded-lg">
+            <strong>Verse:</strong> "{verseText}"
+          </div>
+
           {!user ? (
             <div className="text-center py-12">
-              <Brain className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">AI Analysis Available</h3>
-              <p className="text-muted-foreground mb-6">
-                Sign in to unlock powerful AI-driven biblical insights and analysis
+              <Brain className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Sign In Required</h3>
+              <p className="text-muted-foreground">
+                Please sign in to access verse analysis features
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {ANALYSIS_TYPES.map((type) => (
-                  <Card key={type.id} className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <type.icon className="h-5 w-5" />
-                      <h4 className="font-medium">{type.name}</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{type.description}</p>
-                  </Card>
-                ))}
-              </div>
             </div>
           ) : (
             <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as AnalysisType)} className="space-y-6">

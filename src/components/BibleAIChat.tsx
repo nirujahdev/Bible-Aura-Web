@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { generateSystemPrompt } from '@/lib/ai-response-templates';
 
 interface BibleAIChatProps {
   verseId: string;
@@ -71,56 +72,207 @@ const CHAT_MODES = [
   }
 ];
 
-// Mock AI response function
+// Enhanced AI response function with proper structure
 const generateAIResponse = async (
   userMessage: string, 
   mode: ChatMode, 
   verseText: string, 
   verseReference: string
 ): Promise<string> => {
-  // Simulate AI processing delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  const responses: Record<ChatMode, () => string> = {
-    theological: () => {
-      const responses = [
-        `Based on ${verseReference}, this passage reveals important theological truths about God's nature and His relationship with humanity. The verse demonstrates divine attributes of grace, sovereignty, and love, pointing to the doctrine of salvation by faith.`,
-        `Theologically, ${verseReference} connects to the broader biblical narrative of redemption. This verse emphasizes the covenantal relationship between God and His people, highlighting themes of divine mercy and human responsibility.`,
-        `From a theological perspective, this passage in ${verseReference} illustrates fundamental Christian doctrines including the nature of God, the role of faith, and the promise of eternal life through divine grace.`
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    },
+  try {
+    // Create system prompt based on mode
+    let systemPrompt = '';
     
-    historical: () => {
-      const responses = [
-        `Historically, ${verseReference} was written in a specific cultural context that deeply influences its meaning. The ancient Near Eastern background, including religious practices and social customs of the time, provides crucial insight into the original audience's understanding.`,
-        `The historical setting of ${verseReference} includes the political climate and cultural practices of ancient Israel. Understanding the original historical context helps us grasp the full significance of this passage for its first readers.`,
-        `This verse from ${verseReference} reflects the historical circumstances of its time, including the religious, social, and political environment that shaped how the original audience would have understood these words.`
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
-    },
-    
-    'cross-reference': () => {
-      const references = [
-        'John 3:16', 'Romans 8:28', 'Philippians 4:13', 'Psalm 23:1', 'Matthew 6:33',
-        'Romans 12:1-2', '1 Peter 2:9', 'Ephesians 2:8-9', 'Isaiah 55:8-9', 'Proverbs 3:5-6'
-      ];
-      const selectedRefs = references.slice(0, 3 + Math.floor(Math.random() * 3));
-      
-      return `${verseReference} connects beautifully with several other biblical passages. Key cross-references include: ${selectedRefs.join(', ')}. These verses share similar themes of God's faithfulness, the importance of trust, and the call to live according to biblical principles. Together, they form a tapestry of biblical truth that reinforces the central message of Scripture.`;
-    },
-    
-    insights: () => {
-      const responses = [
-        `${verseReference} offers profound practical insights for daily Christian living. This passage challenges us to examine our attitudes and align our actions with biblical truth. Here are key applications: trust in God's timing, practice gratitude daily, and seek His guidance in decisions.`,
-        `The practical wisdom in ${verseReference} provides guidance for contemporary life. This verse encourages us to develop spiritual disciplines like prayer, meditation on Scripture, and service to others. It reminds us to find our identity in Christ rather than worldly achievements.`,
-        `From ${verseReference}, we can extract valuable life principles: the importance of faith over fear, the power of prayer in difficult times, and the call to love others as Christ loved us. These insights transform how we approach relationships, work, and personal growth.`
-      ];
-      return responses[Math.floor(Math.random() * responses.length)];
+    switch (mode) {
+      case 'theological':
+        systemPrompt = `You are Bible Aura AI, providing theological analysis of Bible verses.
+
+RESPONSE FORMAT:
+Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+
+✮ THEOLOGICAL ANALYSIS
+↗ Core Doctrine
+• [Main theological truth]
+• [Key doctrinal point]
+
+↗ Biblical Context  
+• [Connection to broader Scripture]
+• [Theological significance]
+
+↗ Church Teaching
+• [Historical church understanding]
+• [Modern application]
+
+Keep responses biblical, accurate, and accessible. Focus on ${verseReference}: "${verseText}"`;
+        break;
+        
+      case 'historical':
+        systemPrompt = `You are Bible Aura AI, providing historical context for Bible verses.
+
+RESPONSE FORMAT:
+Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+
+✮ HISTORICAL CONTEXT
+↗ Time & Place
+• [When and where written]
+• [Historical setting]
+
+↗ Cultural Background
+• [Original audience]
+• [Cultural practices]
+
+↗ Author Context
+• [Writer's background]
+• [Purpose for writing]
+
+Keep responses historically accurate and engaging. Focus on ${verseReference}: "${verseText}"`;
+        break;
+        
+      case 'cross-reference':
+        systemPrompt = `You are Bible Aura AI, finding cross-references and connections for Bible verses.
+
+RESPONSE FORMAT:
+Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+
+✮ CROSS REFERENCES
+↗ Related Verses
+• [Verse reference]: [Brief connection]
+• [Verse reference]: [Brief connection]
+
+↗ Thematic Connections
+• [Common theme]
+• [Shared truth]
+
+↗ Biblical Pattern
+• [How this fits biblical narrative]
+• [God's consistent character]
+
+Provide 3-4 relevant verses with clear connections. Focus on ${verseReference}: "${verseText}"`;
+        break;
+        
+      case 'insights':
+        systemPrompt = `You are Bible Aura AI, providing practical insights and applications for Bible verses.
+
+RESPONSE FORMAT:
+Use these symbols for structure: ✮ for main titles, ↗ for sections, • for bullet points
+
+✮ PRACTICAL INSIGHTS
+↗ Life Application
+• [Practical way to apply this]
+• [Daily life connection]
+
+↗ Spiritual Growth
+• [How this builds faith]
+• [Character development]
+
+↗ Action Steps
+• [Specific thing to do]
+• [Way to live this out]
+
+Make it practical, encouraging, and actionable. Focus on ${verseReference}: "${verseText}"`;
+        break;
     }
+
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek-r1',
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user", 
+            content: userMessage
+          }
+        ],
+        max_tokens: 400,
+        temperature: 0.6,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || 'Sorry, I could not generate a response at this time.';
+    
+  } catch (error) {
+    console.error('AI API Error:', error);
+    // Fallback structured responses
+    return getFallbackResponse(mode, verseReference, verseText);
+  }
+};
+
+// Fallback responses with proper structure
+const getFallbackResponse = (mode: ChatMode, verseReference: string, verseText: string): string => {
+  const responses: Record<ChatMode, string> = {
+    theological: `✮ THEOLOGICAL ANALYSIS
+
+↗ Core Doctrine
+• This verse reveals God's character and His relationship with humanity
+• Central to understanding biblical truth about faith and salvation
+
+↗ Biblical Context
+• Connects to the broader theme of God's redemptive plan
+• Shows consistency with Old and New Testament teachings
+
+↗ Church Teaching
+• Historically understood as foundational to Christian doctrine
+• Applied by believers throughout church history for spiritual growth`,
+
+    historical: `✮ HISTORICAL CONTEXT
+
+↗ Time & Place
+• Written in the ancient Near Eastern context
+• Reflects the culture and customs of biblical times
+
+↗ Cultural Background
+• Original audience would have understood specific cultural references
+• Historical setting influences the meaning and application
+
+↗ Author Context
+• Written by the inspired biblical author for specific purposes
+• Addresses real situations and needs of the original readers`,
+
+    'cross-reference': `✮ CROSS REFERENCES
+
+↗ Related Verses
+• John 3:16: Shows God's love and salvation plan
+• Romans 8:28: Demonstrates God's sovereignty and goodness
+• Philippians 4:13: Reveals strength available through Christ
+
+↗ Thematic Connections
+• Connects to themes of faith, hope, and love throughout Scripture
+• Part of God's consistent character revealed in His Word
+
+↗ Biblical Pattern
+• Fits into the larger narrative of God's redemptive story
+• Shows how God works consistently throughout biblical history`,
+
+    insights: `✮ PRACTICAL INSIGHTS
+
+↗ Life Application
+• Apply this truth to your daily decisions and relationships
+• Let this verse guide your perspective on current challenges
+
+↗ Spiritual Growth
+• Use this passage for prayer and meditation
+• Allow God's Word to transform your heart and mind
+
+↗ Action Steps
+• Memorize this verse for encouragement in difficult times
+• Share this truth with others who need encouragement`
   };
-  
-  return responses[mode]();
+
+  return responses[mode];
 };
 
 export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClose }: BibleAIChatProps) {
@@ -151,7 +303,7 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
       const welcomeMessage: ChatMessage = {
         id: `welcome-${Date.now()}`,
         type: 'ai',
-        content: `✦ Welcome! I'm here to help you explore **${verseReference}**: "${verseText}"\n\nChoose a mode above and ask me anything about this verse!`,
+        content: `✦ Welcome! I'm here to help you explore **${verseReference}**: "${verseText}"\n\nChoose a mode below and ask me anything about this verse!`,
         timestamp: new Date().toISOString(),
         mode: activeMode
       };
@@ -253,43 +405,6 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
         </Button>
       </div>
 
-      {/* Mode Selector */}
-      <div className="p-3 border-b border-gray-100">
-        <Tabs value={activeMode} onValueChange={(value) => handleModeChange(value as ChatMode)}>
-          <TabsList className="grid w-full grid-cols-2 gap-1 h-auto p-1">
-            {CHAT_MODES.map((mode) => {
-              const Icon = mode.icon;
-              return (
-                <TabsTrigger
-                  key={mode.id}
-                  value={mode.id}
-                  className="flex flex-col items-center gap-1 p-2 text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-                >
-                  <Icon className="h-3 w-3" />
-                  <span>{mode.name}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-          
-          <TabsList className="grid w-full grid-cols-2 gap-1 h-auto p-1 mt-1">
-            {CHAT_MODES.slice(2).map((mode) => {
-              const Icon = mode.icon;
-              return (
-                <TabsTrigger
-                  key={mode.id}
-                  value={mode.id}
-                  className="flex flex-col items-center gap-1 p-2 text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-                >
-                  <Icon className="h-3 w-3" />
-                  <span>{mode.name}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
-      </div>
-
       {/* Messages Area */}
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
@@ -330,6 +445,43 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
+
+      {/* Mode Selector - Now positioned above the input */}
+      <div className="p-3 border-t border-gray-100 bg-gray-50">
+        <Tabs value={activeMode} onValueChange={(value) => handleModeChange(value as ChatMode)}>
+          <TabsList className="grid w-full grid-cols-2 gap-1 h-auto p-1">
+            {CHAT_MODES.map((mode) => {
+              const Icon = mode.icon;
+              return (
+                <TabsTrigger
+                  key={mode.id}
+                  value={mode.id}
+                  className="flex flex-col items-center gap-1 p-2 text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                >
+                  <Icon className="h-3 w-3" />
+                  <span>{mode.name}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+          
+          <TabsList className="grid w-full grid-cols-2 gap-1 h-auto p-1 mt-1">
+            {CHAT_MODES.slice(2).map((mode) => {
+              const Icon = mode.icon;
+              return (
+                <TabsTrigger
+                  key={mode.id}
+                  value={mode.id}
+                  className="flex flex-col items-center gap-1 p-2 text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                >
+                  <Icon className="h-3 w-3" />
+                  <span>{mode.name}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
+      </div>
 
       {/* Input Area */}
       <div className="p-4 border-t border-gray-100">

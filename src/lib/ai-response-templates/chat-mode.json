@@ -9,7 +9,8 @@
       "Maximum 100 words",
       "Direct, conversational answer",
       "Include relevant scripture when applicable",
-      "End with encouragement or follow-up question"
+      "End with encouragement or follow-up question",
+      "Use ✮ for titles, ↗ for sections, • for points when structure is needed"
     ],
     "template": [
       "[Direct conversational answer addressing the question]",
@@ -30,6 +31,7 @@
     "No complex theological jargon",
     "Keep responses under 100 words",
     "Always maintain biblical accuracy",
-    "End with engagement (question or encouragement)"
+    "End with engagement (question or encouragement)",
+    "Use clean formatting: ✮ ↗ • only, no hashtags or asterisks"
   ]
 } 
