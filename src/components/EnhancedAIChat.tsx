@@ -129,14 +129,30 @@ LANGUAGE & TRANSLATION CONTEXT:
 - Bible Translation: ${language === 'english' ? `${translation} (${BIBLE_TRANSLATIONS.find(t => t.code === translation)?.name || translation})` : 'Tamil Bible'}
 - Clean Mode: ${cleanMode ? 'Enabled - Provide concise, direct responses without extra formatting' : 'Disabled - Use full structured formatting as specified'}
 
-FORMATTING RULES:
-- Use ✮ for main titles
-- Use ↗ for section headers  
-- Use • for bullet points
+CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
+- Start with ✮ followed by title
+- Put TWO line breaks after the title
+- Each section starts with ↗ followed by section name
+- Put ONE line break after section header
+- Each bullet point starts with • followed by content
+- Put ONE line break after each bullet point
+- Put TWO line breaks between sections
+- NO emojis like 📖 🎯 ✝️ etc.
 - NO hashtags, asterisks, or markdown symbols
-- Keep responses clean and structured
 
-When referencing Bible verses, use the ${language === 'english' ? translation : 'Tamil'} translation and always include the complete verse reference.`;
+EXAMPLE FORMAT:
+✮ MAIN TITLE
+
+↗ Section Header
+• First point here
+• Second point here
+
+↗ Another Section
+• Another point here
+• Final point here
+
+When referencing Bible verses, use the ${language === 'english' ? translation : 'Tamil'} translation and always include the complete verse reference.
+IMPORTANT: Follow the exact line break pattern shown above.`;
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -188,17 +204,39 @@ When referencing Bible verses, use the ${language === 'english' ? translation : 
   }
 };
 
-// Function to clean response text from unwanted formatting
+// Function to clean response text and ensure proper formatting
 const cleanResponseText = (text: string): string => {
-  return text
-    // Remove emojis
-    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-    // Remove markdown formatting
-    .replace(/[#*$]/g, '')
-    // Clean up multiple spaces
-    .replace(/\s+/g, ' ')
-    // Trim whitespace
+  // Remove any unwanted characters
+  let cleaned = text
+    .replace(/[#*@$_]/g, '') // Remove banned symbols
+    .replace(/📖|🎯|✝️|🔗|🏛️|📝|💭|🌟|🔍|⏰|💎|📚|👥|🌍/g, '') // Remove emojis
     .trim();
+  
+  // Fix spacing and line breaks for proper structure
+  cleaned = cleaned
+    // Ensure proper spacing around main title
+    .replace(/✮\s*/g, '✮ ')
+    // Ensure section headers are on new lines with proper spacing
+    .replace(/\s*↗\s*/g, '\n\n↗ ')
+    // Ensure bullet points are properly formatted
+    .replace(/\s*•\s*/g, '\n• ')
+    // Clean up multiple consecutive newlines
+    .replace(/\n{3,}/g, '\n\n')
+    // Ensure sections are properly separated
+    .replace(/↗([^↗✮]*?)↗/g, '↗$1\n\n↗')
+    .trim();
+  
+  // Final cleanup to ensure consistent formatting
+  cleaned = cleaned
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join('\n')
+    .replace(/✮([^\n]*)\n/g, '✮$1\n\n')
+    .replace(/↗([^\n]*)\n/g, '↗$1\n')
+    .replace(/•([^\n]*)\n/g, '• $1\n');
+  
+  return cleaned;
 };
 
 export default function EnhancedAIChat() {
