@@ -78,11 +78,11 @@ export const SUBSCRIPTION_PLANS = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    price: 600,
+    price: 1000,
     currency: 'LKR',
     period: 'month',
     features: [
-      '50 AI chats per month',
+      '100 AI chats per month',
       '20 AI analyses per month',
       '50 journal entries per month',
       'Advanced AI features',
@@ -92,11 +92,11 @@ export const SUBSCRIPTION_PLANS = {
   supporter: {
     id: 'supporter',
     name: 'Supporter',
-    price: 1800,
+    price: 2500,
     currency: 'LKR',
     period: 'month',
     features: [
-      '100 AI chats per month',
+      '200 AI chats per month',
       '50 AI analyses per month',
       '100 journal entries per month',
       'Full sermon library access',

@@ -52,30 +52,28 @@ Allow: /
 User-agent: anthropic-ai
 Allow: /
 
-# Allow all other crawlers with some restrictions
+# Allow all other crawlers with restrictions
 User-agent: *
 Allow: /
 
-# Disallow sensitive areas
+# Disallow sensitive areas and private paths
 Disallow: /api/
 Disallow: /admin/
 Disallow: /_next/
-Disallow: /dashboard/private/
-Disallow: /profile/private/
-Disallow: /journal/private/
-Disallow: *.json$
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /journal/
+Disallow: /favorites/
 Disallow: /src/
 Disallow: /node_modules/
 Disallow: /.git/
 Disallow: /.env
+Disallow: /auth
 
-# Allow important static assets and pages
+# Allow important static assets
 Allow: /public/
 Allow: /assets/
 Allow: /images/
-Allow: /css/
-Allow: /js/
-Allow: /fonts/
 Allow: /*.css
 Allow: /*.js
 Allow: /*.svg
@@ -87,7 +85,6 @@ Allow: /*.ico
 Allow: /*.webp
 
 # Important SEO pages - explicitly allow
-Allow: /bible
 Allow: /bible-ai
 Allow: /ai-bible-study
 Allow: /bible-chat
@@ -102,18 +99,14 @@ Allow: /parables-study
 Allow: /sermons
 Allow: /sermon-writer
 Allow: /sermon-library
-Allow: /journal
 Allow: /about
 Allow: /contact
-Allow: /features
+Allow: /features/
 Allow: /pricing
-Allow: /blog/*
+Allow: /blog/
 
 # Host directive
 Host: bibleaura.xyz
 
-# Sitemap location
-Sitemap: https://bibleaura.xyz/sitemap.xml
-
-# Additional sitemap for blog content
-Sitemap: https://bibleaura.xyz/blog-sitemap.xml
+# Sitemap index - main entry point
+Sitemap: https://bibleaura.xyz/sitemap-index.xml

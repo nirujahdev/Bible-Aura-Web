@@ -59,6 +59,31 @@
       "source": "/bible-ai-assistant",
       "destination": "/bible-ai",
       "permanent": true
+    },
+    {
+      "source": "/ai-powered-bible-study",
+      "destination": "/bible-ai",
+      "permanent": true
+    },
+    {
+      "source": "/interactive-bible-study",
+      "destination": "/bible-ai",
+      "permanent": true
+    },
+    {
+      "source": "/biblical-insights-ai",
+      "destination": "/bible-ai",
+      "permanent": true
+    },
+    {
+      "source": "/christian-study-tools",
+      "destination": "/features",
+      "permanent": true
+    },
+    {
+      "source": "/bible-verse-analysis",
+      "destination": "/bible-ai",
+      "permanent": true
     }
   ],
   "headers": [

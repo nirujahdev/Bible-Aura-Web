@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Main site pages sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/sitemap.xml</loc>
+    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- Blog content sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/blog-sitemap.xml</loc>
+    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- Feature category pages sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/features-sitemap.xml</loc>
+    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- SEO landing pages sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/seo-sitemap.xml</loc>
+    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
+  </sitemap>
+
+</sitemapindex> 

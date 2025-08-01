@@ -157,7 +157,7 @@ const About = () => {
                 </div>
                 <div className="mt-6">
                   <a 
-                    href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r" 
+                    href="https://www.instagram.com/bible_aura.xyz/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium"

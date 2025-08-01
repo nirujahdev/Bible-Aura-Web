@@ -25,7 +25,7 @@ const Footer = () => {
                 <Mail className="h-5 w-5 text-white" />
               </a>
               <a 
-                href="https://www.instagram.com/benaiah_4?igsh=cGZuYmI2YWw0d25r"
+                href="https://www.instagram.com/bible_aura.xyz/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-full transition-all duration-300"

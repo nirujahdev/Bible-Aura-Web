@@ -31,7 +31,7 @@ const Contact = () => {
       title: "Follow Us",
       description: "Connect on social media",
       contact: "@bible_aura.ai",
-      action: "https://instagram.com/bible_aura.ai",
+      action: "https://www.instagram.com/bible_aura.xyz/",
       color: "from-purple-500 to-purple-600"
     },
     {
@@ -127,7 +127,7 @@ const Contact = () => {
               <p className="text-gray-600 text-sm mb-4">Connect on social media</p>
               <div className="bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl p-4 shadow-sm">
                 <a 
-                  href="https://instagram.com/bible_aura.ai"
+                  href="https://www.instagram.com/bible_aura.xyz/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
