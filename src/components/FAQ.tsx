@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
 
 interface FAQItem {
   id: number;
@@ -65,7 +62,6 @@ const faqData: FAQItem[] = [
 
 export default function FAQ() {
   const [openItems, setOpenItems] = useState<number[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const toggleItem = (id: number) => {
     setOpenItems(prev => 
@@ -74,15 +70,6 @@ export default function FAQ() {
         : [...prev, id]
     );
   };
-
-  const filteredFAQs = faqData.filter(faq => {
-    const matchesSearch = searchTerm === '' || 
-      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch;
-  });
 
   return (
     <section className="py-16 md:py-20 bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -103,21 +90,9 @@ export default function FAQ() {
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-12 max-w-md mx-auto">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-          <Input
-            type="text"
-            placeholder="Search questions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 transition-colors text-center"
-          />
-        </div>
-
         {/* FAQ Items */}
         <div className="space-y-4 max-w-3xl mx-auto mb-12">
-          {filteredFAQs.map((faq) => (
+          {faqData.map((faq) => (
             <Card 
               key={faq.id} 
               className="bg-white hover:shadow-lg transition-all duration-300 border-0 shadow-md overflow-hidden group"
@@ -163,44 +138,30 @@ export default function FAQ() {
           ))}
         </div>
 
-        {filteredFAQs.length === 0 && (
-          <div className="text-center py-12">
-            <HelpCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No questions found</h3>
-            <p className="text-gray-500">Try adjusting your search term or browse all questions</p>
+        {/* About the Founder */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-2xl mx-auto">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-xl mb-6">
+            <User className="h-8 w-8 text-white" />
           </div>
-        )}
-
-        {/* Contact CTA */}
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl shadow-xl p-8 text-center max-w-2xl mx-auto text-white">
-          <HelpCircle className="h-12 w-12 mx-auto mb-4 opacity-90" />
-          <h3 className="text-2xl font-bold mb-4">
-            Still have questions?
+          
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+            About the Founder
           </h3>
-          <p className="text-orange-100 mb-8 leading-relaxed">
-            Can't find what you're looking for? Our support team is here to help with any questions about Bible AI or Bible study features.
+          
+          <p className="text-gray-600 leading-relaxed mb-6">
+            Bible Aura was created by <strong>Benaiah Nicholas Nimal</strong>, a passionate believer and software developer dedicated to making biblical wisdom accessible through technology. Combining faith with cutting-edge AI, Benaiah's vision is to help believers worldwide deepen their spiritual journey through intelligent Bible study tools.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              asChild
-              size="lg"
-              variant="secondary" 
-              className="bg-white text-orange-600 hover:bg-gray-100 font-semibold px-8 py-3 shadow-lg hover:scale-105 transition-all"
-            >
-              <Link to="/contact">
-                Contact Support
-              </Link>
-            </Button>
-            <Button 
-              asChild
-              size="lg"
-              variant="outline" 
-              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 font-semibold px-8 py-3 shadow-lg hover:scale-105 transition-all"
-            >
-              <Link to="/bible-ai">
-                Try Bible AI Now
-              </Link>
-            </Button>
+          
+          <div className="flex flex-wrap gap-2 justify-center">
+            <span className="px-3 py-1 bg-blue-100 text-xs text-blue-700 rounded-full font-medium">
+              Founder & Developer
+            </span>
+            <span className="px-3 py-1 bg-purple-100 text-xs text-purple-700 rounded-full font-medium">
+              Faith & Technology
+            </span>
+            <span className="px-3 py-1 bg-orange-100 text-xs text-orange-700 rounded-full font-medium">
+              Bible AI Vision
+            </span>
           </div>
         </div>
       </div>
