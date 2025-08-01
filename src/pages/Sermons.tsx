@@ -1040,10 +1040,9 @@ const Sermons = () => {
           {showOutline && (
             <div className="w-80 border-r bg-white/50 backdrop-blur-sm flex flex-col shadow-sm">
               <Tabs defaultValue="details" className="flex-1 flex flex-col">
-                <TabsList className="grid grid-cols-3 m-4 mb-0 bg-gray-100">
-                  <TabsTrigger value="details" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Details</TabsTrigger>
-                  <TabsTrigger value="outline" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Outline</TabsTrigger>
-                  <TabsTrigger value="stats" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Stats</TabsTrigger>
+                <TabsList className="grid grid-cols-2 m-4 mb-0 bg-gray-100">
+                  <TabsTrigger value="details" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Details</TabsTrigger>
+                  <TabsTrigger value="outline" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Outline</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="details" className="flex-1 p-4 m-0">
@@ -1065,14 +1064,18 @@ const Sermons = () => {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           <BookOpen className="inline h-4 w-4 mr-1" />
-                          Scripture Reference
+                          Scripture References
                         </label>
-                        <Input
-                          placeholder="e.g., John 3:16"
+                        <Textarea
+                          placeholder="Add your main scripture references here...&#10;e.g.,&#10;John 3:16 - For God so loved the world...&#10;Romans 8:28 - All things work together for good...&#10;Matthew 5:14 - You are the light of the world..."
                           value={selectedSermon?.scripture_reference || ''}
                           onChange={(e) => setSelectedSermon(prev => prev ? { ...prev, scripture_reference: e.target.value } : null)}
-                          className="border-gray-200 focus:border-blue-500"
+                          className="border-gray-200 focus:border-orange-500 min-h-[120px] resize-none"
+                          rows={6}
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          💡 Tip: Add one reference per line with notes for easy reference
+                        </p>
                       </div>
                       
                       <div>
@@ -1109,7 +1112,7 @@ const Sermons = () => {
                         <Select value={selectedSermon?.status} onValueChange={(value: 'draft' | 'ready' | 'delivered' | 'archived') => 
                           setSelectedSermon(prev => prev ? { ...prev, status: value, is_draft: value === 'draft' } : null)
                         }>
-                          <SelectTrigger className="border-gray-200 focus:border-blue-500">
+                          <SelectTrigger className="border-gray-200 focus:border-orange-500">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1123,24 +1126,6 @@ const Sermons = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          <Heart className="inline h-4 w-4 mr-1" />
-                          Sermon Mood
-                        </label>
-                        <Select value={sermonMood} onValueChange={(value: 'inspiring' | 'challenging' | 'comforting' | 'teaching') => setSermonMood(value)}>
-                          <SelectTrigger className="border-gray-200 focus:border-blue-500">
-                            <SelectValue placeholder="Select mood" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="inspiring">✨ Inspiring</SelectItem>
-                            <SelectItem value="challenging">⚡ Challenging</SelectItem>
-                            <SelectItem value="comforting">🤗 Comforting</SelectItem>
-                            <SelectItem value="teaching">📚 Teaching</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           <MapPin className="inline h-4 w-4 mr-1" />
                           Target Audience
                         </label>
@@ -1148,7 +1133,7 @@ const Sermons = () => {
                           placeholder="e.g., Young Adults, Families, etc."
                           value={targetAudience}
                           onChange={(e) => setTargetAudience(e.target.value)}
-                          className="border-gray-200 focus:border-blue-500"
+                          className="border-gray-200 focus:border-orange-500"
                         />
                       </div>
 
@@ -1161,7 +1146,7 @@ const Sermons = () => {
                           placeholder="Private notes about this sermon..."
                           value={selectedSermon?.private_notes || ''}
                           onChange={(e) => setSelectedSermon(prev => prev ? { ...prev, private_notes: e.target.value } : null)}
-                          className="border-gray-200 focus:border-blue-500 min-h-[80px]"
+                          className="border-gray-200 focus:border-orange-500 min-h-[80px]"
                         />
                       </div>
                     </div>
@@ -1183,15 +1168,15 @@ const Sermons = () => {
                         value={newOutlineItem}
                         onChange={(e) => setNewOutlineItem(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && addOutlineItem()}
-                        className="flex-1 border-gray-200 focus:border-blue-500"
+                                                  className="flex-1 border-gray-200 focus:border-orange-500"
                       />
-                      <Button 
-                        onClick={() => addOutlineItem()}
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-600"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                                              <Button 
+                          onClick={() => addOutlineItem()}
+                          size="sm"
+                          className="bg-orange-500 hover:bg-orange-600"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
                     </div>
 
                     <ScrollArea className="flex-1">
@@ -1216,7 +1201,7 @@ const Sermons = () => {
                                     <Circle className="h-4 w-4 text-gray-400" />
                                   }
                                 </Button>
-                                <Heading1 className="h-3 w-3 text-blue-600" />
+                                                                 <Heading1 className="h-3 w-3 text-orange-600" />
                                 <span className={`text-sm flex-1 ${item.completed ? 'line-through text-gray-500' : ''}`}>
                                   {item.title}
                                 </span>
@@ -1244,7 +1229,7 @@ const Sermons = () => {
                                       <Circle className="h-4 w-4 text-gray-400" />
                                     }
                                   </Button>
-                                  <Heading2 className="h-3 w-3 text-purple-600" />
+                                                                     <Heading2 className="h-3 w-3 text-orange-500" />
                                   <span className={`text-sm flex-1 ${subItem.completed ? 'line-through text-gray-500' : ''}`}>
                                     {subItem.title}
                                   </span>
@@ -1270,7 +1255,7 @@ const Sermons = () => {
                                         e.currentTarget.value = '';
                                       }
                                     }}
-                                    className="text-xs h-8 border-gray-200 focus:border-purple-500"
+                                                                         className="text-xs h-8 border-gray-200 focus:border-orange-500"
                                   />
                                 </div>
                               </div>
@@ -1282,97 +1267,7 @@ const Sermons = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="stats" className="flex-1 p-4 m-0">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {selectedSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0}
-                          </div>
-                          <div className="text-xs text-blue-700">Words</div>
-                        </div>
-                      </Card>
-                      <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">
-                            {Math.ceil((selectedSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150)}
-                          </div>
-                          <div className="text-xs text-purple-700">Minutes</div>
-                        </div>
-                      </Card>
-                    </div>
-                    
-                    <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                          {selectedSermon?.content?.length || 0}
-                        </div>
-                        <div className="text-xs text-green-700">Characters</div>
-                      </div>
-                    </Card>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1">
-                          <Target className="h-3 w-3" />
-                          Progress
-                        </span>
-                        <span className="font-medium">
-                          {Math.round(((selectedSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / wordGoal) * 100)}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500" 
-                          style={{ width: `${Math.min(100, ((selectedSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / wordGoal) * 100)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm flex items-center gap-1">
-                        <Award className="h-3 w-3" />
-                        Word Goal: {wordGoal}
-                      </Label>
-                      <Slider
-                        value={[wordGoal]}
-                        onValueChange={(value) => setWordGoal(value[0])}
-                        max={5000}
-                        min={500}
-                        step={100}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    <Card className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-amber-700">
-                          {customOutline.filter(item => item.completed).length} / {customOutline.length}
-                        </div>
-                        <div className="text-xs text-amber-600">Outline Complete</div>
-                      </div>
-                    </Card>
-
-                    <div className="space-y-2">
-                      <Label className="text-sm">Quick Insights</Label>
-                      <div className="space-y-1 text-xs text-gray-600">
-                        <div className="flex justify-between">
-                          <span>Paragraphs:</span>
-                          <span>{selectedSermon?.content?.split('\n\n').length || 0}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Sentences:</span>
-                          <span>{selectedSermon?.content?.split(/[.!?]+/).length - 1 || 0}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Reading Level:</span>
-                          <span className="text-green-600">Accessible</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
               </Tabs>
             </div>
           )}
