@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FAQItem {
@@ -25,7 +25,7 @@ const faqData: FAQItem[] = [
   {
     id: 3,
     question: "What Bible translations are supported?",
-    answer: "Bible Aura supports over 10 translations including KJV, NIV, ESV, NASB, NLT, and CSB. Our AI can compare translations and explain differences to help you understand various interpretations.",
+    answer: "Bible Aura supports over 50 translations including KJV, NIV, ESV, NASB, NLT, and CSB. Our AI can compare translations and explain differences to help you understand various interpretations.",
     keywords: ['bible translations', 'bible versions', 'kjv niv esv', 'multiple bible translations']
   },
   {
@@ -37,31 +37,56 @@ const faqData: FAQItem[] = [
   {
     id: 5,
     question: "How accurate is Bible AI?",
-    answer: "Our Bible AI is trained on centuries of biblical scholarship and maintains high theological accuracy. However, we always recommend verifying insights with trusted biblical commentaries and pastoral guidance for important spiritual decisions.",
-    keywords: ['bible ai accuracy', 'theological accuracy', 'ai reliability', 'biblical scholarship']
+    answer: "Our Bible AI achieves 94%+ accuracy compared to established Biblical commentaries. It's designed with theological accuracy as a priority, but we recommend using it alongside traditional study methods and pastoral guidance.",
+    keywords: ['bible ai accuracy', 'theological accuracy', 'reliable bible ai', '94 percent accuracy']
   },
   {
     id: 6,
-    question: "Can I save my favorite verses and notes?",
-    answer: "Yes! Bible Aura includes personal tools for saving favorite verses, creating collections, writing notes, and tracking your reading progress. All your personal data is kept private and secure.",
-    keywords: ['save bible verses', 'bible favorites', 'personal notes', 'reading progress']
+    question: "Does Bible Aura work offline?",
+    answer: "Bible Aura is web-based and requires internet for AI features. However, our Progressive Web App (PWA) can cache basic Bible text for offline reading. Full functionality needs an internet connection.",
+    keywords: ['bible aura offline', 'offline bible reading', 'bible app offline', 'internet required']
   },
   {
     id: 7,
-    question: "Is my personal data safe and private?",
-    answer: "Absolutely. We take privacy seriously. Your journals, notes, conversations, and spiritual journey remain completely private. We use enterprise-grade encryption and never share your personal information.",
-    keywords: ['privacy', 'data security', 'personal information', 'encrypted data']
+    question: "Can I save my Bible study notes?",
+    answer: "Yes! Bible Aura includes a comprehensive journal feature for saving notes, insights, and reflections. Organize by books, chapters, or topics. Your journal is private, searchable, and exportable.",
+    keywords: ['bible journal', 'bible study notes', 'save bible notes', 'organize bible study']
   },
   {
     id: 8,
-    question: "How can I contact support if I need help?",
-    answer: "You can reach our support team through the contact form on our website or by emailing us directly. We're here to help with any questions about Bible AI features or technical support.",
-    keywords: ['contact support', 'help', 'customer service', 'technical support']
+    question: "How do I start using Bible AI?",
+    answer: "Simply navigate to the Bible AI section and type your question in natural language. Ask anything like 'What does faith mean?' or 'Explain the parable of the sower'. No special formatting required.",
+    keywords: ['bible ai chat', 'how to use bible ai', 'bible ai conversation', 'ask bible questions']
+  },
+  {
+    id: 9,
+    question: "Is my data safe and private?",
+    answer: "Yes, we use enterprise-grade encryption and never sell your personal information. Your Bible study notes and conversations are private and secure. You can delete your account and data anytime.",
+    keywords: ['bible aura privacy', 'data security', 'private bible study', 'secure bible app']
+  },
+  {
+    id: 10,
+    question: "Do you offer technical support?",
+    answer: "Yes, we provide comprehensive technical support through email and chat. This includes help with account setup, troubleshooting, and feature guidance. Premium users get priority support.",
+    keywords: ['technical support', 'bible aura help', 'troubleshooting', 'customer support']
+  },
+  {
+    id: 11,
+    question: "Who is Benaiah Nicholas Nimal?",
+    answer: "Benaiah Nicholas Nimal is the founder and developer of Bible Aura. He is a passionate believer and software developer dedicated to creating technology that serves God's kingdom and helps people grow in their faith through accessible Bible study tools.",
+    keywords: ['benaiah nicholas nimal', 'founder', 'developer', 'bible aura creator']
+  },
+  {
+    id: 12,
+    question: "What inspired Benaiah to create Bible Aura?",
+    answer: "Benaiah was inspired by the vision to make deep biblical wisdom accessible to everyone through technology. His passion for both faith and technology led him to develop Bible Aura as a platform that combines cutting-edge AI with timeless biblical truth to help believers grow in their spiritual journey.",
+    keywords: ['benaiah inspiration', 'bible aura vision', 'founder motivation', 'faith and technology']
   }
 ];
 
 export default function FAQ() {
   const [openItems, setOpenItems] = useState<number[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const toggleItem = (id: number) => {
     setOpenItems(prev => 
@@ -71,61 +96,74 @@ export default function FAQ() {
     );
   };
 
+  const filteredFAQs = faqData.filter(faq => {
+    const matchesSearch = searchTerm === '' || 
+      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faq.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesSearch;
+  });
+
   return (
-    <section className="py-16 md:py-20 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50 py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-xl mb-6">
-            <HelpCircle className="h-8 w-8 text-white" />
-          </div>
-          
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Frequently Asked Questions
           </h2>
-          
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Find answers to common questions about Bible Aura's AI features, privacy, and how to get the most out of your spiritual journey.
+          <p className="text-xl text-gray-600 mb-8">
+            Get answers to common questions about Bible AI, Bible study features, and the Bible Aura platform
           </p>
+
+          {/* Search */}
+          <div className="max-w-md mx-auto mb-8">
+            <input
+              type="text"
+              placeholder="Search FAQ questions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+            />
+          </div>
         </div>
 
         {/* FAQ Items */}
-        <div className="space-y-4 max-w-3xl mx-auto mb-12">
-          {faqData.map((faq) => (
+        <div className="space-y-4 max-w-3xl mx-auto">
+          {filteredFAQs.map((faq) => (
             <Card 
               key={faq.id} 
-              className="bg-white hover:shadow-lg transition-all duration-300 border-0 shadow-md overflow-hidden group"
+              className="bg-white hover:shadow-md transition-all duration-200 border-l-4 border-l-orange-400"
             >
               <CardHeader 
-                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                className="cursor-pointer"
                 onClick={() => toggleItem(faq.id)}
               >
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-gray-900 flex-1 text-center pr-4 group-hover:text-orange-600 transition-colors">
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex-1 text-left pr-4">
                     {faq.question}
                   </CardTitle>
                   <div className="flex-shrink-0">
                     {openItems.includes(faq.id) ? (
-                      <ChevronUp className="h-5 w-5 text-orange-600 transition-transform duration-300" />
+                      <ChevronUp className="h-5 w-5 text-orange-600" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-orange-600 transition-transform duration-300" />
+                      <ChevronDown className="h-5 w-5 text-orange-600" />
                     )}
                   </div>
                 </div>
               </CardHeader>
-              
               {openItems.includes(faq.id) && (
-                <CardContent className="pt-0 animate-in slide-in-from-top-2 duration-300">
-                  <div className="border-t border-gray-100 pt-6">
-                    <p className="text-gray-700 leading-relaxed mb-6 text-center">
+                <CardContent className="pt-0">
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="text-gray-700 leading-relaxed mb-4">
                       {faq.answer}
                     </p>
-                    <div className="flex flex-wrap gap-2 justify-center">
+                    <div className="flex flex-wrap gap-1">
                       {faq.keywords.slice(0, 4).map((keyword, idx) => (
                         <span 
                           key={idx}
-                          className="px-3 py-1 bg-orange-100 text-xs text-orange-700 rounded-full font-medium"
+                          className="px-2 py-1 bg-orange-100 text-xs text-orange-700 rounded"
                         >
                           {keyword}
                         </span>
@@ -138,33 +176,38 @@ export default function FAQ() {
           ))}
         </div>
 
-        {/* About the Founder */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-xl mb-6">
-            <User className="h-8 w-8 text-white" />
+        {filteredFAQs.length === 0 && (
+          <div className="text-center py-12">
+            <HelpCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No questions found</h3>
+            <p className="text-gray-500">Try adjusting your search term</p>
           </div>
-          
+        )}
+
+        {/* Contact CTA */}
+        <div className="mt-16 bg-white rounded-2xl shadow-lg p-8 text-center max-w-2xl mx-auto">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">
-            About the Founder
+            Still have questions?
           </h3>
-          
-          <p className="text-gray-600 leading-relaxed mb-6">
-            Bible Aura was created by <strong>Benaiah Nicholas Nimal</strong>, a passionate believer and software developer dedicated to making biblical wisdom accessible through technology. Combining faith with cutting-edge AI, Benaiah's vision is to help believers worldwide deepen their spiritual journey through intelligent Bible study tools.
+          <p className="text-gray-600 mb-6">
+            Can't find what you're looking for? Our support team is here to help with any questions about Bible AI or Bible study features.
           </p>
-          
-          <div className="flex flex-wrap gap-2 justify-center">
-            <span className="px-3 py-1 bg-blue-100 text-xs text-blue-700 rounded-full font-medium">
-              Founder & Developer
-            </span>
-            <span className="px-3 py-1 bg-purple-100 text-xs text-purple-700 rounded-full font-medium">
-              Faith & Technology
-            </span>
-            <span className="px-3 py-1 bg-orange-100 text-xs text-orange-700 rounded-full font-medium">
-              Bible AI Vision
-            </span>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a 
+              href="/contact"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-8 py-3 rounded-full hover:from-orange-600 hover:to-amber-600 transition-all duration-200 font-medium"
+            >
+              Contact Support
+            </a>
+            <a 
+              href="/bible-ai"
+              className="border border-orange-400 text-orange-600 px-8 py-3 rounded-full hover:bg-orange-50 transition-all duration-200 font-medium"
+            >
+              Try Bible AI Now
+            </a>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 } 
