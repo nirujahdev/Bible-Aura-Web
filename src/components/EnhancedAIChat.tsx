@@ -122,28 +122,25 @@ const callBiblicalAI = async (
 
     // Generate enhanced system prompt with language and translation context
     const basePrompt = generateSystemPrompt(mode);
-    const enhancedPrompt = `${basePrompt}
+    
+    // Override with explicit formatting rules for clean structure
+    const formatOverride = `
 
-LANGUAGE & TRANSLATION CONTEXT:
-- Response Language: ${language === 'english' ? 'English' : 'Tamil'}
-- Bible Translation: ${language === 'english' ? `${translation} (${BIBLE_TRANSLATIONS.find(t => t.code === translation)?.name || translation})` : 'Tamil Bible'}
-- Clean Mode: ${cleanMode ? 'Enabled - Provide concise, direct responses without extra formatting' : 'Disabled - Use full structured formatting as specified'}
-
-CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ✮ followed by title
+CRITICAL FORMATTING OVERRIDE - FOLLOW EXACTLY:
+- Start responses with ✮ followed by main title
 - Put TWO line breaks after the title
 - Each section starts with ↗ followed by section name
 - Put ONE line break after section header
 - Each bullet point starts with • followed by content
-- Put ONE line break after each bullet point
+- Put ONE line break after each bullet point  
 - Put TWO line breaks between sections
 - NO emojis like 📖 🎯 ✝️ etc.
-- NO hashtags, asterisks, or markdown symbols
+- NO hashtags, asterisks, or markdown symbols (#*@$_)
 
-EXAMPLE FORMAT:
+EXACT FORMAT TO FOLLOW:
 ✮ MAIN TITLE
 
-↗ Section Header
+↗ Section Name
 • First point here
 • Second point here
 
@@ -151,8 +148,17 @@ EXAMPLE FORMAT:
 • Another point here
 • Final point here
 
+THIS IS MANDATORY - Every response must follow this exact structure.`;
+
+    const enhancedPrompt = `${basePrompt}${formatOverride}
+
+LANGUAGE & TRANSLATION CONTEXT:
+- Response Language: ${language === 'english' ? 'English' : 'Tamil'}
+- Bible Translation: ${language === 'english' ? `${translation} (${BIBLE_TRANSLATIONS.find(t => t.code === translation)?.name || translation})` : 'Tamil Bible'}
+- Clean Mode: ${cleanMode ? 'Enabled - Provide concise, direct responses without extra formatting' : 'Disabled - Use full structured formatting as specified'}
+
 When referencing Bible verses, use the ${language === 'english' ? translation : 'Tamil'} translation and always include the complete verse reference.
-IMPORTANT: Follow the exact line break pattern shown above.`;
+IMPORTANT: Follow the exact line break pattern shown above - this is not optional.`;
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
