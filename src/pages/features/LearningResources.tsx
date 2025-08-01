@@ -4,189 +4,160 @@ import { GlobalNavigation } from "@/components/GlobalNavigation";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { 
-  Mic, FileText, Music, BookOpen, Calendar,
-  ArrowLeft, Sparkles, Zap
+  Library, Music, Calendar, BookOpen, FileText, Video, Zap
 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 
 const LearningResources = () => {
-  // SEO optimization for Learning Resources features
+  // SEO optimization for Learning Resources
   useSEO({
-    title: "Learning Resources | Sermons, Songs & Study Plans - Bible Aura",
-    description: "Access Bible Aura's comprehensive learning resources: Sermon Library, Sermons, Songs, Study Plans, and Daily Verses. Enhance your spiritual education with curated biblical content.",
-    keywords: "learning resources, sermon library, Christian sermons, worship songs, Bible study plans, daily verses, spiritual education, biblical learning, Christian resources",
+    title: "Bible Learning Resources | Sermons, Songs & Study Materials - Bible Aura",
+    description: "Access comprehensive Bible learning resources including sermon library, worship songs, daily devotions, study plans, and educational content for spiritual growth and ministry.",
+    keywords: "Bible learning resources, sermon library, Christian songs, worship music, daily devotions, Bible study plans, Christian education, ministry resources, spiritual growth materials",
     canonicalUrl: "https://bibleaura.xyz/features/learning-resources"
   });
 
-  const learningResourcesFeatures = [
+  const learningFeatures = [
     {
       title: "Sermon Library",
-      description: "Access thousands of biblically sound sermons from renowned pastors and theologians for spiritual growth and inspiration.",
-      icon: Mic,
-      features: ["Thousands of sermons", "Renowned pastors", "Topic-based search", "Audio & transcript", "Bookmark favorites"],
-      link: "/sermon-library",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
+      description: "Access a vast collection of biblical sermons from various speakers and topics, organized by themes, books of the Bible, and series.",
+      icon: Library,
+      features: ["Sermon collection", "Topic organization", "Multiple speakers", "Searchable content"],
+      link: "/sermons"
     },
     {
-      title: "Sermons",
-      description: "Browse curated sermon collections organized by topics, biblical books, and spiritual themes for targeted learning.",
-      icon: FileText,
-      features: ["Curated collections", "Topic organization", "Biblical book series", "Spiritual themes", "Study guides"],
-      link: "/sermons",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
-    },
-    {
-      title: "Songs",
-      description: "Discover worship songs, hymns, and spiritual music with lyrics and biblical connections for worship and meditation.",
+      title: "Worship Songs",
+      description: "Discover inspiring Christian songs and worship music with lyrics, chord charts, and audio resources for personal devotion and ministry.",
       icon: Music,
-      features: ["Worship songs", "Traditional hymns", "Lyrics included", "Biblical connections", "Worship playlists"],
-      link: "/songs",
-      color: "text-pink-600",
-      bgColor: "bg-pink-50"
+      features: ["Song lyrics", "Chord charts", "Audio resources", "Worship playlists"],
+      link: "/songs"
+    },
+    {
+      title: "Daily Devotions",
+      description: "Start each day with curated devotional content, scripture readings, and inspirational messages to strengthen your faith journey.",
+      icon: Calendar,
+      features: ["Daily content", "Scripture readings", "Inspirational messages", "Faith building"],
+      link: "/dashboard"
     },
     {
       title: "Study Plans",
-      description: "Follow structured Bible study plans designed for different levels, topics, and spiritual growth objectives.",
+      description: "Follow structured Bible reading and study plans designed to guide you through Scripture systematically with educational content.",
       icon: BookOpen,
-      features: ["Structured plans", "Multiple levels", "Topic-focused", "Progress tracking", "Flexible schedules"],
-      link: "/study-hub",
-      color: "text-green-600",
-      bgColor: "bg-green-50"
+      features: ["Structured plans", "Educational content", "Progress tracking", "Multiple options"],
+      link: "/bible"
     },
     {
-      title: "Daily Verses",
-      description: "Receive inspiring daily Bible verses with commentary, reflection questions, and practical applications for daily living.",
-      icon: Calendar,
-      features: ["Daily inspiration", "Verse commentary", "Reflection questions", "Practical applications", "Sharing options"],
-      link: "/dashboard",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50"
+      title: "Study Guides",
+      description: "Access comprehensive study guides and educational materials covering biblical topics, character studies, and theological concepts.",
+      icon: FileText,
+      features: ["Topic studies", "Character profiles", "Theological concepts", "Educational materials"],
+      link: "/study-hub"
+    },
+    {
+      title: "Video Content",
+      description: "Watch educational videos, biblical teachings, and visual content that enhances your understanding of Scripture and Christian life.",
+      icon: Video,
+      features: ["Educational videos", "Biblical teachings", "Visual content", "Enhanced learning"],
+      link: "/study-hub"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background w-full">
-      {/* Global Navigation */}
+    <div className="min-h-screen bg-gradient-to-br from-pink-50/50 via-white to-purple-50/50">
       <GlobalNavigation variant="landing" />
 
-      {/* Hero Section */}
-      <section className="relative py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-10 bg-gradient-to-br from-purple-50 via-white to-pink-50 overflow-hidden pt-24 md:pt-28 lg:pt-32">
-        {/* Back Button */}
-        <div className="max-w-7xl mx-auto mb-8">
-          <Button asChild variant="ghost" className="text-gray-600 hover:text-orange-600">
-            <Link to="/features" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to All Features
-            </Link>
-          </Button>
+      {/* Section 1: Hero */}
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-10 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-pink-400/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full shadow-xl">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white mx-auto mb-8 shadow-2xl animate-pulse">
+            <Library className="h-10 w-10" />
           </div>
-          
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Learning <span className="text-transparent bg-gradient-to-r from-purple-500 to-pink-600 bg-clip-text">Resources</span>
+
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+            <span className="text-transparent bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text">
+              Learning Resources
+            </span>
           </h1>
           
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Comprehensive collection of sermons, songs, study plans, and daily inspiration to enrich your spiritual education and growth.
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-12">
+            Explore comprehensive Bible learning resources including sermons, worship songs, daily devotions, study plans, and educational content for spiritual growth and ministry.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-8 py-4">
-              <Link to="/sermon-library">
-                <Mic className="mr-2 h-5 w-5" />
+            <Button asChild size="lg" className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl shadow-lg hover:scale-105 transition-all duration-300">
+              <Link to="/auth">
+                <Library className="h-5 w-5 mr-2" />
                 Explore Resources
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white px-8 py-4">
-              <Link to="/auth">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Get Started Free
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Rich Learning Resources Library
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Access thousands of sermons, songs, and study materials to enhance your spiritual education
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {learningResourcesFeatures.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white hover:scale-105">
-                <CardHeader className="text-center pb-4">
-                  <div className={`w-16 h-16 ${feature.bgColor} rounded-full flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform`}>
-                    <feature.icon className={`h-8 w-8 ${feature.color}`} />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 mb-2">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    {feature.description}
-                  </p>
-                  
-                  <div className="space-y-2 mb-6">
-                    {feature.features.map((item, idx) => (
-                      <div key={idx} className="flex items-center text-xs text-gray-500">
-                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-2"></div>
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Button asChild className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white">
-                    <Link to={feature.link}>
-                      <Zap className="mr-2 h-4 w-4" />
-                      Access Resource
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-16 md:py-20 bg-gradient-to-r from-purple-500 to-pink-600 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 md:px-6 lg:px-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Expand Your Biblical Knowledge?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Access thousands of learning resources to deepen your understanding of God's Word.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="secondary" className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4">
-              <Link to="/sermon-library">
-                <Mic className="mr-2 h-5 w-5" />
+            <Button asChild size="lg" variant="outline" className="border-2 border-pink-300 text-pink-700 hover:bg-pink-50 px-8 py-4 rounded-xl hover:scale-105 transition-all duration-300">
+              <Link to="/sermons">
+                <BookOpen className="h-5 w-5 mr-2" />
                 Browse Sermons
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4">
-              <Link to="/features">
-                <Sparkles className="mr-2 h-5 w-5" />
-                View All Features
-              </Link>
-            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2: Features Grid */}
+      <section className="py-20 px-4 md:px-6 lg:px-10 bg-white/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Comprehensive Learning Library
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Access a wide range of educational resources designed to deepen your understanding and strengthen your faith journey
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {learningFeatures.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <Card 
+                  key={feature.title} 
+                  className="group relative overflow-hidden bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
+                  <CardHeader className="text-center pb-4">
+                    <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <IconComponent className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-gray-900 mb-3">
+                      {feature.title}
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="text-center">
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      {feature.description}
+                    </p>
+                    
+                    <div className="space-y-2 mb-8">
+                      {feature.features.map((item, idx) => (
+                        <div key={idx} className="flex items-center text-sm text-gray-500 justify-center">
+                          <div className="w-2 h-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mr-3"></div>
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button asChild className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg transition-all duration-300">
+                      <Link to={feature.link}>
+                        <Zap className="mr-2 h-4 w-4" />
+                        Try {feature.title}
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
