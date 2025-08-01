@@ -44,6 +44,14 @@ const Features = lazy(() => import("./pages/Features"));
 const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
 const SubscriptionCancelled = lazy(() => import("./pages/SubscriptionCancelled"));
 
+// Feature category pages
+const BibleStudy = lazy(() => import("./pages/features/BibleStudy"));
+const AIFeatures = lazy(() => import("./pages/features/AIFeatures"));
+const ContentCreation = lazy(() => import("./pages/features/ContentCreation"));
+const PersonalTools = lazy(() => import("./pages/features/PersonalTools"));
+const LearningResources = lazy(() => import("./pages/features/LearningResources"));
+const AdvancedStudy = lazy(() => import("./pages/features/AdvancedStudy"));
+
 // Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ModernLayout } from "./components/ModernLayout";
@@ -63,6 +71,14 @@ function AppRoutes() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/features" element={<Features />} />
+        
+        {/* Feature Category Pages - Public (but with auth prompts) */}
+        <Route path="/features/bible-study" element={<BibleStudy />} />
+        <Route path="/features/ai-features" element={<AIFeatures />} />
+        <Route path="/features/content-creation" element={<ContentCreation />} />
+        <Route path="/features/personal-tools" element={<PersonalTools />} />
+        <Route path="/features/learning-resources" element={<LearningResources />} />
+        <Route path="/features/advanced-study" element={<AdvancedStudy />} />
         
         {/* SEO-Optimized Landing Pages */}
         <Route path="/bible-ai" element={<BibleAI />} />

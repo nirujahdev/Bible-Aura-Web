@@ -40,19 +40,22 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold text-white mb-6">Features</h4>
             <nav className="space-y-3">
-              <Link to="/bible-ai" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Bible AI Features
+              <Link to="/features/bible-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Bible Study Tools
               </Link>
-              <Link to="/sermon-writer" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Sermon Creation
+              <Link to="/features/ai-features" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                AI Features
               </Link>
-              <Link to="/journal" className="block text-white hover:text-orange-400 transition-colors duration-300">
+              <Link to="/features/content-creation" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Content Creation
+              </Link>
+              <Link to="/features/personal-tools" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Personal Tools
               </Link>
-              <Link to="/blog" className="block text-white hover:text-orange-400 transition-colors duration-300">
+              <Link to="/features/learning-resources" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Learning Resources
               </Link>
-              <Link to="/study-hub" className="block text-white hover:text-orange-400 transition-colors duration-300">
+              <Link to="/features/advanced-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Advanced Study
               </Link>
             </nav>
