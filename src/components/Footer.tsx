@@ -152,13 +152,27 @@ const Footer = () => {
                   <span>&copy; 2025 ✦Bible Aura. All rights reserved.</span>
                 </div>
                 <div>
-                  <span>Developed by Benaiah Nicholas Nimal</span>
+                  <span>Developed by <a 
+                    href="https://benaiahnicholasnimal.vercel.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:text-primary/80 transition-colors duration-200"
+                  >
+                    Benaiah Nicholas Nimal
+                  </a></span>
                 </div>
               </div>
               
               {/* Desktop/Laptop: One line */}
               <div className="hidden lg:block">
-                <span>&copy; 2025 ✦Bible Aura. All rights reserved. Developed by Benaiah Nicholas Nimal</span>
+                <span>&copy; 2025 ✦Bible Aura. All rights reserved. Developed by <a 
+                  href="https://benaiahnicholasnimal.vercel.app" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors duration-200"
+                >
+                  Benaiah Nicholas Nimal
+                </a></span>
               </div>
             </div>
           </div>

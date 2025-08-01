@@ -73,13 +73,13 @@ const faqData: FAQItem[] = [
   {
     id: 11,
     question: "Who is Benaiah Nicholas Nimal?",
-    answer: "Benaiah Nicholas Nimal is the founder and developer of Bible Aura. He is a passionate believer and software developer dedicated to creating technology that serves God's kingdom and helps people grow in their faith through accessible Bible study tools.",
+    answer: "Benaiah Nicholas Nimal is the founder and developer of Bible Aura. He is a passionate believer and software developer dedicated to creating technology that serves God's kingdom and helps people grow in their faith through accessible Bible study tools. You can learn more about his work and projects at his portfolio: https://benaiahnicholasnimal.vercel.app",
     keywords: ['benaiah nicholas nimal', 'founder', 'developer', 'bible aura creator']
   },
   {
     id: 12,
     question: "What inspired Benaiah to create Bible Aura?",
-    answer: "Benaiah was inspired by the vision to make deep biblical wisdom accessible to everyone through technology. His passion for both faith and technology led him to develop Bible Aura as a platform that combines cutting-edge AI with timeless biblical truth to help believers grow in their spiritual journey.",
+    answer: "Benaiah was inspired by the vision to make deep biblical wisdom accessible to everyone through technology. His passion for both faith and technology led him to develop Bible Aura as a platform that combines cutting-edge AI with timeless biblical truth to help believers grow in their spiritual journey. Read more about Bible Aura's development story on his blog: https://benaiahnicholasnimal.vercel.app/blog-bible-aura.html",
     keywords: ['benaiah inspiration', 'bible aura vision', 'founder motivation', 'faith and technology']
   }
 ];

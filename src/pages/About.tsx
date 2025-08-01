@@ -136,7 +136,16 @@ const About = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <CardTitle className="text-2xl text-gray-900">{founder.name}</CardTitle>
+                <CardTitle className="text-2xl text-gray-900">
+                  <a 
+                    href="https://benaiahnicholasnimal.vercel.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors duration-200"
+                  >
+                    {founder.name}
+                  </a>
+                </CardTitle>
                 <p className="text-primary font-medium text-lg">{founder.role}</p>
               </CardHeader>
               <CardContent>
@@ -155,6 +164,27 @@ const About = () => {
                     <span className="text-sm font-medium text-purple-800">Bible Study</span>
                   </div>
                 </div>
+                
+                {/* Portfolio and Blog Links */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                  <a 
+                    href="https://benaiahnicholasnimal.vercel.app" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium"
+                  >
+                    View Portfolio
+                  </a>
+                  <a 
+                    href="https://benaiahnicholasnimal.vercel.app/blog-bible-aura.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-500 font-medium"
+                  >
+                    Read About Bible Aura
+                  </a>
+                </div>
+                
                 <div className="mt-6">
                   <a 
                     href="https://www.instagram.com/bible_aura.xyz/" 

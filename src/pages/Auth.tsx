@@ -500,7 +500,14 @@ export default function Auth() {
           {/* Developer Credit */}
           <div className="mt-6 text-center">
             <p className="text-gray-500 text-xs">
-              Developed By Benaiah Nicholas Nimal
+              Developed By <a 
+                href="https://benaiahnicholasnimal.vercel.app" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary/80 transition-colors duration-200"
+              >
+                Benaiah Nicholas Nimal
+              </a>
             </p>
           </div>
         </div>
