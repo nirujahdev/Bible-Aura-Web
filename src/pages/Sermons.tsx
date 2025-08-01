@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS } from "@/lib/local-bible";
 import SermonToolbar from '@/components/SermonToolbar';
+import SermonAIAssistant from '@/components/SermonAIAssistant';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -90,12 +91,7 @@ interface OutlineItem {
   subItems?: OutlineItem[];
 }
 
-interface AIMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-}
+// Removed AIMessage interface - now using comprehensive AI Assistant component
 
 interface SermonStats {
   total: number;
@@ -128,7 +124,7 @@ const Sermons = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [activeRightTab, setActiveRightTab] = useState('bible');
+  const [activeRightTab, setActiveRightTab] = useState('ai');
 
   // Bible state
   const [books, setBooks] = useState<BibleBook[]>([]);
@@ -140,11 +136,7 @@ const Sermons = () => {
   const [bibleSearchQuery, setBibleSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
 
-  // AI Chat state
-  const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
-  const [aiInput, setAiInput] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const aiScrollRef = useRef<HTMLDivElement>(null);
+  // Remove old AI chat states - now using comprehensive AI Assistant
 
   // Editor state
   const [title, setTitle] = useState("");
@@ -169,8 +161,6 @@ const Sermons = () => {
 
   // Enhanced UI states
   const [showBibleDialog, setShowBibleDialog] = useState(false);
-  const [showAIChat, setShowAIChat] = useState(false);
-  const [showOutline, setShowOutline] = useState(true);
   const [customOutline, setCustomOutline] = useState<OutlineItem[]>([]);
   const [newOutlineItem, setNewOutlineItem] = useState('');
   const [sermonTags, setSermonTags] = useState<string[]>([]);
@@ -268,7 +258,8 @@ const Sermons = () => {
   const loadChapter = async (book: BibleBook, chapter: number) => {
     setBibleLoading(true);
     try {
-      const chapterVerses = await getChapterVerses(book.name, chapter, 'english', selectedTranslation);
+      const language = selectedTranslation === 'TAMIL' ? 'tamil' : 'english';
+      const chapterVerses = await getChapterVerses(book.name, chapter, language, selectedTranslation);
       setVerses(chapterVerses);
       setSelectedChapter(chapter);
     } catch (error) {
@@ -476,60 +467,93 @@ const Sermons = () => {
 
     setBibleLoading(true);
     try {
-      // Simple search through loaded verses (in a real app, you'd search the entire Bible)
-      const results = verses.filter(verse => 
-        verse.text.toLowerCase().includes(query.toLowerCase())
+      // Enhanced search across the entire Bible
+      const results: BibleVerse[] = [];
+      const searchTerm = query.toLowerCase();
+      
+      // Search through current loaded verses first (for instant results)
+      const currentResults = verses.filter(verse => 
+        verse.text.toLowerCase().includes(searchTerm)
       );
-      setSearchResults(results);
+      results.push(...currentResults);
+      
+      // If we have few results and want to search more extensively,
+      // we could load and search other popular books/chapters
+      if (results.length < 10) {
+        try {
+          // Search through other popular books for better results
+          const popularBooks = ['Genesis', 'Psalms', 'Matthew', 'John', 'Romans', 'Ephesians'];
+          
+          for (const bookName of popularBooks) {
+            if (results.length >= 20) break; // Limit total results
+            
+            const book = books.find(b => b.name === bookName);
+            if (book && book.name !== selectedBook?.name) {
+              // Search first few chapters of popular books
+              const chaptersToSearch = Math.min(3, book.chapters);
+              
+              for (let chapter = 1; chapter <= chaptersToSearch; chapter++) {
+                                 try {
+                   const language = selectedTranslation === 'TAMIL' ? 'tamil' : 'english';
+                   const chapterVerses = await getChapterVerses(book.name, chapter, language, selectedTranslation);
+                   const chapterResults = chapterVerses.filter(verse => 
+                     verse.text.toLowerCase().includes(searchTerm)
+                   );
+                   results.push(...chapterResults);
+                  
+                  // Break if we have enough results
+                  if (results.length >= 20) break;
+                } catch (error) {
+                  // Continue to next chapter if one fails
+                  continue;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('Extended search failed:', error);
+          // Continue with current results
+        }
+      }
+      
+      // Remove duplicates and sort by relevance
+      const uniqueResults = results.filter((verse, index, self) => 
+        index === self.findIndex(v => v.id === verse.id)
+      );
+      
+      // Sort results by book order and then by chapter/verse
+      const sortedResults = uniqueResults.sort((a, b) => {
+        // First by book order (Genesis before Exodus, etc.)
+        const bookAIndex = books.findIndex(book => book.name === a.book_name);
+        const bookBIndex = books.findIndex(book => book.name === b.book_name);
+        
+        if (bookAIndex !== bookBIndex) {
+          return bookAIndex - bookBIndex;
+        }
+        
+        // Then by chapter
+        if (a.chapter !== b.chapter) {
+          return a.chapter - b.chapter;
+        }
+        
+        // Finally by verse
+        return a.verse - b.verse;
+      });
+      
+      setSearchResults(sortedResults);
     } catch (error) {
       console.error('Error searching Bible:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to search the Bible. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setBibleLoading(false);
     }
   };
 
-  const sendAIMessage = async () => {
-    if (!aiInput.trim()) return;
-
-    const userMessage: AIMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: aiInput,
-      timestamp: new Date().toISOString()
-    };
-
-    setAiMessages(prev => [...prev, userMessage]);
-    setAiInput('');
-    setAiLoading(true);
-
-    try {
-      // Simple AI response for now - you can integrate with your preferred AI service
-      const responses = [
-        "That's a powerful biblical concept. Consider exploring how this applies to modern believers.",
-        "Have you thought about including a personal testimony or illustration here?",
-        "This passage has rich theological depth. What specific aspect resonates most with your congregation?",
-        "Consider adding a practical application that your audience can implement this week.",
-        "That's an excellent foundation. How might you connect this to current events or challenges?",
-        "This reminds me of the parallel passage in [related scripture]. Worth exploring?",
-        "Strong point! Consider using a story or metaphor to make this more relatable.",
-        "That's doctrinally sound. How can you make this truth come alive for your listeners?"
-      ];
-      
-      setTimeout(() => {
-        const aiMessage: AIMessage = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: responses[Math.floor(Math.random() * responses.length)],
-          timestamp: new Date().toISOString()
-        };
-        setAiMessages(prev => [...prev, aiMessage]);
-        setAiLoading(false);
-      }, 1000);
-    } catch (error) {
-      console.error('Error with AI:', error);
-      setAiLoading(false);
-    }
-  };
+  // Removed old sendAIMessage function - now using comprehensive AI Assistant component
 
   const handleFormatText = (format: string, formattedText?: string) => {
     if (!editorRef.current) return;
@@ -839,9 +863,9 @@ const Sermons = () => {
   // If in editor mode, show the enhanced sermon editor
   if (viewMode === 'editor' && selectedSermon) {
     return (
-      <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col`}>
-        {/* Enhanced Header with Brand Colors */}
-        <div className="border-b bg-white/90 backdrop-blur-sm px-6 py-4 shadow-sm border-orange-100">
+      <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-gray-50 flex flex-col`}>
+        {/* Clean Header */}
+        <div className="border-b bg-white px-6 py-4 shadow-sm border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
@@ -855,14 +879,14 @@ const Sermons = () => {
               </Button>
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg shadow-md">
+                <div className="p-2 bg-blue-600 rounded-lg">
                   <Mic className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-800">
+                  <h1 className="text-xl font-semibold text-gray-900">
                     {isEditing ? 'Edit Sermon' : 'New Sermon'}
                   </h1>
-                  <p className="text-sm text-orange-600 font-medium">
+                  <p className="text-sm text-gray-600">
                     {selectedSermon?.title || 'Untitled Sermon'}
                   </p>
                 </div>
@@ -878,138 +902,313 @@ const Sermons = () => {
                     Bible
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5 text-blue-600" />
-                      Bible Reference
+                <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh]">
+                  <DialogHeader className="border-b pb-4">
+                    <DialogTitle className="flex items-center gap-2 text-xl">
+                      <BookOpen className="h-6 w-6 text-blue-600" />
+                      Bible Reference - Enhanced Search & Study
                     </DialogTitle>
+                    <p className="text-sm text-gray-600">Search verses, browse chapters, and add references to your sermon</p>
                   </DialogHeader>
-                  <div className="flex-1 flex flex-col space-y-4">
-                    <div className="flex gap-4">
-                      <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
-                        <SelectTrigger className="w-48">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BIBLE_TRANSLATIONS.filter(t => t.language === 'english').slice(0, 8).map((trans) => (
-                            <SelectItem key={trans.code} value={trans.code}>
-                              {trans.code} - {trans.name.split(' ').slice(0, 2).join(' ')}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      <Select value={selectedBook?.name || ''} onValueChange={(bookName) => {
-                        const book = books.find(b => b.name === bookName);
-                        if (book) {
-                          setSelectedBook(book);
-                          setSelectedChapter(1);
-                          loadChapter(book, 1);
-                        }
-                      }}>
-                        <SelectTrigger className="w-48">
-                          <SelectValue placeholder="Select book" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {books.map((book) => (
-                            <SelectItem key={book.name} value={book.name}>
-                              {book.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      {selectedBook && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => loadChapter(selectedBook, Math.max(1, selectedChapter - 1))}
-                            disabled={selectedChapter <= 1}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <Select value={selectedChapter.toString()} onValueChange={(value) => loadChapter(selectedBook, parseInt(value))}>
-                            <SelectTrigger className="w-32">
+                  
+                  <div className="flex-1 flex flex-col space-y-4 overflow-hidden">
+                    {/* Enhanced Controls */}
+                    <div className="flex flex-col gap-4 p-2 bg-gray-50 rounded-lg">
+                      <div className="flex flex-wrap gap-4 items-center">
+                        {/* Translation Selector - Now includes Tamil */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-gray-700">Translation</label>
+                          <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => {
+                            setSelectedTranslation(value);
+                            if (selectedBook) {
+                              loadChapter(selectedBook, selectedChapter);
+                            }
+                          }}>
+                            <SelectTrigger className="w-56">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
-                                <SelectItem key={chapter} value={chapter.toString()}>
-                                  Chapter {chapter}
+                            <SelectContent className="max-h-60">
+                              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">English</div>
+                              {BIBLE_TRANSLATIONS.filter(t => t.language === 'english').map((trans) => (
+                                <SelectItem key={trans.code} value={trans.code}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{trans.code}</span>
+                                    <span className="text-xs text-gray-500">{trans.name}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase border-t mt-1 pt-2">Tamil</div>
+                              {BIBLE_TRANSLATIONS.filter(t => t.language === 'tamil').map((trans) => (
+                                <SelectItem key={trans.code} value={trans.code}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{trans.code}</span>
+                                    <span className="text-xs text-gray-500">{trans.name}</span>
+                                  </div>
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1))}
-                            disabled={selectedChapter >= selectedBook.chapters}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
                         </div>
-                      )}
+                        
+                        {/* Book Selector */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-medium text-gray-700">Book</label>
+                          <Select value={selectedBook?.name || ''} onValueChange={(bookName) => {
+                            const book = books.find(b => b.name === bookName);
+                            if (book) {
+                              setSelectedBook(book);
+                              setSelectedChapter(1);
+                              loadChapter(book, 1);
+                            }
+                          }}>
+                            <SelectTrigger className="w-56">
+                              <SelectValue placeholder="Select book" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Old Testament</div>
+                              {books.filter(book => book.testament === 'old').map((book) => (
+                                <SelectItem key={book.name} value={book.name}>
+                                  {book.name} ({book.chapters} chapters)
+                                </SelectItem>
+                              ))}
+                              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase border-t mt-1 pt-2">New Testament</div>
+                              {books.filter(book => book.testament === 'new').map((book) => (
+                                <SelectItem key={book.name} value={book.name}>
+                                  {book.name} ({book.chapters} chapters)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Chapter Navigation */}
+                        {selectedBook && (
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-medium text-gray-700">Chapter</label>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => loadChapter(selectedBook, Math.max(1, selectedChapter - 1))}
+                                disabled={selectedChapter <= 1}
+                                className="h-9"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              <Select value={selectedChapter.toString()} onValueChange={(value) => loadChapter(selectedBook, parseInt(value))}>
+                                <SelectTrigger className="w-32 h-9">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                  {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                                    <SelectItem key={chapter} value={chapter.toString()}>
+                                      Chapter {chapter}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1))}
+                                disabled={selectedChapter >= selectedBook.chapters}
+                                className="h-9"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                                             {/* Enhanced Search */}
+                       <div className="flex flex-col gap-3">
+                         <div className="flex gap-2">
+                           <div className="flex-1 relative">
+                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                             <Input
+                               placeholder="Search verses... (e.g., 'love', 'faith', 'hope')"
+                               value={bibleSearchQuery}
+                               onChange={(e) => {
+                                 setBibleSearchQuery(e.target.value);
+                                 searchBible(e.target.value);
+                               }}
+                               className="pl-10 border-gray-300 focus:border-blue-500"
+                             />
+                           </div>
+                           <Button
+                             variant="outline"
+                             onClick={() => {
+                               setBibleSearchQuery('');
+                               setSearchResults([]);
+                             }}
+                             disabled={!bibleSearchQuery}
+                           >
+                             Clear
+                           </Button>
+                         </div>
+                         
+                         {/* Quick Search Suggestions */}
+                         {!bibleSearchQuery && (
+                           <div className="flex flex-wrap gap-2">
+                             <span className="text-xs text-gray-500 font-medium">Quick search:</span>
+                             {['love', 'faith', 'hope', 'peace', 'joy', 'salvation', 'prayer', 'forgiveness', 'grace', 'wisdom'].map((term) => (
+                               <Button
+                                 key={term}
+                                 variant="outline"
+                                 size="sm"
+                                 className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300"
+                                 onClick={() => {
+                                   setBibleSearchQuery(term);
+                                   searchBible(term);
+                                 }}
+                               >
+                                 {term}
+                               </Button>
+                             ))}
+                           </div>
+                         )}
+                       </div>
                     </div>
 
-                    <ScrollArea className="flex-1">
-                      {bibleLoading ? (
-                        <div className="flex justify-center py-8">
-                          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {verses.map((verse) => (
-                            <div
-                              key={verse.id}
-                              className="p-4 rounded-lg border-2 border-transparent hover:border-blue-200 hover:bg-blue-50 cursor-pointer group transition-all duration-200"
-                              onClick={() => insertVerseIntoSermon(verse)}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <span className="font-semibold text-blue-600 text-sm">
-                                    {verse.verse}
-                                  </span>
-                                  <p className="text-sm text-gray-700 mt-1 leading-relaxed">
-                                    {verse.text}
-                                  </p>
+                    {/* Results Area */}
+                    <div className="flex-1 overflow-hidden">
+                      <ScrollArea className="h-full">
+                        {bibleLoading ? (
+                          <div className="flex flex-col justify-center items-center py-12">
+                            <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                            <p className="text-gray-600">Loading Bible content...</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 p-2">
+                            {/* Search Results */}
+                            {bibleSearchQuery && searchResults.length > 0 && (
+                              <div className="mb-6">
+                                <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 rounded-lg">
+                                  <Search className="h-5 w-5 text-blue-600" />
+                                  <h3 className="font-semibold text-blue-800">
+                                    Search Results ({searchResults.length} verses found)
+                                  </h3>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <Plus className="h-4 w-4 text-blue-600" />
-                                </Button>
+                                <div className="space-y-3">
+                                  {searchResults.map((verse) => (
+                                    <div
+                                      key={`search-${verse.id}`}
+                                      className="p-4 rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 cursor-pointer group transition-all duration-200 shadow-sm"
+                                      onClick={() => insertVerseIntoSermon(verse)}
+                                    >
+                                      <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <Badge variant="outline" className="text-xs font-medium text-blue-700 border-blue-300">
+                                              {verse.book_name} {verse.chapter}:{verse.verse}
+                                            </Badge>
+                                            <Badge variant="secondary" className="text-xs">
+                                              {selectedTranslation}
+                                            </Badge>
+                                          </div>
+                                          <p className="text-gray-700 leading-relaxed font-medium">
+                                            {verse.text}
+                                          </p>
+                                        </div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-4"
+                                        >
+                                          <Plus className="h-4 w-4 text-blue-600" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
+                            )}
+                            
+                            {/* Chapter View */}
+                            {!bibleSearchQuery && verses.length > 0 && (
+                              <div>
+                                <div className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                                  <BookOpen className="h-5 w-5 text-blue-600" />
+                                  <h3 className="font-semibold text-gray-800">
+                                    {selectedBook?.name} Chapter {selectedChapter}
+                                  </h3>
+                                  <Badge variant="outline" className="ml-auto">
+                                    {verses.length} verses
+                                  </Badge>
+                                </div>
+                                <div className="grid gap-3">
+                                  {verses.map((verse) => (
+                                    <div
+                                      key={verse.id}
+                                      className="group p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all duration-200 hover:shadow-md"
+                                      onClick={() => insertVerseIntoSermon(verse)}
+                                    >
+                                      <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                          <span className="text-sm font-bold text-blue-600">
+                                            {verse.verse}
+                                          </span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-gray-700 leading-relaxed">
+                                            {verse.text}
+                                          </p>
+                                        </div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                        >
+                                          <Plus className="h-4 w-4 text-blue-600" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Empty States */}
+                            {bibleSearchQuery && searchResults.length === 0 && !bibleLoading && (
+                              <div className="text-center py-12">
+                                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-600 mb-2">No verses found</h3>
+                                <p className="text-gray-500">Try different search terms or check your spelling</p>
+                              </div>
+                            )}
+                            
+                            {!bibleSearchQuery && verses.length === 0 && !bibleLoading && (
+                              <div className="text-center py-12">
+                                <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-600 mb-2">Select a book and chapter</h3>
+                                <p className="text-gray-500">Choose a Bible book and chapter to view verses</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
 
-              {/* AI Chat Button */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowAIChat(!showAIChat)}
-                className={`hover:bg-purple-50 ${showAIChat ? 'bg-purple-100 border-purple-300' : ''}`}
-              >
-                <Bot className="h-4 w-4 mr-2" />
-                AI Chat
-              </Button>
-
+              {/* Panel Controls */}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowOutline(!showOutline)}
+                onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+                className="hover:bg-gray-100"
               >
-                {showOutline ? <SidebarClose className="h-4 w-4" /> : <SidebarOpen className="h-4 w-4" />}
+                <PanelLeftOpen className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setRightPanelOpen(!rightPanelOpen)}
+                className={`hover:bg-purple-50 ${rightPanelOpen ? 'bg-purple-100' : ''}`}
+              >
+                <PanelRightOpen className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
@@ -1022,7 +1221,7 @@ const Sermons = () => {
               <Button
                 onClick={() => handleSaveSermon(false)}
                 disabled={saving}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {saving ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -1037,8 +1236,8 @@ const Sermons = () => {
 
         <div className="flex-1 flex overflow-hidden">
           {/* Enhanced Left Panel */}
-          {showOutline && (
-            <div className="w-80 border-r bg-white/50 backdrop-blur-sm flex flex-col shadow-sm">
+          {leftPanelOpen && (
+            <div className="w-80 border-r bg-white flex flex-col shadow-sm">
               <Tabs defaultValue="details" className="flex-1 flex flex-col">
                 <TabsList className="grid grid-cols-2 m-4 mb-0 bg-gray-100">
                   <TabsTrigger value="details" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Details</TabsTrigger>
@@ -1284,7 +1483,7 @@ const Sermons = () => {
               onExport={handleExportSermon}
               onInsertQuickText={handleInsertQuickText}
             />
-            <div className={`flex-1 p-6 ${focusMode ? 'bg-gradient-to-br from-blue-50 to-purple-50' : ''}`}>
+            <div className={`flex-1 p-6 ${focusMode ? 'bg-white' : ''}`}>
               <Textarea
                 ref={editorRef}
                 placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
@@ -1302,113 +1501,129 @@ const Sermons = () => {
             </div>
           </div>
 
-          {/* AI Chat Sidebar */}
-          {showAIChat && (
-            <div className="w-96 border-l bg-white/90 backdrop-blur-sm shadow-lg">
-              <div className="h-full flex flex-col">
-                <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Bot className="h-5 w-5" />
-                      <h3 className="font-semibold">AI Writing Assistant</h3>
+          {/* Enhanced Right Panel with AI Assistant */}
+          {rightPanelOpen && (
+            <div className="w-96 border-l bg-white shadow-lg">
+              <Tabs value={activeRightTab} onValueChange={setActiveRightTab} className="h-full flex flex-col">
+                <TabsList className="grid grid-cols-2 m-2 bg-gray-100">
+                  <TabsTrigger value="ai" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
+                    <Bot className="h-4 w-4 mr-2" />
+                    AI Assistant
+                  </TabsTrigger>
+                  <TabsTrigger value="bible" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-green-500 data-[state=active]:text-white">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Quick Bible
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="ai" className="flex-1 m-0">
+                  <SermonAIAssistant
+                    currentContent={selectedSermon?.content || ''}
+                    onContentUpdate={(content) => setSelectedSermon(prev => prev ? { ...prev, content } : null)}
+                    onOutlineGenerated={(outline) => {
+                      // Handle generated outline
+                      console.log('Generated outline:', outline);
+                    }}
+                    sermonTitle={selectedSermon?.title || ''}
+                    scriptureReference={selectedSermon?.scripture_reference || ''}
+                  />
+                </TabsContent>
+
+                <TabsContent value="bible" className="flex-1 m-0 p-4">
+                  <div className="h-full flex flex-col space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b">
+                      <BookOpen className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-semibold">Quick Bible Lookup</h3>
                     </div>
+                    
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Search verses..."
+                          value={bibleSearchQuery}
+                          onChange={(e) => {
+                            setBibleSearchQuery(e.target.value);
+                            searchBible(e.target.value);
+                          }}
+                          className="pl-10"
+                        />
+                      </div>
+                      
+                      {selectedBook && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span className="font-medium">{selectedBook.name}</span>
+                          <span>Chapter {selectedChapter}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <ScrollArea className="flex-1">
+                      {bibleLoading ? (
+                        <div className="flex justify-center py-8">
+                          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
+                        </div>
+                      ) : searchResults.length > 0 ? (
+                        <div className="space-y-2">
+                          {searchResults.slice(0, 5).map((verse) => (
+                            <div
+                              key={verse.id}
+                              className="p-3 rounded-lg border hover:border-blue-200 hover:bg-blue-50 cursor-pointer group transition-all"
+                              onClick={() => insertVerseIntoSermon(verse)}
+                            >
+                              <div className="text-xs text-blue-600 font-medium mb-1">
+                                {verse.book_name} {verse.chapter}:{verse.verse}
+                              </div>
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                {verse.text.length > 100 ? verse.text.substring(0, 100) + '...' : verse.text}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 h-6 text-xs"
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : verses.length > 0 ? (
+                        <div className="space-y-2">
+                          {verses.slice(0, 10).map((verse) => (
+                            <div
+                              key={verse.id}
+                              className="p-3 rounded-lg border hover:border-blue-200 hover:bg-blue-50 cursor-pointer group transition-all"
+                              onClick={() => insertVerseIntoSermon(verse)}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold text-blue-600">{verse.verse}</span>
+                              </div>
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                {verse.text.length > 80 ? verse.text.substring(0, 80) + '...' : verse.text}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500 text-sm">
+                          <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Search for verses or use the full Bible dialog</p>
+                        </div>
+                      )}
+                    </ScrollArea>
+
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAIChat(false)}
-                      className="text-white hover:bg-white/20"
+                      variant="outline"
+                      onClick={() => setShowBibleDialog(true)}
+                      className="w-full"
                     >
-                      <X className="h-4 w-4" />
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Open Full Bible
                     </Button>
                   </div>
-                  <p className="text-sm text-purple-100 mt-1">Get help with your sermon</p>
-                </div>
-                
-                <ScrollArea className="flex-1 p-4" ref={aiScrollRef}>
-                  <div className="space-y-4">
-                    {aiMessages.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <Bot className="h-12 w-12 mx-auto mb-3 text-purple-400" />
-                        <p className="text-sm font-medium">Hello! I'm here to help with your sermon.</p>
-                        <p className="text-xs mt-1">Ask me about:</p>
-                        <div className="text-xs mt-2 space-y-1">
-                          <div>• Scripture interpretation</div>
-                          <div>• Sermon structure</div>
-                          <div>• Practical applications</div>
-                          <div>• Illustrations & stories</div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {aiMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {message.role === 'assistant' && (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                            <Bot className="h-4 w-4 text-white" />
-                          </div>
-                        )}
-                        
-                        <div className={`max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
-                          <div className={`rounded-xl px-4 py-2 text-sm ${
-                            message.role === 'user'
-                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white ml-auto'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            <p className="whitespace-pre-wrap">{message.content}</p>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {format(new Date(message.timestamp), 'h:mm a')}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {aiLoading && (
-                      <div className="flex gap-3 justify-start">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
-                          <Bot className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="bg-gray-100 rounded-xl px-4 py-2">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-300"></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-                
-                <div className="p-4 border-t bg-gray-50">
-                  <div className="flex gap-2">
-                    <Input
-                      value={aiInput}
-                      onChange={(e) => setAiInput(e.target.value)}
-                      placeholder="Ask about your sermon..."
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          sendAIMessage();
-                        }
-                      }}
-                      disabled={aiLoading}
-                      className="border-gray-200 focus:border-purple-500"
-                    />
-                    <Button
-                      onClick={sendAIMessage}
-                      disabled={!aiInput.trim() || aiLoading}
-                      size="sm"
-                      className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </div>
@@ -1416,113 +1631,114 @@ const Sermons = () => {
     );
   }
 
-  // Enhanced dashboard view with brand colors
+  // Clean and simple dashboard view
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-              <Mic className="h-10 w-10 text-white" />
+            <div className="p-3 bg-blue-600 rounded-xl">
+              <Mic className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-gray-900">
                 Sermon Studio
               </h1>
-              <p className="text-gray-600 text-lg">Create powerful, Spirit-led sermons with divine inspiration</p>
+              <p className="text-gray-600">Create powerful, Spirit-led sermons with AI assistance</p>
             </div>
           </div>
           <Button
             onClick={handleNewSermon}
             size="lg"
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-5 w-5 mr-2" />
             New Sermon
           </Button>
         </div>
 
-        {/* Enhanced Statistics Dashboard */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
+        {/* Simple Statistics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold">{stats.total}</p>
-                  <p className="text-blue-100">Total Sermons</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-sm text-gray-600">Total Sermons</p>
                 </div>
-                <FileText className="h-10 w-10 text-blue-200" />
+                <FileText className="h-8 w-8 text-gray-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
+          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold">{stats.ready}</p>
-                  <p className="text-green-100">Ready to Deliver</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.ready}</p>
+                  <p className="text-sm text-gray-600">Ready to Deliver</p>
                 </div>
-                <Target className="h-10 w-10 text-green-200" />
+                <CheckCircle2 className="h-8 w-8 text-green-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
+          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold">{stats.delivered}</p>
-                  <p className="text-purple-100">Delivered</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.delivered}</p>
+                  <p className="text-sm text-gray-600">Delivered</p>
                 </div>
-                <Mic className="h-10 w-10 text-purple-200" />
+                <Mic className="h-8 w-8 text-blue-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
+          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-3xl font-bold">{stats.drafts}</p>
-                  <p className="text-orange-100">In Progress</p>
+                  <p className="text-2xl font-bold text-orange-600">{stats.drafts}</p>
+                  <p className="text-sm text-gray-600">In Progress</p>
                 </div>
-                <Edit3 className="h-10 w-10 text-orange-200" />
+                <Edit3 className="h-8 w-8 text-orange-400" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Enhanced Sermons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Clean Sermons Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sermons.map((sermon) => (
-            <Card key={sermon.id} className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <Card key={sermon.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg line-clamp-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all">
+                  <CardTitle className="text-lg line-clamp-2 text-gray-900">
                     {sermon.title || "Untitled Sermon"}
                   </CardTitle>
                   <div className="flex flex-col gap-2">
                     <Badge 
-                      variant={sermon.is_draft ? "secondary" : "default"} 
-                      className={`text-xs ${
-                        sermon.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                        sermon.status === 'ready' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
+                      variant="outline"
+                      className={`text-xs border ${
+                        sermon.status === 'delivered' ? 'border-green-200 text-green-700 bg-green-50' :
+                        sermon.status === 'ready' ? 'border-blue-200 text-blue-700 bg-blue-50' :
+                        sermon.status === 'archived' ? 'border-gray-200 text-gray-700 bg-gray-50' :
+                        'border-orange-200 text-orange-700 bg-orange-50'
                       }`}
                     >
-                      {sermon.status === 'draft' && '📝 Draft'}
-                      {sermon.status === 'ready' && '✅ Ready'}
-                      {sermon.status === 'delivered' && '🎤 Delivered'}
-                      {sermon.status === 'archived' && '📦 Archived'}
+                      {sermon.status === 'draft' && 'Draft'}
+                      {sermon.status === 'ready' && 'Ready'}
+                      {sermon.status === 'delivered' && 'Delivered'}
+                      {sermon.status === 'archived' && 'Archived'}
                     </Badge>
-                    {sermon.scripture_reference && (
-                      <Badge variant="outline" className="text-xs border-blue-200 text-blue-700">
-                        📖 {sermon.scripture_reference}
-                      </Badge>
-                    )}
                   </div>
                 </div>
+                {sermon.scripture_reference && (
+                  <Badge variant="outline" className="text-xs border-gray-200 text-gray-600 w-fit">
+                    {sermon.scripture_reference}
+                  </Badge>
+                )}
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 line-clamp-3 mb-4 leading-relaxed">
@@ -1542,18 +1758,20 @@ const Sermons = () => {
                     {Math.ceil((sermon.word_count || 0) / 150)} min
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" 
-                    style={{ width: `${Math.min(100, ((sermon.word_count || 0) / wordGoal) * 100)}%` }}
-                  ></div>
-                </div>
+                {(sermon.word_count || 0) > 0 && (
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
+                    <div 
+                      className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
+                      style={{ width: `${Math.min(100, ((sermon.word_count || 0) / wordGoal) * 100)}%` }}
+                    ></div>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleEditSermon(sermon)}
-                    className="flex-1 group-hover:bg-blue-50 group-hover:border-blue-300 group-hover:text-blue-700 transition-all"
+                    className="flex-1 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
                   >
                     <Edit3 className="h-4 w-4 mr-1" />
                     Edit
@@ -1577,21 +1795,21 @@ const Sermons = () => {
 
         {sermons.length === 0 && !loading && (
           <div className="text-center py-20">
-            <div className="p-6 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full w-32 h-32 mx-auto mb-6 flex items-center justify-center">
-              <Mic className="h-16 w-16 text-blue-600" />
+            <div className="p-6 bg-gray-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <Mic className="h-12 w-12 text-gray-400" />
             </div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Ready to inspire souls?
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Ready to create your first sermon?
             </h2>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-              Create your first sermon with divine guidance, powerful tools, and the Word of God at your fingertips.
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Create powerful sermons with AI assistance, Bible integration, and smart writing tools.
             </p>
             <Button 
               onClick={handleNewSermon} 
               size="lg"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 px-8 py-4 text-lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              <Plus className="h-6 w-6 mr-2" />
+              <Plus className="h-5 w-5 mr-2" />
               Create Your First Sermon
             </Button>
           </div>
