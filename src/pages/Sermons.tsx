@@ -879,7 +879,7 @@ const Sermons = () => {
               </Button>
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-600 rounded-lg">
+                <div className="p-2 bg-orange-600 rounded-lg">
                   <Mic className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -1221,7 +1221,7 @@ const Sermons = () => {
               <Button
                 onClick={() => handleSaveSermon(false)}
                 disabled={saving}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 {saving ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -1506,11 +1506,11 @@ const Sermons = () => {
             <div className="w-96 border-l bg-white shadow-lg">
               <Tabs value={activeRightTab} onValueChange={setActiveRightTab} className="h-full flex flex-col">
                 <TabsList className="grid grid-cols-2 m-2 bg-gray-100">
-                  <TabsTrigger value="ai" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">
-                    <Bot className="h-4 w-4 mr-2" />
+                  <TabsTrigger value="ai" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                    <span className="mr-2 text-orange-500 data-[state=active]:text-white">✦</span>
                     AI Assistant
                   </TabsTrigger>
-                  <TabsTrigger value="bible" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-green-500 data-[state=active]:text-white">
+                  <TabsTrigger value="bible" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Quick Bible
                   </TabsTrigger>
@@ -1637,20 +1637,20 @@ const Sermons = () => {
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-600 rounded-xl">
+            <div className="p-3 bg-orange-600 rounded-xl">
               <Mic className="h-8 w-8 text-white" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 Sermon Studio
               </h1>
-              <p className="text-gray-600">Create powerful, Spirit-led sermons with AI assistance</p>
+              <p className="text-gray-600">Create powerful sermons with ✦ AI assistance</p>
             </div>
           </div>
           <Button
             onClick={handleNewSermon}
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-orange-600 hover:bg-orange-700 text-white"
           >
             <Plus className="h-5 w-5 mr-2" />
             New Sermon
@@ -1687,10 +1687,10 @@ const Sermons = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-blue-600">{stats.delivered}</p>
+                  <p className="text-2xl font-bold text-orange-600">{stats.delivered}</p>
                   <p className="text-sm text-gray-600">Delivered</p>
                 </div>
-                <Mic className="h-8 w-8 text-blue-400" />
+                <Mic className="h-8 w-8 text-orange-400" />
               </div>
             </CardContent>
           </Card>
@@ -1761,7 +1761,7 @@ const Sermons = () => {
                 {(sermon.word_count || 0) > 0 && (
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
                     <div 
-                      className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
+                      className="bg-orange-600 h-1.5 rounded-full transition-all duration-500" 
                       style={{ width: `${Math.min(100, ((sermon.word_count || 0) / wordGoal) * 100)}%` }}
                     ></div>
                   </div>
@@ -1771,7 +1771,7 @@ const Sermons = () => {
                     size="sm"
                     variant="outline"
                     onClick={() => handleEditSermon(sermon)}
-                    className="flex-1 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+                    className="flex-1 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
                   >
                     <Edit3 className="h-4 w-4 mr-1" />
                     Edit
@@ -1802,12 +1802,12 @@ const Sermons = () => {
               Ready to create your first sermon?
             </h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Create powerful sermons with AI assistance, Bible integration, and smart writing tools.
+              Create powerful sermons with ✦ AI assistance, Bible integration, and smart writing tools.
             </p>
             <Button 
               onClick={handleNewSermon} 
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
             >
               <Plus className="h-5 w-5 mr-2" />
               Create Your First Sermon

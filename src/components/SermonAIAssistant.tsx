@@ -279,31 +279,31 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col bg-white">
-      <div className="border-b bg-gradient-to-r from-purple-50 to-blue-50 p-4">
+      <div className="border-b bg-gradient-to-r from-orange-50 to-red-50 p-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
-            <Bot className="h-5 w-5 text-white" />
+          <div className="p-2 bg-orange-500 rounded-lg">
+            <span className="text-white text-lg font-bold">✦</span>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">AI Sermon Assistant</h3>
-            <p className="text-sm text-gray-600">Intelligent sermon preparation powered by AI</p>
+            <h3 className="font-semibold text-gray-800">AI Assistant</h3>
+            <p className="text-sm text-gray-600">Smart sermon preparation</p>
           </div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="flex-1 flex flex-col">
         <TabsList className="grid grid-cols-3 m-4 mb-0">
-          <TabsTrigger value="generator" className="flex items-center gap-2">
-            <Wand2 className="h-4 w-4" />
-            Generator
+          <TabsTrigger value="generator" className="flex items-center gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <span className="text-orange-500 data-[state=active]:text-white">✦</span>
+            Generate
           </TabsTrigger>
-          <TabsTrigger value="assistant" className="flex items-center gap-2">
-            <PenTool className="h-4 w-4" />
-            Assistant
+          <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <span className="text-orange-500 data-[state=active]:text-white">✦</span>
+            Writing
           </TabsTrigger>
-          <TabsTrigger value="suggestions" className="flex items-center gap-2 relative">
-            <Brain className="h-4 w-4" />
-            Suggestions
+          <TabsTrigger value="suggestions" className="flex items-center gap-2 relative data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <span className="text-orange-500 data-[state=active]:text-white">✦</span>
+            Tips
             {suggestions.length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">
                 {suggestions.length}
@@ -320,8 +320,8 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-purple-600" />
-                      Intelligent Sermon Generator
+                      <span className="text-orange-500 text-lg">✦</span>
+                      Sermon Generator
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -387,7 +387,7 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                     <Button 
                       onClick={generateSermonOutline}
                       disabled={isGenerating || !topic.trim()}
-                      className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                      className="w-full bg-orange-500 hover:bg-orange-600"
                     >
                       {isGenerating ? (
                         <>
@@ -396,8 +396,8 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                         </>
                       ) : (
                         <>
-                          <Wand2 className="h-4 w-4 mr-2" />
-                          Generate Sermon Outline
+                          <span className="mr-2">✦</span>
+                          Generate Outline
                         </>
                       )}
                     </Button>
@@ -409,13 +409,13 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-green-600" />
-                        Generated Sermon Outline
+                        <span className="text-orange-500 text-lg">✦</span>
+                        Generated Outline
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <h4 className="font-semibold text-lg text-purple-700 mb-2">{generatedOutline.title}</h4>
+                        <h4 className="font-semibold text-lg text-orange-700 mb-2">{generatedOutline.title}</h4>
                       </div>
 
                       <div>
@@ -426,7 +426,7 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                         <ul className="space-y-1">
                           {generatedOutline.mainPoints.map((point, index) => (
                             <li key={index} className="flex items-start gap-2">
-                              <span className="text-purple-600 font-bold">{index + 1}.</span>
+                              <span className="text-orange-600 font-bold">{index + 1}.</span>
                               <span>{point}</span>
                             </li>
                           ))}
@@ -452,14 +452,14 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                           const outlineText = `# ${generatedOutline.title}\n\n## Introduction\n${generatedOutline.introduction}\n\n## Main Points\n${generatedOutline.mainPoints.map((point, i) => `${i + 1}. ${point}`).join('\n')}\n\n## Conclusion\n${generatedOutline.conclusion}`;
                           onContentUpdate(outlineText);
                           toast({
-                            title: "✨ Outline Applied",
-                            description: "The generated outline has been added to your sermon",
+                            title: "✦ Outline Applied",
+                            description: "Added to your sermon",
                           });
                         }}
-                        className="w-full bg-green-600 hover:bg-green-700"
+                        className="w-full bg-orange-600 hover:bg-orange-700"
                       >
-                        <ArrowRight className="h-4 w-4 mr-2" />
-                        Apply to Sermon
+                        <span className="mr-2">✦</span>
+                        Apply Outline
                       </Button>
                     </CardContent>
                   </Card>
@@ -475,25 +475,25 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <PenTool className="h-5 w-5 text-blue-600" />
-                      Smart Writing Assistant
+                      <span className="text-orange-500 text-lg">✦</span>
+                      Writing Assistant
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">What do you need help with?</label>
+                      <label className="block text-sm font-medium mb-2">How can I help?</label>
                       <Textarea
-                        placeholder="e.g., 'Help me write a compelling hook for a sermon about faith' or 'Suggest a transition between my first and second points'"
+                        placeholder="e.g., 'Write a hook about faith' or 'Suggest a transition'"
                         value={aiInput}
                         onChange={(e) => setAiInput(e.target.value)}
-                        className="min-h-[100px]"
+                        className="min-h-[80px]"
                       />
                     </div>
 
                     <Button 
                       onClick={getWritingAssistance}
                       disabled={isAnalyzing || !aiInput.trim()}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full bg-orange-500 hover:bg-orange-600"
                     >
                       {isAnalyzing ? (
                         <>
@@ -502,30 +502,30 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                         </>
                       ) : (
                         <>
-                          <Lightbulb className="h-4 w-4 mr-2" />
-                          Get AI Assistance
+                          <span className="mr-2">✦</span>
+                          Get Help
                         </>
                       )}
                     </Button>
 
                     {aiResponse && (
-                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <h5 className="font-medium text-blue-800 mb-2">AI Suggestion:</h5>
+                      <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                        <h5 className="font-medium text-orange-800 mb-2">✦ Suggestion:</h5>
                         <p className="text-gray-700 italic">"{aiResponse}"</p>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="mt-3"
+                          className="mt-3 border-orange-300 text-orange-600 hover:bg-orange-50"
                           onClick={() => {
                             onContentUpdate(currentContent + '\n\n' + aiResponse);
                             toast({
-                              title: "✨ Suggestion Added",
-                              description: "AI suggestion added to your sermon",
+                              title: "✦ Added",
+                              description: "Added to sermon",
                             });
                           }}
                         >
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Add to Sermon
+                          <span className="mr-2">✦</span>
+                          Add
                         </Button>
                       </div>
                     )}
@@ -536,30 +536,30 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-yellow-600" />
-                      Quick Writing Helpers
+                      <span className="text-orange-500 text-lg">✦</span>
+                      Quick Helpers
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: 'Hook Ideas', icon: '🎣', prompt: 'Generate engaging opening hooks for my sermon' },
-                        { label: 'Transitions', icon: '🔄', prompt: 'Suggest smooth transitions between sermon points' },
-                        { label: 'Illustrations', icon: '💡', prompt: 'Provide relevant illustrations for my topic' },
-                        { label: 'Applications', icon: '🎯', prompt: 'Help with practical applications for daily life' },
-                        { label: 'Conclusions', icon: '🏁', prompt: 'Write a powerful sermon conclusion with call to action' },
-                        { label: 'Prayer Points', icon: '🙏', prompt: 'Suggest prayer points related to my sermon topic' }
+                        { label: 'Hooks', icon: '✦', prompt: 'Generate engaging opening hooks' },
+                        { label: 'Transitions', icon: '✦', prompt: 'Suggest smooth transitions' },
+                        { label: 'Stories', icon: '✦', prompt: 'Provide relevant illustrations' },
+                        { label: 'Applications', icon: '✦', prompt: 'Help with practical applications' },
+                        { label: 'Conclusions', icon: '✦', prompt: 'Write a powerful conclusion' },
+                        { label: 'Prayers', icon: '✦', prompt: 'Suggest prayer points' }
                       ].map((helper) => (
                         <Button
                           key={helper.label}
                           variant="outline"
-                          className="h-auto p-3 flex flex-col items-center gap-2 hover:bg-yellow-50"
+                          className="h-auto p-3 flex flex-col items-center gap-2 hover:bg-orange-50 border-orange-200"
                           onClick={() => {
                             setAiInput(helper.prompt);
                             getWritingAssistance();
                           }}
                         >
-                          <span className="text-xl">{helper.icon}</span>
+                          <span className="text-lg text-orange-500">{helper.icon}</span>
                           <span className="text-sm">{helper.label}</span>
                         </Button>
                       ))}
@@ -576,24 +576,24 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-purple-600" />
-                    Content Analysis
-                    {isAnalyzing && <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />}
+                    <span className="text-orange-500 text-lg">✦</span>
+                    Analysis
+                    {isAnalyzing && <RefreshCw className="h-4 w-4 animate-spin text-orange-500" />}
                   </h3>
-                  <Badge variant="outline" className="text-xs">
-                    {suggestions.length} suggestions
+                  <Badge variant="outline" className="text-xs border-orange-200 text-orange-600">
+                    {suggestions.length} tips
                   </Badge>
                 </div>
 
                 {suggestions.length === 0 ? (
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                      <span className="text-4xl text-orange-500 block mb-3">✦</span>
                       <h4 className="font-medium text-gray-800 mb-2">Looking good!</h4>
                       <p className="text-sm text-gray-600">
                         {currentContent.length > 50 
-                          ? "No major issues detected in your sermon content."
-                          : "Start writing your sermon to get AI-powered suggestions."}
+                          ? "No issues found."
+                          : "Start writing to get tips."}
                       </p>
                     </CardContent>
                   </Card>
