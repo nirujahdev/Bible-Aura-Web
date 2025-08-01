@@ -4,15 +4,49 @@ const Footer = () => {
   return (
     <footer className="bg-black text-white py-16">
       <div className="w-full px-4 sm:px-6 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center md:text-left">
           {/* Brand Section */}
           <div className="text-center md:text-left">
             <h3 className="text-2xl font-bold text-orange-400 mb-3">
               ✦Bible Aura
             </h3>
-            <p className="text-white text-base">
+            <p className="text-white text-base mb-4">
               AI-Powered Biblical Insight
             </p>
+            <p className="text-gray-400 text-sm">
+              Transform your spiritual journey with cutting-edge AI technology and deep biblical wisdom.
+            </p>
+          </div>
+          
+          {/* Features Section */}
+          <div className="text-center md:text-left">
+            <h4 className="text-xl font-semibold text-white mb-6">Features</h4>
+            <nav className="space-y-3">
+              <Link to="/bible-ai" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Bible AI Assistant
+              </Link>
+              <Link to="/bible" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Digital Bible Reader
+              </Link>
+              <Link to="/study-hub" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Bible Study Hub
+              </Link>
+              <Link to="/journal" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Spiritual Journal
+              </Link>
+              <Link to="/sermons" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Sermon Library
+              </Link>
+              <Link to="/sermon-writer" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Sermon Writer
+              </Link>
+              <Link to="/parables-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Parables Study
+              </Link>
+              <Link to="/topical-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Topical Studies
+              </Link>
+            </nav>
           </div>
           
           {/* Menu Section */}
@@ -22,11 +56,14 @@ const Footer = () => {
               <Link to="/about" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 About
               </Link>
-              <Link to="/careers" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Careers
+              <Link to="/features" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                All Features
               </Link>
               <Link to="/pricing" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Pricing
+              </Link>
+              <Link to="/contact" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Contact
               </Link>
               <Link to="/auth" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Sign in

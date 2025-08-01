@@ -1,10 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Scale, FileText, AlertTriangle, Shield, ArrowLeft, Mail, Calendar } from "lucide-react";
+import { Scale, FileText, AlertTriangle, Shield, ArrowLeft, Mail, Calendar, CheckCircle, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 
 const Terms = () => {
   const lastUpdated = "January 16, 2025";
+
+  // SEO optimization for terms of service
+  useSEO({
+    title: "Terms of Service | Bible Aura - Legal Terms & Conditions",
+    description: "Read Bible Aura's terms of service and legal conditions. Understand your rights and responsibilities when using our AI-powered Bible study platform.",
+    keywords: "Bible Aura terms of service, legal terms, terms and conditions, Bible app legal, Christian app terms, AI Bible platform terms",
+    canonicalUrl: "https://bibleaura.xyz/terms"
+  });
 
   const sections = [
     {
@@ -89,25 +98,88 @@ const Terms = () => {
         </Button>
       </div>
 
-      {/* Hero Section */}
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
+      {/* Enhanced Hero Section */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-xl">
+              <Scale className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
             Terms of <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">Service</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
-            Please read these terms carefully before using Bible Aura. They govern your use of our service.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
+            Please read these terms carefully before using Bible Aura. They govern your use of our AI-powered Bible study service.
           </p>
-          <div className="flex items-center justify-center text-gray-500 text-sm">
+          <div className="flex items-center justify-center text-gray-500 text-sm mb-8">
             <Calendar className="h-4 w-4 mr-2" />
             Last updated: {lastUpdated}
           </div>
+
+          {/* Terms Guarantee Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+            <Card className="border-2 border-orange-200 bg-orange-50">
+              <CardContent className="p-6 text-center">
+                <Scale className="h-8 w-8 text-orange-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-orange-800 mb-2">Fair & Transparent</h3>
+                <p className="text-orange-700 text-sm">Clear terms with no hidden conditions</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardContent className="p-6 text-center">
+                <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-green-800 mb-2">User-Friendly</h3>
+                <p className="text-green-700 text-sm">Terms designed to protect both parties</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-blue-200 bg-blue-50">
+              <CardContent className="p-6 text-center">
+                <Eye className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-blue-800 mb-2">Easy to Understand</h3>
+                <p className="text-blue-700 text-sm">Written in plain language for clarity</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+
+        {/* CTA Section - Privacy & Terms Buttons */}
+        <Card className="mb-12 border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
+          <CardContent className="p-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Important Legal Documents</h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Please review both our Privacy Policy and Terms of Service to understand how we protect your data and the terms governing your use of Bible Aura.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                asChild 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+              >
+                <Link to="/privacy">
+                  <Shield className="mr-3 h-5 w-5" />
+                  Privacy Policy
+                </Link>
+              </Button>
+              <Button 
+                asChild 
+                size="lg" 
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+              >
+                <Link to="/terms">
+                  <FileText className="mr-3 h-5 w-5" />
+                  Terms of Service
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Introduction */}
         <Card className="mb-8 border-2 border-orange-100">
           <CardContent className="p-8">
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 leading-relaxed text-lg">
               Welcome to Bible Aura! These Terms of Service ("Terms") govern your use of our AI-powered biblical 
               insights platform. By accessing or using our service, you agree to be bound by these Terms. 
               If you disagree with any part of these terms, then you may not access the service.

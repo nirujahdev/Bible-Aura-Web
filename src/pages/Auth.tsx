@@ -23,7 +23,8 @@ import {
   Lightbulb,
   LogIn,
   UserPlus,
-  AlertCircle
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 
 export default function Auth() {
@@ -37,49 +38,51 @@ export default function Auth() {
   const [currentTab, setCurrentTab] = useState("signin");
   const [currentFeature, setCurrentFeature] = useState(0);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   const [isMagicLinkAuth, setIsMagicLinkAuth] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Features data for showcase
+  // Enhanced features data for showcase
   const features = [
     {
       icon: Brain,
       title: "AI Bible Analysis",
-      description: "Get insights and explanations from our AI that understands biblical context and meaning.",
+      description: "Get deep insights and explanations from our AI that understands biblical context, historical background, and theological meaning.",
       color: "text-blue-600",
       bgColor: "bg-blue-50"
     },
     {
       icon: MessageCircle,
       title: "AI Chat Helper",
-      description: "Ask questions about scripture and theology to receive personalized AI responses.",
+      description: "Ask questions about scripture, theology, and faith to receive personalized, biblically-grounded AI responses.",
       color: "text-purple-600",
       bgColor: "bg-purple-50"
     },
     {
       icon: Book,
       title: "Bible Study Tools",
-      description: "Access multiple Bible translations with cross-references and verse analysis.",
+      description: "Access multiple Bible translations, cross-references, verse analysis, and comprehensive study resources.",
       color: "text-green-600",
       bgColor: "bg-green-50"
     },
     {
       icon: Search,
       title: "Smart Scripture Search",
-      description: "Find verses by topic or keywords with our AI-enhanced search.",
+      description: "Find verses by topic, keywords, or themes with our AI-enhanced search that understands context.",
       color: "text-orange-600",
       bgColor: "bg-orange-50"
     },
     {
       icon: Lightbulb,
       title: "Personal Insights",
-      description: "Receive daily devotions and study plans tailored to your faith journey.",
+      description: "Receive daily devotions, study plans, and spiritual insights tailored to your faith journey and interests.",
       color: "text-yellow-600",
       bgColor: "bg-yellow-50"
     },
     {
       icon: Users,
-      title: "Community",
-      description: "Connect with other believers and share insights in our faith community.",
+      title: "Faith Community",
+      description: "Connect with other believers, share insights, and grow together in our supportive faith community.",
       color: "text-indigo-600",
       bgColor: "bg-indigo-50"
     }
@@ -93,92 +96,161 @@ export default function Auth() {
     return () => clearInterval(interval);
   }, [features.length]);
 
-
-
-  // Check if this is a magic link authentication on mount
+  // Enhanced magic link detection and error handling
   useEffect(() => {
     const urlHash = window.location.hash;
     const urlSearch = window.location.search;
     
     console.log('Auth page loaded with:', { urlHash, urlSearch });
     
-    const isFromEmailLink = urlHash.includes('access_token') || 
-                           urlHash.includes('refresh_token') ||
-                           urlSearch.includes('token_hash') ||
-                           urlSearch.includes('type=recovery') ||
-                           urlSearch.includes('type=email_change') ||
-                           urlSearch.includes('type=signup');
+    // Clear any existing messages
+    setAuthError(null);
+    setAuthSuccess(null);
     
-    // Check for authentication errors in URL
+    // Check for authentication errors
     const hasError = urlHash.includes('error=') || urlSearch.includes('error=');
+    const hasAuthParams = urlHash.includes('access_token') || 
+                         urlHash.includes('refresh_token') ||
+                         urlSearch.includes('token_hash') ||
+                         urlSearch.includes('type=recovery') ||
+                         urlSearch.includes('type=email_change') ||
+                         urlSearch.includes('type=signup') ||
+                         urlSearch.includes('type=invite') ||
+                         urlSearch.includes('type=magiclink');
     
     if (hasError) {
+      // Extract and display error
       const errorMatch = (urlHash + urlSearch).match(/error=([^&]+)/);
       const errorDesc = (urlHash + urlSearch).match(/error_description=([^&]+)/);
-      const errorMessage = errorDesc ? decodeURIComponent(errorDesc[1]) : 'Authentication failed';
-      console.log('Magic link error detected:', errorMessage);
+      
+      let errorMessage = 'Authentication failed';
+      if (errorDesc) {
+        errorMessage = decodeURIComponent(errorDesc[1].replace(/\+/g, ' '));
+      } else if (errorMatch) {
+        const errorCode = decodeURIComponent(errorMatch[1]);
+        if (errorCode === 'access_denied') {
+          errorMessage = 'Access denied. Please try again or use a different sign-in method.';
+        } else if (errorCode === 'invalid_request') {
+          errorMessage = 'Invalid authentication request. Please try again.';
+        } else {
+          errorMessage = `Authentication error: ${errorCode}`;
+        }
+      }
+      
+      console.log('Auth error detected:', errorMessage);
       setAuthError(errorMessage);
-    } else if (isFromEmailLink) {
-      console.log('Magic link detected, setting flag');
+      
+      // Clean up URL after displaying error
+      setTimeout(() => {
+        window.history.replaceState({}, '', '/auth');
+      }, 1000);
+      
+    } else if (hasAuthParams) {
+      console.log('Magic link or OAuth callback detected');
       setIsMagicLinkAuth(true);
-    } else {
-      console.log('Regular auth page visit');
+      setAuthSuccess('Authenticating... Please wait while we verify your credentials.');
+      
+      // Set timeout for magic link authentication
+      const authTimeout = setTimeout(() => {
+        if (isMagicLinkAuth && !user) {
+          console.log('Magic link authentication timeout');
+          setIsMagicLinkAuth(false);
+          setAuthSuccess(null);
+          setAuthError('Authentication timed out. Please try again or sign in manually.');
+          window.history.replaceState({}, '', '/auth');
+        }
+      }, 8000); // Increased timeout to 8 seconds
+      
+      return () => clearTimeout(authTimeout);
     }
   }, []);
 
-  // Handle authentication redirects with better error handling
+  // Handle successful authentication with better redirect logic
   useEffect(() => {
-    console.log('Auth state:', { user: !!user, loading, isMagicLinkAuth });
+    console.log('Auth state check:', { user: !!user, loading, isMagicLinkAuth });
     
     if (!loading && user) {
-      console.log('User authenticated successfully, redirecting to chat');
-      // Add a small delay to ensure the auth state is fully stable
-      setTimeout(() => {
-        navigate('/chat', { replace: true });
-      }, 100);
-    } else if (!loading && isMagicLinkAuth && !user) {
-      // Magic link detected but authentication not complete
-      console.log('Magic link detected but user not authenticated yet, waiting...');
-      const timeout = setTimeout(() => {
-        if (!user) {
-          console.log('Magic link authentication failed after timeout');
-          setAuthError('Magic link authentication failed. Please try again or sign in manually.');
-          setIsMagicLinkAuth(false);
-          // Clear URL parameters to prevent retry loops
-          window.history.replaceState({}, '', '/auth');
-        }
-      }, 5000); // Wait 5 seconds for authentication to complete
+      console.log('User authenticated, preparing redirect');
+      setIsMagicLinkAuth(false);
+      setAuthSuccess('Authentication successful! Redirecting...');
       
-      return () => clearTimeout(timeout);
+      // Determine redirect destination
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get('redirect') || '/dashboard';
+      
+      // Delay redirect slightly to show success message
+      setTimeout(() => {
+        console.log('Redirecting to:', redirectTo);
+        navigate(redirectTo, { replace: true });
+      }, 1000);
+      
+    } else if (!loading && isMagicLinkAuth && !user) {
+      // Magic link detected but no user - continue waiting
+      console.log('Still waiting for magic link authentication...');
     }
   }, [user, loading, navigate, isMagicLinkAuth]);
+
+  // Enhanced form validation
+  const validateForm = (formData: FormData, isSignUp: boolean = false) => {
+    const errors: { [key: string]: string } = {};
+    
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const displayName = formData.get('displayName') as string;
+    
+    // Email validation
+    if (!email) {
+      errors.email = 'Email is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.email = 'Please enter a valid email address';
+      }
+    }
+    
+    // Password validation
+    if (!password && currentTab !== 'magic') {
+      errors.password = 'Password is required';
+    } else if (password && password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    } else if (isSignUp && password && password.length < 8) {
+      errors.password = 'For better security, use at least 8 characters';
+    }
+    
+    // Display name validation for sign up
+    if (isSignUp && displayName && displayName.length > 50) {
+      errors.displayName = 'Display name must be less than 50 characters';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setAuthError(null);
+    setAuthSuccess(null);
 
     try {
       const formData = new FormData(e.currentTarget);
-      const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
-
-      if (!email || !password) {
-        setAuthError('Please fill in all fields');
+      
+      if (!validateForm(formData)) {
         return;
       }
+
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
 
       const result = await signIn(email, password);
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Auto-redirect to dashboard on successful login
-        setAuthError(null);
-        navigate('/dashboard', { replace: true });
+        setAuthSuccess('Sign in successful! Redirecting...');
       }
     } catch (error) {
       console.error('Sign in error:', error);
-      setAuthError('An unexpected error occurred');
+      setAuthError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -188,34 +260,28 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
     setAuthError(null);
+    setAuthSuccess(null);
 
     try {
       const formData = new FormData(e.currentTarget);
+      
+      if (!validateForm(formData, true)) {
+        return;
+      }
+
       const email = formData.get('email') as string;
       const password = formData.get('password') as string;
       const displayName = formData.get('displayName') as string;
-
-      if (!email || !password) {
-        setAuthError('Please fill in all fields');
-        return;
-      }
-
-      if (password.length < 6) {
-        setAuthError('Password must be at least 6 characters');
-        return;
-      }
 
       const result = await signUp(email, password, displayName);
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        // Auto-redirect to chat on successful signup
-        setAuthError(null);
-        navigate('/chat', { replace: true });
+        setAuthSuccess('Account created successfully! Please check your email for confirmation.');
       }
     } catch (error) {
       console.error('Sign up error:', error);
-      setAuthError('An unexpected error occurred');
+      setAuthError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -225,23 +291,34 @@ export default function Auth() {
     e.preventDefault();
     setIsSubmitting(true);
     setAuthError(null);
+    setAuthSuccess(null);
 
     try {
       const formData = new FormData(e.currentTarget);
+      
       const email = formData.get('email') as string;
-
       if (!email) {
-        setAuthError('Please enter your email address');
+        setFormErrors({ email: 'Email address is required' });
         return;
       }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setFormErrors({ email: 'Please enter a valid email address' });
+        return;
+      }
+      
+      setFormErrors({});
 
       const result = await signInWithMagicLink(email);
       if (result.error) {
         setAuthError(result.error.message);
+      } else {
+        setAuthSuccess('Magic link sent! Please check your email and click the link to sign in.');
       }
     } catch (error) {
       console.error('Magic link error:', error);
-      setAuthError('An unexpected error occurred');
+      setAuthError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -250,32 +327,50 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     setAuthError(null);
+    setAuthSuccess(null);
 
     try {
       const result = await signInWithGoogle();
       if (result.error) {
         setAuthError(result.error.message);
+      } else {
+        setAuthSuccess('Redirecting to Google for authentication...');
       }
     } catch (error) {
       console.error('Google sign in error:', error);
-      setAuthError('An unexpected error occurred');
+      setAuthError('Google sign-in is currently unavailable. Please try email authentication.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Clear form errors when switching tabs
+  useEffect(() => {
+    setFormErrors({});
+    setAuthError(null);
+    setAuthSuccess(null);
+  }, [currentTab]);
+
+  // Show loading screen for magic link auth
   if (loading || isMagicLinkAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary via-primary/90 to-primary/80 flex items-center justify-center">
         <div className="text-center space-y-6">
           <div className="space-y-3">
+            <h2 className="text-2xl font-bold text-white">✦Bible Aura</h2>
             <p className="text-lg text-white/90">
-              {isMagicLinkAuth ? 'Authenticating with magic link...' : 'Loading your account...'}
+              {isMagicLinkAuth ? 'Authenticating...' : 'Loading your account...'}
             </p>
             {isMagicLinkAuth && (
               <p className="text-sm text-white/70">
-                Please wait while we verify your magic link
+                Please wait while we verify your authentication
               </p>
+            )}
+            {authSuccess && (
+              <div className="flex items-center justify-center gap-2 text-green-200">
+                <CheckCircle className="h-4 w-4" />
+                <p className="text-sm">{authSuccess}</p>
+              </div>
             )}
           </div>
           <div className="flex justify-center">
@@ -349,9 +444,6 @@ export default function Auth() {
                       ? 'bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/25' 
                       : 'bg-gray-300 hover:bg-primary/50'
                   }`}></div>
-                  {index === currentFeature && (
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-primary animate-ping opacity-25"></div>
-                  )}
                 </button>
               ))}
             </div>
@@ -431,6 +523,12 @@ export default function Auth() {
                   <AlertDescription>{authError}</AlertDescription>
                 </Alert>
               )}
+                             {authSuccess && (
+                 <Alert className="mb-3 border-green-200 bg-green-50">
+                   <CheckCircle className="h-4 w-4 text-green-600" />
+                   <AlertDescription className="text-green-800">{authSuccess}</AlertDescription>
+                 </Alert>
+               )}
               <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-primary/10 border border-primary/20 h-10 mb-4">
                   <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs font-medium">
@@ -457,6 +555,7 @@ export default function Auth() {
                         disabled={isSubmitting}
                         className="border-primary/30 focus:border-primary focus:ring-primary h-9"
                       />
+                      {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="signin-password" className="text-primary font-medium text-sm">Password</Label>
@@ -480,6 +579,7 @@ export default function Auth() {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
+                      {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
                     </div>
                     <Button
                       type="submit"
@@ -529,6 +629,7 @@ export default function Auth() {
                         disabled={isSubmitting}
                         className="border-primary/30 focus:border-primary focus:ring-primary h-11"
                       />
+                      {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
                     </div>
                     <Button
                       type="submit"
@@ -576,6 +677,7 @@ export default function Auth() {
                         disabled={isSubmitting}
                         className="border-primary/30 focus:border-primary focus:ring-primary h-11"
                       />
+                      {formErrors.displayName && <p className="text-xs text-red-500">{formErrors.displayName}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email" className="text-primary font-medium">Email</Label>
@@ -588,6 +690,7 @@ export default function Auth() {
                         disabled={isSubmitting}
                         className="border-primary/30 focus:border-primary focus:ring-primary h-11"
                       />
+                      {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-password" className="text-primary font-medium">Password</Label>
@@ -612,6 +715,7 @@ export default function Auth() {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
+                      {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
                       <p className="text-xs text-muted-foreground">
                         Minimum 6 characters required
                       </p>

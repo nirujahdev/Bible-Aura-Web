@@ -36,34 +36,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     let isMounted = true;
+    let subscription: any;
     
-    // Reduced timeout to 2 seconds for better UX
+    // Faster loading timeout
     const loadingTimeout = setTimeout(() => {
-      if (isMounted) {
+      if (isMounted && !initialized) {
         console.log('Auth loading timeout, setting loading to false');
         setLoading(false);
+        setInitialized(true);
       }
-    }, 2000);
+    }, 1500);
 
     const initializeAuth = async () => {
       try {
-        // Add connection check first
         if (typeof window === 'undefined') {
-          console.log('Running in server environment, skipping auth initialization');
+          console.log('Server-side render, skipping auth initialization');
           if (isMounted) {
             setLoading(false);
+            setInitialized(true);
           }
           return;
         }
 
-        // Check for existing session first with timeout
+        // Check for URL-based auth first (magic links, OAuth callbacks)
+        const urlHash = window.location.hash;
+        const urlSearch = window.location.search;
+        const hasAuthParams = urlHash.includes('access_token') || 
+                             urlHash.includes('refresh_token') ||
+                             urlSearch.includes('token_hash') ||
+                             urlSearch.includes('type=');
+
+        if (hasAuthParams) {
+          console.log('Auth parameters detected in URL, waiting for Supabase to process...');
+          // Wait a bit longer for URL-based auth to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Get current session with timeout
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session check timeout')), 3000)
+          setTimeout(() => reject(new Error('Session check timeout')), 4000)
         );
 
         const { data: { session }, error: sessionError } = await Promise.race([
@@ -73,10 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (sessionError) {
           console.error('Session error:', sessionError);
-          // Don't fail completely on session errors in production
           if (isMounted) {
             clearTimeout(loadingTimeout);
             setLoading(false);
+            setInitialized(true);
             setSession(null);
             setUser(null);
             setProfile(null);
@@ -86,27 +103,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (isMounted) {
           clearTimeout(loadingTimeout);
+          console.log('Session found:', !!session);
           setSession(session);
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            // Don't wait for profile fetch to complete loading
+            // Fetch profile asynchronously
             fetchUserProfile(session.user.id).catch(error => {
               console.error('Profile fetch error:', error);
-              // Continue without profile rather than failing
             });
           } else {
             setProfile(null);
           }
           
           setLoading(false);
+          setInitialized(true);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
         if (isMounted) {
           clearTimeout(loadingTimeout);
-          // Set safe defaults rather than failing
           setLoading(false);
+          setInitialized(true);
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -114,45 +132,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Set up auth state listener with error handling
-    let subscription: any;
+    // Set up auth state listener with enhanced error handling
     try {
       const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
           if (!isMounted) return;
           
+          console.log('Auth state change:', event, !!session);
+          
           try {
             clearTimeout(loadingTimeout);
-            setSession(session);
-            setUser(session?.user ?? null);
             
-            if (session?.user) {
-              // Fetch user profile in the background with error handling
-              fetchUserProfile(session.user.id).catch(error => {
-                console.error('Profile fetch error in auth state change:', error);
-              });
-            } else {
+            // Handle different auth events
+            if (event === 'SIGNED_IN') {
+              console.log('User signed in successfully');
+              setSession(session);
+              setUser(session?.user ?? null);
+              
+              if (session?.user) {
+                fetchUserProfile(session.user.id).catch(error => {
+                  console.error('Profile fetch error in sign in:', error);
+                });
+              }
+            } else if (event === 'SIGNED_OUT') {
+              console.log('User signed out');
+              setSession(null);
+              setUser(null);
               setProfile(null);
+            } else if (event === 'TOKEN_REFRESHED') {
+              console.log('Token refreshed');
+              setSession(session);
+              setUser(session?.user ?? null);
+            } else {
+              // Handle other events
+              setSession(session);
+              setUser(session?.user ?? null);
+              
+              if (session?.user && !profile) {
+                fetchUserProfile(session.user.id).catch(error => {
+                  console.error('Profile fetch error in auth state change:', error);
+                });
+              } else if (!session) {
+                setProfile(null);
+              }
             }
             
-            setLoading(false);
+            if (!initialized) {
+              setLoading(false);
+              setInitialized(true);
+            }
           } catch (error) {
             console.error('Auth state change error:', error);
-            // Continue with safe defaults
-            setLoading(false);
+            if (!initialized) {
+              setLoading(false);
+              setInitialized(true);
+            }
           }
         }
       );
       subscription = authSubscription;
     } catch (error) {
       console.error('Auth listener setup error:', error);
-      // Initialize with safe defaults if listener fails
       if (isMounted) {
         clearTimeout(loadingTimeout);
         setLoading(false);
-        setSession(null);
-        setUser(null);
-        setProfile(null);
+        setInitialized(true);
       }
     }
 
@@ -178,7 +222,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Add timeout to profile fetch
       const profilePromise = supabase
         .from('profiles')
         .select('*')
@@ -186,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 6000)
       );
 
       const { data, error } = await Promise.race([
@@ -199,149 +242,274 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setProfile(data);
+      if (data) {
+        console.log('Profile fetched successfully');
+        setProfile(data);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
-      // Don't fail the entire auth flow if profile fetch fails
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      setLoading(true);
+      
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase().trim(),
         password,
       });
 
       if (error) {
+        let userFriendlyMessage = error.message;
+        
+        // Provide more user-friendly error messages
+        if (error.message.includes('Invalid login credentials')) {
+          userFriendlyMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Email not confirmed')) {
+          userFriendlyMessage = 'Please check your email and click the confirmation link before signing in.';
+        } else if (error.message.includes('Too many requests')) {
+          userFriendlyMessage = 'Too many attempts. Please wait a few minutes before trying again.';
+        }
+
         toast({
           title: "Sign in failed",
-          description: error.message,
+          description: userFriendlyMessage,
           variant: "destructive",
         });
+        
+        return { error: new Error(userFriendlyMessage) };
       } else {
         toast({
           title: "Welcome back!",
           description: "Successfully signed in to your account.",
         });
+        return { error: null };
       }
-
-      return { error };
     } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+      toast({
+        title: "Sign in failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return { error: error as Error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signInWithMagicLink = async (email: string) => {
     try {
+      if (!email) {
+        throw new Error('Email address is required');
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
       const redirectUrl = `${window.location.origin}/auth`;
       
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email: email.toLowerCase().trim(),
         options: {
           emailRedirectTo: redirectUrl,
+          shouldCreateUser: true,
         },
       });
 
       if (error) {
+        let userFriendlyMessage = error.message;
+        
+        if (error.message.includes('rate limit')) {
+          userFriendlyMessage = 'Too many magic link requests. Please wait a few minutes before trying again.';
+        } else if (error.message.includes('invalid email')) {
+          userFriendlyMessage = 'Please enter a valid email address.';
+        }
+
         toast({
           title: "Magic link failed",
-          description: error.message,
+          description: userFriendlyMessage,
           variant: "destructive",
         });
+        
+        return { error: new Error(userFriendlyMessage) };
       } else {
         toast({
           title: "Check your email!",
-          description: "We've sent you a magic link to sign in.",
+          description: "We've sent you a magic link to sign in. The link will expire in 10 minutes.",
         });
+        return { error: null };
       }
-
-      return { error };
-    } catch (error: unknown) {
-      return { error: error as Error };
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    try {
-      const redirectUrl = `${window.location.origin}/auth`;
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-        },
-      });
-
-      if (error) {
-        toast({
-          title: "Google sign in unavailable",
-          description: "Google OAuth is not configured for this application. Please use email/password or magic link instead.",
-          variant: "destructive",
-        });
-        console.error('Google OAuth error:', error);
-      } else {
-        toast({
-          title: "Redirecting to Google",
-          description: "Please complete authentication with Google.",
-        });
-      }
-
-      return { error };
     } catch (error: unknown) {
       const errorMessage = (error as Error).message;
       toast({
-        title: "Authentication error",
-        description: "Unable to connect to Google. Please try email/password instead.",
+        title: "Magic link failed",
+        description: errorMessage,
         variant: "destructive",
       });
       return { error: error as Error };
     }
   };
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signInWithGoogle = async () => {
     try {
+      // Check if Google OAuth is properly configured
       const redirectUrl = `${window.location.origin}/auth`;
       
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
         options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            display_name: displayName,
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
           },
         },
       });
 
       if (error) {
+        console.error('Google OAuth error:', error);
+        
+        let userFriendlyMessage = 'Google sign-in is currently unavailable. Please try email/password or magic link instead.';
+        
+        if (error.message.includes('not configured')) {
+          userFriendlyMessage = 'Google sign-in is not properly configured. Please contact support or use email authentication.';
+        } else if (error.message.includes('unauthorized')) {
+          userFriendlyMessage = 'Google authentication is not authorized for this domain. Please use email authentication instead.';
+        }
+
         toast({
-          title: "Sign up failed",
-          description: error.message,
+          title: "Google sign-in unavailable",
+          description: userFriendlyMessage,
           variant: "destructive",
         });
+        
+        return { error: new Error(userFriendlyMessage) };
       } else {
         toast({
-          title: "Welcome to Bible Aura!",
-          description: "Account created successfully! You can now start exploring.",
+          title: "Redirecting to Google",
+          description: "Please complete authentication with Google in the popup window.",
         });
+        return { error: null };
+      }
+    } catch (error: unknown) {
+      console.error('Google sign-in error:', error);
+      const errorMessage = 'Unable to connect to Google. Please try email/password authentication instead.';
+      
+      toast({
+        title: "Authentication error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      return { error: new Error(errorMessage) };
+    }
+  };
+
+  const signUp = async (email: string, password: string, displayName?: string) => {
+    try {
+      setLoading(true);
+      
+      if (!email || !password) {
+        throw new Error('Email and password are required');
       }
 
-      return { error };
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      const redirectUrl = `${window.location.origin}/auth`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: email.toLowerCase().trim(),
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            display_name: displayName?.trim() || null,
+          },
+        },
+      });
+
+      if (error) {
+        let userFriendlyMessage = error.message;
+        
+        if (error.message.includes('already registered')) {
+          userFriendlyMessage = 'An account with this email already exists. Please sign in instead.';
+        } else if (error.message.includes('weak password')) {
+          userFriendlyMessage = 'Please choose a stronger password with at least 6 characters.';
+        } else if (error.message.includes('invalid email')) {
+          userFriendlyMessage = 'Please enter a valid email address.';
+        }
+
+        toast({
+          title: "Sign up failed",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+        
+        return { error: new Error(userFriendlyMessage) };
+      } else {
+        // Check if email confirmation is required
+        if (data.user && !data.session) {
+          toast({
+            title: "Check your email!",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+          });
+        } else {
+          toast({
+            title: "Welcome to Bible Aura!",
+            description: "Account created successfully! You can now start exploring.",
+          });
+        }
+        
+        return { error: null };
+      }
     } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+      toast({
+        title: "Sign up failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return { error: error as Error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      
+      // Clear local state immediately
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
     } catch (error) {
       console.error('Error signing out:', error);
+      toast({
+        title: "Sign out error",
+        description: "There was an issue signing you out. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -351,7 +519,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
         .eq('user_id', user.id);
 
       if (error) {
@@ -360,6 +531,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           description: error.message,
           variant: "destructive",
         });
+        return { error };
       } else {
         // Refresh profile data
         await fetchUserProfile(user.id);
@@ -367,10 +539,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           title: "Profile updated",
           description: "Your profile has been successfully updated.",
         });
+        return { error: null };
       }
-
-      return { error };
     } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+      toast({
+        title: "Update failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return { error: error as Error };
     }
   };

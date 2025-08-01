@@ -429,26 +429,63 @@ const Home = () => {
       {/* SEO Backlinks */}
       <SEOBacklinks currentPage="/" category="general" />
 
-      {/* Data Privacy Statement */}
-      <section className="py-8 md:py-12 bg-gray-50 border-t">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm">🔒</span>
+      {/* Enhanced Privacy & Legal Section */}
+      <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-blue-50 border-t">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white text-lg">🔒</span>
+              </div>
             </div>
-          </div>
-          
-          <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
-            Your Privacy Matters
-          </h3>
-          
-          <div className="space-y-3 text-gray-600 max-w-2xl mx-auto">
-            <p className="text-sm md:text-base">
-              We only ask for your Google email for account verification and security.
-            </p>
-            <p className="text-sm md:text-base">
-              Your personal content - journals, sermons, and chat conversations - are private and never shared with anyone.
-            </p>
+            
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+              Your Privacy & Security Matter
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+                <h4 className="font-semibold text-gray-900 mb-3">🛡️ Data Protection</h4>
+                <p className="text-gray-600 text-sm md:text-base">
+                  We only ask for your Google email for account verification and security. Your personal content is encrypted and never shared.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
+                <h4 className="font-semibold text-gray-900 mb-3">🔐 Complete Privacy</h4>
+                <p className="text-gray-600 text-sm md:text-base">
+                  Your journals, sermons, chat conversations, and spiritual journey remain completely private and secure.
+                </p>
+              </div>
+            </div>
+
+            {/* Prominent Legal Links */}
+            <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-orange-200 max-w-2xl mx-auto">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Legal Information</h4>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">
+                Learn more about how we protect your data and the terms governing your use of Bible Aura
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                >
+                  <Link to="/privacy">
+                    🛡️ Privacy Policy
+                  </Link>
+                </Button>
+                <Button 
+                  asChild 
+                  size="lg" 
+                  variant="outline"
+                  className="border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                >
+                  <Link to="/terms">
+                    📋 Terms of Service
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

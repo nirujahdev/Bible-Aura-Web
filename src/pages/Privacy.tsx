@@ -1,10 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Eye, Lock, Users, ArrowLeft, Mail, Calendar } from "lucide-react";
+import { Shield, Eye, Lock, Users, ArrowLeft, Mail, Calendar, CheckCircle, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 
 const Privacy = () => {
   const lastUpdated = "January 16, 2025";
+
+  // SEO optimization for privacy policy
+  useSEO({
+    title: "Privacy Policy | Bible Aura - Your Data Protection & Security",
+    description: "Learn how Bible Aura protects your privacy and personal data. We're committed to keeping your Bible study, journals, and spiritual journey completely private and secure.",
+    keywords: "Bible Aura privacy policy, data protection, user privacy, secure Bible app, Christian app privacy, spiritual data security, Bible AI privacy",
+    canonicalUrl: "https://bibleaura.xyz/privacy"
+  });
 
   const sections = [
     {
@@ -147,25 +156,88 @@ const Privacy = () => {
         </Button>
       </div>
 
-      {/* Hero Section */}
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
+      {/* Enhanced Hero Section */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
-          <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-xl">
+              <Shield className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
             Privacy <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">Policy</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
-            Your privacy is important to us. This policy explains how we collect, use, and protect your information.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
+            Your privacy is important to us. This policy explains how we collect, use, and protect your information when you use Bible Aura.
           </p>
-          <div className="flex items-center justify-center text-gray-500 text-sm">
+          <div className="flex items-center justify-center text-gray-500 text-sm mb-8">
             <Calendar className="h-4 w-4 mr-2" />
             Last updated: {lastUpdated}
           </div>
+
+          {/* Privacy Guarantee Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardContent className="p-6 text-center">
+                <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-green-800 mb-2">Your Data Stays Private</h3>
+                <p className="text-green-700 text-sm">We never sell or share your personal information</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-blue-200 bg-blue-50">
+              <CardContent className="p-6 text-center">
+                <Lock className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-blue-800 mb-2">Secure Encryption</h3>
+                <p className="text-blue-700 text-sm">All data is encrypted and stored securely</p>
+              </CardContent>
+            </Card>
+            <Card className="border-2 border-purple-200 bg-purple-50">
+              <CardContent className="p-6 text-center">
+                <Eye className="h-8 w-8 text-purple-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-purple-800 mb-2">Full Transparency</h3>
+                <p className="text-purple-700 text-sm">Clear and honest about what we collect</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+
+        {/* CTA Section - Privacy & Terms Buttons */}
+        <Card className="mb-12 border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
+          <CardContent className="p-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Important Legal Documents</h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Please review both our Privacy Policy and Terms of Service to understand how we protect your data and the terms governing your use of Bible Aura.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                asChild 
+                size="lg" 
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+              >
+                <Link to="/privacy">
+                  <Shield className="mr-3 h-5 w-5" />
+                  Privacy Policy
+                </Link>
+              </Button>
+              <Button 
+                asChild 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+              >
+                <Link to="/terms">
+                  <FileText className="mr-3 h-5 w-5" />
+                  Terms of Service
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Introduction */}
         <Card className="mb-8 border-2 border-orange-100">
           <CardContent className="p-8">
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 leading-relaxed text-lg">
               At Bible Aura, we are committed to protecting your privacy and personal information. This Privacy Policy 
               explains how we collect, use, disclose, and safeguard your information when you use our AI-powered biblical 
               insights platform. By using our service, you agree to the collection and use of information in accordance 
