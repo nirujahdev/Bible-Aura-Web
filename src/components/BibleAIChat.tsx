@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { generateSystemPrompt } from '@/lib/ai-response-templates';
+import StructuredAIResponse from './StructuredAIResponse';
 
 interface BibleAIChatProps {
   verseId: string;
@@ -504,23 +505,32 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
               key={message.id}
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`max-w-[80%] p-3 rounded-lg ${
-                  message.type === 'user'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}
-              >
-                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                <div className={`text-xs mt-1 ${
-                  message.type === 'user' ? 'text-orange-100' : 'text-gray-500'
-                }`}>
-                  {new Date(message.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
+              {message.type === 'ai' ? (
+                <div className="max-w-[80%]">
+                  <StructuredAIResponse 
+                    content={message.content} 
+                    timestamp={message.timestamp}
+                  />
                 </div>
-              </div>
+              ) : (
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    message.type === 'user'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                  <div className={`text-xs mt-1 ${
+                    message.type === 'user' ? 'text-orange-100' : 'text-gray-500'
+                  }`}>
+                    {new Date(message.timestamp).toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           

@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import StructuredAIResponse from './StructuredAIResponse';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Switch } from './ui/switch';
 import { generateSystemPrompt, AI_RESPONSE_TEMPLATES } from '../lib/ai-response-templates';
@@ -727,22 +728,31 @@ export default function EnhancedAIChat() {
                     )}
                     
                     <div className={`max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
-                      <div className={`rounded-2xl px-4 py-3 ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground ml-auto'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}>
-                        <p className="whitespace-pre-wrap leading-relaxed" style={{
-                          fontFamily: 'Montserrat, sans-serif',
-                          fontWeight: '500'
-                        }}>
-                          {message.content}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                        <Clock className="h-3 w-3" />
-                        {format(new Date(message.timestamp), 'h:mm a')}
-                      </div>
+                      {message.role === 'assistant' ? (
+                        <StructuredAIResponse 
+                          content={message.content} 
+                          timestamp={message.timestamp}
+                        />
+                      ) : (
+                        <>
+                          <div className={`rounded-2xl px-4 py-3 ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground ml-auto'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}>
+                            <p className="whitespace-pre-wrap leading-relaxed" style={{
+                              fontFamily: 'Montserrat, sans-serif',
+                              fontWeight: '500'
+                            }}>
+                              {message.content}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
+                            <Clock className="h-3 w-3" />
+                            {format(new Date(message.timestamp), 'h:mm a')}
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {message.role === 'user' && (
