@@ -498,15 +498,15 @@ const Sermons = () => {
                    const chapterVerses = await getChapterVerses(book.name, chapter, language, selectedTranslation);
                    const chapterResults = chapterVerses.filter(verse => 
                      verse.text.toLowerCase().includes(searchTerm)
-                   );
+      );
                    results.push(...chapterResults);
                   
                   // Break if we have enough results
                   if (results.length >= 20) break;
-                } catch (error) {
+    } catch (error) {
                   // Continue to next chapter if one fails
                   continue;
-                }
+    }
               }
             }
           }
@@ -925,12 +925,12 @@ const Sermons = () => {
                             }
                           }}>
                             <SelectTrigger className="w-56">
-                              <SelectValue />
-                            </SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                             <SelectContent className="max-h-60">
                               <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">English</div>
                               {BIBLE_TRANSLATIONS.filter(t => t.language === 'english').map((trans) => (
-                                <SelectItem key={trans.code} value={trans.code}>
+                            <SelectItem key={trans.code} value={trans.code}>
                                   <div className="flex flex-col">
                                     <span className="font-medium">{trans.code}</span>
                                     <span className="text-xs text-gray-500">{trans.name}</span>
@@ -944,30 +944,30 @@ const Sermons = () => {
                                     <span className="font-medium">{trans.code}</span>
                                     <span className="text-xs text-gray-500">{trans.name}</span>
                                   </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                         </div>
-                        
+                      
                         {/* Book Selector */}
                         <div className="flex flex-col gap-1">
                           <label className="text-xs font-medium text-gray-700">Book</label>
-                          <Select value={selectedBook?.name || ''} onValueChange={(bookName) => {
-                            const book = books.find(b => b.name === bookName);
-                            if (book) {
-                              setSelectedBook(book);
-                              setSelectedChapter(1);
-                              loadChapter(book, 1);
-                            }
-                          }}>
+                      <Select value={selectedBook?.name || ''} onValueChange={(bookName) => {
+                        const book = books.find(b => b.name === bookName);
+                        if (book) {
+                          setSelectedBook(book);
+                          setSelectedChapter(1);
+                          loadChapter(book, 1);
+                        }
+                      }}>
                             <SelectTrigger className="w-56">
-                              <SelectValue placeholder="Select book" />
-                            </SelectTrigger>
+                          <SelectValue placeholder="Select book" />
+                        </SelectTrigger>
                             <SelectContent className="max-h-60">
                               <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Old Testament</div>
                               {books.filter(book => book.testament === 'old').map((book) => (
-                                <SelectItem key={book.name} value={book.name}>
+                            <SelectItem key={book.name} value={book.name}>
                                   {book.name} ({book.chapters} chapters)
                                 </SelectItem>
                               ))}
@@ -975,52 +975,52 @@ const Sermons = () => {
                               {books.filter(book => book.testament === 'new').map((book) => (
                                 <SelectItem key={book.name} value={book.name}>
                                   {book.name} ({book.chapters} chapters)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                        </div>
+                      
+                        {/* Chapter Navigation */}
+                      {selectedBook && (
+                          <div className="flex flex-col gap-1">
+                            <label className="text-xs font-medium text-gray-700">Chapter</label>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => loadChapter(selectedBook, Math.max(1, selectedChapter - 1))}
+                            disabled={selectedChapter <= 1}
+                                className="h-9"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <Select value={selectedChapter.toString()} onValueChange={(value) => loadChapter(selectedBook, parseInt(value))}>
+                                <SelectTrigger className="w-32 h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                                <SelectContent className="max-h-60">
+                              {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                                <SelectItem key={chapter} value={chapter.toString()}>
+                                  Chapter {chapter}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                        </div>
-                        
-                        {/* Chapter Navigation */}
-                        {selectedBook && (
-                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-medium text-gray-700">Chapter</label>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => loadChapter(selectedBook, Math.max(1, selectedChapter - 1))}
-                                disabled={selectedChapter <= 1}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1))}
+                            disabled={selectedChapter >= selectedBook.chapters}
                                 className="h-9"
-                              >
-                                <ChevronLeft className="h-4 w-4" />
-                              </Button>
-                              <Select value={selectedChapter.toString()} onValueChange={(value) => loadChapter(selectedBook, parseInt(value))}>
-                                <SelectTrigger className="w-32 h-9">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="max-h-60">
-                                  {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
-                                    <SelectItem key={chapter} value={chapter.toString()}>
-                                      Chapter {chapter}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1))}
-                                disabled={selectedChapter >= selectedBook.chapters}
-                                className="h-9"
-                              >
-                                <ChevronRight className="h-4 w-4" />
-                              </Button>
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                      
+                        </div>
+                      )}
+                    </div>
+
                                              {/* Enhanced Search */}
                        <div className="flex flex-col gap-3">
                          <div className="flex gap-2">
@@ -1074,12 +1074,12 @@ const Sermons = () => {
                     {/* Results Area */}
                     <div className="flex-1 overflow-hidden">
                       <ScrollArea className="h-full">
-                        {bibleLoading ? (
+                      {bibleLoading ? (
                           <div className="flex flex-col justify-center items-center py-12">
                             <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mb-4" />
                             <p className="text-gray-600">Loading Bible content...</p>
-                          </div>
-                        ) : (
+                        </div>
+                      ) : (
                           <div className="space-y-3 p-2">
                             {/* Search Results */}
                             {bibleSearchQuery && searchResults.length > 0 && (
@@ -1092,13 +1092,13 @@ const Sermons = () => {
                                 </div>
                                 <div className="space-y-3">
                                   {searchResults.map((verse) => (
-                                    <div
+                            <div
                                       key={`search-${verse.id}`}
                                       className="p-4 rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 cursor-pointer group transition-all duration-200 shadow-sm"
-                                      onClick={() => insertVerseIntoSermon(verse)}
-                                    >
-                                      <div className="flex items-start justify-between">
-                                        <div className="flex-1">
+                              onClick={() => insertVerseIntoSermon(verse)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
                                           <div className="flex items-center gap-2 mb-2">
                                             <Badge variant="outline" className="text-xs font-medium text-blue-700 border-blue-300">
                                               {verse.book_name} {verse.chapter}:{verse.verse}
@@ -1147,24 +1147,24 @@ const Sermons = () => {
                                       <div className="flex items-start gap-4">
                                         <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                           <span className="text-sm font-bold text-blue-600">
-                                            {verse.verse}
-                                          </span>
+                                    {verse.verse}
+                                  </span>
                                         </div>
                                         <div className="flex-1 min-w-0">
                                           <p className="text-gray-700 leading-relaxed">
-                                            {verse.text}
-                                          </p>
-                                        </div>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
+                                    {verse.text}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                           className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                                        >
-                                          <Plus className="h-4 w-4 text-blue-600" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ))}
+                                >
+                                  <Plus className="h-4 w-4 text-blue-600" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                                 </div>
                               </div>
                             )}
@@ -1185,18 +1185,18 @@ const Sermons = () => {
                                 <p className="text-gray-500">Choose a Bible book and chapter to view verses</p>
                               </div>
                             )}
-                          </div>
-                        )}
-                      </ScrollArea>
+                        </div>
+                      )}
+                    </ScrollArea>
                     </div>
                   </div>
                 </DialogContent>
               </Dialog>
 
               {/* Panel Controls */}
-              <Button
+              <Button 
                 variant="ghost"
-                size="sm"
+                size="sm" 
                 onClick={() => setLeftPanelOpen(!leftPanelOpen)}
                 className="hover:bg-gray-100"
               >
@@ -1548,14 +1548,14 @@ const Sermons = () => {
                           }}
                           className="pl-10"
                         />
-                      </div>
-                      
+                </div>
+                
                       {selectedBook && (
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <span className="font-medium">{selectedBook.name}</span>
                           <span>Chapter {selectedChapter}</span>
-                        </div>
-                      )}
+                      </div>
+                    )}
                     </div>
 
                     <ScrollArea className="flex-1">
@@ -1573,7 +1573,7 @@ const Sermons = () => {
                             >
                               <div className="text-xs text-blue-600 font-medium mb-1">
                                 {verse.book_name} {verse.chapter}:{verse.verse}
-                              </div>
+                          </div>
                               <p className="text-sm text-gray-700 leading-relaxed">
                                 {verse.text.length > 100 ? verse.text.substring(0, 100) + '...' : verse.text}
                               </p>
@@ -1585,9 +1585,9 @@ const Sermons = () => {
                                 <Plus className="h-3 w-3 mr-1" />
                                 Add
                               </Button>
-                            </div>
+                          </div>
                           ))}
-                        </div>
+                          </div>
                       ) : verses.length > 0 ? (
                         <div className="space-y-2">
                           {verses.slice(0, 10).map((verse) => (
@@ -1598,21 +1598,21 @@ const Sermons = () => {
                             >
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-xs font-bold text-blue-600">{verse.verse}</span>
-                              </div>
+                        </div>
                               <p className="text-sm text-gray-700 leading-relaxed">
                                 {verse.text.length > 80 ? verse.text.substring(0, 80) + '...' : verse.text}
                               </p>
-                            </div>
-                          ))}
+                      </div>
+                    ))}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500 text-sm">
                           <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           <p>Search for verses or use the full Bible dialog</p>
-                        </div>
-                      )}
-                    </ScrollArea>
-
+                      </div>
+                    )}
+                </ScrollArea>
+                
                     <Button
                       variant="outline"
                       onClick={() => setShowBibleDialog(true)}
@@ -1734,11 +1734,11 @@ const Sermons = () => {
                     </Badge>
                   </div>
                 </div>
-                {sermon.scripture_reference && (
+                    {sermon.scripture_reference && (
                   <Badge variant="outline" className="text-xs border-gray-200 text-gray-600 w-fit">
                     {sermon.scripture_reference}
-                  </Badge>
-                )}
+                      </Badge>
+                    )}
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 line-clamp-3 mb-4 leading-relaxed">
@@ -1760,11 +1760,11 @@ const Sermons = () => {
                 </div>
                 {(sermon.word_count || 0) > 0 && (
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
-                    <div 
+                  <div 
                       className="bg-orange-600 h-1.5 rounded-full transition-all duration-500" 
-                      style={{ width: `${Math.min(100, ((sermon.word_count || 0) / wordGoal) * 100)}%` }}
-                    ></div>
-                  </div>
+                    style={{ width: `${Math.min(100, ((sermon.word_count || 0) / wordGoal) * 100)}%` }}
+                  ></div>
+                </div>
                 )}
                 <div className="flex gap-2">
                   <Button

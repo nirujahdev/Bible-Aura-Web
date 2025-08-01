@@ -33,7 +33,7 @@ import {
   TranslationCode
 } from '@/lib/local-bible';
 import { NoteTaking } from '@/components/NoteTaking';
-import { AIAnalysis } from '@/components/AIAnalysis';
+import { BibleAIChat } from '@/components/BibleAIChat';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 const LANGUAGES = [
@@ -89,7 +89,7 @@ export default function Bible() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [highlights, setHighlights] = useState<Map<string, string>>(new Map());
   const [noteModalOpen, setNoteModalOpen] = useState(false);
-  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   
   // Enhanced features state
@@ -354,13 +354,13 @@ export default function Bible() {
     setNoteModalOpen(true);
   };
 
-  const openAiModal = (verse: BibleVerse) => {
+  const openAiChat = (verse: BibleVerse) => {
     setSelectedVerse({
       id: verse.id,
       text: verse.text,
       reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
     });
-    setAiModalOpen(true);
+    setAiChatOpen(true);
   };
 
   const toggleFavorite = async (verse: BibleVerse) => {
@@ -1228,7 +1228,7 @@ export default function Bible() {
                         onToggleFavorite={toggleFavorite}
                         onHighlight={highlightVerse}
                         onOpenNote={openNoteModal}
-                        onOpenAI={openAiModal}
+                        onOpenAI={openAiChat}
                         toast={toast}
                         getBookDisplayName={getBookDisplayName}
                       />
@@ -1250,7 +1250,7 @@ export default function Bible() {
                         onToggleFavorite={toggleFavorite}
                         onHighlight={highlightVerse}
                         onOpenNote={openNoteModal}
-                        onOpenAI={openAiModal}
+                        onOpenAI={openAiChat}
                         toast={toast}
                         getBookDisplayName={getBookDisplayName}
                       />
@@ -1311,12 +1311,12 @@ export default function Bible() {
             onClose={() => setNoteModalOpen(false)}
           />
           
-          <AIAnalysis
+          <BibleAIChat
             verseId={selectedVerse.id}
             verseText={selectedVerse.text}
             verseReference={selectedVerse.reference}
-            isOpen={aiModalOpen}
-            onClose={() => setAiModalOpen(false)}
+            isOpen={aiChatOpen}
+            onClose={() => setAiChatOpen(false)}
           />
         </>
       )}
@@ -1433,9 +1433,9 @@ function VerseCard({
             variant="ghost" 
             size="sm"
             onClick={() => onOpenAI(verse)}
-            className="h-6 w-6 md:h-8 md:w-8 p-0"
+            className="h-6 w-6 md:h-8 md:w-8 p-0 text-orange-500 hover:text-orange-600"
           >
-            <Brain className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="text-sm font-bold">✦</span>
           </Button>
           
           {/* Share */}
