@@ -247,7 +247,7 @@ const Sermons = () => {
   const loadChapter = async (book: BibleBook, chapter: number) => {
     setBibleLoading(true);
     try {
-      const chapterVerses = await getChapterVerses(book.name, chapter, selectedTranslation);
+      const chapterVerses = await getChapterVerses(book.name, chapter, 'english', selectedTranslation);
       setVerses(chapterVerses);
       setSelectedChapter(chapter);
     } catch (error) {
@@ -675,7 +675,7 @@ const Sermons = () => {
               </Button>
               <Separator orientation="vertical" className="h-6" />
               <Button
-                onClick={handleSaveSermon(false)}
+                onClick={() => handleSaveSermon(false)}
                 disabled={saving}
                 className="bg-purple-500 hover:bg-purple-600"
               >
@@ -920,8 +920,10 @@ const Sermons = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(BIBLE_TRANSLATIONS).map(([code, name]) => (
-                            <SelectItem key={code} value={code}>{name}</SelectItem>
+                          {BIBLE_TRANSLATIONS.filter(t => t.language === 'english').slice(0, 8).map((trans) => (
+                            <SelectItem key={trans.code} value={trans.code}>
+                              {trans.code} - {trans.name.split(' ').slice(0, 2).join(' ')}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
