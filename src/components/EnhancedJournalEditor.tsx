@@ -58,14 +58,19 @@ interface JournalEntryForm {
   content: string;
   mood: string | null;
   spiritual_state?: string | null;
+  verse_reference?: string | null;
+  verse_text?: string | null;
   verse_references?: string[];
   tags?: string[];
   is_private?: boolean;
   entry_date?: string;
   word_count?: number;
   reading_time?: number;
-  language?: string;
+  language?: 'english' | 'tamil' | 'sinhala';
   category?: string;
+  metadata?: any;
+  is_pinned?: boolean;
+  template_used?: string | null;
 }
 
 interface WritingStats {

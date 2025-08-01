@@ -21,23 +21,23 @@ interface JournalEntry {
   title: string | null;
   content: string;
   mood: string | null;
-  spiritual_state?: string | null;
-  verse_reference?: string | null;
-  verse_text?: string | null;
-  verse_references?: string[];
-  tags?: string[];
-  is_private?: boolean;
-  entry_date?: string;
+  spiritual_state: string | null;
+  verse_reference: string | null;
+  verse_text: string | null;
+  verse_references: string[];
+  tags: string[];
+  is_private: boolean;
+  entry_date: string;
   created_at: string;
   updated_at: string;
   user_id: string;
-  word_count?: number;
-  reading_time?: number;
-  language?: string; // Changed from 'english' | 'tamil' | 'sinhala' to string
-  category?: string;
-  metadata?: any;
-  is_pinned?: boolean;
-  template_used?: string;
+  word_count: number;
+  reading_time: number;
+  language: 'english' | 'tamil' | 'sinhala';
+  category: string;
+  metadata: any;
+  is_pinned: boolean;
+  template_used: string | null;
 }
 
 const Journal = () => {
@@ -81,15 +81,29 @@ const Journal = () => {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(50); // Increased limit for better UX
+        .limit(50);
 
       if (error) {
         console.error('Supabase error:', error);
         throw error;
       }
       
+      // Ensure data has proper defaults for required fields
+      const processedData = (data || []).map(entry => ({
+        ...entry,
+        verse_references: entry.verse_references || [],
+        tags: entry.tags || [],
+        is_private: entry.is_private !== null ? entry.is_private : true,
+        entry_date: entry.entry_date || entry.created_at?.split('T')[0],
+        word_count: entry.word_count || 0,
+        reading_time: entry.reading_time || 1,
+        language: entry.language || 'english',
+        category: entry.category || 'personal',
+        metadata: entry.metadata || null,
+        is_pinned: entry.is_pinned || false
+      }));
       
-      setEntries(data || []);
+      setEntries(processedData);
       
     } catch (error) {
       console.error('Error loading entries:', error);
@@ -104,7 +118,7 @@ const Journal = () => {
     }
   };
 
-  const handleSaveEntry = async (entryData: Omit<JournalEntry, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+  const handleSaveEntry = async (entryData: any) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -126,21 +140,21 @@ const Journal = () => {
     setSaving(true);
     
     try {
-      // Prepare data with all required fields
+      // Prepare data with all required fields and proper types
       const finalData = {
         user_id: user.id,
-        title: entryData.title.trim(),
-        content: entryData.content.trim(),
+        title: entryData.title?.trim() || null,
+        content: entryData.content?.trim() || '',
         mood: entryData.mood || null,
         spiritual_state: entryData.spiritual_state || null,
-        verse_references: entryData.verse_references || [],
+        verse_references: Array.isArray(entryData.verse_references) ? entryData.verse_references : [],
         verse_reference: entryData.verse_reference || null,
         verse_text: entryData.verse_text || null,
-        tags: entryData.tags || [],
+        tags: Array.isArray(entryData.tags) ? entryData.tags : [],
         is_private: entryData.is_private !== undefined ? entryData.is_private : true,
         entry_date: entryData.entry_date || new Date().toISOString().split('T')[0],
-        word_count: entryData.word_count || 0,
-        reading_time: entryData.reading_time || 1,
+        word_count: typeof entryData.word_count === 'number' ? entryData.word_count : 0,
+        reading_time: typeof entryData.reading_time === 'number' ? entryData.reading_time : 1,
         language: entryData.language || 'english',
         category: entryData.category || 'personal',
         is_pinned: entryData.is_pinned || false,
