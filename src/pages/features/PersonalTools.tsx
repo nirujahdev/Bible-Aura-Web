@@ -4,120 +4,122 @@ import { GlobalNavigation } from "@/components/GlobalNavigation";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { 
-  BookOpen, Heart, Bookmark, StickyNote, TrendingUp, User,
-  ArrowLeft, Sparkles, Zap
+  User, Heart, BookOpen, FileText, Target, TrendingUp,
+  Calendar, Clock, Crown, Zap
 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 
 const PersonalTools = () => {
-  // SEO optimization for Personal Tools features
+  // SEO optimization for Personal Tools
   useSEO({
-    title: "Personal Bible Study Tools | Journal, Favorites & Progress Tracking - Bible Aura",
-    description: "Enhance your personal Bible study with Bible Aura's tools: Spiritual Journal, Favorites, Bookmarks, Notes, Reading Progress, and Profile management. Track your spiritual growth effectively.",
-    keywords: "personal Bible tools, spiritual journal, Bible favorites, bookmarks, study notes, reading progress, Bible profile, personal Bible study, spiritual growth tracking",
+    title: "Personal Tools | Digital Journal, Favorites & Progress Tracking - Bible Aura",
+    description: "Personalize your spiritual journey with Bible Aura's personal tools: digital journal, verse favorites, reading progress tracking, and spiritual growth analytics.",
+    keywords: "digital journal, Bible favorites, reading progress, spiritual growth tracking, personal Bible study tools, verse bookmarks, Bible reading analytics",
     canonicalUrl: "https://bibleaura.xyz/features/personal-tools"
   });
 
-  const personalToolsFeatures = [
+  const personalFeatures = [
     {
-      title: "Journal",
-      description: "Document your spiritual journey with guided prompts, AI insights, and personal reflections for meaningful growth tracking.",
-      icon: BookOpen,
-      features: ["Guided reflection prompts", "AI spiritual insights", "Private journaling", "Growth tracking", "Daily devotions"],
+      title: "Digital Journal",
+      description: "Record your spiritual thoughts, prayers, and reflections with our beautiful digital journal designed for meaningful spiritual growth.",
+      icon: FileText,
+      features: ["Rich text editor", "Daily entries", "Search functionality", "Private & secure"],
       link: "/journal",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      color: "blue",
+      gradient: "from-blue-500 to-indigo-600"
     },
     {
-      title: "Favorites",
-      description: "Save and organize your favorite Bible verses, passages, and study materials for quick access and reference.",
+      title: "Verse Favorites",
+      description: "Save and organize your favorite Bible verses, create collections, and access them instantly for encouragement and study.",
       icon: Heart,
-      features: ["Verse collections", "Quick access", "Organized categories", "Sharing options", "Sync across devices"],
+      features: ["Save favorite verses", "Create collections", "Quick access", "Share verses"],
       link: "/favorites",
-      color: "text-red-600",
-      bgColor: "bg-red-50"
-    },
-    {
-      title: "Bookmarks",
-      description: "Mark important Bible passages and studies to easily return to your place and continue your spiritual exploration.",
-      icon: Bookmark,
-      features: ["Chapter bookmarks", "Study markers", "Progress tracking", "Quick navigation", "Personal labels"],
-      link: "/favorites",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
-    },
-    {
-      title: "Notes",
-      description: "Take detailed study notes with verse connections, AI insights, and organized study materials for deeper understanding.",
-      icon: StickyNote,
-      features: ["Verse-linked notes", "AI enhancements", "Study organization", "Search functionality", "Export options"],
-      link: "/journal",
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50"
+      color: "pink",
+      gradient: "from-pink-500 to-rose-600"
     },
     {
       title: "Reading Progress",
-      description: "Track your Bible reading journey with detailed progress reports, streaks, and personalized reading goals.",
+      description: "Track your Bible reading journey with comprehensive progress analytics and reading streak monitoring for consistent growth.",
       icon: TrendingUp,
-      features: ["Reading streaks", "Progress reports", "Goal setting", "Achievement badges", "Reading statistics"],
+      features: ["Reading streaks", "Progress analytics", "Goal setting", "Achievement badges"],
       link: "/dashboard",
-      color: "text-green-600",
-      bgColor: "bg-green-50"
+      color: "green",
+      gradient: "from-green-500 to-emerald-600"
     },
     {
-      title: "Profile",
-      description: "Manage your personal Bible study preferences, goals, and spiritual growth milestones in one centralized location.",
-      icon: User,
-      features: ["Personal preferences", "Study goals", "Growth milestones", "Account settings", "Spiritual metrics"],
-      link: "/profile",
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50"
+      title: "Study Plans",
+      description: "Create personalized reading plans and follow structured Bible study schedules tailored to your spiritual goals and interests.",
+      icon: Target,
+      features: ["Custom study plans", "Daily reminders", "Progress tracking", "Plan templates"],
+      link: "/dashboard",
+      color: "purple",
+      gradient: "from-purple-500 to-violet-600"
+    },
+    {
+      title: "Spiritual Calendar",
+      description: "Organize your spiritual activities with calendar integration for prayer times, Bible study sessions, and church events.",
+      icon: Calendar,
+      features: ["Event scheduling", "Prayer reminders", "Study sessions", "Church calendar"],
+      link: "/dashboard",
+      color: "orange",
+      gradient: "from-orange-500 to-red-500"
+    },
+    {
+      title: "Daily Devotions",
+      description: "Access curated daily devotions, verses, and spiritual reflections to start each day with God's Word and inspiration.",
+      icon: Clock,
+      features: ["Daily devotions", "Morning verses", "Inspirational content", "Notification reminders"],
+      link: "/dashboard",
+      color: "teal",
+      gradient: "from-teal-500 to-cyan-600"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background w-full">
+    <div className="min-h-screen bg-gradient-to-br from-green-50/50 via-white to-blue-50/50">
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-10 bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden pt-24 md:pt-28 lg:pt-32">
-        {/* Back Button */}
-        <div className="max-w-7xl mx-auto mb-8">
-          <Button asChild variant="ghost" className="text-gray-600 hover:text-orange-600">
-            <Link to="/features" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to All Features
-            </Link>
-          </Button>
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-10 overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-400/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-indigo-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-xl">
-              <User className="h-8 w-8 text-white" />
-            </div>
+        <div className="relative max-w-7xl mx-auto text-center">
+          {/* Animated Icon */}
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-blue-600 text-white mx-auto mb-8 shadow-2xl transform hover:scale-110 transition-transform duration-500">
+            <User className="h-10 w-10 animate-pulse" />
           </div>
-          
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Personal <span className="text-transparent bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text">Tools</span>
+
+          {/* Title with Gradient Animation */}
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 animate-fade-in">
+            <span className="text-transparent bg-gradient-to-r from-green-600 via-blue-600 to-indigo-600 bg-clip-text animate-gradient">
+              Personal Tools
+            </span>
           </h1>
           
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Personalize your Bible study experience with tools designed to track, organize, and enhance your spiritual growth journey.
+          <div className="w-32 h-1 bg-gradient-to-r from-green-500 via-blue-500 to-indigo-500 mx-auto mb-8 rounded-full animate-pulse"></div>
+          
+          <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-12 animate-fade-in-up">
+            Personalize your spiritual journey with powerful tools designed to track, organize, and enhance your relationship with God's Word
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-4">
+          {/* Quick Access Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up delay-300">
+            <Button asChild size="lg" className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg hover:scale-105 transition-all duration-300">
               <Link to="/journal">
-                <BookOpen className="mr-2 h-5 w-5" />
-                Start Your Journey
+                <FileText className="h-5 w-5 mr-2" />
+                Open Journal
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white px-8 py-4">
-              <Link to="/auth">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Get Started Free
+            <Button asChild size="lg" variant="outline" className="border-2 border-green-300 text-green-700 hover:bg-green-50 px-8 py-4 rounded-xl hover:scale-105 transition-all duration-300">
+              <Link to="/favorites">
+                <Heart className="h-5 w-5 mr-2" />
+                View Favorites
               </Link>
             </Button>
           </div>
@@ -125,82 +127,195 @@ const PersonalTools = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-10">
+      <section className="py-20 px-4 md:px-6 lg:px-10">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Comprehensive Personal Bible Study Tools
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 animate-fade-in">
+              Your Spiritual Toolkit
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Everything you need to organize, track, and enhance your personal Bible study experience
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto animate-fade-in-up">
+              Everything you need to organize, track, and enhance your personal spiritual journey and growth
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {personalToolsFeatures.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white hover:scale-105">
-                <CardHeader className="text-center pb-4">
-                  <div className={`w-16 h-16 ${feature.bgColor} rounded-full flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform`}>
-                    <feature.icon className={`h-8 w-8 ${feature.color}`} />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 mb-2">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    {feature.description}
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {personalFeatures.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <Card 
+                  key={feature.title} 
+                  className="group relative overflow-hidden bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 cursor-pointer animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Background Gradient Overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
                   
-                  <div className="space-y-2 mb-6">
-                    {feature.features.map((item, idx) => (
-                      <div key={idx} className="flex items-center text-xs text-gray-500">
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
-                        {item}
-                      </div>
-                    ))}
-                  </div>
+                  <CardHeader className="text-center pb-4 relative">
+                    <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
+                      <IconComponent className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-green-600 group-hover:to-blue-600 transition-all duration-300">
+                      {feature.title}
+                    </CardTitle>
+                  </CardHeader>
                   
-                  <Button asChild className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
-                    <Link to={feature.link}>
-                      <Zap className="mr-2 h-4 w-4" />
-                      Use This Tool
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="text-center relative">
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      {feature.description}
+                    </p>
+                    
+                    <div className="space-y-3 mb-8">
+                      {feature.features.map((item, idx) => (
+                        <div key={idx} className="flex items-center text-sm text-gray-500 justify-center group-hover:text-gray-700 transition-colors duration-300">
+                          <div className={`w-2 h-2 bg-gradient-to-r ${feature.gradient} rounded-full mr-3 group-hover:scale-125 transition-transform duration-300`}></div>
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <Button asChild className={`w-full bg-gradient-to-r ${feature.gradient} hover:scale-105 text-white shadow-lg transition-all duration-300 group-hover:shadow-xl`}>
+                      <Link to={feature.link}>
+                        <Zap className="mr-2 h-4 w-4" />
+                        Explore {feature.title}
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-16 md:py-20 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 md:px-6 lg:px-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Personalize Your Bible Study?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Start using our personal tools to track your spiritual growth and organize your Bible study experience.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4">
-              <Link to="/dashboard">
-                <TrendingUp className="mr-2 h-5 w-5" />
-                View Your Progress
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4">
-              <Link to="/features">
-                <Sparkles className="mr-2 h-5 w-5" />
-                View All Features
-              </Link>
-            </Button>
+      {/* Personal Growth Journey */}
+      <section className="py-20 px-4 md:px-6 lg:px-10 bg-gradient-to-r from-green-900/5 via-blue-900/5 to-indigo-900/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Left Side - Content */}
+            <div className="space-y-8 animate-fade-in-right">
+              <div>
+                <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  Track Your <span className="text-transparent bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text">Spiritual Growth</span>
+                </h3>
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  Monitor your spiritual journey with comprehensive tools that help you see your progress, maintain consistency, and celebrate milestones in your faith.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 text-white shadow-lg">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-gray-900 mb-2">Reading Analytics</h4>
+                    <p className="text-gray-600">Detailed insights into your reading habits and progress</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg">
+                    <Crown className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-gray-900 mb-2">Achievement System</h4>
+                    <p className="text-gray-600">Earn badges and celebrate spiritual milestones</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg">
+                    <Heart className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-semibold text-gray-900 mb-2">Personal Reflection</h4>
+                    <p className="text-gray-600">Journal your thoughts and spiritual insights</p>
+                  </div>
+                </div>
+              </div>
+
+              <Button asChild size="lg" className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-8 py-4 rounded-xl shadow-lg hover:scale-105 transition-all duration-300">
+                <Link to="/auth">
+                  <Target className="h-5 w-5 mr-2" />
+                  Begin Your Journey
+                </Link>
+              </Button>
+            </div>
+
+            {/* Right Side - Visual */}
+            <div className="flex justify-center animate-fade-in-left">
+              <div className="relative">
+                <div className="w-80 h-80 bg-gradient-to-br from-green-100 via-blue-100 to-indigo-100 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform duration-500">
+                  <div className="text-center">
+                    <User className="h-24 w-24 text-green-600 mx-auto mb-4 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="w-16 h-2 bg-green-300 rounded-full mx-auto animate-pulse"></div>
+                      <div className="w-12 h-2 bg-blue-300 rounded-full mx-auto animate-pulse delay-150"></div>
+                      <div className="w-20 h-2 bg-indigo-300 rounded-full mx-auto animate-pulse delay-300"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -top-6 -right-6 w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                  <FileText className="h-8 w-8 text-white" />
+                </div>
+                <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg animate-bounce delay-500">
+                  <Heart className="h-8 w-8 text-white" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <Footer />
+
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fade-in-right {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes fade-in-left {
+          from { opacity: 0; transform: translateX(30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-up {
+          animation: fade-in-up 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-right {
+          animation: fade-in-right 0.8s ease-out forwards;
+        }
+        
+        .animate-fade-in-left {
+          animation: fade-in-left 0.8s ease-out forwards;
+        }
+        
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient 3s ease infinite;
+        }
+      `}</style>
     </div>
   );
 };
