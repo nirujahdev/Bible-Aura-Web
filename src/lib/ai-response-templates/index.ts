@@ -87,7 +87,16 @@ ${template.responseStructure.template?.map((item, index) => `${index + 1}. ${ite
 Follow this EXACT section format:
 ${template.responseStructure.sections?.map(section => 
   `\n${section.title}:\n- ${section.requirements.join('\n- ')}`
-).join('\n')}`;
+).join('\n')}
+
+CRITICAL FORMATTING REQUIREMENTS:
+- Use ✮ for main title only (verse reference)
+- Use ↗ for section headers exactly as specified: ↗ Verse, ↗ Historical Context, ↗ Theological Doctrine, ↗ Cross Reference, ↗ Summary
+- Use • for bullet points within sections
+- Base ALL information on biblical sources and orthodox interpretation
+- Include specific biblical references with chapter and verse numbers
+- Maintain theological accuracy and biblical authority
+- NO modern speculation - stick to biblical truth only`;
   } else if (template.responseStructure.format === 'tree_structure') {
     prompt += `
 Use this tree structure format:

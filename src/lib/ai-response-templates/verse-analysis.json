@@ -1,45 +1,62 @@
 {
   "mode": "verse",
   "name": "Verse Analysis",
-  "purpose": "Deep, structured examination of specific Bible verses",
+  "purpose": "Deep, structured examination of specific Bible verses with accurate biblical foundation",
   "responseStructure": {
     "format": "structured_sections",
     "sections": [
       {
-        "title": "✮ SCRIPTURE",
-        "content": "[Verse Reference & Full Text]",
-        "requirements": ["Include complete verse text", "Use proper biblical reference format"]
+        "title": "✮ VERSE ANALYSIS",
+        "content": "[Main title for the analysis]",
+        "requirements": ["Use the verse reference as the main title"]
       },
       {
-        "title": "↗ Simple Explanation",
-        "content": "Plain language breakdown with key terms defined",
-        "requirements": ["Use accessible language", "Define difficult terms", "Explain context"]
+        "title": "↗ Verse",
+        "content": "Complete verse text with reference and key term definitions",
+        "requirements": [
+          "Include complete verse text with biblical reference",
+          "Define difficult or key terms in context",
+          "Use accurate biblical translation"
+        ]
       },
       {
         "title": "↗ Historical Context",
-        "content": "Historical and cultural background",
+        "content": "Historical and cultural background based on biblical scholarship",
         "requirements": [
-          "When/where it was written",
-          "Original audience",
-          "Cultural background and setting"
+          "When and where it was written (based on biblical evidence)",
+          "Original audience and their situation",
+          "Cultural and historical setting from biblical sources",
+          "Use only biblically accurate historical information"
         ]
       },
       {
-        "title": "↗ Theological Significance",
-        "content": "Doctrinal significance and biblical narrative placement",
+        "title": "↗ Theological Doctrine",
+        "content": "Core biblical doctrines and theological significance",
         "requirements": [
-          "Explain theological importance",
-          "Connect to broader biblical themes",
-          "Discuss doctrinal implications"
+          "Explain key theological concepts from the verse",
+          "Connect to fundamental biblical doctrines",
+          "Reference biblical foundation for each doctrine",
+          "Maintain orthodox biblical interpretation"
         ]
       },
       {
-        "title": "↗ Cross References",
-        "content": "Related verses and supporting passages",
+        "title": "↗ Cross Reference",
+        "content": "Related Bible verses that support or expand the meaning",
         "requirements": [
-          "Provide 2-3 related verses with references",  
-          "Explain connection to main verse",
-          "Include both Old and New Testament when applicable"
+          "Provide 3-4 specific biblical references with chapter and verse",
+          "Explain how each reference connects to the main verse",
+          "Include both Old and New Testament connections when relevant",
+          "Use only direct biblical connections"
+        ]
+      },
+      {
+        "title": "↗ Summary",
+        "content": "Concise summary of the verse's main message and application",
+        "requirements": [
+          "Summarize the core message in plain language",
+          "Provide practical application based on biblical principles",
+          "Connect to the broader biblical narrative",
+          "End with biblical truth for daily life"
         ]
       }
     ]
@@ -47,16 +64,18 @@
   "examples": {
     "goodResponse": {
       "verse": "John 3:16",
-      "fullResponse": "✮ SCRIPTURE\nJohn 3:16 - \"For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.\"\n\n↗ Simple Explanation\n• God's love for humanity motivated the ultimate sacrifice - sending Jesus\n• \"Whoever believes\" means salvation is available to all people, not just a select few\n• \"Eternal life\" refers to both quality and quantity - life with God forever\n\n↗ Historical Context\n• Written by John around 85-90 AD to Greek-speaking audience\n• Part of Jesus' conversation with Nicodemus, a Jewish religious leader\n• Cultural context: Jews believed salvation was only for their nation\n\n↗ Theological Significance\n• Central doctrine of substitutionary atonement - Jesus died in our place\n• Demonstrates the Trinity - Father's love, Son's sacrifice, Spirit's work in belief\n• Foundation of salvation by faith alone, not works\n\n↗ Cross References\n• Romans 5:8 - \"God demonstrates his own love for us...\"\n• 1 John 4:9-10 - God's love shown through sending His Son\n• Romans 6:23 - \"The gift of God is eternal life...\""
+      "fullResponse": "✮ JOHN 3:16 ANALYSIS\n\n↗ Verse\n• \"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.\" (John 3:16 KJV)\n• \"So loved\" (Greek: houtos egapesen) - demonstrates the extent and intensity of God's love\n• \"Only begotten\" (Greek: monogenes) - uniquely born, one of a kind Son\n• \"Believeth\" (Greek: pisteuein) - ongoing trust and faith, not just mental agreement\n\n↗ Historical Context\n• Spoken by Jesus to Nicodemus around 30 AD during His earthly ministry\n• Part of a nighttime conversation with a Pharisee seeking spiritual truth\n• Jerusalem setting, addressing Jewish understanding of salvation\n• Written by John the Apostle around 85-90 AD to prove Jesus is the Christ (John 20:31)\n\n↗ Theological Doctrine\n• Divine Love: God's agape love as the motivation for salvation\n• Substitutionary Atonement: Jesus died in place of sinners\n• Salvation by Faith: Belief in Christ as the only way to eternal life\n• Universal Offer: \"Whosoever\" shows salvation available to all mankind\n• Eternal Security: \"Everlasting life\" - permanent spiritual life with God\n\n↗ Cross Reference\n• Romans 5:8 - \"But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us\"\n• 1 John 4:9 - \"In this was manifested the love of God toward us, because that God sent his only begotten Son into the world\"\n• Romans 6:23 - \"For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord\"\n• Ephesians 2:8-9 - \"For by grace are ye saved through faith... not of works\"\n\n↗ Summary\n• John 3:16 presents the Gospel in its purest form - God's love motivated Him to provide salvation through Jesus Christ\n• This verse establishes that eternal life is a gift received by faith, not earned by works\n• It demonstrates God's heart for all humanity, regardless of background or status\n• The practical application is to trust in Jesus Christ alone for salvation and eternal life"
     }
   },
-  "tone": "scholarly yet accessible, reverent",
+  "tone": "scholarly, reverent, biblically accurate",
   "restrictions": [
-    "Use ✮ for main titles and ↗ for section headers",
-    "Use • for bullet points only",
-    "Keep each section focused and concise",
-    "Always include the full verse text",
-    "Maintain biblical accuracy",
+    "Use ✮ for main title only",
+    "Use ↗ for section headers exactly as specified",
+    "Use • for bullet points within sections",
+    "Base all information on biblical sources and orthodox interpretation",
+    "Include specific biblical references with chapter and verse",
+    "Maintain theological accuracy and biblical authority",
+    "No modern theological speculation - stick to biblical truth",
     "No hashtags, asterisks, or markdown symbols"
   ]
 } 
