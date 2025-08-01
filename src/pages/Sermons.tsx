@@ -345,6 +345,7 @@ const Sermons = () => {
       title: '',
       content: '',
       scripture_reference: '',
+      scripture_references: null,
       congregation: '',
       sermon_date: new Date().toISOString().split('T')[0],
       is_draft: true,
@@ -1135,7 +1136,10 @@ const Sermons = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleDeleteSermon(sermon.id)}
+                                         onClick={(e) => {
+                       e.preventDefault();
+                       handleDeleteSermon(sermon.id);
+                     }}
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
