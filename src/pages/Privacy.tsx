@@ -3,17 +3,96 @@ import { Button } from "@/components/ui/button";
 import { Shield, Eye, Lock, Users, ArrowLeft, Mail, Calendar, CheckCircle, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useEffect } from "react";
 
 const Privacy = () => {
   const lastUpdated = "January 16, 2025";
 
-  // SEO optimization for privacy policy
+  // Enhanced SEO optimization for privacy policy with structured data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Privacy Policy",
+    "description": "Learn how Bible Aura protects your privacy and personal data. We're committed to keeping your Bible study, journals, and spiritual journey completely private and secure.",
+    "url": "https://bibleaura.xyz/privacy",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Bible Aura",
+      "url": "https://bibleaura.xyz"
+    },
+    "mainEntity": {
+      "@type": "PrivacyPolicy",
+      "name": "Bible Aura Privacy Policy",
+      "datePublished": "2025-01-16",
+      "dateModified": lastUpdated,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Bible Aura",
+        "url": "https://bibleaura.xyz"
+      }
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://bibleaura.xyz/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Privacy Policy",
+          "item": "https://bibleaura.xyz/privacy"
+        }
+      ]
+    }
+  };
+
   useSEO({
     title: "Privacy Policy | Bible Aura - Your Data Protection & Security",
     description: "Learn how Bible Aura protects your privacy and personal data. We're committed to keeping your Bible study, journals, and spiritual journey completely private and secure.",
     keywords: "Bible Aura privacy policy, data protection, user privacy, secure Bible app, Christian app privacy, spiritual data security, Bible AI privacy",
-    canonicalUrl: "https://bibleaura.xyz/privacy"
+    canonicalUrl: "https://bibleaura.xyz/privacy",
+    structuredData
   });
+
+  // Enhanced error handling and crawler support
+  useEffect(() => {
+    try {
+      // Update document title immediately for crawlers
+      document.title = "Privacy Policy | Bible Aura - Your Data Protection & Security";
+      
+      // Add noindex meta tag initially, then remove it after content loads
+      const noindexMeta = document.querySelector('meta[name="robots"]');
+      if (noindexMeta) {
+        noindexMeta.setAttribute('content', 'index, follow, max-snippet:-1, max-image-preview:large');
+      }
+
+      // Ensure page is marked as ready for crawlers
+      document.body.setAttribute('data-page-loaded', 'true');
+      document.body.setAttribute('data-page-type', 'privacy-policy');
+      
+      // Dispatch custom event for SEO tools
+      const event = new CustomEvent('pageReady', { 
+        detail: { 
+          page: 'privacy', 
+          title: 'Privacy Policy | Bible Aura',
+          url: 'https://bibleaura.xyz/privacy'
+        } 
+      });
+      window.dispatchEvent(event);
+      
+    } catch (error) {
+      console.warn('SEO optimization error:', error);
+    }
+
+    return () => {
+      document.body.removeAttribute('data-page-loaded');
+      document.body.removeAttribute('data-page-type');
+    };
+  }, []);
 
   const sections = [
     {
@@ -146,6 +225,13 @@ const Privacy = () => {
 
   return (
     <div className="min-h-screen bg-background w-full">
+      {/* Enhanced SEO Content for Crawlers */}
+      <div className="sr-only">
+        <h1>Bible Aura Privacy Policy</h1>
+        <p>Last updated: {lastUpdated}</p>
+        <p>Bible Aura privacy policy explains how we collect, use, and protect your personal information when using our AI-powered Bible study platform. We are committed to protecting your privacy and keeping your Bible study data secure.</p>
+      </div>
+
       {/* Back Button */}
       <div className="w-full px-4 sm:px-6 lg:px-8 pt-8">
         <Button asChild variant="ghost" className="text-gray-600 hover:text-orange-600">

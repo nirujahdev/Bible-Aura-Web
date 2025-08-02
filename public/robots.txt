@@ -104,6 +104,9 @@ Allow: /contact
 Allow: /features/
 Allow: /pricing
 Allow: /blog/
+Allow: /privacy
+Allow: /privacy.html
+Allow: /terms
 
 # Host directive
 Host: bibleaura.xyz

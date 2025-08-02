@@ -44,19 +44,19 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Legal Pages -->
+  <!-- Legal Pages - Important for Compliance -->
   <url>
     <loc>https://bibleaura.xyz/privacy</loc>
-    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2025-02-04T12:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://bibleaura.xyz/terms</loc>
-    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <lastmod>2025-02-04T12:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- Blog Main Page - High Priority for SEO -->
