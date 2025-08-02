@@ -9,7 +9,7 @@ import {
   Target, Users, History, Lightbulb, Star, ChevronRight,
   Filter, Grid3X3, List, Heart, Brain, Scroll, Crown,
   Church, Cross, Shield, Sparkles, Clock, Bookmark,
-  Play, Share, Download, Eye, Zap
+  Play, Share, Download, Eye, Zap, Bell
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
@@ -236,79 +236,88 @@ const StudyHub = () => {
           </Button>
           
           {showSettings && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-80 overflow-y-auto">
+              <div className="px-4 py-2 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-800">Study Hub Settings</h3>
+                <p className="text-xs text-gray-500">Customize your study experience</p>
+              </div>
+
+              <div className="px-4 py-3 border-b border-gray-100">
+                <label className="text-xs font-medium text-gray-500 mb-2 block">Search Studies</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search modules, topics..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 text-sm"
+                  />
+                </div>
+              </div>
+
               <button
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                onClick={() => setActiveTab('modules')}
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 ${activeTab === 'modules' ? 'text-purple-700 bg-purple-50' : 'text-gray-700'}`}
               >
-                {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
-                <span>{viewMode === 'grid' ? 'List View' : 'Grid View'}</span>
+                <BookOpen className="h-4 w-4 text-purple-500" />
+                <span>Study Modules</span>
               </button>
+
               <button
-                onClick={() => toast({ title: "Download Studies", description: "Offline download feature coming soon!" })}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                onClick={() => setActiveTab('characters')}
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 ${activeTab === 'characters' ? 'text-purple-700 bg-purple-50' : 'text-gray-700'}`}
               >
-                <Download className="h-4 w-4" />
-                <span>Download Studies</span>
+                <Users className="h-4 w-4 text-green-500" />
+                <span>Bible Characters</span>
               </button>
+
               <button
-                onClick={() => toast({ title: "Progress Tracking", description: "View your study progress and achievements." })}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                onClick={() => setActiveTab('topics')}
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 ${activeTab === 'topics' ? 'text-purple-700 bg-purple-50' : 'text-gray-700'}`}
               >
-                <Clock className="h-4 w-4" />
-                <span>Study Progress</span>
+                <Target className="h-4 w-4 text-orange-500" />
+                <span>Study Topics</span>
               </button>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
-              >
-                <Settings className="h-4 w-4" />
-                <span>More Settings</span>
-              </button>
+
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <button
+                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  {viewMode === 'grid' ? <List className="h-4 w-4 text-blue-500" /> : <Grid3X3 className="h-4 w-4 text-blue-500" />}
+                  <span>{viewMode === 'grid' ? 'List View' : 'Grid View'}</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Download Studies", description: "Offline download feature coming soon!" })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Download className="h-4 w-4 text-cyan-500" />
+                  <span>Download Studies</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Progress Tracking", description: "View your study progress and achievements." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Clock className="h-4 w-4 text-amber-500" />
+                  <span>Study Progress</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Study Reminders", description: "Set daily study reminders." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Bell className="h-4 w-4 text-pink-500" />
+                  <span>Study Reminders</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center space-x-3 mb-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search studies, topics, characters..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button variant="outline" size="sm" className="p-2">
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-          {[
-            { id: 'modules', label: 'Study Modules', icon: BookOpen },
-            { id: 'characters', label: 'Characters', icon: Users },
-            { id: 'topics', label: 'Topics', icon: Target }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-white text-purple-700 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Content */}
       <ScrollArea className="flex-1 px-4 py-4">

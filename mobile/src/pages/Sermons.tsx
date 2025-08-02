@@ -248,79 +248,88 @@ const Sermons = () => {
           </Button>
           
           {showSettings && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-80 overflow-y-auto">
+              <div className="px-4 py-2 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-800">Sermon Library Settings</h3>
+                <p className="text-xs text-gray-500">Manage your audio experience</p>
+              </div>
+
+              <div className="px-4 py-3 border-b border-gray-100">
+                <label className="text-xs font-medium text-gray-500 mb-2 block">Search Sermons</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search sermons, speakers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 text-sm"
+                  />
+                </div>
+              </div>
+
               <button
-                onClick={() => setSortBy(sortBy === 'date' ? 'popularity' : sortBy === 'popularity' ? 'title' : 'date')}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                onClick={() => setActiveTab('sermons')}
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 ${activeTab === 'sermons' ? 'text-amber-700 bg-amber-50' : 'text-gray-700'}`}
               >
-                <Clock className="h-4 w-4" />
-                <span>Sort by {sortBy === 'date' ? 'Popularity' : sortBy === 'popularity' ? 'Title' : 'Date'}</span>
+                <Headphones className="h-4 w-4 text-amber-500" />
+                <span>Sermons</span>
               </button>
+
               <button
-                onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                onClick={() => setActiveTab('speakers')}
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 ${activeTab === 'speakers' ? 'text-amber-700 bg-amber-50' : 'text-gray-700'}`}
               >
-                {viewMode === 'list' ? <Grid3X3 className="h-4 w-4" /> : <List className="h-4 w-4" />}
-                <span>{viewMode === 'list' ? 'Grid View' : 'List View'}</span>
+                <User className="h-4 w-4 text-green-500" />
+                <span>Speakers</span>
               </button>
+
               <button
-                onClick={() => toast({ title: "Download Manager", description: "Manage your downloaded sermons." })}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                onClick={() => setActiveTab('series')}
+                className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 ${activeTab === 'series' ? 'text-amber-700 bg-amber-50' : 'text-gray-700'}`}
               >
-                <Download className="h-4 w-4" />
-                <span>Downloads</span>
+                <BookOpen className="h-4 w-4 text-purple-500" />
+                <span>Series</span>
               </button>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Audio Settings</span>
-              </button>
+
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <button
+                  onClick={() => setSortBy(sortBy === 'date' ? 'popularity' : sortBy === 'popularity' ? 'title' : 'date')}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Clock className="h-4 w-4 text-blue-500" />
+                  <span>Sort by {sortBy === 'date' ? 'Popularity' : sortBy === 'popularity' ? 'Title' : 'Date'}</span>
+                </button>
+
+                <button
+                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  {viewMode === 'list' ? <Grid3X3 className="h-4 w-4 text-indigo-500" /> : <List className="h-4 w-4 text-indigo-500" />}
+                  <span>{viewMode === 'list' ? 'Grid View' : 'List View'}</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Download Manager", description: "Manage your downloaded sermons." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Download className="h-4 w-4 text-cyan-500" />
+                  <span>My Downloads</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Audio Settings", description: "Adjust playback and quality settings." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Settings className="h-4 w-4 text-orange-500" />
+                  <span>Audio Settings</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Search and Tabs */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center space-x-3 mb-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search sermons, speakers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button variant="outline" size="sm" className="p-2">
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-          {[
-            { id: 'sermons', label: 'Sermons', icon: Headphones },
-            { id: 'speakers', label: 'Speakers', icon: User },
-            { id: 'series', label: 'Series', icon: BookOpen }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-white text-amber-700 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Content */}
       <ScrollArea className="flex-1 px-4 py-4">

@@ -8,7 +8,7 @@ import {
   Book, Search, MoreVertical, ArrowLeft, Settings, 
   Bookmark, Share, Type, Moon, Sun, ChevronLeft, 
   ChevronRight, ChevronDown, Star, Heart, Copy,
-  Play, Pause, Volume2, RotateCcw, Filter, Grid3X3
+  Play, Pause, Volume2, RotateCcw, Filter, Grid3X3, Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
@@ -165,43 +165,98 @@ const Bible = () => {
           </Button>
           
           {showSettings && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+            <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-80 overflow-y-auto">
+              <div className="px-4 py-2 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-800">Bible Settings</h3>
+                <p className="text-xs text-gray-500">Reading preferences & tools</p>
+              </div>
+
+              <button
+                onClick={() => setShowBookSelector(true)}
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+              >
+                <Book className="h-4 w-4 text-blue-500" />
+                <span>Select Book</span>
+              </button>
+
+              <div className="px-4 py-3 border-b border-gray-100">
+                <label className="text-xs font-medium text-gray-500 mb-2 block">Translation</label>
+                <select 
+                  value={currentTranslation}
+                  onChange={(e) => setCurrentTranslation(e.target.value)}
+                  className="w-full p-2 border border-gray-200 rounded-lg text-sm"
+                >
+                  {translations.map(translation => (
+                    <option key={translation} value={translation}>{translation}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={() => toast({ title: "Verse Search", description: "Search feature coming soon!" })}
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+              >
+                <Search className="h-4 w-4 text-green-500" />
+                <span>Search Verses</span>
+              </button>
+
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
               >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? <Sun className="h-4 w-4 text-yellow-500" /> : <Moon className="h-4 w-4 text-purple-500" />}
                 <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
+
               <button
                 onClick={() => setFontSize(fontSize === 'text-sm' ? 'text-base' : fontSize === 'text-base' ? 'text-lg' : 'text-sm')}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
               >
-                <Type className="h-4 w-4" />
-                <span>Font Size</span>
+                <Type className="h-4 w-4 text-orange-500" />
+                <span>Font Size ({fontSize.replace('text-', '')})</span>
               </button>
+
               <button
                 onClick={toggleAudio}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
               >
-                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                <span>Audio Bible</span>
+                {isPlaying ? <Pause className="h-4 w-4 text-red-500" /> : <Play className="h-4 w-4 text-green-500" />}
+                <span>{isPlaying ? 'Pause Audio' : 'Audio Bible'}</span>
               </button>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
-              >
-                <Settings className="h-4 w-4" />
-                <span>More Settings</span>
-              </button>
+
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <button
+                  onClick={() => toast({ title: "Highlights", description: "View your highlighted verses." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span>My Highlights</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Bookmarks", description: "View your bookmarked verses." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Bookmark className="h-4 w-4 text-pink-500" />
+                  <span>My Bookmarks</span>
+                </button>
+
+                <button
+                  onClick={() => toast({ title: "Reading Plan", description: "Set up daily reading plans." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Calendar className="h-4 w-4 text-indigo-500" />
+                  <span>Reading Plans</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Book & Chapter Navigation */}
+      {/* Chapter Navigation Only */}
       <div className={`border-b px-4 py-3 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <button
             onClick={() => setShowBookSelector(true)}
             className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-blue-50 text-blue-700'}`}
@@ -231,30 +286,6 @@ const Bible = () => {
               className="p-2"
             >
               <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Translation & Audio Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <select 
-              value={currentTranslation}
-              onChange={(e) => setCurrentTranslation(e.target.value)}
-              className={`px-2 py-1 rounded text-sm border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`}
-            >
-              {translations.map(translation => (
-                <option key={translation} value={translation}>{translation}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={toggleAudio} className="p-2">
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <Button variant="outline" size="sm" className="p-2">
-              <Volume2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
