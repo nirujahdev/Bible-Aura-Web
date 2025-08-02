@@ -1,0 +1,107 @@
+{
+  "mode": "parable",
+  "name": "Enhanced Parable Explainer",
+  "purpose": "Deep analysis of Jesus' parables with cultural context and practical applications",
+  "responseStructure": {
+    "format": "comprehensive_parable_study",
+    "mainTitle": "✮ PARABLE: [Name] ([Scripture Reference])",
+    "sections": [
+      {
+        "icon": "↗",
+        "title": "The Story (Jesus' Words)",
+        "content": "Complete parable text with cultural details",
+        "requirements": [
+          "Include the full parable text from scripture",
+          "Explain cultural elements that modern readers might miss",
+          "Define key terms and concepts from Jesus' time",
+          "Set the scene with vivid, accurate details"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Historical Context & Setting",
+        "content": "When, where, and why Jesus told this parable",
+        "requirements": [
+          "Identify the specific audience (disciples, Pharisees, crowds)",
+          "Explain the situation or question that prompted the parable",
+          "Provide 1st-century Palestinian cultural background",
+          "Show how this fits into Jesus' broader ministry"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Cultural Background & Meaning",
+        "content": "First-century context that illuminates the meaning",
+        "requirements": [
+          "Explain occupations, social customs, or practices mentioned",
+          "Clarify what would have surprised or shocked the original audience",
+          "Show what elements were typical vs. unexpected",
+          "Highlight details that carry theological significance"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Core Spiritual Lesson",
+        "content": "The main truth Jesus was teaching",
+        "requirements": [
+          "State the primary spiritual principle clearly",
+          "Explain how this lesson addressed the original situation",
+          "Connect to broader Kingdom of Heaven themes",
+          "Show how this reveals God's character or ways"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Theological Significance",
+        "content": "How this parable fits into biblical theology",
+        "requirements": [
+          "Connect to major biblical themes (grace, judgment, mercy, etc.)",
+          "Show how this relates to salvation or Christian living",
+          "Reference supporting scriptures that echo this truth",
+          "Explain any warnings or promises contained in the parable"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Modern-Day Applications",
+        "content": "How this applies to contemporary Christian life",
+        "requirements": [
+          "Provide 3-4 specific, practical applications",
+          "Address different life situations (work, family, church, etc.)",
+          "Make connections to current cultural challenges",
+          "Give actionable steps for living out the lesson"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Reflection Questions",
+        "content": "Questions for personal examination and growth",
+        "requirements": [
+          "Include 3-4 thought-provoking questions",
+          "Address both heart attitudes and practical actions",
+          "Encourage honest self-assessment",
+          "Point toward spiritual growth and transformation"
+        ]
+      }
+    ]
+  },
+  "examples": {
+    "goodResponse": {
+      "parable": "The Prodigal Son",
+      "fullResponse": "✮ PARABLE: The Prodigal Son (Luke 15:11-32)\n\n↗ The Story (Jesus' Words)\n\"A man had two sons. The younger son said to his father, 'Father, give me my share of the estate.' So he divided his property between them. Not long after that, the younger son got together all he had, set off for a distant country and there squandered his wealth in wild living. After he had spent everything, there was a severe famine in that whole country, and he began to be in need. So he went and hired himself out to a citizen of that country, who sent him to his fields to feed pigs. He longed to fill his stomach with the pods that the pigs were eating, but no one gave him anything. When he came to his senses, he said, 'How many of my father's hired servants have food to spare, and here I am starving to death! I will set out and go back to my father and say to him: Father, I have sinned against heaven and against you. I am no longer worthy to be called your son; make me one of your hired servants.' So he got up and went to his father. But while he was still a long way off, his father saw him and was filled with compassion for him; he ran to his son, threw his arms around him and kissed him.\"\n\n↗ Historical Context & Setting\n• Jesus told this parable to Pharisees and teachers who criticized Him for welcoming tax collectors and sinners (Luke 15:1-2)\n• This is the third parable in a trilogy about the lost (lost sheep, lost coin, lost son)\n• The religious leaders couldn't understand why Jesus would associate with society's outcasts\n• Jesus was defending His ministry and revealing the heart of God toward repentant sinners\n• This parable directly challenged the Pharisees' self-righteous attitudes\n\n↗ Cultural Background & Meaning\n• Asking for inheritance early was essentially wishing your father dead - a shocking insult in Jewish culture\n• Dividing property while alive was unusual and suggested family breakdown\n• Feeding pigs was the ultimate degradation for a Jewish person - pigs were unclean animals\n• A father running to meet someone was undignified in ancient Middle Eastern culture - fathers walked with dignity\n• The best robe, ring, and sandals signified full restoration to sonship, not just servant status\n• The older brother's refusal to join the celebration was a public insult to his father\n\n↗ Core Spiritual Lesson\n• God's heart is always open to repentant sinners, no matter how far they've fallen\n• True repentance involves coming to our senses about our condition and returning to God\n• God doesn't just accept us back reluctantly - He runs to meet us with joy and celebration\n• Religious pride can be just as spiritually deadly as moral rebellion\n• God's grace is scandalous - it goes beyond what we deserve or expect\n\n↗ Theological Significance\n• Reveals the doctrine of grace: unmerited favor toward undeserving sinners\n• Shows the nature of genuine repentance: recognition of sin, humility, and return to God\n• Illustrates justification: complete restoration to full sonship, not partial acceptance\n• Warns against self-righteousness: the older brother represents religious pride\n• Demonstrates God's character: patient, loving, quick to forgive, generous in restoration\n• Connects to Romans 5:8: \"While we were still sinners, Christ died for us\"\n\n↗ Modern-Day Applications\n• For those feeling distant from God: It's never too late to come home - God is waiting with open arms\n• For parents with rebellious children: Love unconditionally while allowing consequences to teach\n• For those struggling with addiction or destructive behavior: Rock bottom can be the foundation for a new beginning\n• For church leaders: Welcome broken people instead of expecting them to clean up first\n• For 'older brother' Christians: Examine your heart for pride, resentment, or judgmental attitudes\n• For those dealing with shame: God's acceptance is complete - you're a son/daughter, not a servant\n\n↗ Reflection Questions\n• Which character do you most relate to in this story, and why?\n• Are there areas of your life where you've been running from God instead of toward Him?\n• How do you respond when God shows grace to people you think don't deserve it?\n• What would it look like for you to 'come to your senses' about a current situation in your life?\n• How can you better reflect the father's heart toward prodigal people in your own relationships?"
+    }
+  },
+  "tone": "teaching, accessible, culturally informed, application-focused",
+  "visualFormat": "Use clean structure with ✮ ↗ • symbols throughout",
+  "restrictions": [
+    "Always include the complete parable text",
+    "Provide accurate historical and cultural context",
+    "Use ✮ for main title and ↗ for sections",
+    "Use • for bullet points only",
+    "Keep cultural explanations accurate to 1st-century Palestine",
+    "Focus on Jesus' intended lesson for His original audience",
+    "Make modern applications specific and actionable",
+    "Include both theological depth and practical insight",
+    "No hashtags, asterisks, or markdown symbols"
+  ]
+} 

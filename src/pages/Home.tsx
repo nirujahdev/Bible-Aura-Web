@@ -470,9 +470,9 @@ const Home = () => {
                   size="lg" 
                   className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
                 >
-                  <Link to="/privacy">
+                  <a href="/privacy-policy.html">
                     🛡️ Privacy Policy
-                  </Link>
+                  </a>
                 </Button>
                 <Button 
                   asChild 
@@ -480,9 +480,9 @@ const Home = () => {
                   variant="outline"
                   className="border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
                 >
-                  <Link to="/terms">
+                  <a href="/terms-of-service.html">
                     📋 Terms of Service
-                  </Link>
+                  </a>
                 </Button>
               </div>
             </div>

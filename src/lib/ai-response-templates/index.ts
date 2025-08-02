@@ -8,6 +8,12 @@ import characterProfilesTemplate from './character-profiles.json';
 import topicalStudyTemplate from './topical-study.json';
 import qaModeTemplate from './qa-mode.json';
 
+// Enhanced Templates
+import enhancedChatModeTemplate from './enhanced-chat-mode.json';
+import enhancedCharacterProfilesTemplate from './enhanced-character-profiles.json';
+import enhancedParableExplainerTemplate from './enhanced-parable-explainer.json';
+import sermonGeneratorTemplate from './sermon-generator.json';
+
 // Tamil Templates
 import chatModeTamilTemplate from './chat-mode-tamil.json';
 import verseAnalysisTamilTemplate from './verse-analysis-tamil.json';
@@ -17,6 +23,7 @@ export interface ResponseTemplate {
   name: string;
   purpose: string;
   maxWords?: number;
+  targetLength?: string;
   responseStructure: {
     format: string;
     mainTitle?: string;
@@ -36,7 +43,8 @@ export interface ResponseTemplate {
     template?: string[];
   };
   examples: {
-    goodResponse: any;
+    goodResponse?: any;
+    goodResponses?: any[];
     badResponse?: any;
   };
   tone: string;
@@ -47,12 +55,19 @@ export interface ResponseTemplate {
 }
 
 export const AI_RESPONSE_TEMPLATES: Record<string, ResponseTemplate> = {
+  // Standard Templates
   chat: chatModeTemplate as ResponseTemplate,
   verse: verseAnalysisTemplate as ResponseTemplate,
   parable: parableExplainerTemplate as ResponseTemplate,
   character: characterProfilesTemplate as ResponseTemplate,
   topical: topicalStudyTemplate as ResponseTemplate,
   qa: qaModeTemplate as ResponseTemplate,
+  
+  // Enhanced Templates
+  'enhanced-chat': enhancedChatModeTemplate as ResponseTemplate,
+  'enhanced-character': enhancedCharacterProfilesTemplate as ResponseTemplate,
+  'enhanced-parable': enhancedParableExplainerTemplate as ResponseTemplate,
+  sermon: sermonGeneratorTemplate as ResponseTemplate,
   
   // Tamil Templates
   'chat-tamil': chatModeTamilTemplate as ResponseTemplate,
@@ -74,7 +89,7 @@ PURPOSE: ${template.purpose}
 RESPONSE STRUCTURE:`;
 
   // Add structure details based on format
-  if (template.responseStructure.format === 'conversational') {
+  if (template.responseStructure.format === 'conversational' || template.responseStructure.format === 'structured_conversation') {
     prompt += `
 - Format: ${template.responseStructure.format}
 - Max Words: ${template.maxWords || 'No limit'}
@@ -104,7 +119,7 @@ ${template.responseStructure.mainTitle}
 ${template.responseStructure.branches?.map(branch => 
   `├── ${branch.icon} ${branch.title}: ${branch.content}\n    Requirements: ${branch.requirements.join(', ')}`
 ).join('\n')}`;
-  } else if (template.responseStructure.format === 'profile_structure') {
+  } else if (template.responseStructure.format === 'profile_structure' || template.responseStructure.format === 'comprehensive_profile') {
     prompt += `
 Follow this profile structure:
 ${template.responseStructure.mainTitle}
@@ -118,6 +133,23 @@ ${template.responseStructure.mainTitle}
 ${template.responseStructure.sections?.map(section => 
   `├── ${section.icon} ${section.title}: ${section.content}\n    Requirements: ${section.requirements.join(', ')}`
 ).join('\n')}`;
+  } else if (template.responseStructure.format === 'comprehensive_parable_study') {
+    prompt += `
+Use this comprehensive parable study format:
+${template.responseStructure.mainTitle}
+${template.responseStructure.sections?.map(section => 
+  `├── ${section.icon} ${section.title}: ${section.content}\n    Requirements: ${section.requirements.join(', ')}`
+).join('\n')}`;
+  } else if (template.responseStructure.format === 'full_sermon_manuscript') {
+    prompt += `
+Use this comprehensive sermon format:
+${template.responseStructure.mainTitle}
+${template.responseStructure.sections?.map(section => 
+  `├── ${section.icon} ${section.title}: ${section.content}\n    Requirements: ${section.requirements.join(', ')}`
+).join('\n')}
+
+TARGET LENGTH: ${template.targetLength || '2500-3500 words'}
+SERMON STRUCTURE: Follow all sections systematically for maximum depth and impact`;
   } else if (template.responseStructure.format === 'simple_qa') {
     prompt += `
 Follow this Q&A format:
@@ -134,6 +166,7 @@ RESTRICTIONS:
 ${template.restrictions.map(restriction => `- ${restriction}`).join('\n')}
 
 ${template.maxWords ? `WORD LIMIT: Maximum ${template.maxWords} words` : ''}
+${template.targetLength ? `TARGET LENGTH: ${template.targetLength}` : ''}
 
 Always maintain biblical accuracy and reverence for Scripture. Use simple, accessible language while being thorough and helpful.`;
 
@@ -154,6 +187,20 @@ export const validateResponse = (response: string, mode: keyof typeof AI_RESPONS
   
   // Additional validation logic can be added here
   return true;
+};
+
+// Helper function to get all available modes
+export const getAvailableModes = (): Array<{key: string, name: string, purpose: string}> => {
+  return Object.entries(AI_RESPONSE_TEMPLATES).map(([key, template]) => ({
+    key,
+    name: template.name,
+    purpose: template.purpose
+  }));
+};
+
+// Helper function to get template by mode
+export const getTemplate = (mode: string): ResponseTemplate | null => {
+  return AI_RESPONSE_TEMPLATES[mode] || null;
 };
 
 export default AI_RESPONSE_TEMPLATES; 

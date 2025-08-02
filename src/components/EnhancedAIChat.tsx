@@ -20,7 +20,18 @@ import {
   Settings,
   Languages,
   BookOpen,
-  Filter
+  Filter,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Zap,
+  Heart,
+  Brain,
+  Target,
+  Search,
+  X,
+  Menu
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -60,45 +71,78 @@ const CHAT_MODES = {
   chat: {
     name: "AI Chat",
     description: AI_RESPONSE_TEMPLATES.chat.purpose,
-    language: 'english'
+    language: 'english',
+    icon: MessageCircle,
+    color: 'bg-orange-500'
   },
   verse: {
-    name: "Verse Analysis",
+    name: "Verse Study",
     description: AI_RESPONSE_TEMPLATES.verse.purpose,
-    language: 'english'
+    language: 'english',
+    icon: BookOpen,
+    color: 'bg-blue-500'
   },
   qa: {
     name: "Q&A",
     description: AI_RESPONSE_TEMPLATES.qa.purpose,
-    language: 'english'
+    language: 'english',
+    icon: Brain,
+    color: 'bg-purple-500'
   },
   parable: {
     name: "Parables",
     description: AI_RESPONSE_TEMPLATES.parable.purpose,
-    language: 'english'
+    language: 'english',
+    icon: Sparkles,
+    color: 'bg-green-500'
   },
   character: {
-    name: "Character",
+    name: "Characters",
     description: AI_RESPONSE_TEMPLATES.character.purpose,
-    language: 'english'
+    language: 'english',
+    icon: User,
+    color: 'bg-indigo-500'
   },
   topical: {
     name: "Study",
     description: AI_RESPONSE_TEMPLATES.topical.purpose,
-    language: 'english'
-  },
-  // Tamil modes
-  'chat-tamil': {
-    name: "AI அரட்டை",
-    description: AI_RESPONSE_TEMPLATES['chat-tamil'].purpose,
-    language: 'tamil'
-  },
-  'verse-tamil': {
-    name: "வசன பகுப்பாய்வு",
-    description: AI_RESPONSE_TEMPLATES['verse-tamil'].purpose,
-    language: 'tamil'
+    language: 'english',
+    icon: Target,
+    color: 'bg-amber-500'
   }
 };
+
+// Quick start prompts optimized for mobile
+const QUICK_PROMPTS = [
+  {
+    id: 1,
+    text: "Daily verse inspiration",
+    prompt: "Give me an inspiring Bible verse for today with explanation",
+    icon: Heart,
+    color: "bg-rose-500"
+  },
+  {
+    id: 2,
+    text: "Prayer guidance",
+    prompt: "Help me with prayer for my current situation",
+    icon: Sparkles,
+    color: "bg-purple-500"
+  },
+  {
+    id: 3,
+    text: "Bible study help",
+    prompt: "I need help understanding a Bible passage",
+    icon: BookOpen,
+    color: "bg-blue-500"
+  },
+  {
+    id: 4,
+    text: "Faith questions",
+    prompt: "I have questions about my faith journey",
+    icon: Search,
+    color: "bg-green-500"
+  }
+];
 
 // Language options
 const LANGUAGE_OPTIONS = [
@@ -119,12 +163,10 @@ const callBiblicalAI = async (
 ) => {
   try {
     const controller = abortController || new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // Reduced from 30s to 15s
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    // Generate enhanced system prompt with language and translation context
     const basePrompt = generateSystemPrompt(mode);
     
-    // Override with explicit formatting rules for clean structure
     const formatOverride = `
 
 CRITICAL FORMATTING OVERRIDE - FOLLOW EXACTLY:
@@ -149,37 +191,30 @@ EXACT FORMAT TO FOLLOW:
 • Another point here
 • Final point here
 
-THIS IS MANDATORY - Every response must follow this exact structure.`;
+${language === 'tamil' ? 'Respond in Tamil language using Tamil script.' : 'Respond in English.'}
+Use ${translation} Bible translation for all verse references.
+`;
 
-    const enhancedPrompt = `${basePrompt}${formatOverride}
+    const systemPrompt = `${basePrompt}${formatOverride}`;
 
-LANGUAGE & TRANSLATION CONTEXT:
-- Response Language: ${language === 'english' ? 'English' : 'Tamil'}
-- Bible Translation: ${language === 'english' ? `${translation} (${BIBLE_TRANSLATIONS.find(t => t.code === translation)?.name || translation})` : 'Tamil Bible'}
-- Clean Mode: ${cleanMode ? 'Enabled - Provide concise, direct responses without extra formatting' : 'Disabled - Use full structured formatting as specified'}
+    const requestBody = {
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      max_tokens: 1000,
+      temperature: 0.7,
+      stream: false
+    };
 
-When referencing Bible verses, use the ${language === 'english' ? translation : 'Tamil'} translation and always include the complete verse reference.
-IMPORTANT: Follow the exact line break pattern shown above - this is not optional.`;
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
       },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: "system",
-            content: enhancedPrompt
-          },
-          ...messages
-        ],
-        max_tokens: cleanMode ? 300 : 600, // Shorter responses in clean mode
-        temperature: 0.5,
-        stream: false
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
 
@@ -187,148 +222,63 @@ IMPORTANT: Follow the exact line break pattern shown above - this is not optiona
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error:', response.status, errorText);
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid API response structure');
+      throw new Error('Invalid response format from OpenAI API');
     }
 
-    // Clean response content
-    const cleanContent = cleanResponseText(data.choices[0].message.content);
-
-    return {
-      content: cleanContent,
-      model: data.model || 'deepseek-chat'
-    };
-
+    return data.choices[0].message.content;
   } catch (error: any) {
-    console.error('AI API Error:', error);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
     throw error;
   }
 };
 
-// Function to clean response text and ensure proper formatting
-const cleanResponseText = (text: string): string => {
-  // Remove any unwanted characters
-  let cleaned = text
-    .replace(/[#*@$_]/g, '') // Remove banned symbols
-    .replace(/📖|🎯|✝️|🔗|🏛️|📝|💭|🌟|🔍|⏰|💎|📚|👥|🌍/g, '') // Remove emojis
-    .trim();
-  
-  // Fix spacing and line breaks for proper structure
-  cleaned = cleaned
-    // Ensure proper spacing around main title
-    .replace(/✮\s*/g, '✮ ')
-    // Ensure section headers are on new lines with proper spacing
-    .replace(/\s*↗\s*/g, '\n\n↗ ')
-    // Ensure bullet points are properly formatted
-    .replace(/\s*•\s*/g, '\n• ')
-    // Clean up multiple consecutive newlines
-    .replace(/\n{3,}/g, '\n\n')
-    // Ensure sections are properly separated
-    .replace(/↗([^↗✮]*?)↗/g, '↗$1\n\n↗')
-    .trim();
-  
-  // Final cleanup to ensure consistent formatting
-  cleaned = cleaned
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join('\n')
-    .replace(/✮([^\n]*)\n/g, '✮$1\n\n')
-    .replace(/↗([^\n]*)\n/g, '↗$1\n')
-    .replace(/•([^\n]*)\n/g, '• $1\n');
-  
-  return cleaned;
-};
-
-export default function EnhancedAIChat() {
-  const { user, profile } = useAuth();
+const EnhancedAIChat: React.FC = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
   
-  // Chat state
+  // Core state
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [selectedMode, setSelectedMode] = useState<keyof typeof CHAT_MODES>('chat');
-  
-  // New AI enhancement states
-  const [cleanMode, setCleanMode] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'tamil'>('english');
-  const [selectedTranslation, setSelectedTranslation] = useState<TranslationCode>('KJV');
-  
-  // History state
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  
+  // Settings state
+  const [currentMode, setCurrentMode] = useState<keyof typeof CHAT_MODES>('chat');
+  const [currentLanguage, setCurrentLanguage] = useState<'english' | 'tamil'>('english');
+  const [currentTranslation, setCurrentTranslation] = useState<TranslationCode>('KJV');
+  const [cleanMode, setCleanMode] = useState(false);
+  
+  // UI state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isVoiceRecording, setIsVoiceRecording] = useState(false);
+  const [showQuickPrompts, setShowQuickPrompts] = useState(true);
   
   // Refs
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const scrollViewportRef = useRef<HTMLDivElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Auto-sync mode when language changes
+  // Auto-scroll to bottom
   useEffect(() => {
-    const currentModeLanguage = CHAT_MODES[selectedMode]?.language;
-    if (currentModeLanguage !== selectedLanguage) {
-      // Switch to the default mode for the selected language
-      if (selectedLanguage === 'tamil') {
-        setSelectedMode('chat-tamil');
-      } else {
-        setSelectedMode('chat');
-      }
-    }
-  }, [selectedLanguage, selectedMode]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  // Load conversations on component mount
+  // Load conversations on mount
   useEffect(() => {
     if (user) {
       loadConversations();
     }
   }, [user]);
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    const scrollToBottom = () => {
-      if (scrollViewportRef.current) {
-        scrollViewportRef.current.scrollTop = scrollViewportRef.current.scrollHeight;
-      } else if (scrollAreaRef.current) {
-        // Fallback: try to find the viewport element
-        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
-        if (viewport) {
-          viewport.scrollTop = viewport.scrollHeight;
-        }
-      }
-    };
-
-    // Use setTimeout to ensure DOM is updated
-    const timer = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timer);
-  }, [messages]);
-
-  // Scroll to bottom function
-  const scrollToBottom = () => {
-    if (scrollViewportRef.current) {
-      scrollViewportRef.current.scrollTo({
-        top: scrollViewportRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    } else if (scrollAreaRef.current) {
-      // Fallback: try to find the viewport element
-      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
-      if (viewport) {
-        viewport.scrollTo({
-          top: viewport.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }
-  };
 
   const loadConversations = async () => {
     try {
@@ -338,136 +288,99 @@ export default function EnhancedAIChat() {
         .eq('user_id', user?.id)
         .order('updated_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading conversations:', error);
-        return;
-      }
-
-      const conversations = (data || []).map(conv => ({
-        ...conv,
-        messages: Array.isArray(conv.messages) ? conv.messages as unknown as Message[] : []
-      }));
-      setConversations(conversations as Conversation[]);
+      if (error) throw error;
+      setConversations(data || []);
     } catch (error) {
       console.error('Error loading conversations:', error);
     }
-  };
-
-  const generateTitle = (firstMessage: string): string => {
-    // Generate a title from the first message (first 50 characters)
-    const title = firstMessage.substring(0, 50);
-    return title.length < firstMessage.length ? title + '...' : title;
   };
 
   const saveConversation = async (messages: Message[]) => {
     if (!user || messages.length === 0) return;
 
     try {
-      const title = currentConversationId 
-        ? conversations.find(c => c.id === currentConversationId)?.title
-        : generateTitle(messages[0].content);
-
+      const title = messages[0]?.content.slice(0, 50) + '...' || 'New Chat';
+      
       if (currentConversationId) {
-        // Update existing conversation
-        const { error } = await supabase
+        await supabase
           .from('ai_conversations')
           .update({
-            messages: messages as any,
+            title,
+            messages,
             updated_at: new Date().toISOString()
           })
-          .eq('id', currentConversationId)
-          .eq('user_id', user.id);
-
-        if (error) throw error;
+          .eq('id', currentConversationId);
       } else {
-        // Create new conversation
         const { data, error } = await supabase
           .from('ai_conversations')
           .insert({
             user_id: user.id,
-            title: title,
-            messages: messages as any
+            title,
+            messages,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           })
           .select()
           .single();
 
         if (error) throw error;
-        
         setCurrentConversationId(data.id);
       }
-
-      // Reload conversations to update the sidebar
-      loadConversations();
+      
+      await loadConversations();
     } catch (error) {
       console.error('Error saving conversation:', error);
     }
   };
 
-  const sendMessage = async (messageText?: string) => {
-    const messageToSend = messageText || input;
-    if (!messageToSend.trim() || !user) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || input;
+    if (!textToSend.trim() || isLoading) return;
 
-    abortControllerRef.current = new AbortController();
+    setIsLoading(true);
+    setInput('');
+    setShowQuickPrompts(false);
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: messageToSend,
+      content: textToSend,
       timestamp: new Date().toISOString()
     };
 
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    setInput('');
-    setIsLoading(true);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
 
     try {
-      // Prepare messages for AI call (convert to format expected by AI)
-      const aiMessages = updatedMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      // Call the actual AI service with all parameters
-      const aiResponse = await callBiblicalAI(
-        aiMessages,
-        selectedMode,
-        selectedLanguage,
-        selectedTranslation,
+      abortControllerRef.current = new AbortController();
+      
+      const response = await callBiblicalAI(
+        newMessages.map(m => ({ role: m.role, content: m.content })),
+        currentMode,
+        currentLanguage,
+        currentTranslation,
         cleanMode,
         abortControllerRef.current
       );
 
-      const aiMessage: Message = {
+      const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse.content,
+        content: response,
         timestamp: new Date().toISOString(),
-        model: aiResponse.model
+        model: 'gpt-4o-mini'
       };
 
-      const finalMessages = [...updatedMessages, aiMessage];
+      const finalMessages = [...newMessages, assistantMessage];
       setMessages(finalMessages);
-      
-      // Save to Supabase
       await saveConversation(finalMessages);
 
     } catch (error: any) {
-      console.error('Error sending message:', error);
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        role: 'assistant',
-        content: `I apologize, but I'm having trouble connecting right now. This could be due to network issues or service availability. Please try again in a moment.\n\n"Be still, and know that I am God" - Psalm 46:10`,
-        timestamp: new Date().toISOString()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-
+      console.error('Chat error:', error);
       toast({
-        title: "Connection Error",
-        description: "Having trouble reaching the AI service. Please try again.",
-        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to send message. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -478,460 +391,383 @@ export default function EnhancedAIChat() {
   const startNewConversation = () => {
     setMessages([]);
     setCurrentConversationId(null);
-    setIsHistoryOpen(false);
+    setShowQuickPrompts(true);
+    setIsSidebarOpen(false);
   };
 
   const loadConversation = (conversation: Conversation) => {
-    setMessages(conversation.messages || []);
+    setMessages(conversation.messages);
     setCurrentConversationId(conversation.id);
-    setIsHistoryOpen(false);
+    setShowQuickPrompts(false);
+    setIsSidebarOpen(false);
   };
 
-  const deleteConversation = async (conversationId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    
+  const deleteConversation = async (conversationId: string) => {
     try {
-      const { error } = await supabase
+      await supabase
         .from('ai_conversations')
         .delete()
-        .eq('id', conversationId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      // If we're deleting the current conversation, start a new one
-      if (conversationId === currentConversationId) {
+        .eq('id', conversationId);
+      
+      await loadConversations();
+      
+      if (currentConversationId === conversationId) {
         startNewConversation();
       }
-
-      // Reload conversations
-      loadConversations();
-
-      toast({
-        title: "Conversation deleted",
-        description: "The conversation has been removed from your history.",
-      });
     } catch (error) {
       console.error('Error deleting conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete conversation.",
-        variant: "destructive",
-      });
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+  const toggleVoiceRecording = () => {
+    setIsVoiceRecording(!isVoiceRecording);
+    // Voice recording implementation would go here
+    toast({
+      title: isVoiceRecording ? "Voice recording stopped" : "Voice recording started",
+      description: isVoiceRecording ? "Processing your voice..." : "Speak your question"
+    });
   };
-
-  const getUserName = () => {
-    return profile?.display_name?.split(' ')[0] || 'Friend';
-  };
-
-  const suggestionPrompts = [
-    "What does Romans 8:28 mean for my daily life?",
-    "Explain the parable of the Good Samaritan",
-    "What are the fruits of the Spirit?",
-    "How can I strengthen my faith during difficult times?"
-  ];
-
-  // History Sidebar Component
-  const HistorySidebar = () => (
-    <div className="w-80 border-r bg-gray-50/50 flex flex-col h-full" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-      <div className="p-4 border-b bg-white">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>Chat History</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={startNewConversation}
-            className="gap-2"
-            style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
-          >
-            <Plus className="h-4 w-4" />
-            New Chat
-          </Button>
-        </div>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-2 space-y-1">
-          {conversations.map((conversation) => (
-            <div
-              key={conversation.id}
-              className={`group relative p-3 rounded-lg cursor-pointer transition-colors ${
-                currentConversationId === conversation.id
-                  ? 'bg-primary/10 border border-primary/20'
-                  : 'hover:bg-white hover:shadow-sm'
-              }`}
-              onClick={() => loadConversation(conversation)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                    {conversation.title}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                    {format(new Date(conversation.updated_at), 'MMM d, h:mm a')}
-                  </p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Badge variant="secondary" className="text-xs" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                      {conversation.messages?.length || 0} messages
-                    </Badge>
-                  </div>
-                </div>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={(e) => deleteConversation(conversation.id, e)}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          ))}
-          
-          {conversations.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No conversations yet</p>
-              <p className="text-xs">Start chatting to see your history</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="flex h-screen bg-white">
-      {/* Desktop History Sidebar */}
-      <div className="hidden lg:block">
-        <HistorySidebar />
-      </div>
+    <div className="flex flex-col h-screen bg-gray-50 relative">
+      {/* Mobile Header */}
+      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm">
+        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-100 rounded-xl"
+            >
+              <Menu className="h-5 w-5 text-gray-600" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0">
+            <div className="flex flex-col h-full">
+              {/* Sidebar Header */}
+              <div className="p-4 border-b border-gray-200">
+                <Button 
+                  onClick={startNewConversation}
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium rounded-xl h-12"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  New Chat
+                </Button>
+              </div>
 
-      {/* Mobile History Sheet */}
-      <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <SheetContent side="left" className="p-0 w-80">
-          <HistorySidebar />
-        </SheetContent>
-      </Sheet>
+              {/* Conversations List */}
+              <div className="flex-1 overflow-y-auto p-2">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    className={`flex items-center justify-between p-3 rounded-xl mb-2 cursor-pointer transition-all duration-200 ${
+                      currentConversationId === conversation.id 
+                        ? 'bg-orange-50 border border-orange-200' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => loadConversation(conversation)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {conversation.title}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {format(new Date(conversation.updated_at), 'MMM d, h:mm a')}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100 rounded-lg">
+                          <MoreVertical className="h-4 w-4 text-gray-400" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConversation(conversation.id);
+                          }}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="border-b bg-white p-4" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {/* Mobile history toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="lg:hidden"
-                onClick={() => setIsHistoryOpen(true)}
-              >
-                <History className="h-4 w-4" />
-              </Button>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">✦</span>
-                <div>
-                  <h1 className="text-xl font-semibold" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>Bible Aura AI</h1>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>Your Biblical Study Assistant</p>
+        {/* Title */}
+        <div className="flex-1 text-center">
+          <h1 className="text-lg font-semibold text-gray-900">Bible AI</h1>
+          <div className="flex items-center justify-center mt-1">
+            <div className={`w-2 h-2 rounded-full ${CHAT_MODES[currentMode].color} mr-2`}></div>
+            <span className="text-xs text-gray-500">{CHAT_MODES[currentMode].name}</span>
+          </div>
+        </div>
+
+        {/* Settings */}
+        <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <SheetTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-gray-100 rounded-xl"
+            >
+              <Settings className="h-5 w-5 text-gray-600" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-80">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Chat Settings</h3>
+                
+                {/* Chat Mode */}
+                <div className="space-y-3 mb-6">
+                  <label className="text-sm font-medium text-gray-700">Chat Mode</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(CHAT_MODES).map(([key, mode]) => {
+                      const Icon = mode.icon;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => setCurrentMode(key as keyof typeof CHAT_MODES)}
+                          className={`p-3 rounded-xl border text-left transition-all duration-200 ${
+                            currentMode === key 
+                              ? 'border-orange-300 bg-orange-50 text-orange-900' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <Icon className="h-5 w-5 mb-2 text-orange-600" />
+                          <div className="text-sm font-medium">{mode.name}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Language Selection */}
+                <div className="space-y-3 mb-6">
+                  <label className="text-sm font-medium text-gray-700">Language</label>
+                  <Select value={currentLanguage} onValueChange={(value: 'english' | 'tamil') => setCurrentLanguage(value)}>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map((lang) => (
+                        <SelectItem key={lang.value} value={lang.value}>
+                          <span className="flex items-center">
+                            <span className="mr-2">{lang.icon}</span>
+                            {lang.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Bible Translation */}
+                <div className="space-y-3 mb-6">
+                  <label className="text-sm font-medium text-gray-700">Bible Translation</label>
+                  <Select value={currentTranslation} onValueChange={(value: TranslationCode) => setCurrentTranslation(value)}>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SELECT_TRANSLATIONS.map((translation) => (
+                        <SelectItem key={translation.code} value={translation.code}>
+                          {translation.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Clean Mode */}
+                <div className="flex items-center justify-between p-3 rounded-xl border border-gray-200">
+                  <div>
+                    <div className="text-sm font-medium">Clean Mode</div>
+                    <div className="text-xs text-gray-500">Simplified responses</div>
+                  </div>
+                  <Switch checked={cleanMode} onCheckedChange={setCleanMode} />
                 </div>
               </div>
             </div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
-            {messages.length > 0 && (
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && showQuickPrompts ? (
+          /* Welcome Screen with Quick Prompts */
+          <div className="max-w-md mx-auto text-center space-y-6">
+            <div className="space-y-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto">
+                <Bot className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">How can I help you today?</h2>
+              <p className="text-gray-600 text-sm">Ask me anything about the Bible, faith, or spiritual guidance</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {QUICK_PROMPTS.map((prompt) => {
+                const Icon = prompt.icon;
+                return (
+                  <button
+                    key={prompt.id}
+                    onClick={() => handleSendMessage(prompt.prompt)}
+                    className="flex items-center p-4 rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-left"
+                  >
+                    <div className={`w-10 h-10 ${prompt.color} rounded-xl flex items-center justify-center mr-3 flex-shrink-0`}>
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{prompt.text}</div>
+                      <div className="text-xs text-gray-500 mt-1">{prompt.prompt}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          /* Chat Messages */
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {message.role === 'assistant' && (
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                )}
+                
+                <div
+                  className={`max-w-[280px] p-4 rounded-2xl ${
+                    message.role === 'user'
+                      ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white ml-auto'
+                      : 'bg-white border border-gray-200 shadow-sm'
+                  }`}
+                >
+                  {message.role === 'assistant' ? (
+                    <StructuredAIResponse content={message.content} />
+                  ) : (
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                  )}
+                  
+                  <div className={`text-xs mt-2 ${
+                    message.role === 'user' ? 'text-orange-100' : 'text-gray-400'
+                  }`}>
+                    {format(new Date(message.timestamp), 'h:mm a')}
+                  </div>
+                </div>
+
+                {message.role === 'user' && (
+                  <div className="w-8 h-8 bg-gray-200 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <User className="h-4 w-4 text-gray-600" />
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span className="text-sm text-gray-500">Thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area - Fixed at Bottom */}
+      <div className="bg-white border-t border-gray-200 p-4 safe-area-bottom">
+        <div className="flex items-end gap-3 max-w-4xl mx-auto">
+          {/* Voice Recording Button */}
+          <Button
+            onClick={toggleVoiceRecording}
+            variant="outline"
+            size="sm"
+            className={`p-3 rounded-xl border-2 transition-all duration-200 ${
+              isVoiceRecording 
+                ? 'border-red-300 bg-red-50 text-red-600' 
+                : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+            }`}
+          >
+            {isVoiceRecording ? (
+              <MicOff className="h-5 w-5" />
+            ) : (
+              <Mic className="h-5 w-5" />
+            )}
+          </Button>
+
+          {/* Input Field */}
+          <div className="flex-1 relative">
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask me about the Bible..."
+              className="pr-12 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-400 h-12 text-base"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              disabled={isLoading}
+            />
+            
+            {input.trim() && (
               <Button
+                onClick={() => handleSendMessage()}
+                disabled={isLoading}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-2 rounded-lg h-8 w-8"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions Bar */}
+        {input.length === 0 && !isLoading && (
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+            {QUICK_PROMPTS.map((prompt) => (
+              <Button
+                key={prompt.id}
+                onClick={() => handleSendMessage(prompt.prompt)}
                 variant="outline"
                 size="sm"
-                onClick={startNewConversation}
-                className="gap-2"
-                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
+                className="flex-shrink-0 rounded-full border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700 text-xs px-4 py-2"
               >
-                <Plus className="h-4 w-4" />
-                New Chat
+                {prompt.text}
               </Button>
-            )}
+            ))}
           </div>
-        </div>
-
-        {/* Chat Messages Area */}
-        <div className="flex-1 overflow-hidden relative" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-          {messages.length === 0 ? (
-            // Welcome Screen
-            <div className="flex-1 flex flex-col items-center justify-center p-8 max-w-4xl mx-auto">
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-4 text-orange-500">✦</div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '600' }}>
-                  Hello {getUserName()}!
-                </h2>
-                <p className="text-xl text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                  How can I assist you with your biblical studies today?
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-                {suggestionPrompts.map((prompt, index) => (
-                  <Card
-                    key={index}
-                    className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-primary/20"
-                    onClick={() => sendMessage(prompt)}
-                  >
-                    <CardContent className="p-4">
-                      <p className="text-sm text-gray-700" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>{prompt}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ) : (
-            // Chat Messages
-            <div 
-              className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" 
-              ref={scrollViewportRef}
-              style={{ 
-                scrollBehavior: 'smooth',
-                maxHeight: 'calc(100vh - 200px)'
-              }}
-            >
-              <div className="max-w-4xl mx-auto p-4 space-y-6">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {message.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
-                        <span className="text-orange-500 text-lg font-bold">✦</span>
-                      </div>
-                    )}
-                    
-                    <div className={`max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
-                      {message.role === 'assistant' ? (
-                        <StructuredAIResponse 
-                          content={message.content} 
-                          timestamp={message.timestamp}
-                        />
-                      ) : (
-                        <>
-                          <div className={`rounded-2xl px-4 py-3 ${
-                            message.role === 'user'
-                              ? 'bg-primary text-primary-foreground ml-auto'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}>
-                            <p className="whitespace-pre-wrap leading-relaxed" style={{
-                              fontFamily: 'Montserrat, sans-serif',
-                              fontWeight: '500'
-                            }}>
-                              {message.content}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-gray-500" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                            <Clock className="h-3 w-3" />
-                            {format(new Date(message.timestamp), 'h:mm a')}
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {message.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                        <User className="h-4 w-4 text-primary-foreground" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* Loading indicator */}
-                {isLoading && (
-                  <div className="flex gap-4 justify-start">
-                    <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
-                      <span className="text-orange-500 text-lg font-bold">✦</span>
-                    </div>
-                    <div className="bg-gray-100 rounded-2xl px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-300"></div>
-                        </div>
-                        <span className="text-sm text-gray-600" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>Thinking...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Scroll to Bottom Button */}
-          {messages.length > 0 && (
-            <Button
-              onClick={scrollToBottom}
-              size="sm"
-              className="absolute bottom-6 right-6 rounded-full w-12 h-12 shadow-lg bg-orange-500 hover:bg-orange-600 text-white border-2 border-white"
-              style={{ zIndex: 10 }}
-            >
-              <ChevronDown className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t bg-white p-4" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-          <div className="max-w-4xl mx-auto">
-            {/* AI Controls Row */}
-            <div className="flex gap-3 items-center mb-3 p-3 bg-gray-50 rounded-xl">
-              {/* Clean Mode Toggle */}
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Clean Mode</span>
-                <Switch
-                  checked={cleanMode}
-                  onCheckedChange={setCleanMode}
-                  className="h-5 w-9"
-                />
-              </div>
-
-              <Separator orientation="vertical" className="h-6" />
-
-              {/* Language Selector */}
-              <div className="flex items-center gap-2">
-                <Languages className="h-4 w-4 text-gray-600" />
-                <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => {
-                  setSelectedLanguage(value);
-                  // Auto-switch to appropriate mode for the language
-                  if (value === 'tamil') {
-                    setSelectedMode('chat-tamil');
-                  } else {
-                    setSelectedMode('chat');
-                  }
-                }}>
-                  <SelectTrigger className="w-auto min-w-[100px] h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGE_OPTIONS.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        <span className="flex items-center gap-2">
-                          <span>{lang.icon}</span>
-                          <span>{lang.label}</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Translation Selector (Only for English) */}
-              {selectedLanguage === 'english' && (
-                <>
-                  <Separator orientation="vertical" className="h-6" />
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-gray-600" />
-                    <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
-                      <SelectTrigger className="w-auto min-w-[80px] h-8 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SELECT_TRANSLATIONS.map((trans) => (
-                          <SelectItem key={trans.code} value={trans.code}>
-                            <span className="flex items-center gap-2">
-                              <span className="font-mono text-xs">{trans.code}</span>
-                              <span className="text-xs text-gray-500 hidden sm:inline">
-                                {trans.name.split(' ').slice(0, 2).join(' ')}
-                              </span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Input Row with Mode Selector */}
-            <div className="flex gap-2 items-end">
-              {/* Mode Selector */}
-              <div className="flex-shrink-0">
-                <Select value={selectedMode} onValueChange={(value: keyof typeof CHAT_MODES) => setSelectedMode(value)}>
-                  <SelectTrigger className="w-auto min-w-[120px] h-12 text-sm border-2 rounded-xl" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(CHAT_MODES)
-                      .filter(([key, mode]) => mode.language === selectedLanguage)
-                      .map(([key, mode]) => (
-                        <SelectItem key={key} value={key} style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                          <span className="font-medium">{mode.name}</span>
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Input Field */}
-              <div className="flex-1 relative">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={`Ask me anything about the Bible... (${CHAT_MODES[selectedMode].name})`}
-                  disabled={isLoading || !user}
-                  className="pr-12 rounded-xl border-2 focus:border-primary/50 min-h-[48px] resize-none"
-                  style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
-                />
-              </div>
-
-              {/* Send Button with AI Logo */}
-              <Button
-                onClick={() => sendMessage()}
-                disabled={!input.trim() || isLoading || !user}
-                size="lg"
-                className="rounded-xl px-6 min-h-[48px] gap-2"
-                style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}
-              >
-                {isLoading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <span className="text-lg">✦</span>
-                    <Send className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-            
-            {!user && (
-              <p className="text-sm text-gray-500 mt-2 text-center" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-                Please sign in to start chatting with Bible Aura AI
-              </p>
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
-} 
+};
+
+export default EnhancedAIChat; 

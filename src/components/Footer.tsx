@@ -136,13 +136,13 @@ const Footer = () => {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-white">
             <div>
-              <Link to="/terms" className="hover:text-orange-400 transition-colors duration-300 text-sm text-white">
+              <a href="/terms-of-service.html" className="hover:text-orange-400 transition-colors duration-300 text-sm text-white">
                 Terms of Use
-              </Link>
+              </a>
               <span className="mx-2">|</span>
-              <Link to="/privacy" className="hover:text-orange-400 transition-colors duration-300 text-sm text-white">
+              <a href="/privacy-policy.html" className="hover:text-orange-400 transition-colors duration-300 text-sm text-white">
                 Privacy Policy
-              </Link>
+              </a>
             </div>
             
             <div className="text-sm text-white">

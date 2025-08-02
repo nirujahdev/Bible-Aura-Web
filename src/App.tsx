@@ -29,8 +29,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
+
 const BibleQA = lazy(() => import("./pages/BibleQA"));
 const ParablesStudy = lazy(() => import("./pages/ParablesStudy"));
 const TopicalStudy = lazy(() => import("./pages/TopicalStudy"));
@@ -67,8 +66,7 @@ function AppRoutes() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
+
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/features" element={<Features />} />
         

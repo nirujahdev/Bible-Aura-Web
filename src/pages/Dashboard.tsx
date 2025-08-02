@@ -10,7 +10,8 @@ import {
   MessageCircle, BookOpen, PenTool, Sparkles, TrendingUp, 
   Star, Calendar, Target, Heart, Brain, Clock, ChevronRight,
   Plus, Book, Zap, Users, Trophy, ArrowRight, Send, Bot,
-  Menu, Settings, LogOut, Headphones, FileText, Edit, History
+  Menu, Settings, LogOut, Headphones, FileText, Edit, History,
+  Mic, Search, Play, Pause, Volume2, MoreVertical, X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,31 +36,30 @@ interface Message {
   model?: string;
 }
 
-
-
+// Mobile-optimized quick start prompts
 const quickStartPrompts = [
   {
     id: 1,
-    title: "Start Your Daily Devotion",
-    description: "Reflect on today's spiritual journey",
+    title: "Daily Devotion",
+    description: "Start your spiritual journey today",
     icon: Heart,
     color: "bg-rose-500",
-    action: "journal",
-    prompt: "What did I learn about God today?"
+    action: "chat",
+    prompt: "Give me an inspiring Bible verse for today with explanation"
   },
   {
     id: 2,
     title: "Ask Bible Questions",
-    description: "Get AI insights on any Scripture",
+    description: "Get AI insights on Scripture",
     icon: Brain,
     color: "bg-purple-500",
     action: "chat",
-    prompt: "Explain Romans 8:28 and how it applies to my life today"
+    prompt: "I have a question about the Bible"
   },
   {
     id: 3,
     title: "Prayer Journal",
-    description: "Document your prayer requests",
+    description: "Document your prayers",
     icon: BookOpen,
     color: "bg-blue-500",
     action: "journal",
@@ -67,12 +67,48 @@ const quickStartPrompts = [
   },
   {
     id: 4,
-    title: "Bible Study Insights",
-    description: "Explore deeper biblical truths",
+    title: "Bible Study",
+    description: "Explore biblical truths",
     icon: Sparkles,
     color: "bg-amber-500",
     action: "chat",
-    prompt: "What are the key themes in the book of Philippians?"
+    prompt: "Help me understand this Bible passage"
+  }
+];
+
+// Mobile-friendly feature cards
+const dashboardFeatures = [
+  {
+    title: "AI Bible Chat",
+    description: "Ask any biblical question",
+    icon: MessageCircle,
+    href: "/bible-ai",
+    color: "bg-orange-500",
+    stats: "Active AI assistant"
+  },
+  {
+    title: "Study Hub",
+    description: "Comprehensive Bible study",
+    icon: BookOpen,
+    href: "/study-hub",
+    color: "bg-blue-500",
+    stats: "Multiple study tools"
+  },
+  {
+    title: "Journal",
+    description: "Record spiritual insights",
+    icon: PenTool,
+    href: "/journal",
+    color: "bg-green-500",
+    stats: "Private & secure"
+  },
+  {
+    title: "Sermons",
+    description: "Browse sermon library",
+    icon: Headphones,
+    href: "/sermons",
+    color: "bg-purple-500",
+    stats: "Curated collection"
   }
 ];
 
@@ -94,247 +130,420 @@ const inspirationalQuotes = [
 // Mock AI function for demo purposes
 const getAIInsight = async (prompt: string) => {
   try {
-    // Simulate AI processing time
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1500));
     
     const insights = [
-      "Your spiritual journey shows consistent growth. Consider focusing on prayer and meditation this week.",
-      "Based on your reading patterns, exploring the Psalms might bring you comfort and guidance.",
-      "Your journal entries reflect a heart seeking wisdom. Continue to seek God's guidance in prayer.",
-      "Your Bible study habits are developing well. Try incorporating cross-references for deeper understanding."
+      `✮ Daily Inspiration\n\n↗ Today's Blessing\n• God's love surrounds you in every moment\n• Trust in His timing for your life\n• You are fearfully and wonderfully made\n\n↗ Prayer Focus\n• Gratitude for His faithfulness\n• Strength for today's challenges`,
+      `✮ Biblical Wisdom\n\n↗ God's Promise\n• "For I know the plans I have for you," declares the Lord\n• Plans to prosper you and not to harm you\n• To give you hope and a future\n\n↗ Application\n• Trust in God's perfect timing\n• Rest in His sovereign plan`,
+      `✮ Spiritual Growth\n\n↗ Today's Focus\n• Seek first His kingdom and righteousness\n• All these things will be added unto you\n• Walk by faith, not by sight\n\n↗ Action Steps\n• Spend time in prayer\n• Read God's Word daily`
     ];
     
-    const randomInsight = insights[Math.floor(Math.random() * insights.length)];
-    
-    return {
-      choices: [{
-        message: {
-          content: randomInsight,
-          model: 'ai-assistant'
-        }
-      }]
-    };
+    return insights[Math.floor(Math.random() * insights.length)];
   } catch (error) {
-    console.error('AI insight error:', error);
-    throw error;
+    return "✮ God's Love\n\n↗ Remember\n• You are loved beyond measure\n• His grace is sufficient for you\n• He will never leave nor forsake you";
   }
 };
 
-export default function Dashboard() {
-  useSEO(SEO_CONFIG.DASHBOARD);
-  const { user, profile } = useAuth();
+const Dashboard = () => {
+  const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  // SEO optimization
+  useSEO(SEO_CONFIG.DASHBOARD);
+
+  // State management
   const [stats, setStats] = useState<DashboardStats>({
     journalEntries: 0,
     chatConversations: 0,
     readingStreak: 0,
-    weeklyGoal: 70
+    weeklyGoal: 0
   });
+  
+  const [quickInput, setQuickInput] = useState('');
+  const [isQuickChatLoading, setIsQuickChatLoading] = useState(false);
+  const [quickInsight, setQuickInsight] = useState<string>('');
+  const [showQuickInsight, setShowQuickInsight] = useState(false);
   const [currentQuote, setCurrentQuote] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 
-  // Chat functionality
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [hasLoadedInitialConversation, setHasLoadedInitialConversation] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-
+  // Load dashboard data
   useEffect(() => {
     if (user) {
       loadDashboardStats();
-      loadConversationHistory();
-      
-      // Rotate inspirational quotes every 5 seconds
-      const interval = setInterval(() => {
-        setCurrentQuote(prev => (prev + 1) % inspirationalQuotes.length);
-      }, 5000);
-      
-      // Check for any pre-filled prompt from sessionStorage
-      const prompt = sessionStorage.getItem('chatPrompt');
-      if (prompt) {
-        setInput(prompt);
-        sessionStorage.removeItem('chatPrompt');
-      }
-
-      return () => clearInterval(interval);
     }
   }, [user]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Rotate quotes every 10 seconds
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
+    const interval = setInterval(() => {
+      setCurrentQuote((prev) => (prev + 1) % inspirationalQuotes.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadDashboardStats = async () => {
     try {
-      setLoading(true);
-      
-      // Load journal entries count
-      const { count: journalCount } = await supabase
-        .from('journal_entries')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
+      const [journalRes, conversationsRes] = await Promise.all([
+        supabase
+          .from('journal_entries')
+          .select('id')
+          .eq('user_id', user?.id),
+        supabase
+          .from('ai_conversations')
+          .select('id')
+          .eq('user_id', user?.id)
+      ]);
 
-      // Load chat conversations count
-      const { count: chatCount } = await supabase
-        .from('ai_conversations')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
-
-      setStats(prev => ({
-        ...prev,
-        journalEntries: journalCount || 0,
-        chatConversations: chatCount || 0,
-        readingStreak: profile?.reading_streak || 0
-      }));
+      setStats({
+        journalEntries: journalRes.data?.length || 0,
+        chatConversations: conversationsRes.data?.length || 0,
+        readingStreak: Math.floor(Math.random() * 30) + 1,
+        weeklyGoal: Math.floor(Math.random() * 100) + 50
+      });
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const loadConversationHistory = async () => {
-    // Only load on first time login, preserve existing conversation afterwards
-    if (!hasLoadedInitialConversation) {
-      const savedMessages = localStorage.getItem(`chat_messages_${user?.id}`);
-      if (savedMessages) {
-        try {
-          setMessages(JSON.parse(savedMessages));
-        } catch (error) {
-          console.error('Error loading saved messages:', error);
-          setMessages([]);
-        }
-      }
-      setHasLoadedInitialConversation(true);
-    }
-  };
+  const handleQuickAIChat = async (promptText?: string) => {
+    const textToSend = promptText || quickInput;
+    if (!textToSend.trim()) return;
 
-  const saveConversation = async (updatedMessages: Message[]) => {
-    // Save to localStorage to persist conversation
-    if (user?.id) {
-      localStorage.setItem(`chat_messages_${user.id}`, JSON.stringify(updatedMessages));
-    }
-  };
-
-  const sendMessage = async (messageText?: string) => {
-    const messageToSend = messageText || input;
-    if (!messageToSend.trim() || !user) return;
-
-    abortControllerRef.current = new AbortController();
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: messageToSend,
-      timestamp: new Date().toISOString()
-    };
-
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    setInput('');
-    setIsLoading(true);
+    setIsQuickChatLoading(true);
+    setQuickInput('');
 
     try {
-      // Keep only last 10 messages for context
-      const conversationHistory = updatedMessages.slice(-10).map(msg => ({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content
-      }));
-
-      const aiResponse = await getAIInsight(messageToSend);
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: aiResponse.choices[0].message.content,
-        timestamp: new Date().toISOString(),
-        model: aiResponse.choices[0].message.model
-      };
-
-      const finalMessages = [...updatedMessages, aiMessage];
-      setMessages(finalMessages);
-      
-      // Save to Supabase
-      await saveConversation(finalMessages);
-
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        role: 'assistant',
-        content: `I apologize, but I'm having trouble connecting right now. This could be due to network issues or service availability. Please try again in a moment.\n\n"Be still, and know that I am God" - Psalm 46:10`,
-        timestamp: new Date().toISOString()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-
+      const insight = await getAIInsight(textToSend);
+      setQuickInsight(insight);
+      setShowQuickInsight(true);
+    } catch (error) {
       toast({
-        title: "Connection Error",
-        description: "Having trouble reaching the AI service. Please try again.",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to get AI insight. Please try again.",
+        variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
-      abortControllerRef.current = null;
+      setIsQuickChatLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  const handleQuickStart = (prompt: typeof quickStartPrompts[0]) => {
-    if (prompt.action === 'journal') {
-      // Navigate to journal with pre-filled prompt
-      const params = new URLSearchParams({
-        template: prompt.id === 1 ? 'daily-reflection' : 'prayer',
-        prompt: prompt.prompt
-      });
-      window.location.href = `/journal?${params.toString()}`;
-    } else if (prompt.action === 'chat') {
-      // Start chat with pre-filled message
-      sendMessage(prompt.prompt);
-    }
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    sendMessage(suggestion);
-  };
-
-  const startNewConversation = () => {
-    setMessages([]);
-    setCurrentConversationId(null);
-    // Clear saved conversation
-    if (user?.id) {
-      localStorage.removeItem(`chat_messages_${user.id}`);
-    }
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    const name = profile?.display_name?.split(' ')[0] || 'Friend';
-    
-    if (hour < 12) return `Good morning, ${name}! 🌅`;
-    if (hour < 17) return `Good afternoon, ${name}! ☀️`;
-    return `Good evening, ${name}! 🌙`;
+  const formatTime = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
   };
 
   const getUserName = () => {
-    return profile?.display_name?.split(' ')[0] || 'Friend';
+    return profile?.display_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend';
   };
 
-  const isMobile = useIsMobile();
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between p-4">
+          {/* Left: Menu Button */}
+          <Sheet open={isSideMenuOpen} onOpenChange={setIsSideMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-xl">
+                <Menu className="h-5 w-5 text-gray-600" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <div className="flex flex-col h-full">
+                {/* User Profile Section */}
+                <div className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-12 w-12 border-2 border-white/20">
+                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarFallback className="bg-white/20 text-white font-bold">
+                        {getUserName().charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-white">{getUserName()}</p>
+                      <p className="text-sm text-orange-100">{formatTime()}!</p>
+                    </div>
+                  </div>
+                </div>
 
-  // Simply return the EnhancedAIChat component
-  return <EnhancedAIChat />;
-} 
+                {/* Navigation Links */}
+                <div className="flex-1 p-4 space-y-2">
+                  {dashboardFeatures.map((feature, index) => {
+                    const Icon = feature.icon;
+                    return (
+                      <Link
+                        key={index}
+                        to={feature.href}
+                        className="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsSideMenuOpen(false)}
+                      >
+                        <div className={`w-10 h-10 ${feature.color} rounded-xl flex items-center justify-center mr-3`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{feature.title}</p>
+                          <p className="text-xs text-gray-500">{feature.stats}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-gray-400" />
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/* Bottom Section */}
+                <div className="p-4 border-t border-gray-200">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-red-600 hover:bg-red-50"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Center: Logo and Title */}
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">✦</span>
+            </div>
+            <h1 className="text-lg font-bold text-gray-900">Bible Aura</h1>
+          </div>
+
+          {/* Right: User Avatar */}
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={profile?.avatar_url} />
+            <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold text-sm">
+              {getUserName().charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="p-4 space-y-6 pb-24">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 rounded-2xl p-6 text-white relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-4 right-4 w-24 h-24 bg-white rounded-full opacity-20"></div>
+            <div className="absolute bottom-4 left-4 w-16 h-16 bg-white rounded-full opacity-15"></div>
+          </div>
+          
+          <div className="relative z-10">
+            <h2 className="text-2xl font-bold mb-2">{formatTime()}, {getUserName()}!</h2>
+            <p className="text-orange-100 mb-4">Ready for your spiritual journey today?</p>
+            
+            {/* Inspirational Quote */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <p className="text-sm italic mb-2">"{inspirationalQuotes[currentQuote].text}"</p>
+              <p className="text-xs text-orange-200">— {inspirationalQuotes[currentQuote].reference}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{stats.chatConversations}</p>
+                  <p className="text-xs text-gray-600">AI Chats</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{stats.journalEntries}</p>
+                  <p className="text-xs text-gray-600">Journal Entries</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-1 gap-3">
+            {quickStartPrompts.map((prompt) => {
+              const Icon = prompt.icon;
+              return (
+                <button
+                  key={prompt.id}
+                  onClick={() => handleQuickAIChat(prompt.prompt)}
+                  className="flex items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-left"
+                >
+                  <div className={`w-12 h-12 ${prompt.color} rounded-xl flex items-center justify-center mr-4 flex-shrink-0`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{prompt.title}</h4>
+                    <p className="text-sm text-gray-600">{prompt.description}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quick AI Chat */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="flex items-center mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+              <Bot className="h-4 w-4 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Quick AI Chat</h3>
+          </div>
+
+          <div className="space-y-4">
+            {/* Input */}
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Input
+                  value={quickInput}
+                  onChange={(e) => setQuickInput(e.target.value)}
+                  placeholder="Ask me anything about the Bible..."
+                  className="pr-12 rounded-xl border-2 border-gray-200 focus:border-orange-400 h-12"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleQuickAIChat();
+                    }
+                  }}
+                  disabled={isQuickChatLoading}
+                />
+                
+                {quickInput.trim() && (
+                  <Button
+                    onClick={() => handleQuickAIChat()}
+                    disabled={isQuickChatLoading}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-2 rounded-lg h-8 w-8"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Insight Display */}
+            {showQuickInsight && (
+              <Card className="border-orange-200 bg-orange-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center">
+                      <Bot className="h-5 w-5 text-orange-600 mr-2" />
+                      <span className="font-medium text-orange-900">AI Insight</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowQuickInsight(false)}
+                      className="p-1 h-6 w-6 text-orange-600 hover:bg-orange-100"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="text-sm text-gray-800">
+                    {quickInsight.split('\n').map((line, index) => {
+                      if (line.startsWith('✮')) {
+                        return (
+                          <h4 key={index} className="font-bold text-orange-800 mb-2">
+                            {line.replace('✮ ', '')}
+                          </h4>
+                        );
+                      } else if (line.startsWith('↗')) {
+                        return (
+                          <h5 key={index} className="font-semibold text-orange-700 mt-3 mb-1">
+                            {line.replace('↗ ', '')}
+                          </h5>
+                        );
+                      } else if (line.startsWith('•')) {
+                        return (
+                          <p key={index} className="ml-3 mb-1">
+                            {line.replace('• ', '• ')}
+                          </p>
+                        );
+                      } else if (line.trim()) {
+                        return <p key={index} className="mb-1">{line}</p>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                  
+                  <div className="mt-4 pt-3 border-t border-orange-200">
+                    <Link to="/bible-ai">
+                      <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl">
+                        Continue in Full AI Chat
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Loading State */}
+            {isQuickChatLoading && (
+              <div className="flex items-center justify-center p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-gray-500">Getting insights...</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Explore Features</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {dashboardFeatures.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Link key={index} to={feature.href}>
+                  <Card className="border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-200 h-full">
+                    <CardContent className="p-4">
+                      <div className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-3`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h4 className="font-semibold text-gray-900 mb-1">{feature.title}</h4>
+                      <p className="text-xs text-gray-600 mb-2">{feature.description}</p>
+                      <p className="text-xs text-gray-500">{feature.stats}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard; 

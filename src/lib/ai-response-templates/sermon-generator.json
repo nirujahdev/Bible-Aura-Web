@@ -1,0 +1,164 @@
+{
+  "mode": "sermon",
+  "name": "Comprehensive Sermon Generator",
+  "purpose": "Generate deep, comprehensive sermons with theological depth and practical application",
+  "targetLength": "2500-3500 words",
+  "responseStructure": {
+    "format": "full_sermon_manuscript",
+    "mainTitle": "✮ SERMON: [Compelling Title]",
+    "sections": [
+      {
+        "icon": "↗",
+        "title": "Sermon Overview",
+        "content": "Complete sermon summary and structure",
+        "requirements": [
+          "Catchy, relevant sermon title",
+          "Main scripture passage and theme",
+          "Target audience and occasion",
+          "Central message in one sentence",
+          "3-4 main points preview"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Opening Hook & Introduction",
+        "content": "Engaging opening that captures attention",
+        "requirements": [
+          "Compelling story, question, or illustration (150-200 words)",
+          "Connect to audience's real-life experiences",
+          "Bridge to the main scripture passage",
+          "Clearly state the central message",
+          "Set expectations for the sermon journey"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Scripture Foundation",
+        "content": "Deep exegetical analysis of the main passage",
+        "requirements": [
+          "Full scripture text with reference",
+          "Historical and cultural context (200-300 words)",
+          "Original language insights (Greek/Hebrew terms)",
+          "Author's intent and original audience",
+          "Literary structure and genre considerations"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Theological Framework",
+        "content": "Doctrinal foundation and biblical theology",
+        "requirements": [
+          "Key theological concepts explained (300-400 words)",
+          "How this passage fits in God's redemptive plan",
+          "Cross-references to support main themes",
+          "Address potential theological questions",
+          "Connect to core Christian doctrines"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Main Point 1: [Specific Title]",
+        "content": "First major sermon point with depth",
+        "requirements": [
+          "Clear, memorable point statement",
+          "Biblical foundation with multiple verses",
+          "Practical illustrations and examples (400-500 words)",
+          "Address common objections or misunderstandings",
+          "Personal application questions"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Main Point 2: [Specific Title]",
+        "content": "Second major sermon point with depth",
+        "requirements": [
+          "Clear, memorable point statement",
+          "Biblical foundation with multiple verses",
+          "Practical illustrations and examples (400-500 words)",
+          "Address common objections or misunderstandings",
+          "Personal application questions"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Main Point 3: [Specific Title]",
+        "content": "Third major sermon point with depth",
+        "requirements": [
+          "Clear, memorable point statement",
+          "Biblical foundation with multiple verses",
+          "Practical illustrations and examples (400-500 words)",
+          "Address common objections or misunderstandings",
+          "Personal application questions"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Real-World Applications",
+        "content": "Practical, actionable steps for daily living",
+        "requirements": [
+          "Specific action steps for different life stages",
+          "Address common life challenges",
+          "Provide practical tools and resources (200-300 words)",
+          "Include accountability questions",
+          "Connect to current cultural issues"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Call to Action & Response",
+        "content": "Clear invitation for life change",
+        "requirements": [
+          "Specific, measurable commitments",
+          "Prayer for those making decisions",
+          "Next steps for spiritual growth (150-200 words)",
+          "Resources for continued study",
+          "Community engagement opportunities"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Closing & Benediction",
+        "content": "Memorable conclusion and blessing",
+        "requirements": [
+          "Summarize key takeaways",
+          "End with hope and encouragement (100-150 words)",
+          "Biblical benediction or blessing",
+          "Preview of next week's message",
+          "Call for ongoing transformation"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Study Guide & Discussion Questions",
+        "content": "Additional resources for deeper study",
+        "requirements": [
+          "5-7 discussion questions for small groups",
+          "Memory verse and meditation suggestions",
+          "Additional scripture references for study",
+          "Prayer points and action items",
+          "Recommended books or resources"
+        ]
+      }
+    ]
+  },
+  "examples": {
+    "goodResponse": {
+      "topic": "Philippians 4:13",
+      "fullResponse": "✮ SERMON: True Strength - Understanding Philippians 4:13\n\n↗ Sermon Overview\n• Title: \"True Strength: The Real Meaning of 'I Can Do All Things'\"\n• Main Scripture: Philippians 4:10-20 (focus on verse 13)\n• Theme: God's sufficient grace in all circumstances\n• Central Message: True strength comes not from our ability to achieve anything, but from Christ's power to sustain us through everything\n• Main Points: 1) Context of Contentment, 2) Source of Strength, 3) Purpose of Power\n\n↗ Opening Hook & Introduction\nA professional athlete stands at the free-throw line, crowd screaming, game on the line. On his wristband, barely visible, are the words \"Phil 4:13.\" He makes the shot and points to heaven. Meanwhile, a single mother works two jobs to make ends meet, her Bible open to the same verse on her kitchen table. A cancer patient undergoing chemotherapy clutches a card with these same four words. What connects these three people? They all claim the same promise: \"I can do all things through Christ who strengthens me.\"\n\nBut here's the question that might surprise you: which of these three people is actually living out the true meaning of this verse? The answer might not be what you think. Today, we're going to dive deep into one of the most quoted, most misunderstood, and most powerful verses in the New Testament. We'll discover that true strength isn't about achieving our dreams—it's about something far more profound and life-changing.\n\n↗ Scripture Foundation\n\"I can do all things through Christ who strengthens me.\" (Philippians 4:13 NKJV)\n\nTo understand this verse, we must understand its context. Paul wrote Philippians from a Roman prison around 61-62 AD. He wasn't sitting in a motivational seminar or celebrating a victory. He was chained to a Roman guard, facing possible execution, yet writing the most joy-filled letter in the New Testament.\n\nThe Greek word for \"do\" is \"ischyo,\" which means \"to have strength, be strong, be powerful.\" But it's not about achieving anything you want—it's about enduring everything that comes. The word \"all things\" (panta) in context refers specifically to the circumstances Paul has been describing: both abundance and want, being filled and being hungry, having plenty and suffering need.\n\nThe phrase \"through Christ\" uses the Greek preposition \"en,\" meaning \"in\" or \"by means of.\" This isn't Christ as a supplement to our strength—this is Christ as the very source and sphere of our strength. The word \"strengthens\" (endunamoo) means \"to empower, enable, make strong.\" It's the same root word used for God's power that raised Christ from the dead.\n\nPaul wrote this not as a prosperity promise, but as a prison proclamation. He had learned (mathein - acquired through experience) the secret of contentment in every situation. This learning came through hardship, not success.\n\n↗ Theological Framework\nThis verse sits at the heart of several crucial theological concepts. First, it reveals the doctrine of God's sufficient grace. Just as God told Paul in 2 Corinthians 12:9, \"My grace is sufficient for you, for My strength is made perfect in weakness,\" this passage shows that God's power is most clearly displayed not in our achievements but in our endurance.\n\nSecond, it demonstrates the principle of divine enablement. The Christian life isn't lived by human willpower improved by divine assistance—it's lived by divine power channeled through human surrender. This connects to Jesus' words in John 15:5: \"Apart from Me you can do nothing.\"\n\nThird, this verse illustrates the biblical concept of contentment (autarkeia), which doesn't mean passive resignation but active trust in God's provision and timing. This contentment is supernatural—it comes from union with Christ, not from circumstances aligning with our desires.\n\nThe broader context of Philippians reveals Paul's theology of joy in suffering, which is foreign to modern prosperity thinking but central to apostolic Christianity. This isn't optimism or positive thinking—it's Spirit-empowered endurance rooted in the character and promises of God.\n\n↗ Main Point 1: The Context of Contentment (Not Achievement)\nThe first crucial truth is that Paul's statement comes in the context of contentment, not achievement. Look at verses 11-12: \"I have learned to be content whatever the circumstances. I know what it is to be in need, and I know what it is to have plenty. I have learned the secret of being content in any and every situation.\"\n\nThis isn't a verse about getting what you want—it's about finding peace when you don't get what you want. Paul had experienced imprisonment, beatings, shipwrecks, hunger, and betrayal. He had also experienced supernatural visions, church growth, and ministry success. In both extremes, he found the same source of strength.\n\nModern misinterpretation often turns this verse into a spiritual credit card—\"I can achieve any goal through Christ who strengthens me.\" But Paul wasn't talking about achieving dreams; he was talking about surviving nightmares. He wasn't describing success; he was describing endurance.\n\nConsider the single mother mentioned in our introduction. She may not get the promotion she's hoping for or the financial breakthrough she's praying for. But through Christ, she can find strength to love her children well, work with integrity, and trust God's timing. That's not a lesser application of this verse—it's the exact application Paul intended.\n\nThe Greek concept of contentment (autarkeia) was well-known in Paul's day. Stoic philosophers taught that contentment came from being emotionally detached from circumstances. But Paul offers something radically different: contentment that comes from being spiritually connected to Christ in every circumstance.\n\nThis means that whether you're in a season of plenty or a season of want, whether your prayers are being answered the way you hoped or in ways you never expected, you can find supernatural strength to honor God, love others, and keep moving forward. That's not just positive thinking—that's divine empowerment.\n\n↗ Main Point 2: The Source of Strength (Christ Alone)\nThe second vital truth is that our strength comes from Christ alone, not from our circumstances, achievements, or even our faith itself. The preposition \"through\" (en) indicates that Christ is both the channel and the sphere of our strength.\n\nThis isn't Christ helping us be strong—this is Christ being strong in and through us. It's the difference between someone giving you a loan and someone giving you access to their unlimited bank account. Paul isn't describing improved human ability; he's describing divine ability channeled through human weakness.\n\nJesus illustrated this principle with the vine and branches metaphor in John 15. A branch doesn't produce fruit by trying harder—it produces fruit by remaining connected to the vine. The vine's life flows through the branch, producing fruit that the branch could never produce on its own.\n\nThis radically changes how we approach life's challenges. Instead of asking, \"How can I find the strength to handle this?\" we ask, \"How is Christ's strength available to me in this?\" Instead of trying to muster up more faith, we rest in His faithfulness. Instead of working harder to overcome, we learn to abide deeper in Him.\n\nThe cancer patient mentioned earlier understands this. Each day, she faces treatments that would be unbearable in her own strength. But she's discovered that Christ's strength isn't limited by her energy levels, her emotional state, or even her physical condition. His strength is perfect, constant, and inexhaustible.\n\nThis doesn't mean Christians don't feel pain, fear, or exhaustion. It means that in our pain, we find His comfort; in our fear, we find His peace; in our exhaustion, we find His rest. The strength doesn't eliminate the struggle—it sustains us through the struggle.\n\nPaul's use of the present tense (\"strengthens\") indicates ongoing, continuous empowerment. This isn't a one-time transaction but a moment-by-moment dependence. Every breath, every decision, every challenge becomes an opportunity to experience Christ's enabling power.\n\n↗ Main Point 3: The Purpose of Power (God's Glory, Not Our Gain)\nThe third essential truth is that this strength is given for God's glory, not merely our personal gain. Paul's entire letter to the Philippians demonstrates that his suffering served a higher purpose—the advancement of the gospel and the strengthening of the church.\n\nIn chapter 1, Paul explains that his imprisonment has actually resulted in the progress of the gospel. Guards and officials are hearing about Christ, and other believers are emboldened to share their faith more courageously. Paul's circumstances aren't improved, but God's kingdom is advanced.\n\nThis reframes how we understand divine empowerment. The strength Christ provides isn't primarily for our comfort, success, or happiness—it's for our faithfulness, perseverance, and fruitfulness. Sometimes God's strength enables us to change our circumstances; more often, it enables us to honor God within our circumstances.\n\nThe professional athlete from our introduction might have the right verse on his wristband, but if he's using it merely to enhance his performance rather than to bring glory to God through his character, he's missing the deeper purpose. True strength is displayed not just in making shots but in how we handle missing them.\n\nThis doesn't mean God doesn't care about our dreams, goals, or desires. It means He cares about something even more important—our transformation into the likeness of Christ. Sometimes achieving our goals serves that purpose; sometimes enduring disappointment serves it better.\n\nPaul concludes this section by saying, \"I can do all things through Him who strengthens me. Yet it was good of you to share in my troubles\" (verses 13-14). Even with divine strength, Paul valued human fellowship and support. This strength doesn't make us independent—it makes us interdependent, able to both give and receive help within the body of Christ.\n\nThe ultimate purpose of this strength is to display God's all-sufficiency to a watching world. When people see Christians enduring hardship with grace, facing uncertainty with peace, and responding to opposition with love, they witness something supernatural—the power of Christ at work in human weakness.\n\n↗ Real-World Applications\nSo how do we live out this truth in our daily lives? First, we must shift our prayer focus from \"God, give me strength to change this situation\" to \"God, give me strength to honor You in this situation.\" This doesn't mean we stop praying for change—it means we start prioritizing faithfulness over outcomes.\n\nFor parents facing rebellious teenagers, this means finding strength to love unconditionally while maintaining healthy boundaries. For employees dealing with difficult bosses, this means finding strength to work with excellence and integrity even when it's not recognized or rewarded.\n\nFor those facing financial hardship, this means finding strength to trust God's provision while being wise stewards of resources. For those battling illness, this means finding strength to hope in God's goodness while walking through valleys of pain and uncertainty.\n\nSecond, we must learn to recognize Christ's strength in unexpected places. Often, we're looking for strength that feels empowering, but God's strength sometimes feels like rest in exhaustion, peace in chaos, or hope in despair. His strength isn't always dramatic—sometimes it's simply the grace to take the next right step.\n\nThird, we must practice daily dependence. This means starting each day acknowledging our need for His strength, ending each day grateful for His provision, and throughout the day consciously drawing on His power rather than relying solely on our own resources.\n\n↗ Call to Action & Response\nToday, I'm calling you to three specific responses. First, examine how you've been using this verse. Have you been treating it as a promise for personal achievement or a provision for faithful endurance? If you've been misapplying it, repent and receive God's grace for a fresh start.\n\nSecond, identify one area of your life where you've been trying to manufacture strength instead of receiving it from Christ. Maybe it's a relationship that's draining you, a responsibility that's overwhelming you, or a challenge that's defeating you. Right now, surrender that area to Christ and ask Him to be your strength in it.\n\nThird, commit to daily dependence. For the next week, begin each day by praying, \"Christ, I need Your strength today. I can't do life in my own power.\" End each day by thanking Him for specific ways He strengthened you.\n\nIf you've never experienced the strength that comes from a personal relationship with Jesus Christ, today can be the beginning of that journey. Christ's invitation is simple: \"Come to Me, all you who are weary and burdened, and I will give you rest.\"\n\n↗ Closing & Benediction\nThe strength Christ offers isn't always the strength we want, but it's always the strength we need. It's not strength to control our circumstances but strength to trust God within our circumstances. It's not strength to get what we want but strength to want what God wants.\n\nPaul discovered this secret in a Roman prison, and it transformed not just his perspective but his impact. The letter he wrote from that prison has strengthened millions of believers for nearly two thousand years. His chains became the catalyst for one of history's greatest testimonies to God's sufficient grace.\n\nMay you discover that same secret—that Christ's strength is most perfectly displayed not in our achievements but in our dependence, not in our success but in our surrender, not in our performance but in our perseverance.\n\nMay the God of peace, who brought back from the dead our Lord Jesus, that great Shepherd of the sheep, equip you with everything good for doing His will, and may He work in us what is pleasing to Him, through Jesus Christ, to whom be glory for ever and ever. Amen.\n\n↗ Study Guide & Discussion Questions\n• How has your understanding of Philippians 4:13 changed after this study?\n• What's the difference between human strength and Christ's strength in your experience?\n• How can we recognize when we're trying to be strong in our own power versus drawing on Christ's strength?\n• What circumstances in your life need Christ's strengthening power right now?\n• How can our struggles become testimonies to God's sufficient grace?\n• Memory Verse: Philippians 4:13 (in context with verses 11-12)\n• Additional Study: 2 Corinthians 12:7-10; John 15:1-8; Isaiah 40:28-31\n• Prayer Focus: Ask God to help you find contentment in your current circumstances while trusting Him for the future\n• Action Step: Share with someone this week how God has strengthened you through a difficult time"
+    }
+  },
+  "tone": "pastoral, authoritative, encouraging, theologically deep",
+  "visualFormat": "Use clean structure with ✮ ↗ • symbols throughout",
+  "restrictions": [
+    "Maintain theological accuracy and biblical authority",
+    "Include specific scripture references throughout",
+    "Provide practical applications for modern life",
+    "Balance doctrinal depth with accessible language",
+    "Use ✮ for main title and ↗ for major sections",
+    "Use • for bullet points and sub-points",
+    "Target 2500-3500 words for comprehensive coverage",
+    "Include personal illustrations and contemporary examples",
+    "End with clear calls to action and spiritual growth",
+    "No hashtags, asterisks, or markdown symbols"
+  ]
+} 

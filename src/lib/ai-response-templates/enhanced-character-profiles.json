@@ -1,0 +1,120 @@
+{
+  "mode": "character",
+  "name": "Enhanced Bible Character Profiles",
+  "purpose": "Deep character studies with comprehensive life lessons and spiritual insights",
+  "responseStructure": {
+    "format": "comprehensive_profile",
+    "mainTitle": "✮ CHARACTER PROFILE: [Name]",
+    "sections": [
+      {
+        "icon": "↗",
+        "title": "Character Overview",
+        "content": "Essential character summary with key details",
+        "requirements": [
+          "Full name and meaning (if significant)",
+          "Role, occupation, and tribal/family background",
+          "Time period and geographical context",
+          "One-sentence character defining trait",
+          "Key verse that captures their essence"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Life Timeline & Key Moments",
+        "content": "Major life events and character development",
+        "requirements": [
+          "5-7 most significant life events in chronological order",
+          "Include scripture references for each event",
+          "Show character growth, decline, or transformation",
+          "Highlight pivotal decisions and their consequences",
+          "Note relationships with God and others"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Character Strengths & Virtues",
+        "content": "Positive qualities and godly attributes",
+        "requirements": [
+          "3-4 key strengths with biblical examples",
+          "How these strengths served God's purposes",
+          "Scripture verses that demonstrate these qualities",
+          "How these virtues developed over time"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Character Flaws & Lessons",
+        "content": "Weaknesses, failures, and what we can learn",
+        "requirements": [
+          "2-3 main character flaws with biblical examples",
+          "Consequences of these weaknesses",
+          "How God used or redeemed their failures",
+          "Warning lessons for modern believers"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Relationship with God",
+        "content": "Their spiritual journey and faith development",
+        "requirements": [
+          "How they encountered God or learned about Him",
+          "Moments of faith, doubt, or spiritual growth",
+          "Ways they worshipped or served God",
+          "God's promises or calling on their life"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Modern Life Applications",
+        "content": "Practical lessons for contemporary Christians",
+        "requirements": [
+          "3-4 specific applications for different life areas",
+          "How their example applies to modern challenges",
+          "Practical steps to develop their positive qualities",
+          "Ways to avoid their mistakes"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Key Scripture Passages",
+        "content": "Essential Bible references about this character",
+        "requirements": [
+          "5-6 most important verses or passages",
+          "Include both narrative accounts and later references",
+          "Show progression of their story",
+          "Include New Testament mentions if applicable"
+        ]
+      },
+      {
+        "icon": "↗",
+        "title": "Legacy & Lasting Impact",
+        "content": "How their life influenced others and history",
+        "requirements": [
+          "Impact on their generation and family",
+          "How later biblical characters reference them",
+          "What their life teaches about God's character",
+          "Their place in God's redemptive plan"
+        ]
+      }
+    ]
+  },
+  "examples": {
+    "goodResponse": {
+      "character": "Abraham",
+      "fullResponse": "✮ CHARACTER PROFILE: Abraham (Father of Faith)\n\n↗ Character Overview\n• Name: Abram (\"Exalted Father\") changed to Abraham (\"Father of Many Nations\")\n• Role: Patriarch of Israel, first Hebrew, father of faith\n• Background: From Ur of the Chaldeans, wealthy nomadic herdsman\n• Time Period: Approximately 2166-1991 BC\n• Defining Trait: Unwavering faith in God's promises despite impossible circumstances\n• Key Verse: Romans 4:16 - \"The father of us all in the sight of God in whom he believed\"\n\n↗ Life Timeline & Key Moments\n• Called by God to leave Ur for unknown land (Genesis 12:1-4) - Age 75\n• Received God's covenant promises for land, descendants, blessing (Genesis 12:1-3)\n• Lied about Sarah being his sister in Egypt - showed human weakness (Genesis 12:10-20)\n• Separated from Lot, chose to give him the better land (Genesis 13:5-18)\n• Rescued Lot from captivity, met Melchizedek, paid tithes (Genesis 14)\n• God's covenant confirmed, promised son through Sarah (Genesis 15, 17)\n• Took Hagar as concubine, Ishmael born - tried to help God fulfill promise (Genesis 16)\n• Interceded for Sodom and Gomorrah, showed heart for others (Genesis 18:16-33)\n• Offered Isaac as sacrifice, passed ultimate test of faith (Genesis 22:1-19)\n\n↗ Character Strengths & Virtues\n• Faith: Believed God's impossible promises for 25 years without seeing fulfillment (Romans 4:18-21)\n• Obedience: Left his homeland without knowing the destination (Hebrews 11:8)\n• Generosity: Gave Lot first choice of land, refused reward from Sodom's king (Genesis 13:9, 14:23)\n• Intercession: Pleaded with God for the righteous in Sodom, showing compassion (Genesis 18:23-32)\n• Worship: Built altars wherever he went, maintained relationship with God (Genesis 12:7-8)\n\n↗ Character Flaws & Lessons\n• Fear and Deception: Twice lied about Sarah being his sister out of fear (Genesis 12:11-13, 20:2)\n• Impatience: Took Hagar as concubine instead of waiting for God's timing (Genesis 16:1-4)\n• Family Favoritism: Created tension by having children through two women (Genesis 21:8-21)\n\n↗ Relationship with God\n• Personal Calling: God spoke directly to Abraham, calling him to a new land and purpose\n• Covenant Relationship: Entered into binding covenant with God involving promises and responsibilities\n• Friend of God: James 2:23 calls him \"friend of God\" - showing intimate relationship\n• Tested Faith: Ultimate test came when asked to sacrifice Isaac, proving complete trust\n• Progressive Revelation: God revealed more about Himself and His plans over time\n\n↗ Modern Life Applications\n• Career/Calling: Sometimes God calls us to step out without seeing the full plan - trust and obey\n• Waiting on God: Learn to wait for God's timing rather than trying to make things happen ourselves\n• Generosity: Put others' interests before our own, especially in conflicts over resources\n• Prayer Life: Develop boldness in intercession, caring about others' spiritual welfare\n• Family Leadership: Take spiritual responsibility for your household while avoiding favoritism\n• Faith in Trials: Trust God's goodness even when His requests seem to threaten what we love most\n\n↗ Key Scripture Passages\n• Genesis 12:1-3 - God's initial call and covenant promises\n• Genesis 15:6 - \"He believed in the Lord, and He credited it to him as righteousness\"\n• Genesis 22:1-19 - The binding of Isaac, ultimate test of faith\n• Romans 4:16-25 - Paul's explanation of Abraham's faith as our example\n• Hebrews 11:8-19 - Abraham in the hall of faith\n• James 2:21-23 - Abraham's faith demonstrated by works\n\n↗ Legacy & Lasting Impact\n• Father of Three Religions: Judaism, Christianity, and Islam all claim Abraham as patriarch\n• Model of Faith: New Testament writers repeatedly use Abraham as example of saving faith\n• Covenant Foundation: God's promises to Abraham form basis of Israel's identity and Christian hope\n• Intercessory Example: His prayer for Sodom shows pattern for interceding for the lost\n• Faith Under Testing: His willingness to sacrifice Isaac demonstrates ultimate surrender to God\n• Messianic Line: Through Abraham's seed, Jesus Christ came to bless all nations as promised"
+    }
+  },
+  "tone": "biographical, inspiring, balanced, instructional",
+  "visualFormat": "Use clean structure with ✮ ↗ • symbols throughout",
+  "restrictions": [
+    "Include both positive and negative examples",
+    "Always provide specific scripture references",
+    "Focus on character development over time",
+    "Make applications relevant to modern life",
+    "Use ✮ for main title and ↗ for sections",
+    "Use • for bullet points only",
+    "Balance historical accuracy with spiritual insight",
+    "Show how God used imperfect people for His purposes",
+    "No hashtags, asterisks, or markdown symbols"
+  ]
+} 
