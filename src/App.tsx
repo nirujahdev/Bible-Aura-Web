@@ -53,7 +53,7 @@ const AdvancedStudy = lazy(() => import("./pages/features/AdvancedStudy"));
 
 // Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
-import { ModernLayout } from "./components/ModernLayout";
+import { ModernSidebar } from "./components/ModernSidebar";
 import EnhancedAIChat from "./components/EnhancedAIChat";
 
 function AppRoutes() {
@@ -100,9 +100,9 @@ function AppRoutes() {
         {/* Main AI Chat - The primary app experience */}
         <Route path="/ai-chat" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <EnhancedAIChat />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
 
@@ -111,113 +111,113 @@ function AppRoutes() {
         
         <Route path="/bible" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <Bible />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/songs" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <Songs />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/study" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/study-hub" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/bible-qa" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/bible-characters" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/sermons" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <Sermons />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/sermon-writer" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <SermonWriter />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/topical-study" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/sermon-library" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/parables-study" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <StudyHub />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/favorites" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <Favorites />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/journal" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <Journal />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
         
         <Route path="/profile" element={
           <ProtectedRoute>
-            <ModernLayout>
+            <ModernSidebar>
               <Profile />
-            </ModernLayout>
+            </ModernSidebar>
           </ProtectedRoute>
         } />
 

@@ -266,16 +266,16 @@ const StudyHub: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-blue-50 via-white to-purple-50 mobile-safe-area">
       {/* Mobile Header - Responsive */}
-      <div className="bg-white border-b border-gray-200 shadow-sm p-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white border-b border-gray-200 shadow-sm p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Library className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <Library className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg md:text-xl font-bold text-gray-800">Study Hub</h1>
+              <h1 className="text-lg sm:text-xl md:text-xl font-bold text-gray-800 mobile-text">Study Hub</h1>
               <p className="text-sm text-gray-600 hidden sm:block">Comprehensive Bible study tools</p>
             </div>
           </div>
@@ -288,14 +288,14 @@ const StudyHub: React.FC = () => {
                 placeholder="Search topics, characters, or parables..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 border-2 border-gray-200 focus:border-blue-400"
+                className="pl-10 min-h-[44px] border-2 border-gray-200 focus:border-blue-400 touch-optimized"
               />
             </div>
           </div>
         </div>
 
         {/* Study Module Cards - Mobile Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {STUDY_MODULES.map((module) => {
             const IconComponent = module.icon;
             return (
@@ -749,4 +749,6 @@ const StudyHub: React.FC = () => {
       )}
     </div>
   );
-} 
+}
+
+export default StudyHub; 

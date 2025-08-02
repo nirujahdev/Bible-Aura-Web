@@ -31,13 +31,13 @@ export function PageLayout({
 
   const paddingClasses = {
     none: '',
-    sm: 'p-4',
-    md: 'p-6 lg:p-8',
-    lg: 'p-8 lg:p-12'
+    sm: 'p-3 sm:p-4',
+    md: 'p-4 sm:p-6 lg:p-8',
+    lg: 'p-6 sm:p-8 lg:p-12'
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen min-h-[100dvh] bg-gray-50 mobile-safe-area">
       <div className={cn(
         'w-full',
         maxWidth !== 'full' && 'mx-auto',
@@ -46,14 +46,14 @@ export function PageLayout({
         className
       )}>
         {showHeader && (title || description) && (
-          <div className="mb-6 lg:mb-8">
+          <div className="mb-4 sm:mb-6 lg:mb-8">
             {title && (
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 mobile-text">
                 {title}
               </h1>
             )}
             {description && (
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 text-base sm:text-lg mobile-text">
                 {description}
               </p>
             )}

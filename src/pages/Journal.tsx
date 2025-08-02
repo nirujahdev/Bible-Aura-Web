@@ -347,12 +347,12 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-gray-50 to-orange-50">
       {/* Enhanced Journal Editor Modal - Mobile optimized */}
       {showEditor && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden">
-            <div className="flex flex-col h-[95vh]">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 mobile-safe-area">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] max-h-[90dvh] overflow-hidden">
+            <div className="flex flex-col h-[90vh] h-[90dvh]">
               {/* Editor Header - Mobile optimized */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
                 <h2 className="text-lg md:text-xl font-bold text-gray-800">
@@ -362,7 +362,7 @@ const Journal = () => {
                   <Button
                     onClick={handleSaveEntry}
                     disabled={saving}
-                    className="bg-orange-500 hover:bg-orange-600 text-white h-9 px-4"
+                    className="bg-orange-500 hover:bg-orange-600 text-white min-h-[44px] px-4 touch-optimized"
                   >
                     {saving ? (
                       <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ const Journal = () => {
                   <Button
                     onClick={handleCloseEditor}
                     variant="outline"
-                    className="h-9 w-9 p-0"
+                    className="min-h-[44px] min-w-[44px] p-0 touch-optimized"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -387,7 +387,7 @@ const Journal = () => {
               </div>
 
               {/* Editor Content - Mobile optimized */}
-              <div className="flex-1 overflow-auto">
+              <div className="flex-1 overflow-auto mobile-scroll">
                 {useEnhancedEditor ? (
                   <EnhancedJournalEditor
                     initialEntry={editingEntry}
@@ -707,7 +707,7 @@ const Journal = () => {
                 </div>
 
                 {/* Entry Content - Optimized for mobile reading */}
-                <div className="flex-1 overflow-auto">
+                <div className="flex-1 overflow-auto mobile-scroll">
                   <div className={`prose prose-lg max-w-none ${
                     isMobile ? 'prose-base' : 'prose-lg'
                   }`}>
