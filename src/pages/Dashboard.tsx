@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import EnhancedAIChat from '@/components/EnhancedAIChat';
+import { useDevicePreference } from '@/hooks/useDevicePreference';
 
 interface DashboardStats {
   journalEntries: number;
@@ -48,133 +49,402 @@ const quickStartPrompts = [
   },
   {
     id: 2,
-    title: "Ask Bible Questions",
-    description: "Get AI insights on Scripture",
+    title: "Bible Questions",
+    description: "Ask AI about Scripture",
     icon: Brain,
-    color: "bg-purple-500",
+    color: "bg-blue-500",
     action: "chat",
-    prompt: "I have a question about the Bible"
+    prompt: "I have a question about the Bible:"
   },
   {
     id: 3,
-    title: "Prayer Journal",
-    description: "Document your prayers",
-    icon: BookOpen,
-    color: "bg-blue-500",
-    action: "journal",
-    prompt: "Today I'm praying for..."
+    title: "Prayer Guide",
+    description: "Guided prayer suggestions",
+    icon: Calendar,
+    color: "bg-purple-500",
+    action: "chat",
+    prompt: "Help me with a prayer for today"
   },
   {
     id: 4,
-    title: "Bible Study",
-    description: "Explore biblical truths",
-    icon: Sparkles,
-    color: "bg-amber-500",
-    action: "chat",
-    prompt: "Help me understand this Bible passage"
-  }
-];
-
-// Mobile-friendly feature cards (same as laptop version)
-const dashboardFeatures = [
-  {
-    title: "AI Bible Chat",
-    description: "Ask any biblical question",
-    icon: MessageCircle,
-    href: "/bible-ai",
-    color: "bg-orange-500",
-    stats: "Active AI assistant"
-  },
-  {
-    title: "Bible",
-    description: "Read & study Scripture",
-    icon: Book,
-    href: "/bible",
-    color: "bg-blue-500",
-    stats: "Multiple translations"
-  },
-  {
-    title: "Sermons",
-    description: "Browse sermon library",
-    icon: Headphones,
-    href: "/sermons",
-    color: "bg-purple-500",
-    stats: "Curated collection"
-  },
-  {
-    title: "Journal",
-    description: "Record spiritual insights",
-    icon: PenTool,
-    href: "/journal",
-    color: "bg-green-500",
-    stats: "Private & secure"
-  },
-  {
-    title: "Study Hub",
-    description: "Comprehensive Bible study",
+    title: "Study Helper",
+    description: "Dive deeper into Scripture",
     icon: BookOpen,
-    href: "/study-hub",
-    color: "bg-amber-500",
-    stats: "Multiple study tools"
-  },
-  {
-    title: "Topical Study",
-    description: "Study by topics",
-    icon: Target,
-    href: "/topical-study",
-    color: "bg-indigo-500",
-    stats: "Organized by themes"
-  },
-  {
-    title: "Parables Study",
-    description: "Explore Jesus' parables",
-    icon: Sparkles,
-    href: "/parables-study",
-    color: "bg-pink-500",
-    stats: "Deep insights"
-  },
-  {
-    title: "Sermon Writer",
-    description: "AI-assisted sermon creation",
-    icon: Edit,
-    href: "/sermon-writer",
-    color: "bg-cyan-500",
-    stats: "AI-powered"
+    color: "bg-green-500",
+    action: "chat",
+    prompt: "Help me understand this Bible passage:"
   }
 ];
 
+// Inspirational quotes carousel
 const inspirationalQuotes = [
   {
-    text: "Your spiritual journey is unique and beautiful",
-    reference: "Psalm 139:14"
-  },
-  {
-    text: "God has great plans for your growth today",
+    text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future.",
     reference: "Jeremiah 29:11"
   },
   {
-    text: "Let faith guide your thoughts and actions",
-    reference: "Proverbs 3:5-6"
+    text: "Trust in the Lord with all your heart and lean not on your own understanding.",
+    reference: "Proverbs 3:5"
+  },
+  {
+    text: "I can do all things through Christ who strengthens me.",
+    reference: "Philippians 4:13"
+  },
+  {
+    text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.",
+    reference: "Joshua 1:9"
+  },
+  {
+    text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.",
+    reference: "Romans 8:28"
   }
 ];
 
-// Mock AI function for demo purposes (same as laptop version)
-const getAIInsight = async (prompt: string) => {
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1500));
-    
-    const insights = [
-      `✮ Daily Inspiration\n\n↗ Today's Blessing\n• God's love surrounds you in every moment\n• Trust in His timing for your life\n• You are fearfully and wonderfully made\n\n↗ Prayer Focus\n• Gratitude for His faithfulness\n• Strength for today's challenges`,
-      `✮ Biblical Wisdom\n\n↗ God's Promise\n• "For I know the plans I have for you," declares the Lord\n• Plans to prosper you and not to harm you\n• To give you hope and a future\n\n↗ Application\n• Trust in God's perfect timing\n• Rest in His sovereign plan`,
-      `✮ Spiritual Growth\n\n↗ Today's Focus\n• Seek first His kingdom and righteousness\n• All these things will be added unto you\n• Walk by faith, not by sight\n\n↗ Action Steps\n• Spend time in prayer\n• Read God's Word daily`
-    ];
-    
-    return insights[Math.floor(Math.random() * insights.length)];
-  } catch (error) {
-    return "✮ God's Love\n\n↗ Remember\n• You are loved beyond measure\n• His grace is sufficient for you\n• He will never leave nor forsake you";
-  }
+// Helper functions
+const formatTime = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
 };
 
+const getUserName = () => {
+  const { profile } = useAuth();
+  return profile?.display_name || profile?.username || 'Benaiah';
+};
+
+const getAIInsight = async (prompt: string): Promise<string> => {
+  // Simulate AI response for quick insights
+  const insights = [
+    "Remember that God's love for you is unconditional and everlasting.",
+    "Today is a new opportunity to grow in faith and show kindness to others.",
+    "Prayer is your direct line to God - use it frequently throughout your day.",
+    "Scripture reading nourishes your soul like food nourishes your body.",
+    "God has equipped you with everything you need for today's challenges."
+  ];
+  return insights[Math.floor(Math.random() * insights.length)] + "\n\n• Trust in His timing\n• Seek His wisdom in prayer\n• He will never leave nor forsake you";
+};
+
+// Desktop Dashboard Layout
+const DesktopDashboard = () => {
+  const { user, profile, signOut } = useAuth();
+  const { toast } = useToast();
+  
+  // SEO optimization
+  useSEO(SEO_CONFIG.DASHBOARD);
+
+  // State management
+  const [stats, setStats] = useState<DashboardStats>({
+    journalEntries: 0,
+    chatConversations: 0,
+    readingStreak: 0,
+    weeklyGoal: 0
+  });
+  
+  const [quickInput, setQuickInput] = useState('');
+  const [isQuickChatLoading, setIsQuickChatLoading] = useState(false);
+  const [quickInsight, setQuickInsight] = useState<string>('');
+  const [showQuickInsight, setShowQuickInsight] = useState(false);
+  const [currentQuote, setCurrentQuote] = useState(0);
+
+  // Load dashboard data
+  useEffect(() => {
+    if (user) {
+      loadDashboardStats();
+    }
+  }, [user]);
+
+  // Rotate quotes every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentQuote((prev) => (prev + 1) % inspirationalQuotes.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadDashboardStats = async () => {
+    try {
+      const [journalRes, conversationsRes] = await Promise.all([
+        supabase
+          .from('journal_entries')
+          .select('id')
+          .eq('user_id', user?.id),
+        supabase
+          .from('ai_conversations')
+          .select('id')
+          .eq('user_id', user?.id)
+      ]);
+
+      setStats({
+        journalEntries: journalRes.data?.length || 0,
+        chatConversations: conversationsRes.data?.length || 0,
+        readingStreak: Math.floor(Math.random() * 30) + 1,
+        weeklyGoal: Math.floor(Math.random() * 100) + 50
+      });
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error);
+    }
+  };
+
+  const handleQuickAIChat = async (promptText?: string) => {
+    const prompt = promptText || quickInput;
+    if (!prompt.trim()) return;
+
+    setIsQuickChatLoading(true);
+    try {
+      const insight = await getAIInsight(prompt);
+      setQuickInsight(insight);
+      setShowQuickInsight(true);
+      setQuickInput('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get AI insight. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsQuickChatLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Desktop Header */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-slate-800">Bible Aura</h1>
+            </div>
+            <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+              Desktop Experience
+            </Badge>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm">
+              <Bell className="h-4 w-4 mr-2" />
+              Notifications
+            </Button>
+            <div className="flex items-center space-x-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url || ''} />
+                <AvatarFallback>{getUserName().charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-slate-700">{getUserName()}</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => signOut()}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Welcome Section - Desktop Layout */}
+        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-8 right-8 w-32 h-32 bg-white rounded-full opacity-20"></div>
+            <div className="absolute bottom-8 left-8 w-24 h-24 bg-white rounded-full opacity-15"></div>
+          </div>
+          
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-3">{formatTime()}, {getUserName()}!</h2>
+              <p className="text-orange-100 text-lg mb-6">Ready for your spiritual journey today?</p>
+              
+              {/* Quick AI Chat Input - Desktop */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                <div className="flex space-x-3">
+                  <Input
+                    placeholder="Ask AI about Scripture, prayer, or faith..."
+                    value={quickInput}
+                    onChange={(e) => setQuickInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleQuickAIChat()}
+                    className="bg-white/20 border-white/30 text-white placeholder:text-orange-200"
+                  />
+                  <Button 
+                    onClick={() => handleQuickAIChat()}
+                    disabled={isQuickChatLoading}
+                    className="bg-white text-orange-600 hover:bg-orange-50"
+                  >
+                    {isQuickChatLoading ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Inspirational Quote */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+              <p className="text-lg italic mb-3">"{inspirationalQuotes[currentQuote].text}"</p>
+              <p className="text-orange-200">— {inspirationalQuotes[currentQuote].reference}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick AI Insight Display */}
+        {showQuickInsight && (
+          <div className="mb-8">
+            <Card className="bg-blue-50 border-blue-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-blue-800 flex items-center">
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    AI Insight
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowQuickInsight(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-blue-700 whitespace-pre-line">{quickInsight}</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Dashboard Grid - Desktop Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Stats Cards */}
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-green-600" />
+                Your Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <MessageCircle className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm">AI Chats</span>
+                </div>
+                <Badge variant="secondary">{stats.chatConversations}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <BookOpen className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm">Journal Entries</span>
+                </div>
+                <Badge variant="secondary">{stats.journalEntries}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Flame className="h-4 w-4 text-red-500" />
+                  <span className="text-sm">Reading Streak</span>
+                </div>
+                <Badge variant="secondary">{stats.readingStreak} days</Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                {quickStartPrompts.map((prompt) => (
+                  <div
+                    key={prompt.id}
+                    className="p-4 rounded-xl border hover:bg-slate-50 cursor-pointer transition-colors group"
+                    onClick={() => handleQuickAIChat(prompt.prompt)}
+                  >
+                    <div className={`w-10 h-10 ${prompt.color} rounded-lg flex items-center justify-center mb-3`}>
+                      <prompt.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="font-medium text-slate-800 mb-1">{prompt.title}</h3>
+                    <p className="text-sm text-slate-600 group-hover:text-slate-800">
+                      {prompt.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bible Aura Features - Desktop Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                <MessageCircle className="h-6 w-6 text-orange-600" />
+              </div>
+              <h3 className="font-semibold mb-2">AI Bible Chat</h3>
+              <p className="text-sm text-slate-600 mb-4">Ask any biblical question</p>
+              <Link to="/ai-chat">
+                <Button variant="outline" size="sm" className="w-full">
+                  Start Chat
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <Book className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="font-semibold mb-2">Bible</h3>
+              <p className="text-sm text-slate-600 mb-4">Read & study Scripture</p>
+              <Link to="/bible">
+                <Button variant="outline" size="sm" className="w-full">
+                  Read Now
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <PenTool className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="font-semibold mb-2">Journal</h3>
+              <p className="text-sm text-slate-600 mb-4">Reflect on your faith</p>
+              <Link to="/journal">
+                <Button variant="outline" size="sm" className="w-full">
+                  Write Entry
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <FileText className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="font-semibold mb-2">Sermons</h3>
+              <p className="text-sm text-slate-600 mb-4">Create and manage sermons</p>
+              <Link to="/sermons">
+                <Button variant="outline" size="sm" className="w-full">
+                  View Sermons
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Mobile Dashboard Layout
 const MobileDashboard = () => {
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
@@ -237,125 +507,68 @@ const MobileDashboard = () => {
   };
 
   const handleQuickAIChat = async (promptText?: string) => {
-    const textToSend = promptText || quickInput;
-    if (!textToSend.trim()) return;
+    const prompt = promptText || quickInput;
+    if (!prompt.trim()) return;
 
     setIsQuickChatLoading(true);
-    setQuickInput('');
-
     try {
-      const insight = await getAIInsight(textToSend);
+      const insight = await getAIInsight(prompt);
       setQuickInsight(insight);
       setShowQuickInsight(true);
+      setQuickInput('');
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to get AI insight. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsQuickChatLoading(false);
     }
   };
 
-  const formatTime = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
-
-  const getUserName = () => {
-    return profile?.display_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Friend';
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Mobile Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between p-4">
-          {/* Left: Logo */}
-          <div className="flex items-center space-x-2">
-            <span className="text-orange-600 font-bold text-2xl">✦</span>
-            <h1 className="text-lg font-bold text-gray-900">Bible Aura</h1>
+      <div className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-slate-800">Bible Aura</h1>
+              <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                Mobile Experience
+              </Badge>
+            </div>
           </div>
-
-          {/* Right: 3-dot menu */}
-          <div className="relative">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-600 p-2"
-              onClick={() => setShowSettings(!showSettings)}
-            >
-              <MoreVertical className="h-5 w-5" />
+          
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowSettings(!showSettings)}>
+              <Settings className="h-4 w-4" />
             </Button>
-            
-            {showSettings && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-80 overflow-y-auto">
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-orange-100 text-orange-700">
-                        {getUserName().charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold text-gray-800">{getUserName()}</p>
-                      <p className="text-xs text-gray-500">{formatTime()}!</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <button
-                  onClick={() => loadDashboardStats()}
-                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
-                >
-                  <RefreshCw className="h-4 w-4 text-blue-500" />
-                  <span>Refresh Stats</span>
-                </button>
-                
-                <button
-                  onClick={() => toast({ title: "Notifications", description: "Notification settings updated." })}
-                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
-                >
-                  <Bell className="h-4 w-4 text-purple-500" />
-                  <span>Notifications</span>
-                </button>
-                
-                <button
-                  onClick={() => toast({ title: "Widget Settings", description: "Customize your dashboard widgets." })}
-                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
-                >
-                  <Grid3X3 className="h-4 w-4 text-green-500" />
-                  <span>Widget Layout</span>
-                </button>
-                
-                <div className="border-t border-gray-100 mt-2 pt-2">
-                  <Link to="/profile">
-                    <button
-                      onClick={() => setShowSettings(false)}
-                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
-                    >
-                      <User className="h-4 w-4 text-gray-500" />
-                      <span>Profile Settings</span>
-                    </button>
-                  </Link>
-                  
-                  <button
-                    onClick={() => signOut()}
-                    className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-red-600"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Mobile Settings Panel */}
+        {showSettings && (
+          <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 p-4 z-50">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url || ''} />
+                  <AvatarFallback>{getUserName().charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium text-slate-700">{getUserName()}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => signOut()}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
@@ -382,194 +595,129 @@ const MobileDashboard = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-                  <MessageCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.chatConversations}</p>
-                  <p className="text-xs text-gray-600">AI Chats</p>
-                </div>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600">{stats.chatConversations}</div>
+              <div className="text-sm text-slate-600 flex items-center justify-center mt-1">
+                <MessageCircle className="h-4 w-4 mr-1" />
+                AI Chats
               </div>
             </CardContent>
           </Card>
-
-          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.journalEntries}</p>
-                  <p className="text-xs text-gray-600">Journal Entries</p>
-                </div>
+          
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.journalEntries}</div>
+              <div className="text-sm text-slate-600 flex items-center justify-center mt-1">
+                <BookOpen className="h-4 w-4 mr-1" />
+                Journal Entries
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Main Features Grid */}
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Bible Aura Features</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {dashboardFeatures.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Link key={index} to={feature.href}>
-                  <Card className="border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-200 h-full">
-                    <CardContent className="p-4">
-                      <div className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-3`}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h4 className="font-semibold text-gray-900 mb-1">{feature.title}</h4>
-                      <p className="text-xs text-gray-600 mb-2">{feature.description}</p>
-                      <p className="text-xs text-gray-500">{feature.stats}</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 gap-3">
-            {quickStartPrompts.map((prompt) => {
-              const Icon = prompt.icon;
-              return (
-                <button
-                  key={prompt.id}
-                  onClick={() => handleQuickAIChat(prompt.prompt)}
-                  className="flex items-center p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-left"
-                >
-                  <div className={`w-12 h-12 ${prompt.color} rounded-xl flex items-center justify-center mr-4 flex-shrink-0`}>
-                    <Icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{prompt.title}</h4>
-                    <p className="text-sm text-gray-600">{prompt.description}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Quick AI Chat */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
-              <Bot className="h-4 w-4 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Quick AI Chat</h3>
-          </div>
-
-          <div className="space-y-4">
-            {/* Input */}
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <Input
-                  value={quickInput}
-                  onChange={(e) => setQuickInput(e.target.value)}
-                  placeholder="Ask me anything about the Bible..."
-                  className="pr-12 rounded-xl border-2 border-gray-200 focus:border-orange-400 h-12"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleQuickAIChat();
-                    }
-                  }}
-                  disabled={isQuickChatLoading}
-                />
-                
-                {quickInput.trim() && (
-                  <Button
-                    onClick={() => handleQuickAIChat()}
-                    disabled={isQuickChatLoading}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-2 rounded-lg h-8 w-8"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center">
+              <Bot className="h-5 w-5 mr-2 text-orange-600" />
+              Quick AI Chat
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex space-x-2 mb-3">
+              <Input
+                placeholder="Ask about Scripture..."
+                value={quickInput}
+                onChange={(e) => setQuickInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleQuickAIChat()}
+              />
+              <Button 
+                onClick={() => handleQuickAIChat()}
+                disabled={isQuickChatLoading}
+                size="sm"
+              >
+                {isQuickChatLoading ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
                 )}
-              </div>
+              </Button>
             </div>
 
-            {/* Quick Insight Display */}
             {showQuickInsight && (
-              <Card className="border-orange-200 bg-orange-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center">
-                      <Bot className="h-5 w-5 text-orange-600 mr-2" />
-                      <span className="font-medium text-orange-900">AI Insight</span>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setShowQuickInsight(false)}
-                      className="p-1 h-6 w-6 text-orange-600 hover:bg-orange-100"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-800">AI Insight</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowQuickInsight(false)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+                <p className="text-sm text-blue-700 whitespace-pre-line">{quickInsight}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Bible Aura Features */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-slate-800">Bible Aura Features</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <Link to="/ai-chat">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <MessageCircle className="h-6 w-6 text-orange-600" />
                   </div>
-                  <div className="text-sm text-gray-800">
-                    {quickInsight.split('\n').map((line, index) => {
-                      if (line.startsWith('✮')) {
-                        return (
-                          <h4 key={index} className="font-bold text-orange-800 mb-2">
-                            {line.replace('✮ ', '')}
-                          </h4>
-                        );
-                      } else if (line.startsWith('↗')) {
-                        return (
-                          <h5 key={index} className="font-semibold text-orange-700 mt-3 mb-1">
-                            {line.replace('↗ ', '')}
-                          </h5>
-                        );
-                      } else if (line.startsWith('•')) {
-                        return (
-                          <p key={index} className="ml-3 mb-1">
-                            {line.replace('• ', '• ')}
-                          </p>
-                        );
-                      } else if (line.trim()) {
-                        return <p key={index} className="mb-1">{line}</p>;
-                      }
-                      return null;
-                    })}
-                  </div>
-                  
-                  <div className="mt-4 pt-3 border-t border-orange-200">
-                    <Link to="/bible-ai">
-                      <Button className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl">
-                        Continue in Full AI Chat
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </Link>
-                  </div>
+                  <h4 className="font-medium text-sm mb-1">AI Bible Chat</h4>
+                  <p className="text-xs text-slate-600">Ask any biblical question</p>
+                  <p className="text-xs text-slate-500 mt-2">Active AI assistant</p>
                 </CardContent>
               </Card>
-            )}
+            </Link>
 
-            {/* Loading State */}
-            {isQuickChatLoading && (
-              <div className="flex items-center justify-center p-4">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <Link to="/bible">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Book className="h-6 w-6 text-blue-600" />
                   </div>
-                  <span className="text-sm text-gray-500">Getting insights...</span>
-                </div>
-              </div>
-            )}
+                  <h4 className="font-medium text-sm mb-1">Bible</h4>
+                  <p className="text-xs text-slate-600">Read & study Scripture</p>
+                  <p className="text-xs text-slate-500 mt-2">Multiple translations</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/journal">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <PenTool className="h-6 w-6 text-green-600" />
+                  </div>
+                  <h4 className="font-medium text-sm mb-1">Journal</h4>
+                  <p className="text-xs text-slate-600">Reflect on your faith</p>
+                  <p className="text-xs text-slate-500 mt-2">Personal insights</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/sermons">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <FileText className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h4 className="font-medium text-sm mb-1">Sermons</h4>
+                  <p className="text-xs text-slate-600">Create and manage</p>
+                  <p className="text-xs text-slate-500 mt-2">Sermon library</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </div>
@@ -577,4 +725,17 @@ const MobileDashboard = () => {
   );
 };
 
-export default MobileDashboard; 
+// Main Dashboard Component - Routes based on device preference
+const Dashboard = () => {
+  const { preference } = useDevicePreference();
+  
+  // Show desktop layout if user chose desktop, mobile if they chose mobile
+  if (preference?.type === 'desktop') {
+    return <DesktopDashboard />;
+  }
+  
+  // Default to mobile for users who haven't set preference yet or chose mobile
+  return <MobileDashboard />;
+};
+
+export default Dashboard; 
