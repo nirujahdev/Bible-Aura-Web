@@ -14,7 +14,7 @@ import {
   Book, Languages, StickyNote, Brain, 
   MessageCircle, BookOpen, Target,
   Copy, Highlighter, 
-  ChevronDown, ChevronUp, Menu, Sparkles
+  ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -91,6 +91,32 @@ export default function Bible() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
+
+  // Mobile utility functions
+  const copyVerse = (verse: BibleVerse) => {
+    const verseText = `${verse.book_name} ${verse.chapter}:${verse.verse} - ${verse.text}`;
+    navigator.clipboard.writeText(verseText);
+    toast({ 
+      title: "Verse copied to clipboard",
+      description: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+    });
+  };
+
+  const shareVerse = (verse: BibleVerse) => {
+    const verseText = `${verse.book_name} ${verse.chapter}:${verse.verse} - ${verse.text}`;
+    if (navigator.share) {
+      navigator.share({
+        title: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+        text: verseText,
+      });
+    } else {
+      copyVerse(verse);
+    }
+  };
+
+  const handleHighlight = (verse: BibleVerse) => {
+    highlightVerse(verse, 'yellow');
+  };
   
   // Enhanced features state
   const [activeTab, setActiveTab] = useState('read');
@@ -1132,8 +1158,8 @@ export default function Bible() {
             )}
           </div>
 
-          {/* Verses Display - Optimized for mobile reading */}
-          <div className="flex-1 overflow-y-auto">
+          {/* Verses Display - Mobile-Optimized Reading Experience */}
+          <div className="flex-1 overflow-y-auto mobile-scroll">
             {loading ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
@@ -1142,8 +1168,52 @@ export default function Bible() {
                 </div>
               </div>
             ) : selectedBook && verses.length > 0 ? (
-              <div className={`${isMobile ? 'p-4' : 'p-8'} max-w-4xl mx-auto`}>
-                <div className="space-y-4">
+              <div className={`${isMobile ? 'p-3' : 'p-8'} max-w-4xl mx-auto`}>
+                
+                {/* Mobile Chapter Navigation */}
+                {isMobile && (
+                  <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 -mx-3 px-3 py-3 mb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-gray-800 truncate">
+                          {getBookDisplayName(selectedBook.name)}
+                        </h2>
+                        <Badge variant="outline" className="text-sm">
+                          Chapter {selectedChapter}
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedChapter(Math.max(1, selectedChapter - 1))}
+                          disabled={selectedChapter <= 1}
+                          className="min-h-[40px] min-w-[40px] p-0 touch-optimized"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        <span className="text-lg font-bold text-orange-600 min-w-[40px] text-center">
+                          {selectedChapter}
+                        </span>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedChapter(selectedChapter + 1)}
+                          disabled={selectedChapter >= (selectedBook?.chapters || 1)}
+                          className="min-h-[40px] min-w-[40px] p-0 touch-optimized"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Verses with Mobile-Optimized Layout */}
+                <div className="space-y-6">
                   {verses.map((verse) => {
                     const verseId = verse.id;
                     const isBookmarked = bookmarks.has(verseId);
@@ -1153,127 +1223,131 @@ export default function Bible() {
                     return (
                       <div
                         key={verse.id}
-                        className={`group relative p-4 rounded-lg transition-all duration-200 ${
+                        className={`group relative rounded-xl transition-all duration-200 ${
                           highlightColor 
-                            ? `bg-${highlightColor}-100 border-l-4 border-${highlightColor}-400` 
-                            : 'hover:bg-gray-50'
-                        } ${isMobile ? 'text-base' : 'text-lg'}`}
+                            ? `bg-${highlightColor}-100 border-l-4 border-${highlightColor}-400 p-4` 
+                            : 'hover:bg-gray-50 p-4'
+                        } ${isMobile ? 'mx-1' : ''}`}
                       >
-                        {/* Verse Number - Mobile optimized */}
-                        <div className="flex items-start gap-3">
-                          <span className={`font-bold text-orange-600 flex-shrink-0 ${
-                            isMobile ? 'text-sm mt-0.5' : 'text-base'
-                          }`}>
-                            {verse.verse}
-                          </span>
+                        {/* Verse Content - Mobile-Optimized */}
+                        <div className="flex items-start gap-4">
+                          {/* Verse Number - Enhanced for Mobile */}
+                          <div className="flex-shrink-0">
+                            <span className={`inline-flex items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold shadow-sm ${
+                              isMobile ? 'w-10 h-10 text-sm' : 'w-12 h-12 text-base'
+                            }`}>
+                              {verse.verse}
+                            </span>
+                          </div>
                           
-                          {/* Verse Text - Better mobile typography */}
-                          <div className="flex-1">
-                            <p className={`leading-relaxed text-gray-800 ${
-                              isMobile ? 'text-base leading-7' : 'text-lg leading-8'
+                          {/* Verse Text - Mobile-Optimized Typography */}
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-gray-800 leading-relaxed font-normal ${
+                              isMobile 
+                                ? 'text-lg leading-8 sm:text-xl sm:leading-9' // Larger text for mobile
+                                : 'text-xl leading-9'
                             }`}>
                               {verse.text}
                             </p>
                           </div>
                         </div>
 
-                        {/* Action Buttons - Mobile optimized */}
-                        <div className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity ${
-                          isMobile ? 'opacity-100' : ''
-                        }`}>
-                          <div className="flex items-center gap-1 bg-white rounded-lg shadow-lg p-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleFavorite(verse)}
-                              className={`h-8 w-8 p-0 ${
-                                isFavorited ? 'text-red-500' : 'text-gray-400'
-                              }`}
-                            >
-                              <Heart className="h-4 w-4" />
-                            </Button>
-                            
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => highlightVerse(verse, 'yellow')}
-                              className="h-8 w-8 p-0 text-gray-400"
-                            >
-                              <Highlighter className="h-4 w-4" />
-                            </Button>
+                        {/* Action Buttons - Mobile-Optimized */}
+                        <div className={`flex items-center justify-end gap-2 mt-4 ${
+                          isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                        } transition-opacity`}>
+                          
+                          {/* Favorite Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleFavorite(verse)}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 ${
+                              isFavorited 
+                                ? 'text-red-500 hover:text-red-600 bg-red-50' 
+                                : 'text-gray-400 hover:text-red-500'
+                            }`}
+                          >
+                            <Heart className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} ${
+                              isFavorited ? 'fill-current' : ''
+                            }`} />
+                          </Button>
 
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse} - ${verse.text}`);
-                                toast({ title: "Verse copied to clipboard" });
-                              }}
-                              className="h-8 w-8 p-0 text-gray-400"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                          {/* Highlight Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => highlightVerse(verse, 'yellow')}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 text-gray-400 hover:text-yellow-500`}
+                          >
+                            <PenTool className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                          </Button>
 
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedVerse({
-                                  id: verse.id,
-                                  text: verse.text,
-                                  reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
-                                });
-                                setNoteModalOpen(true);
-                              }}
-                              className="h-8 w-8 p-0 text-gray-400"
-                            >
-                              <StickyNote className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          {/* Copy Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyVerse(verse)}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 text-gray-400 hover:text-blue-500`}
+                          >
+                            <Copy className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                          </Button>
+
+                          {/* Share Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => shareVerse(verse)}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 text-gray-400 hover:text-green-500`}
+                          >
+                            <Share2 className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                          </Button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Chapter Navigation - Bottom for mobile */}
-                {isMobile && selectedBook && (
-                  <div className="flex justify-between items-center mt-8 p-4 bg-gray-50 rounded-lg">
-                    <Button
-                      variant="outline"
-                      onClick={() => navigateChapter('prev')}
-                      disabled={selectedChapter <= 1}
-                      className="flex items-center gap-2"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Previous
-                    </Button>
-                    
-                    <span className="text-sm text-gray-600">
-                      Chapter {selectedChapter} of {selectedBook.chapters}
-                    </span>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={() => navigateChapter('next')}
-                      disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                      className="flex items-center gap-2"
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                {/* Mobile Reading Progress */}
+                {isMobile && (
+                  <div className="mt-8 p-4 bg-orange-50 rounded-xl">
+                    <div className="flex items-center justify-between text-sm text-orange-700">
+                      <span>Chapter {selectedChapter} Progress</span>
+                      <span>{verses.length} verses</span>
+                    </div>
+                    <div className="mt-2 h-2 bg-orange-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-orange-500 rounded-full transition-all duration-300"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">
-                    Select a Book to Start Reading
+              /* Empty State - Mobile Optimized */
+              <div className="flex-1 flex items-center justify-center p-8">
+                <div className="text-center max-w-md">
+                  <BookOpen className={`mx-auto mb-4 text-gray-400 ${
+                    isMobile ? 'h-16 w-16' : 'h-20 w-20'
+                  }`} />
+                  <h3 className={`font-semibold text-gray-700 mb-2 ${
+                    isMobile ? 'text-lg' : 'text-xl'
+                  }`}>
+                    Select a Book to Begin Reading
                   </h3>
-                  <p className="text-gray-500">
-                    Choose a book from the {isMobile ? 'menu' : 'sidebar'} to begin your Bible study
+                  <p className={`text-gray-500 ${
+                    isMobile ? 'text-sm' : 'text-base'
+                  }`}>
+                    Choose a book from the {isMobile ? 'menu' : 'sidebar'} to start your Bible study journey.
                   </p>
                 </div>
               </div>

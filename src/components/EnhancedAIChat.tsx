@@ -31,7 +31,9 @@ import {
   Target,
   Search,
   X,
-  Menu
+  Menu,
+  Lightbulb,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +52,8 @@ import { Switch } from './ui/switch';
 import { generateSystemPrompt, AI_RESPONSE_TEMPLATES } from '../lib/ai-response-templates';
 import { BIBLE_TRANSLATIONS, TranslationCode } from '@/lib/local-bible';
 import { Link } from 'react-router-dom';
+import { Textarea } from './ui/textarea';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -426,6 +430,9 @@ const EnhancedAIChat: React.FC = () => {
     });
   };
 
+  const isMobile = useIsMobile();
+  const [inputValue, setInputValue] = useState(input);
+
   return (
     <div className="flex flex-col h-full bg-gray-50 relative">
       {/* Chat Header - Simplified for within layout */}
@@ -543,60 +550,83 @@ const EnhancedAIChat: React.FC = () => {
         </div>
       </div>
 
-      {/* Messages Area - Optimized for mobile */}
-      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4">
+      {/* Messages Area - Mobile-Optimized */}
+      <div className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 space-y-3 sm:space-y-4 mobile-scroll">
         {messages.length === 0 && showQuickPrompts ? (
-          /* Welcome Screen with Quick Prompts - Mobile Optimized */
-          <div className="max-w-md mx-auto text-center space-y-6 px-4">
-            <div className="space-y-3">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto">
-                <Bot className="h-8 w-8 text-white" />
+          /* Welcome Screen - Mobile-First Design */
+          <div className="max-w-sm sm:max-w-md mx-auto text-center space-y-4 sm:space-y-6 px-2 sm:px-4">
+            
+            {/* Compact Header for Mobile */}
+            <div className="space-y-2 sm:space-y-3">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto">
+                <Bot className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Welcome to Bible AI</h2>
-              <p className="text-sm md:text-base text-gray-600">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Welcome to Bible AI</h2>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Ask me anything about the Bible. I'm here to help you explore God's word with AI-powered insights.
               </p>
             </div>
 
-            {/* Quick Start Prompts - Mobile Grid */}
-            <div className="grid grid-cols-1 gap-3">
-              {QUICK_PROMPTS.map((prompt) => {
-                const IconComponent = prompt.icon;
-                return (
-                  <button
-                    key={prompt.id}
-                    onClick={() => handleSendMessage(prompt.prompt)}
-                    className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-left"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-5 w-5 text-orange-600" />
+            {/* Mobile-Optimized Quick Start Cards */}
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-4">
+              {QUICK_PROMPTS.map((prompt) => (
+                <Button
+                  key={prompt.id}
+                  variant="outline"
+                  onClick={() => {
+                    setInputValue(prompt.prompt);
+                    setShowQuickPrompts(false);
+                    handleSendMessage(prompt.prompt);
+                  }}
+                  className="p-4 sm:p-5 h-auto text-left justify-start hover:bg-orange-50 hover:border-orange-200 border-2 touch-optimized group"
+                >
+                  <div className="flex items-center gap-3 sm:gap-4 w-full">
+                    <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl ${prompt.color} flex-shrink-0`}>
+                      <prompt.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 text-sm sm:text-base group-hover:text-orange-700 transition-colors">
+                        {prompt.text}
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 text-sm">{prompt.text}</h3>
-                        <p className="text-xs text-gray-500 mt-1">{prompt.prompt}</p>
+                      <div className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-2">
+                        {prompt.prompt}
                       </div>
                     </div>
-                  </button>
-                );
-              })}
+                  </div>
+                </Button>
+              ))}
+            </div>
+
+            {/* Mobile Quick Tips */}
+            <div className="mt-6 p-3 sm:p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Lightbulb className="h-3 w-3 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium text-blue-900 mb-1">Quick Tip</div>
+                  <div className="text-xs sm:text-sm text-blue-700">
+                    Try asking specific questions like "What does John 3:16 mean?" or "Tell me about David's story"
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
-          /* Chat Messages - Mobile Optimized */
-          <div className="max-w-4xl mx-auto space-y-4">
+          /* Chat Messages - Mobile-Optimized */
+          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
             {messages.map((message) => (
               <div 
                 key={message.id} 
-                className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 {message.role === 'assistant' && (
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="h-4 w-4 text-white" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                   </div>
                 )}
 
-                <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl p-4 ${
+                <div className={`max-w-[90%] sm:max-w-[85%] md:max-w-[70%] rounded-xl sm:rounded-2xl p-3 sm:p-4 ${
                   message.role === 'user' 
                     ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' 
                     : 'bg-white border border-gray-200 shadow-sm'
@@ -604,7 +634,9 @@ const EnhancedAIChat: React.FC = () => {
                   {message.role === 'assistant' && currentMode !== 'chat' ? (
                     <StructuredAIResponse content={message.content} />
                   ) : (
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                    <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap mobile-text">
+                      {message.content}
+                    </div>
                   )}
                   
                   <div className={`text-xs mt-2 ${
@@ -615,99 +647,123 @@ const EnhancedAIChat: React.FC = () => {
                 </div>
 
                 {message.role === 'user' && (
-                  <div className="w-8 h-8 bg-gray-200 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-                    <User className="h-4 w-4 text-gray-600" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-200 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
                   </div>
                 )}
               </div>
             ))}
             
             {isLoading && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-4 w-4 text-white" />
+              <div className="flex gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                  <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center space-x-2">
+                
+                <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
+                  <div className="flex items-center gap-2">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                       <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
-                    <span className="text-sm text-gray-500">Thinking...</span>
+                    <span className="text-xs sm:text-sm text-gray-500 ml-2">Bible AI is thinking...</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - Mobile Optimized */}
-      <div className="bg-white border-t border-gray-200 p-3 md:p-4 safe-area-bottom">
-        <div className="flex items-end gap-2 md:gap-3 max-w-4xl mx-auto">
-          {/* Voice Recording Button - Smaller on mobile */}
+      {/* Mobile-Optimized Input Area */}
+      <div className="border-t border-gray-200 bg-white p-3 sm:p-4 mobile-safe-area">
+        
+        {/* Quick Suggestions Bar - Mobile Only */}
+        {isMobile && messages.length > 0 && (
+          <div className="mb-3 overflow-x-auto">
+            <div className="flex gap-2 pb-2">
+              {["Daily verse inspiration", "Prayer guidance", "Bible study help", "Faith questions"].map((suggestion) => (
+                <Button
+                  key={suggestion}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setInputValue(suggestion);
+                    handleSendMessage(suggestion);
+                  }}
+                  className="whitespace-nowrap text-xs px-3 py-2 h-8 touch-optimized"
+                >
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2 sm:gap-3 items-end">
+          <div className="flex-1">
+            <div className="relative">
+              <Textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                placeholder="Ask me about the Bible..."
+                className="resize-none pr-10 sm:pr-12 min-h-[44px] max-h-32 text-base mobile-text touch-optimized"
+                style={{ fontSize: '16px' }} // Prevent zoom on iOS
+                rows={1}
+                disabled={isLoading}
+              />
+              
+              {/* Voice Input Button - Mobile */}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 bottom-2 h-8 w-8 p-0 touch-optimized"
+                  onClick={() => {
+                    // Voice input functionality
+                    toast({
+                      title: "Voice Input",
+                      description: "Voice input feature coming soon!"
+                    });
+                  }}
+                >
+                  <Mic className="h-4 w-4 text-gray-400" />
+                </Button>
+              )}
+            </div>
+          </div>
+          
           <Button
-            onClick={toggleVoiceRecording}
-            variant="outline"
-            size="sm"
-            className={`p-2 md:p-3 rounded-xl border-2 transition-all duration-200 flex-shrink-0 ${
-              isVoiceRecording 
-                ? 'border-red-300 bg-red-50 text-red-600' 
-                : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
-            }`}
+            onClick={() => handleSendMessage()}
+            disabled={!inputValue.trim() || isLoading}
+            className="bg-orange-500 hover:bg-orange-600 text-white min-h-[44px] px-4 sm:px-6 touch-optimized"
           >
-            {isVoiceRecording ? (
-              <MicOff className="h-4 w-4 md:h-5 md:w-5" />
+            {isLoading ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
-              <Mic className="h-4 w-4 md:h-5 md:w-5" />
+              <Send className="h-4 w-4" />
             )}
           </Button>
-
-          {/* Input Field - Responsive */}
-          <div className="flex-1 relative">
-            <Input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me about the Bible..."
-              className="pr-12 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-400 h-11 md:h-12 text-sm md:text-base"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              disabled={isLoading}
-            />
-            
-            {input.trim() && (
-              <Button
-                onClick={() => handleSendMessage()}
-                disabled={isLoading}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-2 rounded-lg h-7 w-7 md:h-8 md:w-8"
-              >
-                <Send className="h-3 w-3 md:h-4 md:w-4" />
-              </Button>
-            )}
-          </div>
         </div>
 
-        {/* Quick Actions Bar - Mobile Optimized */}
-        {input.length === 0 && !isLoading && (
-          <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
-            {QUICK_PROMPTS.slice(0, 4).map((prompt) => (
-              <Button
-                key={prompt.id}
-                onClick={() => handleSendMessage(prompt.prompt)}
-                variant="outline"
-                size="sm"
-                className="flex-shrink-0 rounded-full border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700 text-xs px-3 md:px-4 py-2 whitespace-nowrap"
-              >
-                {prompt.text}
-              </Button>
-            ))}
+        {/* Mobile Status Bar */}
+        {isMobile && (
+          <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Bible AI Online</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <MessageCircle className="h-3 w-3" />
+              <span>{messages.length} messages</span>
+            </div>
           </div>
         )}
       </div>
