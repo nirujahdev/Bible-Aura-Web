@@ -683,7 +683,7 @@ const EnhancedAIChat: React.FC = () => {
         {isMobile && messages.length > 0 && (
           <div className="mb-3 overflow-x-auto">
             <div className="flex gap-2 pb-2">
-              {["Daily verse inspiration", "Prayer guidance", "Bible study help", "Faith questions"].map((suggestion) => (
+              {["Quick prayer", "Bible study"].map((suggestion) => (
                 <Button
                   key={suggestion}
                   variant="outline"
@@ -692,7 +692,7 @@ const EnhancedAIChat: React.FC = () => {
                     setInputValue(suggestion);
                     handleSendMessage(suggestion);
                   }}
-                  className="whitespace-nowrap text-xs px-3 py-2 h-8 touch-optimized"
+                  className="whitespace-nowrap text-xs px-2 py-1 h-7 touch-optimized bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100"
                 >
                   {suggestion}
                 </Button>

@@ -475,31 +475,31 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col">
+    <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
-            <span className="text-white text-lg font-bold">✦</span>
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-orange-500 flex items-center justify-center">
+            <span className="text-white text-sm sm:text-lg font-bold">✦</span>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">Bible AI Chat</h3>
-            <p className="text-xs text-gray-600">{verseReference}</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">Bible AI Chat</h3>
+            <p className="text-xs text-gray-600 truncate">{verseReference}</p>
           </div>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0"
+          className="h-8 w-8 p-0 flex-shrink-0"
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-2 sm:p-4">
+        <div className="space-y-3 sm:space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -548,65 +548,51 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
       </ScrollArea>
 
       {/* Mode Selector - Now positioned above the input */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50">
-        <Tabs value={activeMode} onValueChange={(value) => handleModeChange(value as ChatMode)}>
-          <TabsList className="grid w-full grid-cols-2 gap-1 h-auto p-1">
-            {CHAT_MODES.map((mode) => {
-              const Icon = mode.icon;
-              return (
-                <TabsTrigger
-                  key={mode.id}
-                  value={mode.id}
-                  className="flex flex-col items-center gap-1 p-2 text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-                >
-                  <Icon className="h-3 w-3" />
-                  <span>{mode.name}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-          
-          <TabsList className="grid w-full grid-cols-2 gap-1 h-auto p-1 mt-1">
-            {CHAT_MODES.slice(2).map((mode) => {
-              const Icon = mode.icon;
-              return (
-                <TabsTrigger
-                  key={mode.id}
-                  value={mode.id}
-                  className="flex flex-col items-center gap-1 p-2 text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white"
-                >
-                  <Icon className="h-3 w-3" />
-                  <span>{mode.name}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
+      <div className="p-2 sm:p-3 border-t border-gray-100 bg-gray-50">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2">
+          {CHAT_MODES.map((mode) => (
+            <Button
+              key={mode.id}
+              variant={activeMode === mode.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleModeChange(mode.id)}
+              className={`text-xs px-2 py-1 h-8 ${
+                activeMode === mode.id 
+                  ? 'bg-orange-500 text-white' 
+                  : 'hover:bg-orange-50 hover:border-orange-200'
+              }`}
+              title={mode.description}
+            >
+              <mode.icon className="h-3 w-3 mr-1" />
+              <span className="truncate">{mode.name}</span>
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-100">
+      <div className="p-3 sm:p-4 border-t border-gray-100">
         <div className="flex gap-2">
           <Input
             ref={inputRef}
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={`Ask about ${verseReference} in ${CHAT_MODES.find(m => m.id === activeMode)?.name.toLowerCase()} context...`}
-            className="flex-1"
+            placeholder={`Ask about ${verseReference}...`}
+            className="flex-1 text-sm"
             disabled={isLoading}
           />
           <Button
             onClick={handleSendMessage}
             disabled={!userInput.trim() || isLoading}
-            className="bg-orange-500 hover:bg-orange-600"
+            className="bg-orange-500 hover:bg-orange-600 h-9 w-9 p-0 flex-shrink-0"
             size="sm"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
         
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 mt-2 text-center hidden sm:block">
           Press Enter to send • Shift+Enter for new line
         </p>
       </div>

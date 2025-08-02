@@ -549,7 +549,7 @@ export default function Bible() {
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="sm" className="h-10 w-10 p-0 bg-white shadow-lg rounded-xl">
-                  <Menu className="h-5 w-5" />
+                  <Search className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-80 p-0">

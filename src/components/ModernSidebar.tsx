@@ -345,7 +345,6 @@ function MobileNavigationHeader() {
   }
 
   const mobileNavItems = [
-    { icon: Home, path: "/dashboard", label: "Dashboard", description: "Your spiritual home" },
     { icon: MessageCircle, path: "/ai-chat", label: "AI Chat", description: "Biblical AI assistant" },
     { icon: BookOpen, path: "/bible", label: "Bible", description: "Read & study scripture" },
     { icon: Library, path: "/study-hub", label: "Study Hub", description: "Deep biblical study" },
@@ -372,20 +371,18 @@ function MobileNavigationHeader() {
             </SheetTrigger>
             
             <SheetContent side="left" className="w-[300px] p-0 bg-white">
-              {/* Beautiful Header */}
-              <div className="p-6 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                <div className="relative text-center">
-                  <div className="inline-flex items-center justify-center w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl mb-3 shadow-lg">
-                    <span className="text-2xl font-bold">✦</span>
+              {/* Simple Header with Logo and Title */}
+              <div className="p-4 border-b border-gray-200 bg-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">✦</span>
                   </div>
-                  <h1 className="text-xl font-bold mb-1">Bible Aura</h1>
-                  <p className="text-sm text-white/90">AI Biblical Assistant</p>
+                  <h2 className="text-lg font-bold text-orange-500">Bible Aura</h2>
                 </div>
               </div>
 
-              {/* Navigation Items */}
-              <div className="flex-1 overflow-y-auto px-3 py-4">
+              {/* Navigation Items - Scrollable */}
+              <div className="flex-1 overflow-y-auto px-3 py-4 max-h-[calc(100vh-180px)]">
                 <div className="space-y-1">
                   {mobileNavItems.map((item) => (
                     <Link
@@ -474,7 +471,7 @@ function MobileNavigationHeader() {
           {/* Center: Logo and Title */}
           <div className="flex items-center space-x-2">
             <span className="text-orange-600 font-bold text-xl">✦</span>
-            <h1 className="text-lg font-bold text-gray-900">Bible Aura</h1>
+                            <h1 className="text-lg font-bold text-orange-500">Bible Aura</h1>
           </div>
 
           {/* Right: User Avatar */}
