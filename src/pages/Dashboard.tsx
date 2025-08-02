@@ -1,25 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   MessageCircle, BookOpen, PenTool, Sparkles, TrendingUp, 
   Star, Calendar, Target, Heart, Brain, Clock, ChevronRight,
   Plus, Book, Zap, Users, Trophy, ArrowRight, Send, Bot,
   Menu, Settings, LogOut, Headphones, FileText, Edit, History,
-  Mic, Search, Play, Pause, Volume2, MoreVertical, X
+  Mic, Search, Play, Pause, Volume2, MoreVertical, X, Home,
+  Bookmark, User, Bell, Gift, Flame, RefreshCw, Grid3X3
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
-import EnhancedAIChat from '@/components/EnhancedAIChat';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import EnhancedAIChat from '@/components/EnhancedAIChat';
 
 interface DashboardStats {
   journalEntries: number;
@@ -36,7 +35,7 @@ interface Message {
   model?: string;
 }
 
-// Mobile-optimized quick start prompts
+// Mobile-optimized quick start prompts (same as laptop version)
 const quickStartPrompts = [
   {
     id: 1,
@@ -76,7 +75,7 @@ const quickStartPrompts = [
   }
 ];
 
-// Mobile-friendly feature cards - Updated to match desktop layout
+// Mobile-friendly feature cards (same as laptop version)
 const dashboardFeatures = [
   {
     title: "AI Bible Chat",
@@ -159,7 +158,7 @@ const inspirationalQuotes = [
   }
 ];
 
-// Mock AI function for demo purposes
+// Mock AI function for demo purposes (same as laptop version)
 const getAIInsight = async (prompt: string) => {
   try {
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1500));
@@ -176,15 +175,14 @@ const getAIInsight = async (prompt: string) => {
   }
 };
 
-const Dashboard = () => {
+const MobileDashboard = () => {
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   
   // SEO optimization
   useSEO(SEO_CONFIG.DASHBOARD);
 
-  // State management
+  // State management (same as laptop version)
   const [stats, setStats] = useState<DashboardStats>({
     journalEntries: 0,
     chatConversations: 0,
@@ -197,16 +195,16 @@ const Dashboard = () => {
   const [quickInsight, setQuickInsight] = useState<string>('');
   const [showQuickInsight, setShowQuickInsight] = useState(false);
   const [currentQuote, setCurrentQuote] = useState(0);
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  // Load dashboard data
+  // Load dashboard data (same backend calls as laptop)
   useEffect(() => {
     if (user) {
       loadDashboardStats();
     }
   }, [user]);
 
-  // Rotate quotes every 10 seconds
+  // Rotate quotes every 10 seconds (same as laptop)
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentQuote((prev) => (prev + 1) % inspirationalQuotes.length);
@@ -218,11 +216,11 @@ const Dashboard = () => {
     try {
       const [journalRes, conversationsRes] = await Promise.all([
         supabase
-        .from('journal_entries')
+          .from('journal_entries')
           .select('id')
           .eq('user_id', user?.id),
         supabase
-        .from('ai_conversations')
+          .from('ai_conversations')
           .select('id')
           .eq('user_id', user?.id)
       ]);
@@ -277,83 +275,86 @@ const Dashboard = () => {
       {/* Mobile Header */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between p-4">
-          {/* Left: Menu Button */}
-          <Sheet open={isSideMenuOpen} onOpenChange={setIsSideMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-xl">
-                <Menu className="h-5 w-5 text-gray-600" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 p-0">
-              <div className="flex flex-col h-full">
-                {/* User Profile Section */}
-                <div className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12 border-2 border-white/20">
-                      <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-white/20 text-white font-bold">
-                        {getUserName().charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold text-white">{getUserName()}</p>
-                      <p className="text-sm text-orange-100">{formatTime()}!</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Navigation Links */}
-                <div className="flex-1 p-4 space-y-2">
-                  {dashboardFeatures.map((feature, index) => {
-                    const Icon = feature.icon;
-                    return (
-                      <Link
-                        key={index}
-                        to={feature.href}
-                        className="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors"
-                        onClick={() => setIsSideMenuOpen(false)}
-                      >
-                        <div className={`w-10 h-10 ${feature.color} rounded-xl flex items-center justify-center mr-3`}>
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{feature.title}</p>
-                          <p className="text-xs text-gray-500">{feature.stats}</p>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-gray-400" />
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {/* Bottom Section */}
-                <div className="p-4 border-t border-gray-200">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-red-600 hover:bg-red-50"
-                    onClick={() => signOut()}
-                  >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    Sign Out
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          {/* Center: Logo and Title - No box around logo */}
+          {/* Left: Logo */}
           <div className="flex items-center space-x-2">
             <span className="text-orange-600 font-bold text-2xl">✦</span>
             <h1 className="text-lg font-bold text-gray-900">Bible Aura</h1>
           </div>
 
-          {/* Right: User Avatar */}
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold text-sm">
-              {getUserName().charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          {/* Right: 3-dot menu */}
+          <div className="relative">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-600 p-2"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+            
+            {showSettings && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 max-h-80 overflow-y-auto">
+                <div className="px-4 py-2 border-b border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-orange-100 text-orange-700">
+                        {getUserName().charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-gray-800">{getUserName()}</p>
+                      <p className="text-xs text-gray-500">{formatTime()}!</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => loadDashboardStats()}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <RefreshCw className="h-4 w-4 text-blue-500" />
+                  <span>Refresh Stats</span>
+                </button>
+                
+                <button
+                  onClick={() => toast({ title: "Notifications", description: "Notification settings updated." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Bell className="h-4 w-4 text-purple-500" />
+                  <span>Notifications</span>
+                </button>
+                
+                <button
+                  onClick={() => toast({ title: "Widget Settings", description: "Customize your dashboard widgets." })}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                >
+                  <Grid3X3 className="h-4 w-4 text-green-500" />
+                  <span>Widget Layout</span>
+                </button>
+                
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <Link to="/profile">
+                    <button
+                      onClick={() => setShowSettings(false)}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700"
+                    >
+                      <User className="h-4 w-4 text-gray-500" />
+                      <span>Profile Settings</span>
+                    </button>
+                  </Link>
+                  
+                  <button
+                    onClick={() => signOut()}
+                    className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-3 text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -410,7 +411,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Main Features Grid - Prominent like desktop */}
+        {/* Main Features Grid */}
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-4">Bible Aura Features</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -508,8 +509,8 @@ const Dashboard = () => {
                       <Bot className="h-5 w-5 text-orange-600 mr-2" />
                       <span className="font-medium text-orange-900">AI Insight</span>
                     </div>
-                    <Button
-                      variant="ghost"
+                    <Button 
+                      variant="ghost" 
                       size="sm"
                       onClick={() => setShowQuickInsight(false)}
                       className="p-1 h-6 w-6 text-orange-600 hover:bg-orange-100"
@@ -576,4 +577,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default MobileDashboard; 

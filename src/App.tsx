@@ -63,7 +63,7 @@ function AppRoutes() {
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         {/* Public landing pages - no authentication required */}
-        <Route path="/" element={user ? <Navigate to="/ai-chat" replace /> : <Home />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
@@ -106,8 +106,12 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
 
-        {/* Legacy dashboard redirect to AI chat */}
-        <Route path="/dashboard" element={<Navigate to="/ai-chat" replace />} />
+        {/* Dashboard - Mobile optimized */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
         
         <Route path="/bible" element={
           <ProtectedRoute>
