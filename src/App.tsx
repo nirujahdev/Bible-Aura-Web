@@ -54,6 +54,7 @@ const AdvancedStudy = lazy(() => import("./pages/features/AdvancedStudy"));
 // Component imports
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ModernLayout } from "./components/ModernLayout";
+import EnhancedAIChat from "./components/EnhancedAIChat";
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -62,7 +63,7 @@ function AppRoutes() {
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         {/* Public landing pages - no authentication required */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
+        <Route path="/" element={user ? <Navigate to="/ai-chat" replace /> : <Home />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
@@ -96,14 +97,17 @@ function AppRoutes() {
         <Route path="/blog/biblical-ai-assistant-guide" element={<BibleAI />} />
         <Route path="/blog/christian-ai-technology-future" element={<BibleAI />} />
 
-        {/* Protected app routes - authentication required */}
-        <Route path="/dashboard" element={
+        {/* Main AI Chat - The primary app experience */}
+        <Route path="/ai-chat" element={
           <ProtectedRoute>
             <ModernLayout>
-              <Dashboard />
+              <EnhancedAIChat />
             </ModernLayout>
           </ProtectedRoute>
         } />
+
+        {/* Legacy dashboard redirect to AI chat */}
+        <Route path="/dashboard" element={<Navigate to="/ai-chat" replace />} />
         
         <Route path="/bible" element={
           <ProtectedRoute>
@@ -222,7 +226,7 @@ function AppRoutes() {
         <Route path="/subscription/cancelled" element={<SubscriptionCancelled />} />
 
         {/* Legacy redirects */}
-        <Route path="/chat" element={<Navigate to="/" replace />} />
+        <Route path="/chat" element={<Navigate to="/ai-chat" replace />} />
         <Route path="/funding" element={<Navigate to="/pricing" replace />} />
 
         {/* 404 fallback */}

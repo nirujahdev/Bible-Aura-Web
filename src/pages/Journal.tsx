@@ -310,6 +310,8 @@ const Journal = () => {
     }
   };
 
+  const isMobile = window.innerWidth < 768; // Define isMobile here
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -345,194 +347,289 @@ const Journal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex flex-col lg:flex-row h-screen">
-        {/* Left Container - Sidebar - Mobile: Full width, Desktop: Fixed width */}
-        <div className="w-full lg:w-80 bg-white border-r border-gray-200 p-2 lg:p-4">
-          <div className="h-full flex flex-col space-y-2 lg:space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-2 lg:mb-4">
-              <h1 className="text-lg lg:text-xl font-bold text-gray-800 flex items-center gap-2">
-                <BookOpen className="h-5 lg:h-6 w-5 lg:w-6 text-orange-600" />
-                My Journal
-              </h1>
-              <Button
-                onClick={handleNewEntry}
-                size="sm"
-                className="bg-orange-500 hover:bg-orange-600 h-8 lg:h-9 px-2 lg:px-3"
-              >
-                <Plus className="h-3 lg:h-4 w-3 lg:w-4 mr-1" />
-                <span className="hidden sm:inline">New</span>
-              </Button>
-            </div>
-
-            {/* Mobile: Horizontal layout, Desktop: Vertical layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-1 gap-2 lg:gap-4 lg:flex lg:flex-col lg:space-y-4">
-              {/* Calendar Section - Collapsible on mobile */}
-              <Card className="border-orange-200">
-                <CardHeader className="pb-1 lg:pb-2">
-                  <CardTitle className="text-sm lg:text-lg flex items-center gap-2">
-                    <CalendarIcon className="h-4 lg:h-5 w-4 lg:w-5 text-orange-600" />
-                    <span className="hidden sm:inline">
-                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </span>
-                    <span className="sm:hidden">
-                      {currentMonth.toLocaleDateString('en-US', { month: 'short' })}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-2 lg:p-6">
-                  <div className="lg:block">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      month={currentMonth}
-                      onMonthChange={setCurrentMonth}
-                      className="w-full"
-                      classNames={{
-                        months: "w-full",
-                        month: "w-full",
-                        table: "w-full border-collapse",
-                        head_row: "flex w-full",
-                        head_cell: "text-gray-500 rounded-md w-6 lg:w-8 font-normal text-xs",
-                        row: "flex w-full mt-1",
-                        cell: "text-center text-sm p-0 relative w-6 lg:w-8 h-6 lg:h-8",
-                        day: "h-6 lg:h-8 w-6 lg:w-8 p-0 font-normal text-xs",
-                        day_selected: "bg-orange-500 text-white hover:bg-orange-600",
-                        day_today: "bg-orange-50 text-orange-600 font-semibold",
-                        day_outside: "text-gray-300",
-                      }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recent Journals Section */}
-              <Card className="flex-1 lg:flex-1 border-orange-200">
-                <CardHeader className="pb-1 lg:pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Clock className="h-3 lg:h-4 w-3 lg:w-4 text-orange-600" />
-                      <span className="hidden sm:inline">Recent Entries ({entries.length})</span>
-                      <span className="sm:hidden">Recent ({entries.length})</span>
-                    </CardTitle>
-                    <Button
-                      onClick={loadEntries}
-                      variant="ghost"
-                      size="sm"
-                      disabled={loading}
-                      className="h-6 lg:h-8 w-6 lg:w-8 p-0"
-                    >
-                      <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="max-h-48 lg:max-h-96 overflow-y-auto">
-                    {loading ? (
-                      <div className="flex justify-center py-4 lg:py-6">
-                        <RefreshCw className="h-4 lg:h-5 w-4 lg:w-5 animate-spin text-orange-500" />
-                      </div>
-                    ) : error ? (
-                      <div className="p-2 lg:p-4 text-center">
-                        <AlertCircle className="h-6 lg:h-8 w-6 lg:w-8 mx-auto mb-2 text-red-400" />
-                        <p className="text-red-600 text-xs mb-2">{error}</p>
-                        <Button onClick={loadEntries} size="sm" variant="outline" className="text-xs h-6">
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                          Retry
-                        </Button>
-                      </div>
-                    ) : entries.length === 0 ? (
-                      <div className="p-2 lg:p-4 text-center">
-                        <FileText className="h-6 lg:h-8 w-6 lg:w-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-gray-500 text-xs mb-1">No entries yet</p>
-                        <p className="text-gray-400 text-xs">Start writing your first entry!</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50">
+      {/* Enhanced Journal Editor Modal - Mobile optimized */}
+      {showEditor && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden">
+            <div className="flex flex-col h-[95vh]">
+              {/* Editor Header - Mobile optimized */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+                <h2 className="text-lg md:text-xl font-bold text-gray-800">
+                  {isEditing ? 'Edit Entry' : 'New Journal Entry'}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleSaveEntry}
+                    disabled={saving}
+                    className="bg-orange-500 hover:bg-orange-600 text-white h-9 px-4"
+                  >
+                    {saving ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Saving...
                       </div>
                     ) : (
-                      <div className="divide-y divide-gray-100">
-                        {entries.map((entry) => (
-                          <div
-                            key={entry.id}
-                            className={`p-2 lg:p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                              selectedEntry?.id === entry.id ? 'bg-orange-50 border-r-2 border-orange-500' : ''
-                            }`}
-                            onClick={() => setSelectedEntry(entry)}
-                          >
-                            <div className="flex justify-between items-start mb-1">
-                              <div className="flex items-center gap-1 flex-1">
-                                <span className="text-xs">{getLanguageFlag(entry.language)}</span>
-                                <h3 className="font-medium text-gray-800 truncate text-xs lg:text-sm">
-                                  {entry.title || "Untitled Entry"}
-                                </h3>
-                              </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditEntry(entry);
-                                  }}
-                                  className="h-4 lg:h-5 w-4 lg:w-5 p-0 text-gray-400 hover:text-orange-600"
-                                >
-                                  <Edit3 className="h-2.5 lg:h-3 w-2.5 lg:w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteEntry(entry.id);
-                                  }}
-                                  className="h-4 lg:h-5 w-4 lg:w-5 p-0 text-gray-400 hover:text-red-600"
-                                >
-                                  <Trash2 className="h-2.5 lg:h-3 w-2.5 lg:w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                              {entry.content}
-                            </p>
-                            <div className="flex justify-between items-center text-xs text-gray-500">
-                              <span className="hidden sm:inline">{formatDate(entry.created_at)}</span>
-                              <span className="sm:hidden">{formatDate(entry.created_at).split(',')[0]}</span>
-                              <span>{formatTime(entry.created_at)}</span>
-                            </div>
-                            {entry.verse_references && entry.verse_references.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {entry.verse_references.slice(0, 2).map((verse, index) => (
-                                  <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-1 py-0.5 rounded">
-                                    📖 {verse.split(' ').slice(-1)[0]}
-                                  </span>
-                                ))}
-                                {entry.verse_references.length > 2 && (
-                                  <span className="text-xs text-gray-400">+{entry.verse_references.length - 2}</span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        <Save className="h-4 w-4" />
+                        Save
                       </div>
                     )}
+                  </Button>
+                  <Button
+                    onClick={handleCloseEditor}
+                    variant="outline"
+                    className="h-9 w-9 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Editor Content - Mobile optimized */}
+              <div className="flex-1 overflow-auto">
+                {useEnhancedEditor ? (
+                  <EnhancedJournalEditor
+                    initialEntry={editingEntry}
+                    onSave={handleSaveEntry}
+                    onCancel={handleCloseEditor}
+                  />
+                ) : (
+                  <div className="p-4 space-y-4">
+                    {/* Simple Editor for mobile fallback */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Title
+                      </label>
+                      <Input
+                        placeholder="Entry title..."
+                        value={editingEntry?.title || ''}
+                        onChange={(e) => setEditingEntry(prev => ({
+                          ...prev,
+                          title: e.target.value
+                        }))}
+                        className="h-11"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Content
+                      </label>
+                      <Textarea
+                        placeholder="Write your thoughts, prayers, and reflections..."
+                        value={editingEntry?.content || ''}
+                        onChange={(e) => setEditingEntry(prev => ({
+                          ...prev,
+                          content: e.target.value
+                        }))}
+                        className="min-h-[300px] text-base leading-relaxed"
+                      />
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Right Container - Entry Display - Mobile: Full width below sidebar */}
-        <div className="flex-1 bg-white p-3 lg:p-8">
+      {/* Main Journal Interface - Mobile optimized */}
+      <div className="flex flex-col lg:flex-row h-screen">
+        {/* Left Sidebar - Responsive */}
+        <div className="w-full lg:w-80 bg-white border-b lg:border-r lg:border-b-0 border-gray-200 flex flex-col lg:h-screen">
+          {/* Header - Mobile optimized */}
+          <div className="p-4 border-b border-gray-200 bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg md:text-xl font-bold text-gray-800">Journal</h1>
+                  <p className="text-sm text-gray-600 hidden sm:block">Record your spiritual journey</p>
+                </div>
+              </div>
+              
+              <Button
+                onClick={handleNewEntry}
+                className="bg-orange-500 hover:bg-orange-600 text-white h-10 px-4 rounded-xl"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">New Entry</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Calendar and Entries - Mobile optimized layout */}
+          <div className="flex-1 flex flex-col lg:flex-col xl:flex-row gap-4 p-4 overflow-auto">
+            {/* Calendar Section - Responsive */}
+            <Card className="flex-shrink-0 border-orange-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4 text-orange-600" />
+                  <span className="hidden sm:inline">Calendar</span>
+                  <span className="sm:hidden">Calendar</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3">
+                <div className="w-full overflow-hidden">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    month={currentMonth}
+                    onMonthChange={setCurrentMonth}
+                    className="rounded-lg"
+                    classNames={{
+                      months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                      month: "space-y-4",
+                      caption: "flex justify-center pt-1 relative items-center",
+                      caption_label: "text-sm font-medium",
+                      nav: "space-x-1 flex items-center",
+                      nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                      nav_button_previous: "absolute left-1",
+                      nav_button_next: "absolute right-1",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex",
+                      head_cell: "text-muted-foreground rounded-md w-8 lg:w-9 font-normal text-xs",
+                      row: "flex w-full mt-2",
+                      cell: "text-center text-sm p-0 relative w-8 lg:w-9 h-8 lg:h-9",
+                      day: "h-8 lg:h-9 w-8 lg:w-9 p-0 font-normal text-xs",
+                      day_selected: "bg-orange-500 text-white hover:bg-orange-600",
+                      day_today: "bg-orange-50 text-orange-600 font-semibold",
+                      day_outside: "text-gray-300",
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Journals Section - Mobile optimized */}
+            <Card className="flex-1 border-orange-200">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-orange-600" />
+                    <span className="hidden sm:inline">Recent Entries ({entries.length})</span>
+                    <span className="sm:hidden">Recent ({entries.length})</span>
+                  </CardTitle>
+                  <Button
+                    onClick={loadEntries}
+                    variant="ghost"
+                    size="sm"
+                    disabled={loading}
+                    className="h-8 w-8 p-0"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="max-h-60 lg:max-h-96 overflow-y-auto">
+                  {loading ? (
+                    <div className="flex justify-center py-6">
+                      <RefreshCw className="h-5 w-5 animate-spin text-orange-500" />
+                    </div>
+                  ) : error ? (
+                    <div className="p-4 text-center">
+                      <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
+                      <p className="text-red-600 text-sm mb-2">{error}</p>
+                      <Button onClick={loadEntries} size="sm" variant="outline" className="text-xs h-8">
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        Retry
+                      </Button>
+                    </div>
+                  ) : entries.length === 0 ? (
+                    <div className="p-4 text-center">
+                      <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-gray-500 text-sm mb-1">No entries yet</p>
+                      <p className="text-gray-400 text-xs">Start writing your first entry!</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-100">
+                      {entries.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            selectedEntry?.id === entry.id ? 'bg-orange-50 border-r-2 border-orange-500' : ''
+                          }`}
+                          onClick={() => setSelectedEntry(entry)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2 flex-1">
+                              <span className="text-sm">{getLanguageFlag(entry.language)}</span>
+                              <h3 className="font-medium text-gray-800 truncate text-sm">
+                                {entry.title || "Untitled Entry"}
+                              </h3>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditEntry(entry);
+                                }}
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-orange-600"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteEntry(entry.id);
+                                }}
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                            {entry.content}
+                          </p>
+                          <div className="flex justify-between items-center text-xs text-gray-500">
+                            <span className="hidden sm:inline">{formatDate(entry.created_at)}</span>
+                            <span className="sm:hidden">{formatDate(entry.created_at).split(',')[0]}</span>
+                            <span>{formatTime(entry.created_at)}</span>
+                          </div>
+                          {entry.verse_references && entry.verse_references.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {entry.verse_references.slice(0, 2).map((verse, index) => (
+                                <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">
+                                  📖 {verse.split(' ').slice(-1)[0]}
+                                </span>
+                              ))}
+                              {entry.verse_references.length > 2 && (
+                                <span className="text-xs text-gray-400">+{entry.verse_references.length - 2}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Right Container - Entry Display - Mobile optimized */}
+        <div className="flex-1 bg-white p-4 lg:p-8">
           <div className="h-full flex flex-col max-w-4xl mx-auto">
             {selectedEntry ? (
               <div className="h-full flex flex-col">
-                {/* Entry Header */}
+                {/* Entry Header - Mobile optimized */}
                 <div className="mb-4 lg:mb-6 pb-3 lg:pb-4 border-b border-gray-200">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-2 gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl lg:text-2xl">{getLanguageFlag(selectedEntry.language)}</span>
-                      <h1 className="text-lg lg:text-2xl font-bold text-gray-800">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{getLanguageFlag(selectedEntry.language)}</span>
+                      <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
                         {selectedEntry.title || "Untitled Entry"}
                       </h1>
                     </div>
@@ -541,91 +638,139 @@ const Journal = () => {
                         onClick={() => handleEditEntry(selectedEntry)}
                         variant="outline"
                         size="sm"
-                        className="border-orange-300 text-orange-600 hover:bg-orange-50 h-8"
+                        className="border-orange-300 text-orange-600 hover:bg-orange-50 h-9"
                       >
-                        <Edit3 className="h-3 lg:h-4 w-3 lg:w-4 mr-1" />
+                        <Edit3 className="h-4 w-4 mr-2" />
                         Edit
                       </Button>
                       <Button
                         onClick={() => handleDeleteEntry(selectedEntry.id)}
                         variant="outline"
                         size="sm"
-                        className="border-red-300 text-red-600 hover:bg-red-50 h-8"
+                        className="border-red-300 text-red-600 hover:bg-red-50 h-9"
                       >
-                        <Trash2 className="h-3 lg:h-4 w-3 lg:w-4 mr-1" />
-                        <span className="hidden sm:inline">Delete</span>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                       </Button>
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-600">
-                    <span>{formatDate(selectedEntry.created_at)}</span>
-                    <span className="hidden sm:inline">•</span>
-                    <span>{formatTime(selectedEntry.created_at)}</span>
-                    {selectedEntry.word_count && (
-                      <>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="hidden sm:inline">{selectedEntry.word_count} words</span>
-                      </>
+                  {/* Entry Metadata - Mobile optimized */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <CalendarIcon className="h-4 w-4" />
+                      <span>{formatDate(selectedEntry.created_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{formatTime(selectedEntry.created_at)}</span>
+                    </div>
+                    {selectedEntry.word_count > 0 && (
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-4 w-4" />
+                        <span>{selectedEntry.word_count} words</span>
+                      </div>
                     )}
-                    {selectedEntry.reading_time && (
-                      <>
-                        <span className="hidden sm:inline">•</span>
-                        <span className="hidden sm:inline">{selectedEntry.reading_time} min read</span>
-                      </>
+                    {selectedEntry.reading_time > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{selectedEntry.reading_time} min read</span>
+                      </div>
                     )}
                   </div>
 
-                  {selectedEntry.verse_references && selectedEntry.verse_references.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedEntry.verse_references.map((verse, index) => (
-                        <span key={index} className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                          📖 {verse}
-                        </span>
-                      ))}
+                  {/* Tags and References - Mobile optimized */}
+                  {(selectedEntry.tags && selectedEntry.tags.length > 0) || 
+                   (selectedEntry.verse_references && selectedEntry.verse_references.length > 0) ? (
+                    <div className="mt-3 space-y-2">
+                      {selectedEntry.tags && selectedEntry.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {selectedEntry.tags.map((tag, index) => (
+                            <span key={index} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {selectedEntry.verse_references && selectedEntry.verse_references.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {selectedEntry.verse_references.map((verse, index) => (
+                            <span key={index} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                              📖 {verse}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Entry Content - Optimized for mobile reading */}
+                <div className="flex-1 overflow-auto">
+                  <div className={`prose prose-lg max-w-none ${
+                    isMobile ? 'prose-base' : 'prose-lg'
+                  }`}>
+                    <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                      {selectedEntry.content}
+                    </div>
+                  </div>
+
+                  {/* Mood and Spiritual State - Mobile optimized */}
+                  {(selectedEntry.mood || selectedEntry.spiritual_state) && (
+                    <div className="mt-6 p-4 bg-orange-50 rounded-xl border border-orange-200">
+                      <h3 className="font-semibold text-orange-800 mb-2">Reflection</h3>
+                      <div className="space-y-2 text-sm">
+                        {selectedEntry.mood && (
+                          <div>
+                            <span className="font-medium text-orange-700">Mood: </span>
+                            <span className="text-gray-700">{selectedEntry.mood}</span>
+                          </div>
+                        )}
+                        {selectedEntry.spiritual_state && (
+                          <div>
+                            <span className="font-medium text-orange-700">Spiritual State: </span>
+                            <span className="text-gray-700">{selectedEntry.spiritual_state}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Featured Verse - Mobile optimized */}
+                  {selectedEntry.verse_text && selectedEntry.verse_reference && (
+                    <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                      <h3 className="font-semibold text-blue-800 mb-2">Featured Verse</h3>
+                      <blockquote className="text-blue-900 italic mb-2">
+                        "{selectedEntry.verse_text}"
+                      </blockquote>
+                      <cite className="text-blue-700 font-medium text-sm">
+                        — {selectedEntry.verse_reference}
+                      </cite>
                     </div>
                   )}
                 </div>
-
-                {/* Entry Content */}
-                <div className="flex-1 overflow-y-auto">
-                  <div className="prose prose-gray max-w-none prose-sm lg:prose-base">
-                    <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                      {selectedEntry.content.split('\n').map((line, index) => {
-                        // Simple markdown rendering
-                        let processedLine = line
-                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\*(.*?)\*/g, '<em>$1</em>');
-                        
-                        if (line.startsWith('• ')) {
-                          return (
-                            <div key={index} className="flex items-start gap-2 mb-1">
-                              <span className="mt-1.5 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
-                              <span dangerouslySetInnerHTML={{ __html: processedLine.substring(2) }} />
-                            </div>
-                          );
-                        }
-                        
-                        return (
-                          <div key={index} dangerouslySetInnerHTML={{ __html: processedLine || '<br/>' }} />
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
               </div>
             ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center px-4">
-                  <BookOpen className="h-12 lg:h-16 w-12 lg:w-16 mx-auto mb-4 text-gray-300" />
-                  <h2 className="text-lg lg:text-xl font-semibold text-gray-600 mb-2">Select an entry to read</h2>
-                  <p className="text-sm lg:text-base text-gray-500 mb-4">Choose from your recent journal entries or create a new one</p>
+              /* Empty State - Mobile optimized */
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center max-w-md mx-auto">
+                  <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <BookOpen className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Welcome to your Journal
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Record your spiritual journey, prayers, and reflections. 
+                    Select an entry from the sidebar or create a new one to get started.
+                  </p>
                   <Button
                     onClick={handleNewEntry}
-                    className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Write New Entry
+                    <Plus className="h-5 w-5 mr-2" />
+                    Write Your First Entry
                   </Button>
                 </div>
               </div>

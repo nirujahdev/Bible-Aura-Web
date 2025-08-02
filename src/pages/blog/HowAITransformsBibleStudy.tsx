@@ -118,40 +118,40 @@ const HowAITransformsBibleStudy = () => {
             </Button>
           </div>
 
-          {/* Article Meta */}
+            {/* Article Meta */}
           <div className="flex items-center justify-center gap-6 mb-6 text-orange-100">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span>February 2, 2024</span>
-            </div>
+              </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>15 min read</span>
-            </div>
+              </div>
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span>Bible Aura Team</span>
             </div>
-          </div>
+            </div>
 
           {/* Title */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
             How AI Transforms Bible Study
-          </h1>
-          
+            </h1>
+
           {/* Subtitle */}
           <p className="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto">
             Discover how artificial intelligence revolutionizes Bible study with smart insights, contextual analysis, and personalized learning
           </p>
 
-          {/* Share Button */}
+            {/* Share Button */}
           <div className="flex justify-center">
             <Button variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600">
               <Share2 className="h-4 w-4 mr-2" />
-              Share Article
-            </Button>
+                Share Article
+              </Button>
+            </div>
           </div>
-        </div>
       </section>
 
       {/* Table of Contents */}
@@ -166,29 +166,29 @@ const HowAITransformsBibleStudy = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {tableOfContents.map((item, index) => (
-                  <a
-                    key={index}
-                    href={`#${item.id}`}
+                    {tableOfContents.map((item, index) => (
+                      <a
+                        key={index}
+                        href={`#${item.id}`}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 text-gray-700"
-                  >
+                      >
                     <span className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-semibold">
                       {index + 1}
                     </span>
-                    {item.title}
-                  </a>
-                ))}
+                        {item.title}
+                      </a>
+                    ))}
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* Main Content */}
+              {/* Main Content */}
       <article className="py-16 px-4 md:px-6 lg:px-10 bg-white">
         <div className="max-w-4xl mx-auto prose prose-lg prose-gray max-w-none">
           
-          {/* Introduction */}
+                {/* Introduction */}
           <section id="introduction" className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
@@ -201,8 +201,8 @@ const HowAITransformsBibleStudy = () => {
               <p className="text-lg text-gray-800 mb-0">
                 <strong>The digital age has transformed how we learn, work, and connect—and now it's revolutionizing how we study God's Word.</strong> 
                 Artificial Intelligence is not replacing traditional Bible study but enhancing it in ways that were unimaginable just a few years ago.
-              </p>
-            </div>
+                        </p>
+                      </div>
 
             <p className="text-gray-700 leading-relaxed">
               For centuries, believers have relied on commentaries, concordances, and pastoral guidance to deepen their understanding of Scripture. 
@@ -213,9 +213,9 @@ const HowAITransformsBibleStudy = () => {
               This comprehensive guide explores how AI is transforming Bible study, making deeper theological insights accessible to every believer, 
               regardless of their theological training or study experience.
             </p>
-          </section>
+                </section>
 
-          {/* What is Bible AI */}
+                {/* What is Bible AI */}
           <section id="what-is-bible-ai" className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
@@ -224,7 +224,7 @@ const HowAITransformsBibleStudy = () => {
               What is Bible AI?
             </h2>
 
-            <p className="text-gray-700 leading-relaxed mb-6">
+                  <p className="text-gray-700 leading-relaxed mb-6">
               Bible AI refers to artificial intelligence systems specifically designed to assist with biblical study, interpretation, and application. 
               These systems use advanced natural language processing, machine learning, and vast theological databases to provide insights, answer questions, and guide users through Scripture.
             </p>
@@ -249,10 +249,10 @@ const HowAITransformsBibleStudy = () => {
                   <span><strong>Contextual Analysis:</strong> Provides historical and cultural background</span>
                 </li>
               </ul>
-            </div>
-          </section>
+                  </div>
+                </section>
 
-          {/* Key Features */}
+                {/* Key Features */}
           <section id="key-features" className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
@@ -262,21 +262,21 @@ const HowAITransformsBibleStudy = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {aiFeatures.map((feature, index) => (
+                    {aiFeatures.map((feature, index) => (
                 <Card key={index} className="border-orange-200 hover:border-orange-400 transition-all duration-300 hover:shadow-lg">
                   <CardContent className="p-6">
                     <div className={`w-12 h-12 bg-gradient-to-r ${feature.gradient} rounded-lg flex items-center justify-center mb-4`}>
-                      <feature.icon className="h-6 w-6 text-white" />
-                    </div>
+                            <feature.icon className="h-6 w-6 text-white" />
+                          </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
+                            <p className="text-gray-600">{feature.description}</p>
                   </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
 
-          {/* Benefits */}
+                {/* Benefits */}
           <section id="benefits" className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
@@ -286,30 +286,30 @@ const HowAITransformsBibleStudy = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {benefits.map((benefit, index) => (
+                    {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-orange-600 mt-1 flex-shrink-0" />
                   <span className="text-gray-700">{benefit}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+                      </div>
+                    ))}
+                  </div>
+                </section>
 
           {/* CTA Section */}
           <section className="my-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-8 text-white text-center">
-            <h3 className="text-2xl font-bold mb-4">Ready to Transform Your Bible Study?</h3>
+                    <h3 className="text-2xl font-bold mb-4">Ready to Transform Your Bible Study?</h3>
             <p className="text-lg mb-6 opacity-90">
               Experience the power of AI-enhanced Bible study with Bible Aura's intelligent assistant
-            </p>
+                    </p>
             <Button asChild size="lg" className="bg-white text-orange-600 hover:bg-gray-100">
-              <Link to="/bible-ai">
+                        <Link to="/bible-ai">
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Try Bible AI Chat Free
-              </Link>
-            </Button>
-          </section>
+                        </Link>
+                      </Button>
+                </section>
 
-          {/* Related Articles */}
+        {/* Related Articles */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Related Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -329,7 +329,7 @@ const HowAITransformsBibleStudy = () => {
               ))}
             </div>
           </section>
-        </div>
+          </div>
       </article>
 
       {/* SEO Backlinks */}

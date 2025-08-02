@@ -27,6 +27,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -266,19 +268,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         let userFriendlyMessage = error.message;
+        let showResetOption = false;
         
         // Provide more user-friendly error messages
         if (error.message.includes('Invalid login credentials')) {
           userFriendlyMessage = 'Invalid email or password. Please check your credentials and try again.';
+          showResetOption = true;
         } else if (error.message.includes('Email not confirmed')) {
           userFriendlyMessage = 'Please check your email and click the confirmation link before signing in.';
         } else if (error.message.includes('Too many requests')) {
           userFriendlyMessage = 'Too many attempts. Please wait a few minutes before trying again.';
+        } else if (error.message.includes('wrong password') || error.message.includes('incorrect password')) {
+          userFriendlyMessage = 'Incorrect password. Would you like to reset your password?';
+          showResetOption = true;
         }
 
         toast({
           title: "Sign in failed",
-          description: userFriendlyMessage,
+          description: userFriendlyMessage + (showResetOption ? ' Click "Forgot Password?" to reset it.' : ''),
           variant: "destructive",
         });
         
@@ -552,7 +559,112 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = {
+  const resetPassword = async (email: string) => {
+    try {
+      if (!email) {
+        throw new Error('Email address is required');
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      const redirectUrl = `${window.location.origin}/auth?tab=reset`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        let userFriendlyMessage = error.message;
+        
+        if (error.message.includes('rate limit')) {
+          userFriendlyMessage = 'Too many password reset requests. Please wait a few minutes before trying again.';
+        } else if (error.message.includes('user not found')) {
+          userFriendlyMessage = 'No account found with this email address. Please check your email or sign up for a new account.';
+        } else if (error.message.includes('invalid email')) {
+          userFriendlyMessage = 'Please enter a valid email address.';
+        }
+
+        toast({
+          title: "Password reset failed",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+        
+        return { error: new Error(userFriendlyMessage) };
+      } else {
+        toast({
+          title: "Password reset email sent!",
+          description: "Please check your email and click the link to reset your password. The link will expire in 1 hour.",
+        });
+        return { error: null };
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+      toast({
+        title: "Password reset failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error: error as Error };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      if (!user) {
+        throw new Error('You must be logged in to update your password');
+      }
+
+      if (!newPassword) {
+        throw new Error('New password is required');
+      }
+
+      if (newPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        let userFriendlyMessage = error.message;
+        
+        if (error.message.includes('weak password')) {
+          userFriendlyMessage = 'Please choose a stronger password with at least 6 characters.';
+        } else if (error.message.includes('same password')) {
+          userFriendlyMessage = 'Please choose a different password from your current one.';
+        }
+
+        toast({
+          title: "Password update failed",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+        
+        return { error: new Error(userFriendlyMessage) };
+      } else {
+        toast({
+          title: "Password updated successfully!",
+          description: "Your password has been changed. Please use your new password for future sign-ins.",
+        });
+        return { error: null };
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+      toast({
+        title: "Password update failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error: error as Error };
+    }
+  };
+
+  const value: AuthContextType = {
     user,
     session,
     profile,
@@ -563,6 +675,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signOut,
     updateProfile,
+    resetPassword,
+    updatePassword,
   };
 
   return (

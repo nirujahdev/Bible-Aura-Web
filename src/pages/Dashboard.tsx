@@ -76,7 +76,7 @@ const quickStartPrompts = [
   }
 ];
 
-// Mobile-friendly feature cards
+// Mobile-friendly feature cards - Updated to match desktop layout
 const dashboardFeatures = [
   {
     title: "AI Bible Chat",
@@ -87,12 +87,20 @@ const dashboardFeatures = [
     stats: "Active AI assistant"
   },
   {
-    title: "Study Hub",
-    description: "Comprehensive Bible study",
-    icon: BookOpen,
-    href: "/study-hub",
+    title: "Bible",
+    description: "Read & study Scripture",
+    icon: Book,
+    href: "/bible",
     color: "bg-blue-500",
-    stats: "Multiple study tools"
+    stats: "Multiple translations"
+  },
+  {
+    title: "Sermons",
+    description: "Browse sermon library",
+    icon: Headphones,
+    href: "/sermons",
+    color: "bg-purple-500",
+    stats: "Curated collection"
   },
   {
     title: "Journal",
@@ -103,12 +111,36 @@ const dashboardFeatures = [
     stats: "Private & secure"
   },
   {
-    title: "Sermons",
-    description: "Browse sermon library",
-    icon: Headphones,
-    href: "/sermons",
-    color: "bg-purple-500",
-    stats: "Curated collection"
+    title: "Study Hub",
+    description: "Comprehensive Bible study",
+    icon: BookOpen,
+    href: "/study-hub",
+    color: "bg-amber-500",
+    stats: "Multiple study tools"
+  },
+  {
+    title: "Topical Study",
+    description: "Study by topics",
+    icon: Target,
+    href: "/topical-study",
+    color: "bg-indigo-500",
+    stats: "Organized by themes"
+  },
+  {
+    title: "Parables Study",
+    description: "Explore Jesus' parables",
+    icon: Sparkles,
+    href: "/parables-study",
+    color: "bg-pink-500",
+    stats: "Deep insights"
+  },
+  {
+    title: "Sermon Writer",
+    description: "AI-assisted sermon creation",
+    icon: Edit,
+    href: "/sermon-writer",
+    color: "bg-cyan-500",
+    stats: "AI-powered"
   }
 ];
 
@@ -186,11 +218,11 @@ const Dashboard = () => {
     try {
       const [journalRes, conversationsRes] = await Promise.all([
         supabase
-          .from('journal_entries')
+        .from('journal_entries')
           .select('id')
           .eq('user_id', user?.id),
         supabase
-          .from('ai_conversations')
+        .from('ai_conversations')
           .select('id')
           .eq('user_id', user?.id)
       ]);
@@ -309,11 +341,9 @@ const Dashboard = () => {
             </SheetContent>
           </Sheet>
 
-          {/* Center: Logo and Title */}
+          {/* Center: Logo and Title - No box around logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">✦</span>
-            </div>
+            <span className="text-orange-600 font-bold text-2xl">✦</span>
             <h1 className="text-lg font-bold text-gray-900">Bible Aura</h1>
           </div>
 
@@ -378,6 +408,30 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Main Features Grid - Prominent like desktop */}
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Bible Aura Features</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {dashboardFeatures.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Link key={index} to={feature.href}>
+                  <Card className="border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-200 h-full">
+                    <CardContent className="p-4">
+                      <div className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-3`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h4 className="font-semibold text-gray-900 mb-1">{feature.title}</h4>
+                      <p className="text-xs text-gray-600 mb-2">{feature.description}</p>
+                      <p className="text-xs text-gray-500">{feature.stats}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Quick Actions */}
@@ -515,30 +569,6 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Explore Features</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {dashboardFeatures.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Link key={index} to={feature.href}>
-                  <Card className="border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-200 h-full">
-                    <CardContent className="p-4">
-                      <div className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-3`}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h4 className="font-semibold text-gray-900 mb-1">{feature.title}</h4>
-                      <p className="text-xs text-gray-600 mb-2">{feature.description}</p>
-                      <p className="text-xs text-gray-500">{feature.stats}</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
           </div>
         </div>
       </div>

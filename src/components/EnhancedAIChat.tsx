@@ -49,6 +49,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from './ui/switch';
 import { generateSystemPrompt, AI_RESPONSE_TEMPLATES } from '../lib/ai-response-templates';
 import { BIBLE_TRANSLATIONS, TranslationCode } from '@/lib/local-bible';
+import { Link } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -258,7 +259,6 @@ const EnhancedAIChat: React.FC = () => {
   const [cleanMode, setCleanMode] = useState(false);
   
   // UI state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isVoiceRecording, setIsVoiceRecording] = useState(false);
   const [showQuickPrompts, setShowQuickPrompts] = useState(true);
@@ -392,14 +392,12 @@ const EnhancedAIChat: React.FC = () => {
     setMessages([]);
     setCurrentConversationId(null);
     setShowQuickPrompts(true);
-    setIsSidebarOpen(false);
   };
 
   const loadConversation = (conversation: Conversation) => {
     setMessages(conversation.messages);
     setCurrentConversationId(conversation.id);
     setShowQuickPrompts(false);
-    setIsSidebarOpen(false);
   };
 
   const deleteConversation = async (conversationId: string) => {
@@ -429,206 +427,155 @@ const EnhancedAIChat: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 relative">
-      {/* Mobile Header */}
+    <div className="flex flex-col h-full bg-gray-50 relative">
+      {/* Chat Header - Simplified for within layout */}
       <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm">
-        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-100 rounded-xl"
-            >
-              <Menu className="h-5 w-5 text-gray-600" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0">
-            <div className="flex flex-col h-full">
-              {/* Sidebar Header */}
-              <div className="p-4 border-b border-gray-200">
-                <Button 
-                  onClick={startNewConversation}
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium rounded-xl h-12"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  New Chat
-                </Button>
-              </div>
-
-              {/* Conversations List */}
-              <div className="flex-1 overflow-y-auto p-2">
-                {conversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className={`flex items-center justify-between p-3 rounded-xl mb-2 cursor-pointer transition-all duration-200 ${
-                      currentConversationId === conversation.id 
-                        ? 'bg-orange-50 border border-orange-200' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => loadConversation(conversation)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {conversation.title}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(conversation.updated_at), 'MMM d, h:mm a')}
-                      </p>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="p-1 hover:bg-gray-100 rounded-lg">
-                          <MoreVertical className="h-4 w-4 text-gray-400" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConversation(conversation.id);
-                          }}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        {/* Title */}
-        <div className="flex-1 text-center">
-          <h1 className="text-lg font-semibold text-gray-900">Bible AI</h1>
-          <div className="flex items-center justify-center mt-1">
+        {/* Title and Mode */}
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold text-gray-900">Bible AI Chat</h1>
+          <div className="flex items-center mt-1">
             <div className={`w-2 h-2 rounded-full ${CHAT_MODES[currentMode].color} mr-2`}></div>
             <span className="text-xs text-gray-500">{CHAT_MODES[currentMode].name}</span>
           </div>
         </div>
 
-        {/* Settings */}
-        <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-          <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-2 hover:bg-gray-100 rounded-xl"
-            >
-              <Settings className="h-5 w-5 text-gray-600" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-80">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Chat Settings</h3>
-                
-                {/* Chat Mode */}
-                <div className="space-y-3 mb-6">
-                  <label className="text-sm font-medium text-gray-700">Chat Mode</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(CHAT_MODES).map(([key, mode]) => {
-                      const Icon = mode.icon;
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => setCurrentMode(key as keyof typeof CHAT_MODES)}
-                          className={`p-3 rounded-xl border text-left transition-all duration-200 ${
-                            currentMode === key 
-                              ? 'border-orange-300 bg-orange-50 text-orange-900' 
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <Icon className="h-5 w-5 mb-2 text-orange-600" />
-                          <div className="text-sm font-medium">{mode.name}</div>
-                        </button>
-                      );
-                    })}
+        {/* Right: New Chat + Settings */}
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={startNewConversation}
+            variant="ghost" 
+            size="sm" 
+            className="p-2 hover:bg-gray-100 rounded-xl"
+            title="New Chat"
+          >
+            <Plus className="h-5 w-5 text-gray-600" />
+          </Button>
+          
+          {/* Settings */}
+          <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-gray-100 rounded-xl"
+              >
+                <Settings className="h-5 w-5 text-gray-600" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Chat Settings</h3>
+                  
+                  {/* Chat Mode */}
+                  <div className="space-y-3 mb-6">
+                    <label className="text-sm font-medium text-gray-700">Chat Mode</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(CHAT_MODES).map(([key, mode]) => {
+                        const Icon = mode.icon;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => setCurrentMode(key as keyof typeof CHAT_MODES)}
+                            className={`p-3 rounded-xl border text-left transition-all duration-200 ${
+                              currentMode === key 
+                                ? 'border-orange-300 bg-orange-50 text-orange-900' 
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <Icon className="h-5 w-5 mb-2 text-orange-600" />
+                            <div className="text-sm font-medium">{mode.name}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {/* Language Selection */}
-                <div className="space-y-3 mb-6">
-                  <label className="text-sm font-medium text-gray-700">Language</label>
-                  <Select value={currentLanguage} onValueChange={(value: 'english' | 'tamil') => setCurrentLanguage(value)}>
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGE_OPTIONS.map((lang) => (
-                        <SelectItem key={lang.value} value={lang.value}>
-                          <span className="flex items-center">
-                            <span className="mr-2">{lang.icon}</span>
-                            {lang.label}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Bible Translation */}
-                <div className="space-y-3 mb-6">
-                  <label className="text-sm font-medium text-gray-700">Bible Translation</label>
-                  <Select value={currentTranslation} onValueChange={(value: TranslationCode) => setCurrentTranslation(value)}>
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SELECT_TRANSLATIONS.map((translation) => (
-                        <SelectItem key={translation.code} value={translation.code}>
-                          {translation.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Clean Mode */}
-                <div className="flex items-center justify-between p-3 rounded-xl border border-gray-200">
-                  <div>
-                    <div className="text-sm font-medium">Clean Mode</div>
-                    <div className="text-xs text-gray-500">Simplified responses</div>
+                  {/* Language Selection */}
+                  <div className="space-y-3 mb-6">
+                    <label className="text-sm font-medium text-gray-700">Language</label>
+                    <Select value={currentLanguage} onValueChange={(value: 'english' | 'tamil') => setCurrentLanguage(value)}>
+                      <SelectTrigger className="rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGE_OPTIONS.map((lang) => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            <span className="flex items-center">
+                              <span className="mr-2">{lang.icon}</span>
+                              {lang.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Switch checked={cleanMode} onCheckedChange={setCleanMode} />
+
+                  {/* Bible Translation */}
+                  <div className="space-y-3 mb-6">
+                    <label className="text-sm font-medium text-gray-700">Bible Translation</label>
+                    <Select value={currentTranslation} onValueChange={(value: TranslationCode) => setCurrentTranslation(value)}>
+                      <SelectTrigger className="rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SELECT_TRANSLATIONS.map((translation) => (
+                          <SelectItem key={translation.code} value={translation.code}>
+                            {translation.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Clean Mode */}
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-gray-200">
+                    <div>
+                      <div className="text-sm font-medium">Clean Mode</div>
+                      <div className="text-xs text-gray-500">Simplified responses</div>
+                    </div>
+                    <Switch checked={cleanMode} onCheckedChange={setCleanMode} />
+                  </div>
                 </div>
               </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages Area - Optimized for mobile */}
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4">
         {messages.length === 0 && showQuickPrompts ? (
-          /* Welcome Screen with Quick Prompts */
-          <div className="max-w-md mx-auto text-center space-y-6">
+          /* Welcome Screen with Quick Prompts - Mobile Optimized */
+          <div className="max-w-md mx-auto text-center space-y-6 px-4">
             <div className="space-y-3">
               <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto">
                 <Bot className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">How can I help you today?</h2>
-              <p className="text-gray-600 text-sm">Ask me anything about the Bible, faith, or spiritual guidance</p>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Welcome to Bible AI</h2>
+              <p className="text-sm md:text-base text-gray-600">
+                Ask me anything about the Bible. I'm here to help you explore God's word with AI-powered insights.
+              </p>
             </div>
 
+            {/* Quick Start Prompts - Mobile Grid */}
             <div className="grid grid-cols-1 gap-3">
               {QUICK_PROMPTS.map((prompt) => {
-                const Icon = prompt.icon;
+                const IconComponent = prompt.icon;
                 return (
                   <button
                     key={prompt.id}
                     onClick={() => handleSendMessage(prompt.prompt)}
-                    className="flex items-center p-4 rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-left"
+                    className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-left"
                   >
-                    <div className={`w-10 h-10 ${prompt.color} rounded-xl flex items-center justify-center mr-3 flex-shrink-0`}>
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{prompt.text}</div>
-                      <div className="text-xs text-gray-500 mt-1">{prompt.prompt}</div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <IconComponent className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900 text-sm">{prompt.text}</h3>
+                        <p className="text-xs text-gray-500 mt-1">{prompt.prompt}</p>
+                      </div>
                     </div>
                   </button>
                 );
@@ -636,30 +583,28 @@ const EnhancedAIChat: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Chat Messages */
-          <div className="space-y-4">
+          /* Chat Messages - Mobile Optimized */
+          <div className="max-w-4xl mx-auto space-y-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              <div 
+                key={message.id} 
+                className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 {message.role === 'assistant' && (
                   <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
                     <Bot className="h-4 w-4 text-white" />
                   </div>
                 )}
-                
-                <div
-                  className={`max-w-[280px] p-4 rounded-2xl ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white ml-auto'
-                      : 'bg-white border border-gray-200 shadow-sm'
-                  }`}
-                >
-                  {message.role === 'assistant' ? (
+
+                <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl p-4 ${
+                  message.role === 'user' 
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' 
+                    : 'bg-white border border-gray-200 shadow-sm'
+                }`}>
+                  {message.role === 'assistant' && currentMode !== 'chat' ? (
                     <StructuredAIResponse content={message.content} />
                   ) : (
-                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                   )}
                   
                   <div className={`text-xs mt-2 ${
@@ -699,35 +644,35 @@ const EnhancedAIChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - Fixed at Bottom */}
-      <div className="bg-white border-t border-gray-200 p-4 safe-area-bottom">
-        <div className="flex items-end gap-3 max-w-4xl mx-auto">
-          {/* Voice Recording Button */}
+      {/* Input Area - Mobile Optimized */}
+      <div className="bg-white border-t border-gray-200 p-3 md:p-4 safe-area-bottom">
+        <div className="flex items-end gap-2 md:gap-3 max-w-4xl mx-auto">
+          {/* Voice Recording Button - Smaller on mobile */}
           <Button
             onClick={toggleVoiceRecording}
             variant="outline"
             size="sm"
-            className={`p-3 rounded-xl border-2 transition-all duration-200 ${
+            className={`p-2 md:p-3 rounded-xl border-2 transition-all duration-200 flex-shrink-0 ${
               isVoiceRecording 
                 ? 'border-red-300 bg-red-50 text-red-600' 
                 : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
             }`}
           >
             {isVoiceRecording ? (
-              <MicOff className="h-5 w-5" />
+              <MicOff className="h-4 w-4 md:h-5 md:w-5" />
             ) : (
-              <Mic className="h-5 w-5" />
+              <Mic className="h-4 w-4 md:h-5 md:w-5" />
             )}
           </Button>
 
-          {/* Input Field */}
+          {/* Input Field - Responsive */}
           <div className="flex-1 relative">
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me about the Bible..."
-              className="pr-12 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-400 h-12 text-base"
+              className="pr-12 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-orange-400 h-11 md:h-12 text-sm md:text-base"
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -741,24 +686,24 @@ const EnhancedAIChat: React.FC = () => {
               <Button
                 onClick={() => handleSendMessage()}
                 disabled={isLoading}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-2 rounded-lg h-8 w-8"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white p-2 rounded-lg h-7 w-7 md:h-8 md:w-8"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 md:h-4 md:w-4" />
               </Button>
             )}
           </div>
         </div>
 
-        {/* Quick Actions Bar */}
+        {/* Quick Actions Bar - Mobile Optimized */}
         {input.length === 0 && !isLoading && (
-          <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-            {QUICK_PROMPTS.map((prompt) => (
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
+            {QUICK_PROMPTS.slice(0, 4).map((prompt) => (
               <Button
                 key={prompt.id}
                 onClick={() => handleSendMessage(prompt.prompt)}
                 variant="outline"
                 size="sm"
-                className="flex-shrink-0 rounded-full border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700 text-xs px-4 py-2"
+                className="flex-shrink-0 rounded-full border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700 text-xs px-3 md:px-4 py-2 whitespace-nowrap"
               >
                 {prompt.text}
               </Button>
