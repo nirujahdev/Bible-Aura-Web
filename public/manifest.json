@@ -1,170 +1,128 @@
 {
   "name": "Bible Aura - AI-Powered Biblical Insights",
   "short_name": "Bible Aura",
-  "description": "Experience the Bible with AI-powered insights, daily verses, spiritual journaling, and comprehensive Bible study tools.",
-  "start_url": "/chat",
+  "description": "Experience Bible Aura's AI-powered Bible study platform with Bible AI chat, scripture analysis, and spiritual growth tools for deeper faith journey.",
+  "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "theme_color": "#f97316",
   "background_color": "#ffffff",
-  "scope": "/",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "categories": ["education", "lifestyle", "books", "reference"],
   "lang": "en-US",
-  "dir": "ltr",
-  "categories": ["lifestyle", "education", "books"],
-  "screenshots": [
-    {
-      "src": "/screenshot-desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "platform": "wide",
-      "label": "Bible Aura AI Chat on Desktop"
-    },
-    {
-      "src": "/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "platform": "narrow",
-      "label": "Bible Aura on Mobile"
-    }
-  ],
+  "scope": "/",
   "icons": [
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/✦Bible Aura (2).png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/✦Bible Aura (2).png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "/✦Bible Aura (2).png",
+      "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/favicon-32x32.png",
+      "src": "/✦Bible Aura (2).png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/✦Bible Aura (2).png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/✦Bible Aura (2).png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/✦Bible Aura (2).png",
       "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/favicon-16x16.png",
+      "src": "/✦Bible Aura (2).png",
       "sizes": "16x16",
       "type": "image/png",
       "purpose": "any"
-    },
+    }
+  ],
+  "screenshots": [
     {
-      "src": "/✦Bible Aura.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "monochrome"
+      "src": "/✦Bible Aura (2).png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Bible Aura AI Chat Interface"
     }
   ],
   "shortcuts": [
     {
-      "name": "Daily Verse",
-      "short_name": "Daily Verse",
-      "description": "View today's AI-generated daily verse and reflection",
-      "url": "/chat#daily-verse",
-      "icons": [
-        {
-          "src": "/✦Bible Aura.svg",
-          "sizes": "96x96",
-          "type": "image/svg+xml"
-        }
-      ]
-    },
-    {
-      "name": "AI Chat",
+      "name": "Bible AI Chat",
       "short_name": "AI Chat",
-      "description": "Ask questions and get biblical insights from AI",
-      "url": "/chat",
+      "description": "Start a conversation with Bible Aura's AI assistant",
+      "url": "/bible-ai",
       "icons": [
         {
-          "src": "/✦Bible Aura.svg",
-          "sizes": "96x96",
-          "type": "image/svg+xml"
+          "src": "/✦Bible Aura (2).png",
+          "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "Bible Study",
+      "name": "Read Bible",
       "short_name": "Bible",
-      "description": "Read and study the Bible with enhanced features",
+      "description": "Read the Bible with AI insights",
       "url": "/bible",
       "icons": [
         {
-          "src": "/✦Bible Aura.svg",
-          "sizes": "96x96",
-          "type": "image/svg+xml"
+          "src": "/✦Bible Aura (2).png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Study Hub",
+      "short_name": "Study",
+      "description": "Access Bible study resources",
+      "url": "/study-hub",
+      "icons": [
+        {
+          "src": "/✦Bible Aura (2).png",
+          "sizes": "96x96"
         }
       ]
     },
     {
       "name": "Journal",
       "short_name": "Journal",
-      "description": "Write and reflect in your spiritual journal",
+      "description": "Write in your spiritual journal",
       "url": "/journal",
       "icons": [
         {
-          "src": "/✦Bible Aura.svg",
-          "sizes": "96x96",
-          "type": "image/svg+xml"
+          "src": "/✦Bible Aura (2).png",
+          "sizes": "96x96"
         }
       ]
     }
   ],
   "related_applications": [],
   "prefer_related_applications": false,
-  "protocol_handlers": [
-    {
-      "protocol": "web+bibleaura",
-      "url": "/bible?reference=%s"
-    }
-  ],
+  "dir": "ltr",
+  "iarc_rating_id": "",
   "edge_side_panel": {
     "preferred_width": 400
-  },
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "handle_links": "preferred",
-  "scope_extensions": [
-    {
-      "origin": "https://bible-aura.vercel.app"
-    },
-    {
-      "origin": "https://bible-aura.app"
-    }
-  ],
-  "share_target": {
-    "action": "/journal/new",
-    "method": "POST",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  },
-  "file_handlers": [
-    {
-      "action": "/journal/import",
-      "accept": {
-        "text/plain": [".txt"],
-        "application/json": [".json"]
-      }
-    }
-  ],
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui",
-    "browser"
-  ]
+  }
 } 

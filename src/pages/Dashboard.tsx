@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import EnhancedAIChat from '@/components/EnhancedAIChat';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 interface DashboardStats {
   journalEntries: number;
@@ -120,6 +121,7 @@ const getAIInsight = async (prompt: string) => {
 };
 
 export default function Dashboard() {
+  useSEO(SEO_CONFIG.DASHBOARD);
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats>({

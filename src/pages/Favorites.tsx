@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '@/components/PageLayout';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 interface FavoriteVerse {
   id: string;
@@ -52,6 +53,7 @@ interface FavoriteHighlight {
 }
 
 export default function Favorites() {
+  useSEO(SEO_CONFIG.FAVORITES);
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');

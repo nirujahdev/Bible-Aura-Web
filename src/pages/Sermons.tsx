@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS } from "@/lib/local-bible";
 import SermonToolbar from '@/components/SermonToolbar';
 import SermonAIAssistant from '@/components/SermonAIAssistant';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -104,6 +105,8 @@ interface SermonStats {
 }
 
 const Sermons = () => {
+  useSEO(SEO_CONFIG.SERMONS);
+  
   const { user } = useAuth();
   const { toast } = useToast();
   

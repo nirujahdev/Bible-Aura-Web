@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { 
   Search, BookOpen, Users, Crown, TreePine, FileText, 
   Settings, Languages, Grid, Table, Clock, Bot, Bookmark,
@@ -206,6 +207,7 @@ const MOCK_TOPICS: Topic[] = [
 ];
 
 export default function StudyHub() {
+  useSEO(SEO_CONFIG.STUDY_HUB);
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();

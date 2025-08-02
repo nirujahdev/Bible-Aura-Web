@@ -1,32 +1,72 @@
 # Robots.txt for Bible Aura - AI-Powered Biblical Insight Platform
 # Updated: February 2025
 
-# Allow all major search engines full access
+User-agent: *
+Allow: /
+Allow: /bible-ai
+Allow: /bible-ai-chat
+Allow: /bible
+Allow: /features
+Allow: /blog
+Allow: /blog/
+Allow: /study-hub
+Allow: /journal
+Allow: /sermons
+Allow: /topical-study
+Allow: /parables-study
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /bible-qa
+Allow: /dashboard
+Allow: /favorites
+Allow: /songs
+Allow: /sermon-writer
+Allow: /sermon-library
+Allow: /privacy-policy.html
+Allow: /terms-of-service.html
+
+# Disallow authentication and admin pages
+Disallow: /auth
+Disallow: /login
+Disallow: /signup
+Disallow: /admin
+Disallow: /api/auth
+Disallow: /profile
+Disallow: /settings
+Disallow: /*.json$
+Disallow: /src/
+Disallow: /node_modules/
+
+# Allow important Bible Aura pages for SEO
+Allow: /bible-aura*
+Allow: /bible-ai*
+Allow: /ai-bible*
+Allow: /christian-ai*
+
+# Special directives for major search engines
 User-agent: Googlebot
 Allow: /
+Allow: /bible-ai
+Allow: /bible-ai-chat
 Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Allow: /bible-ai
+Allow: /bible-ai-chat
 Crawl-delay: 1
 
 User-agent: Slurp
 Allow: /
+Allow: /bible-ai
 Crawl-delay: 2
 
 User-agent: DuckDuckBot
 Allow: /
+Allow: /bible-ai
 Crawl-delay: 1
 
-User-agent: Baiduspider
-Allow: /
-Crawl-delay: 2
-
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 2
-
-# Social Media Crawlers
 User-agent: facebookexternalhit
 Allow: /
 
@@ -39,77 +79,15 @@ Allow: /
 User-agent: WhatsApp
 Allow: /
 
-# AI and API Crawlers
-User-agent: GPTBot
+User-agent: TelegramBot
 Allow: /
 
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-# Allow all other crawlers with restrictions
-User-agent: *
-Allow: /
-
-# Disallow sensitive areas and private paths
-Disallow: /api/
-Disallow: /admin/
-Disallow: /_next/
-Disallow: /dashboard/
-Disallow: /profile/
-Disallow: /journal/
-Disallow: /favorites/
-Disallow: /src/
-Disallow: /node_modules/
-Disallow: /.git/
-Disallow: /.env
-Disallow: /auth
-
-# Allow important static assets
-Allow: /public/
-Allow: /assets/
-Allow: /images/
-Allow: /*.css
-Allow: /*.js
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.gif
-Allow: /*.ico
-Allow: /*.webp
-
-# Important SEO pages - explicitly allow
-Allow: /bible-ai
-Allow: /ai-bible-study
-Allow: /bible-chat
-Allow: /digital-bible
-Allow: /bible-journal
-Allow: /study
-Allow: /study-hub
-Allow: /bible-qa
-Allow: /bible-characters
-Allow: /topical-study
-Allow: /parables-study
-Allow: /sermons
-Allow: /sermon-writer
-Allow: /sermon-library
-Allow: /about
-Allow: /contact
-Allow: /features/
-Allow: /pricing
-Allow: /blog/
-Allow: /privacy
-Allow: /privacy.html
-Allow: /terms
-
-# Host directive
-Host: bibleaura.xyz
-
-# Sitemap index - main entry point
+# Sitemaps
 Sitemap: https://bibleaura.xyz/sitemap-index.xml
+Sitemap: https://bibleaura.xyz/sitemap.xml
+Sitemap: https://bibleaura.xyz/seo-sitemap.xml
+Sitemap: https://bibleaura.xyz/features-sitemap.xml
+Sitemap: https://bibleaura.xyz/blog-sitemap.xml
+
+# Host information
+Host: https://bibleaura.xyz

@@ -6,8 +6,10 @@ import { Mail, Phone, MapPin, Clock, ArrowLeft, MessageCircle, Globe, Instagram 
 import { Link } from "react-router-dom";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import Footer from "@/components/Footer";
+import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const Contact = () => {
+  useSEO(SEO_CONFIG.CONTACT);
 
   const contactMethods = [
     {

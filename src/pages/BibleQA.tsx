@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '@/components/PageLayout';
+import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 interface QAItem {
   id: string;
@@ -88,6 +89,7 @@ const MOCK_QA: QAItem[] = [
 const QA_CATEGORIES = ['All', 'Salvation', 'Christian Living', 'Theology', 'Stewardship', 'Prayer', 'Relationships'];
 
 export default function BibleQA() {
+  useSEO(SEO_CONFIG.BIBLE_QA);
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
