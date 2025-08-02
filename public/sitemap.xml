@@ -7,12 +7,14 @@
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 
 <!-- Main Pages -->
-<url>
+  <url>
     <loc>https://bibleaura.xyz/</loc>
     <lastmod>2024-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-</url>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibleaura.xyz/"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://bibleaura.xyz/?lang=ta"/>
+  </url>
 
 <url>
     <loc>https://bibleaura.xyz/bible-ai</loc>
