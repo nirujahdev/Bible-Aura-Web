@@ -187,7 +187,7 @@ export default function DailyVerseWidget() {
 
   useEffect(() => {
     loadDailyVerse();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const refreshVerse = async () => {
     setLoading(true);

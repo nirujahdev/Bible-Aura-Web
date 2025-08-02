@@ -404,7 +404,7 @@ const SermonWriter = () => {
         blob = new Blob([content], { type: 'text/markdown' });
         filename = `${title}.md`;
         break;
-      case 'html':
+      case 'html': {
         const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -424,6 +424,7 @@ const SermonWriter = () => {
         blob = new Blob([htmlContent], { type: 'text/html' });
         filename = `${title}.html`;
         break;
+      }
       default:
         return;
     }

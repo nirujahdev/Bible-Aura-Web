@@ -55,6 +55,8 @@ const AdvancedStudy = lazy(() => import("./pages/features/AdvancedStudy"));
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ModernSidebar } from "./components/ModernSidebar";
 import EnhancedAIChat from "./components/EnhancedAIChat";
+import SmartRedirect from "./components/SmartRedirect";
+const DeviceSelection = lazy(() => import("./components/DeviceSelection"));
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -63,10 +65,17 @@ function AppRoutes() {
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         {/* Public landing pages - no authentication required */}
-        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
+        <Route path="/" element={user ? <SmartRedirect /> : <Home />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        
+        {/* Device Selection - First-time user experience */}
+        <Route path="/device-selection" element={
+          <ProtectedRoute>
+            <DeviceSelection />
+          </ProtectedRoute>
+        } />
 
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/features" element={<Features />} />

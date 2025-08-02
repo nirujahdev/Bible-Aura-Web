@@ -81,10 +81,11 @@ export default function SermonToolbar({
       case 'orderedList':
         formattedText = `1. ${selectedText}`;
         break;
-      case 'link':
+      case 'link': {
         const url = value || prompt('Enter URL:');
         formattedText = `[${selectedText}](${url})`;
         break;
+      }
       case 'table':
         formattedText = `\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| ${selectedText} |          |          |\n|          |          |          |\n`;
         break;

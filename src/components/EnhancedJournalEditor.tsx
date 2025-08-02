@@ -410,10 +410,11 @@ export function EnhancedJournalEditor({
       case 'italic':
         formattedText = selectedText ? `*${selectedText}*` : '*italic text*';
         break;
-      case 'bullet':
+      case 'bullet': {
         const lines = selectedText ? selectedText.split('\n') : ['bullet point'];
         formattedText = lines.map(line => line.trim() ? `• ${line.trim()}` : '•').join('\n');
         break;
+      }
     }
     
     const newContent = currentContent.substring(0, start) + formattedText + currentContent.substring(end);

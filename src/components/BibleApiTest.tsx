@@ -37,14 +37,14 @@ export function BibleApiTest() {
   // Load available Bibles on component mount
   useEffect(() => {
     loadAvailableBibles();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load books when Bible selection changes
   useEffect(() => {
     if (selectedBible) {
       loadBooks();
     }
-  }, [selectedBible]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedBible]);
 
   const loadAvailableBibles = async () => {
     setLoading(true);
