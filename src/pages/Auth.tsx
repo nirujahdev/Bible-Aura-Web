@@ -24,14 +24,15 @@ import {
   LogIn,
   UserPlus,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  BookOpen
 } from 'lucide-react';
 
 export default function Auth() {
   // SEO optimization
   useSEO(SEO_CONFIG.AUTH);
   
-  const { user, signIn, signInWithMagicLink, signInWithGoogle, signUp, resetPassword, loading } = useAuth();
+  const { user, signIn, signInWithMagicLink, signInWithGoogle, signUp, loading } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +42,6 @@ export default function Auth() {
   const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   const [isMagicLinkAuth, setIsMagicLinkAuth] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   // Enhanced features data for showcase
   const features = [
@@ -60,36 +60,29 @@ export default function Auth() {
       bgColor: "bg-purple-50"
     },
     {
-      icon: Book,
-      title: "Bible Study Tools",
-      description: "Access multiple Bible translations, cross-references, verse analysis, and comprehensive study resources.",
+      icon: Heart,
+      title: "Personal Journal",
+      description: "Keep track of your spiritual journey with our intelligent journal that helps you reflect and grow in faith.",
+      color: "text-pink-600",
+      bgColor: "bg-pink-50"
+    },
+    {
+      icon: BookOpen,
+      title: "Smart Bible Study",
+      description: "Access multiple translations, commentaries, and study tools with AI-powered insights for deeper understanding.",
       color: "text-green-600",
       bgColor: "bg-green-50"
     },
     {
-      icon: Search,
-      title: "Smart Scripture Search",
-      description: "Find verses by topic, keywords, or themes with our AI-enhanced search that understands context.",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50"
-    },
-    {
-      icon: Lightbulb,
-      title: "Personal Insights",
-      description: "Receive daily devotions, study plans, and spiritual insights tailored to your faith journey and interests.",
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50"
-    },
-    {
       icon: Users,
-      title: "Faith Community",
-      description: "Connect with other believers, share insights, and grow together in our supportive faith community.",
+      title: "Community Features",
+      description: "Connect with fellow believers, share insights, and grow together in a supportive Christian community.",
       color: "text-indigo-600",
       bgColor: "bg-indigo-50"
     }
   ];
 
-  // Auto-rotate features every 4 seconds
+  // Auto-advance features showcase
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFeature((prev) => (prev + 1) % features.length);
@@ -97,142 +90,64 @@ export default function Auth() {
     return () => clearInterval(interval);
   }, [features.length]);
 
-  // Enhanced magic link detection and error handling
+  // Handle URL params and redirects
   useEffect(() => {
-    const urlHash = window.location.hash;
+    if (user) {
+      navigate('/dashboard');
+      return;
+    }
+
     const urlSearch = window.location.search;
-    
-    console.log('Auth page loaded with:', { urlHash, urlSearch });
-    
-    // Clear any existing messages
-    setAuthError(null);
-    setAuthSuccess(null);
-    
-    // Check for password reset
-    const isPasswordReset = urlSearch.includes('type=recovery') || urlSearch.includes('tab=reset');
+    const urlHash = window.location.hash;
     
     // Check for authentication errors
     const hasError = urlHash.includes('error=') || urlSearch.includes('error=');
     const hasAuthParams = urlHash.includes('access_token') || 
                          urlHash.includes('refresh_token') ||
                          urlSearch.includes('token_hash') ||
-                         urlSearch.includes('type=recovery') ||
                          urlSearch.includes('type=email_change') ||
                          urlSearch.includes('type=signup') ||
                          urlSearch.includes('type=invite') ||
                          urlSearch.includes('type=magiclink');
     
-    if (isPasswordReset) {
-      console.log('Password reset flow detected');
-      setCurrentTab('reset');
-      setAuthSuccess('Please enter your new password below.');
-    } else if (hasError) {
+    if (hasError) {
       // Extract and display error
-      const errorMatch = (urlHash + urlSearch).match(/error=([^&]+)/);
-      const errorDesc = (urlHash + urlSearch).match(/error_description=([^&]+)/);
+      const errorMatch = urlHash.match(/error_description=([^&]*)/);
+      const errorDesc = errorMatch ? decodeURIComponent(errorMatch[1]) : 'Authentication failed';
+      setAuthError(errorDesc);
       
-      let errorMessage = 'Authentication failed';
-      if (errorDesc) {
-        errorMessage = decodeURIComponent(errorDesc[1].replace(/\+/g, ' '));
-      } else if (errorMatch) {
-        const errorCode = decodeURIComponent(errorMatch[1]);
-        if (errorCode === 'access_denied') {
-          errorMessage = 'Access denied. Please try again or use a different sign-in method.';
-        } else if (errorCode === 'invalid_request') {
-          errorMessage = 'Invalid authentication request. Please try again.';
-        } else {
-          errorMessage = `Authentication error: ${errorCode}`;
-        }
-      }
-      
-      console.log('Auth error detected:', errorMessage);
-      setAuthError(errorMessage);
-      
-      // Clean up URL after displaying error
-      setTimeout(() => {
-        window.history.replaceState({}, '', '/auth');
-      }, 1000);
-      
+      // Clean up URL
+      window.history.replaceState({}, '', '/auth');
     } else if (hasAuthParams) {
-      console.log('Magic link or OAuth callback detected');
-      setIsMagicLinkAuth(true);
-      setAuthSuccess('Authenticating... Please wait while we verify your credentials.');
+      console.log('Authentication callback detected');
       
-      // Set timeout for magic link authentication
-      const authTimeout = setTimeout(() => {
-        if (isMagicLinkAuth && !user) {
-          console.log('Magic link authentication timeout');
-          setIsMagicLinkAuth(false);
-          setAuthSuccess(null);
-          setAuthError('Authentication timed out. Please try again or sign in manually.');
-          window.history.replaceState({}, '', '/auth');
-        }
-      }, 8000); // Increased timeout to 8 seconds
-      
-      return () => clearTimeout(authTimeout);
-    }
-  }, []);
-
-  // Handle successful authentication with better redirect logic
-  useEffect(() => {
-    console.log('Auth state check:', { user: !!user, loading, isMagicLinkAuth });
-    
-    if (!loading && user) {
-      console.log('User authenticated, preparing redirect');
-      setIsMagicLinkAuth(false);
-      setAuthSuccess('Authentication successful! Redirecting...');
-      
-      // Determine redirect destination
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectTo = urlParams.get('redirect') || '/dashboard';
-      
-      // Delay redirect slightly to show success message
-      setTimeout(() => {
-        console.log('Redirecting to:', redirectTo);
-        navigate(redirectTo, { replace: true });
-      }, 1000);
-      
-    } else if (!loading && isMagicLinkAuth && !user) {
-      // Magic link detected but no user - continue waiting
-      console.log('Still waiting for magic link authentication...');
-    }
-  }, [user, loading, navigate, isMagicLinkAuth]);
-
-  // Enhanced form validation
-  const validateForm = (formData: FormData, isSignUp: boolean = false) => {
-    const errors: { [key: string]: string } = {};
-    
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const displayName = formData.get('displayName') as string;
-    
-    // Email validation
-    if (!email) {
-      errors.email = 'Email is required';
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        errors.email = 'Please enter a valid email address';
+      // If it's a magic link, show success message
+      if (urlSearch.includes('type=magiclink')) {
+        setAuthSuccess('Magic link authentication successful! Welcome to Bible Aura.');
+        setIsMagicLinkAuth(true);
       }
+      
+      // The auth state change will handle the redirect
     }
-    
-    // Password validation
-    if (!password && currentTab !== 'magic') {
-      errors.password = 'Password is required';
-    } else if (password && password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    } else if (isSignUp && password && password.length < 8) {
-      errors.password = 'For better security, use at least 8 characters';
+  }, [user, navigate]);
+
+  // Handle magic link authentication success
+  useEffect(() => {
+    if (user && isMagicLinkAuth) {
+      const timer = setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+      
+      return () => clearTimeout(timer);
     }
-    
-    // Display name validation for sign up
-    if (isSignUp && displayName && displayName.length > 50) {
-      errors.displayName = 'Display name must be less than 50 characters';
-    }
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  }, [user, isMagicLinkAuth, navigate]);
+
+  // Clear errors when switching tabs
+  useEffect(() => {
+    setAuthError(null);
+    setAuthSuccess(null);
+    setFormErrors({});
+  }, [currentTab]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -243,18 +158,33 @@ export default function Auth() {
     try {
       const formData = new FormData(e.currentTarget);
       
-      if (!validateForm(formData)) {
-        return;
-      }
-
       const email = formData.get('email') as string;
       const password = formData.get('password') as string;
+      
+      if (!email || !password) {
+        setFormErrors({ 
+          email: !email ? 'Email address is required' : '',
+          password: !password ? 'Password is required' : ''
+        });
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setFormErrors({ email: 'Please enter a valid email address' });
+        return;
+      }
+      
+      if (password.length < 6) {
+        setFormErrors({ password: 'Password must be at least 6 characters long' });
+        return;
+      }
+      
+      setFormErrors({});
 
       const result = await signIn(email, password);
       if (result.error) {
         setAuthError(result.error.message);
-      } else {
-        setAuthSuccess('Sign in successful! Redirecting...');
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -273,19 +203,43 @@ export default function Auth() {
     try {
       const formData = new FormData(e.currentTarget);
       
-      if (!validateForm(formData, true)) {
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
+      const confirmPassword = formData.get('confirmPassword') as string;
+      const displayName = formData.get('displayName') as string;
+      
+      if (!email || !password || !confirmPassword) {
+        setFormErrors({ 
+          email: !email ? 'Email address is required' : '',
+          password: !password ? 'Password is required' : '',
+          confirmPassword: !confirmPassword ? 'Please confirm your password' : ''
+        });
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setFormErrors({ email: 'Please enter a valid email address' });
+        return;
+      }
+      
+      if (password.length < 6) {
+        setFormErrors({ password: 'Password must be at least 6 characters long' });
         return;
       }
 
-      const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
-      const displayName = formData.get('displayName') as string;
+      if (password !== confirmPassword) {
+        setFormErrors({ confirmPassword: 'Passwords do not match' });
+        return;
+      }
+      
+      setFormErrors({});
 
       const result = await signUp(email, password, displayName);
       if (result.error) {
         setAuthError(result.error.message);
       } else {
-        setAuthSuccess('Account created successfully! Please check your email for confirmation.');
+        setAuthSuccess('Account created successfully! Please check your email to verify your account.');
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -333,136 +287,22 @@ export default function Auth() {
   };
 
   const handleGoogleSignIn = async () => {
-    setIsSubmitting(true);
-    setAuthError(null);
-    setAuthSuccess(null);
-
     try {
+      setIsSubmitting(true);
+      setAuthError(null);
+      setAuthSuccess(null);
+      
       const result = await signInWithGoogle();
       if (result.error) {
         setAuthError(result.error.message);
-      } else {
-        setAuthSuccess('Redirecting to Google for authentication...');
       }
     } catch (error) {
       console.error('Google sign in error:', error);
-      setAuthError('Google sign-in is currently unavailable. Please try email authentication.');
+      setAuthError('Google sign in failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setAuthError(null);
-    setAuthSuccess(null);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-      
-      const email = formData.get('email') as string;
-      if (!email) {
-        setFormErrors({ email: 'Email address is required' });
-        return;
-      }
-      
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setFormErrors({ email: 'Please enter a valid email address' });
-        return;
-      }
-      
-      setFormErrors({});
-
-      const result = await resetPassword(email);
-      if (result.error) {
-        setAuthError(result.error.message);
-      } else {
-        setAuthSuccess('Password reset email sent! Please check your email and follow the instructions.');
-        setShowForgotPassword(false);
-      }
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      setAuthError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleUpdatePassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setAuthError(null);
-    setAuthSuccess(null);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-      
-      const newPassword = formData.get('newPassword') as string;
-      const confirmPassword = formData.get('confirmPassword') as string;
-      
-      if (!newPassword || !confirmPassword) {
-        setFormErrors({ 
-          newPassword: !newPassword ? 'New password is required' : '',
-          confirmPassword: !confirmPassword ? 'Please confirm your password' : ''
-        });
-        return;
-      }
-
-      if (newPassword.length < 6) {
-        setFormErrors({ newPassword: 'Password must be at least 6 characters long' });
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        setFormErrors({ confirmPassword: 'Passwords do not match' });
-        return;
-      }
-      
-      setFormErrors({});
-
-      // Use supabase client directly since we're in a reset flow
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) {
-        let userFriendlyMessage = error.message;
-        
-        if (error.message.includes('weak password')) {
-          userFriendlyMessage = 'Please choose a stronger password with at least 6 characters.';
-        } else if (error.message.includes('same password')) {
-          userFriendlyMessage = 'Please choose a different password from your current one.';
-        }
-
-        setAuthError(userFriendlyMessage);
-      } else {
-        setAuthSuccess('Password updated successfully! You can now sign in with your new password.');
-        // Redirect to sign in after a short delay
-        setTimeout(() => {
-          setCurrentTab('signin');
-          setAuthSuccess(null);
-          window.history.replaceState({}, '', '/auth');
-        }, 3000);
-      }
-    } catch (error) {
-      console.error('Update password error:', error);
-      setAuthError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Clear form errors when switching tabs
-  useEffect(() => {
-    setFormErrors({});
-    setAuthError(null);
-    setAuthSuccess(null);
-    setShowForgotPassword(false);
-  }, [currentTab]);
 
   // Show loading screen for magic link auth
   if (loading || isMagicLinkAuth) {
@@ -517,9 +357,9 @@ export default function Auth() {
                   <div className={`p-3 rounded-2xl shadow-lg bg-gradient-to-br ${
                     currentFeature === 0 ? 'from-blue-500 to-indigo-600' :
                     currentFeature === 1 ? 'from-purple-500 to-pink-600' :
-                    currentFeature === 2 ? 'from-green-500 to-emerald-600' :
-                    currentFeature === 3 ? 'from-orange-500 to-red-600' :
-                    currentFeature === 4 ? 'from-yellow-500 to-amber-600' :
+                    currentFeature === 2 ? 'from-pink-500 to-rose-600' :
+                    currentFeature === 3 ? 'from-green-500 to-emerald-600' :
+                    currentFeature === 4 ? 'from-indigo-500 to-purple-600' :
                     'from-indigo-500 to-purple-600'
                   } transform rotate-3 hover:rotate-0 transition-transform duration-300`}>
                     {(() => {
@@ -660,57 +500,10 @@ export default function Auth() {
                   <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs font-medium">
                     Sign Up
                   </TabsTrigger>
-                  <TabsTrigger value="reset" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs font-medium">
-                    Reset
-                  </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="signin" className="space-y-3 mt-0">
-                  {showForgotPassword ? (
-                    /* Forgot Password Form */
-                    <form onSubmit={handleForgotPassword} className="space-y-4">
-                      <div className="text-center mb-4">
-                        <h3 className="text-lg font-semibold text-primary">Reset Password</h3>
-                        <p className="text-sm text-gray-600 mt-1">Enter your email to receive reset instructions</p>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        <Label htmlFor="forgot-email" className="text-primary font-medium text-sm">Email</Label>
-                        <Input
-                          id="forgot-email"
-                          name="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          required
-                          disabled={isSubmitting}
-                          className="border-primary/30 focus:border-primary focus:ring-primary h-9"
-                        />
-                        {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Button
-                          type="submit"
-                          className="w-full bg-primary hover:bg-primary/90 text-white h-11"
-                          disabled={isSubmitting}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          {isSubmitting ? "Sending..." : "Send Reset Email"}
-                        </Button>
-                        
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="w-full h-9 text-primary hover:bg-primary/5"
-                          onClick={() => setShowForgotPassword(false)}
-                        >
-                          ← Back to Sign In
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    /* Regular Sign In Form */
-                    <form onSubmit={handleSignIn} className="space-y-3">
+                  <form onSubmit={handleSignIn} className="space-y-3">
                       <div className="space-y-1">
                         <Label htmlFor="signin-email" className="text-primary font-medium text-sm">Email</Label>
                         <Input
@@ -749,19 +542,6 @@ export default function Auth() {
                         {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
                       </div>
                       
-                      {/* Forgot Password Link */}
-                      <div className="flex justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs text-primary hover:text-primary/80 h-auto p-0"
-                          onClick={() => setShowForgotPassword(true)}
-                        >
-                          Forgot password?
-                        </Button>
-                      </div>
-                      
                       <Button
                         type="submit"
                         className="w-full bg-primary hover:bg-primary/90 text-white h-11"
@@ -771,36 +551,7 @@ export default function Auth() {
                         {isSubmitting ? "Signing in..." : "Sign In"}
                       </Button>
                     </form>
-                  )}
-                  
-                  {!showForgotPassword && (
-                    <>
-                      <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t border-primary/20" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-white px-3 text-primary/70">Or continue with</span>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full h-11 border-primary/30 hover:bg-primary/5"
-                        onClick={handleGoogleSignIn}
-                        disabled={isSubmitting}
-                      >
-                        <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                          </svg>
-                        {isSubmitting ? "Signing in..." : "Continue with Google"}
-                      </Button>
-                    </>
-                  )}
-                </TabsContent>
+                  </TabsContent>
                 
                 <TabsContent value="magic" className="space-y-4 mt-0">
                   <form onSubmit={handleMagicLink} className="space-y-4">
@@ -953,68 +704,6 @@ export default function Auth() {
                       </svg>
                       {isSubmitting ? "Signing up..." : "Continue with Google"}
                   </Button>
-                </TabsContent>
-                
-                <TabsContent value="reset" className="space-y-4 mt-0">
-                  <form onSubmit={handleUpdatePassword} className="space-y-4">
-                    <div className="text-center mb-4">
-                      <h3 className="text-lg font-semibold text-primary">Set New Password</h3>
-                      <p className="text-sm text-gray-600 mt-1">Enter your new password below</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password" className="text-primary font-medium">New Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="new-password"
-                          name="newPassword"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your new password"
-                          required
-                          disabled={isSubmitting}
-                          minLength={6}
-                          className="border-primary/30 focus:border-primary focus:ring-primary h-11 pr-11"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-11 px-3 hover:bg-transparent text-primary"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                      {formErrors.newPassword && <p className="text-xs text-red-500">{formErrors.newPassword}</p>}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password" className="text-primary font-medium">Confirm Password</Label>
-                      <Input
-                        id="confirm-password"
-                        name="confirmPassword"
-                        type="password"
-                        placeholder="Confirm your new password"
-                        required
-                        disabled={isSubmitting}
-                        minLength={6}
-                        className="border-primary/30 focus:border-primary focus:ring-primary h-11"
-                      />
-                      {formErrors.confirmPassword && <p className="text-xs text-red-500">{formErrors.confirmPassword}</p>}
-                      <p className="text-xs text-muted-foreground">
-                        Password must be at least 6 characters long
-                      </p>
-                    </div>
-                    
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/90 text-white h-11"
-                      disabled={isSubmitting}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {isSubmitting ? "Updating password..." : "Update Password"}
-                    </Button>
-                  </form>
                 </TabsContent>
               </Tabs>
             </CardContent>
