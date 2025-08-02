@@ -12,7 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
-  Calendar, Award, Target, TrendingUp, Save, Star, Sparkles 
+  Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
+  Shield, Mail, Lock, Eye, EyeOff
 } from "lucide-react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 
@@ -39,7 +40,7 @@ interface UserStats {
 }
 
 const Profile = () => {
-  const { user, profile: authProfile } = useAuth();
+  const { user, profile: authProfile, resetPassword } = useAuth();
   const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats>({
@@ -50,11 +51,18 @@ const Profile = () => {
     totalBookmarks: 0,
     totalConversations: 0
   });
+
+  // Profile editing states
   const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [favoriteTranslation, setFavoriteTranslation] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  // Password reset states
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetLoading, setIsResetLoading] = useState(false);
 
   const translations = [
     { value: "ESV", label: "English Standard Version" },
@@ -169,6 +177,49 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Add password reset function
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetLoading(true);
+
+    try {
+      const email = resetEmail || user?.email;
+      if (!email) {
+        toast({
+          title: "Error",
+          description: "Email address is required",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const result = await resetPassword(email);
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Password Reset Sent",
+          description: "Please check your email for password reset instructions",
+        });
+        setShowPasswordReset(false);
+        setResetEmail("");
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResetLoading(false);
     }
   };
 
@@ -319,6 +370,92 @@ const Profile = () => {
               </div>
             </div>
           </CardHeader>
+        </Card>
+
+        {/* Account Security Section */}
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              Account Security
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Lock className="h-5 w-5 text-gray-600" />
+                  <div>
+                    <p className="font-medium text-sm sm:text-base">Password</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Reset your password to maintain account security
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPasswordReset(!showPasswordReset)}
+                  className="w-full sm:w-auto"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Reset Password
+                </Button>
+              </div>
+
+              {showPasswordReset && (
+                <div className="p-3 sm:p-4 border rounded-lg bg-blue-50 border-blue-200">
+                  <form onSubmit={handlePasswordReset} className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium block mb-2">
+                        Email Address
+                      </label>
+                      <Input
+                        type="email"
+                        placeholder={user?.email || "Enter your email"}
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Leave empty to use your account email ({user?.email})
+                      </p>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        type="submit" 
+                        disabled={isResetLoading}
+                        className="w-full sm:w-auto"
+                      >
+                        {isResetLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="h-4 w-4 mr-2" />
+                            Send Reset Email
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => {
+                          setShowPasswordReset(false);
+                          setResetEmail("");
+                        }}
+                        className="w-full sm:w-auto"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          </CardContent>
         </Card>
 
         {/* Reading Progress */}
