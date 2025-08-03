@@ -1,31 +1,30 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import React from "react";
 
 const Home = () => {
   return (
     <div className="min-h-screen bg-white w-full">
-      {/* Ultra Simple Test */}
+      {/* Absolute Simplest Test */}
       <div className="py-20 px-4 text-center">
         <h1 className="text-4xl font-bold text-orange-600 mb-4">
-          ✦ Bible Aura
+          ✦ Bible Aura - WORKING!
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-          Ultra-Minimal Test Version
+          🎉 SUCCESS! The basic component is working!
         </p>
-        <p className="text-green-600 font-semibold">
-          ✅ If you can see this, the basic React component is working!
+        <p className="text-green-600 font-semibold text-lg">
+          ✅ React is rendering correctly
         </p>
         
         <div className="mt-8">
-          <Button className="bg-orange-500 text-white px-6 py-2">
-            Test Button
-          </Button>
+          <button className="bg-orange-500 text-white px-6 py-2 rounded">
+            Simple HTML Button
+          </button>
         </div>
         
         <div className="mt-8 text-sm text-gray-500">
-          <p>This is the most basic version possible.</p>
-          <p>If this works, we can identify what was causing the error.</p>
+          <p>✅ No external components</p>
+          <p>✅ No complex imports</p>
+          <p>✅ Pure React + Tailwind CSS</p>
         </div>
       </div>
     </div>
