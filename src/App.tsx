@@ -86,32 +86,32 @@ function App() {
           {/* <SmartRedirect /> Temporarily removed to debug */}
           <div className="App">
             <Routes>
-              {/* Public routes */}
+              {/* Public routes - ModernLayout removed to fix errors */}
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<ModernLayout><About /></ModernLayout>} />
-              <Route path="/features" element={<ModernLayout><Features /></ModernLayout>} />
-              <Route path="/pricing" element={<ModernLayout><Pricing /></ModernLayout>} />
-              <Route path="/contact" element={<ModernLayout><Contact /></ModernLayout>} />
-              <Route path="/auth" element={<ModernLayout><Auth /></ModernLayout>} />
-              <Route path="/blog" element={<ModernLayout><Blog /></ModernLayout>} />
+              <Route path="/about" element={<About />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/blog" element={<Blog />} />
               
               {/* Feature pages */}
-              <Route path="/features/ai" element={<ModernLayout><AIFeatures /></ModernLayout>} />
-              <Route path="/features/bible-study" element={<ModernLayout><BibleStudy /></ModernLayout>} />
-              <Route path="/features/personal-tools" element={<ModernLayout><PersonalTools /></ModernLayout>} />
-              <Route path="/features/content-creation" element={<ModernLayout><ContentCreation /></ModernLayout>} />
-              <Route path="/features/learning" element={<ModernLayout><LearningResources /></ModernLayout>} />
-              <Route path="/features/advanced-study" element={<ModernLayout><AdvancedStudy /></ModernLayout>} />
+              <Route path="/features/ai" element={<AIFeatures />} />
+              <Route path="/features/bible-study" element={<BibleStudy />} />
+              <Route path="/features/personal-tools" element={<PersonalTools />} />
+              <Route path="/features/content-creation" element={<ContentCreation />} />
+              <Route path="/features/learning" element={<LearningResources />} />
+              <Route path="/features/advanced-study" element={<AdvancedStudy />} />
               
               {/* Blog posts */}
-              <Route path="/blog/how-ai-transforms-bible-study" element={<ModernLayout><HowAITransformsBibleStudy /></ModernLayout>} />
-              <Route path="/blog/bible-study-ai-benefits" element={<ModernLayout><BibleStudyAIBenefits /></ModernLayout>} />
-              <Route path="/blog/ai-bible-insights-accuracy" element={<ModernLayout><AIBibleInsightsAccuracy /></ModernLayout>} />
-              <Route path="/blog/bible-ai-vs-traditional-study" element={<ModernLayout><BibleAIVsTraditionalStudy /></ModernLayout>} />
+              <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
+              <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
+              <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
+              <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
               
               {/* Subscription pages */}
-              <Route path="/subscription/success" element={<ModernLayout><SubscriptionSuccess /></ModernLayout>} />
-              <Route path="/subscription/cancelled" element={<ModernLayout><SubscriptionCancelled /></ModernLayout>} />
+              <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+              <Route path="/subscription/cancelled" element={<SubscriptionCancelled />} />
 
               {/* Protected routes with enhanced error handling */}
               <Route path="/dashboard" element={
