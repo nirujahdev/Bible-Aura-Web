@@ -13,9 +13,12 @@ import FAQ from "@/components/FAQ";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const Home = () => {
-  // SEO optimization
-  useSEO(SEO_CONFIG.HOME);
-
+  // SEO optimization - with error handling
+  try {
+    useSEO(SEO_CONFIG.HOME);
+  } catch (error) {
+    console.error('SEO Error:', error);
+  }
 
 
   return (

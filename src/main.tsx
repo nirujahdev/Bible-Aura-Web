@@ -5,6 +5,11 @@ import LoadingScreen from './components/LoadingScreen.tsx'
 // Import test utilities for development
 import './utils/testDeviceFlow.ts'
 
+console.log('🚀 Starting Bible Aura application...');
+console.log('Environment:', import.meta.env.MODE);
+console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL ? 'Set ✅' : 'Missing ❌');
+console.log('Supabase Anon Key:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set ✅' : 'Missing ❌');
+
 // Service Worker Registration for PWA
 const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator && import.meta.env.PROD) {

@@ -35,6 +35,15 @@ class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
+    // Show error details in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('🐛 ERROR DETAILS:');
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('Component stack:', errorInfo.componentStack);
+    }
+    
     this.setState({
       error,
       errorInfo,
@@ -202,6 +211,8 @@ class ErrorBoundary extends Component<Props, State> {
                     Technical Details (Development)
                   </summary>
                   <div className="mt-2 p-3 bg-slate-100 rounded text-slate-700 font-mono text-xs overflow-auto max-h-32">
+                    <div><strong>Error Name:</strong> {this.state.error.name}</div>
+                    <div><strong>Error Message:</strong> {this.state.error.message}</div>
                     <div><strong>Error:</strong> {this.state.error.toString()}</div>
                     {this.state.errorInfo && (
                       <div className="mt-2">
