@@ -204,24 +204,20 @@ class ErrorBoundary extends Component<Props, State> {
                 ))}
               </div>
 
-              {(process.env.NODE_ENV === 'development' || window.location.hostname === 'bibleaura.xyz') && this.state.error && (
-                <details className="text-xs" open>
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <details className="text-xs">
                   <summary className="cursor-pointer text-slate-500 flex items-center gap-1">
                     <Bug className="w-3 h-3" />
-                    Error Details (Click to see what's broken)
+                    Technical Details (Development)
                   </summary>
-                  <div className="mt-2 p-3 bg-slate-100 rounded text-slate-700 font-mono text-xs overflow-auto max-h-48">
+                  <div className="mt-2 p-3 bg-slate-100 rounded text-slate-700 font-mono text-xs overflow-auto max-h-32">
                     <div><strong>Error Name:</strong> {this.state.error.name}</div>
                     <div><strong>Error Message:</strong> {this.state.error.message}</div>
                     <div><strong>Error:</strong> {this.state.error.toString()}</div>
-                    <div><strong>Error Stack:</strong></div>
-                    <pre className="whitespace-pre-wrap text-xs bg-red-50 p-2 rounded mt-1">
-                      {this.state.error.stack}
-                    </pre>
                     {this.state.errorInfo && (
                       <div className="mt-2">
                         <strong>Component Stack:</strong>
-                        <pre className="whitespace-pre-wrap text-xs bg-blue-50 p-2 rounded mt-1">
+                        <pre className="whitespace-pre-wrap text-xs">
                           {this.state.errorInfo.componentStack}
                         </pre>
                       </div>
