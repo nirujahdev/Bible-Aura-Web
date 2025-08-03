@@ -6,10 +6,10 @@ import {
   BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
-// import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks"; // COMMENTED OUT TO FIX ERRORS
-// import { ManualContextualLinks } from "@/components/ContextualLinks"; // COMMENTED OUT TO FIX ERRORS
-// import Footer from "@/components/Footer"; // COMMENTED OUT TO FIX ERRORS
-// import FAQ from "@/components/FAQ"; // COMMENTED OUT TO FIX ERRORS
+import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks";
+import { ManualContextualLinks } from "@/components/ContextualLinks";
+import Footer from "@/components/Footer";
+import FAQ from "@/components/FAQ";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const Home = () => {
@@ -411,7 +411,7 @@ const Home = () => {
         <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
           <div className="text-center mb-8">
           </div>
-          {/* <QuickActionSEOLinks /> */}
+          <QuickActionSEOLinks />
         </div>
       </section>
 
@@ -422,12 +422,12 @@ const Home = () => {
 
 
       {/* FAQ Section */}
-      {/* <FAQ /> */}
+      <FAQ />
 
 
 
       {/* SEO Backlinks */}
-      {/* <SEOBacklinks currentPage="/" category="general" /> */}
+      <SEOBacklinks currentPage="/" category="general" />
 
       {/* Enhanced Privacy & Legal Section */}
       <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-blue-50 border-t">
@@ -490,7 +490,7 @@ const Home = () => {
         </div>
       </section>
 
-              {/* <Footer /> */}
+              <Footer />
     </div>
   );
 };
