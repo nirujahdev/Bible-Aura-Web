@@ -173,14 +173,23 @@ export default function Auth() {
     if (!loading && user) {
       console.log('User authenticated, preparing redirect');
       setIsMagicLinkAuth(false);
-      setAuthSuccess('Authentication successful! Redirecting to dashboard...');
+      setAuthSuccess('Authentication successful! Redirecting...');
       
-      // Always redirect to dashboard after successful authentication
+      // Check if user has already selected device preference
+      const userHasDevicePreference = hasDevicePreference();
       const urlParams = new URLSearchParams(window.location.search);
       const redirectTo = urlParams.get('redirect');
       
-      // Determine final redirect destination - always dashboard unless specific redirect
-      const finalRedirect = redirectTo || '/dashboard';
+      // Determine final redirect destination
+      let finalRedirect = '/dashboard';
+      
+      if (redirectTo) {
+        // If there's a specific redirect URL, use it
+        finalRedirect = redirectTo;
+      } else if (!userHasDevicePreference) {
+        // If user hasn't selected device preference, go to device selection
+        finalRedirect = '/device-selection';
+      }
       
       // Delay redirect slightly to show success message
       setTimeout(() => {

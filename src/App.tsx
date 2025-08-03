@@ -83,7 +83,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
-          {/* <SmartRedirect /> Temporarily removed to debug */}
+          <SmartRedirect />
           <div className="App">
             <Routes>
               {/* Public routes - ModernLayout removed to fix errors */}
