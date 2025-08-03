@@ -12,7 +12,7 @@ import { logDatabaseStatus } from '@/utils/databaseTest';
 import Home from '@/pages/Home';
 import About from '@/pages/About';
 import Features from '@/pages/Features';
-import Pricing from '@/pages/Pricing';
+import Funding from '@/pages/Pricing';
 // import Contact from '@/pages/Contact'; // REMOVED - not in original navigation
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
@@ -90,7 +90,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/features" element={<Features />} />
-              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/pricing" element={<Funding />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/blog" element={<Blog />} />
               
