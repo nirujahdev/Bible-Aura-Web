@@ -13,7 +13,7 @@ import Home from '@/pages/Home';
 import About from '@/pages/About';
 import Features from '@/pages/Features';
 import Pricing from '@/pages/Pricing';
-import Contact from '@/pages/Contact';
+// import Contact from '@/pages/Contact'; // REMOVED - not in original navigation
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Bible from '@/pages/Bible';
@@ -83,7 +83,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <SmartRedirect />
+          {/* <SmartRedirect /> */}
           <div className="App">
             <Routes>
               {/* Public routes - ModernLayout removed to fix errors */}
