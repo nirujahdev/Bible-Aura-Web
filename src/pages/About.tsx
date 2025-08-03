@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { Heart, Target, Star, Crown, BookOpen, Brain, MessageCircle, Shield, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-// import Footer from "@/components/Footer"; // COMMENTED OUT TO FIX ERRORS
-// import { SEOBacklinks } from "@/components/SEOBacklinks"; // COMMENTED OUT TO FIX ERRORS
+import Footer from "@/components/Footer";
+import { SEOBacklinks } from "@/components/SEOBacklinks";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -201,8 +201,8 @@ const About = () => {
         </div>
       </section>
 
-      {/* <SEOBacklinks currentPage="/about" category="general" /> */}
-      {/* <Footer /> */}
+      <SEOBacklinks currentPage="/about" category="general" />
+      <Footer />
     </div>
   );
 };

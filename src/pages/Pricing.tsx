@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Globe, Users, BookOpen, Star, Crown, Shield, CheckCircle, X, Sparkles, Brain, MessageCircle, Edit3, Bookmark, TreePine, Mountain, Sprout, ChevronRight, HelpCircle, PieChart } from "lucide-react";
 import { Link } from "react-router-dom";
-// import Footer from "@/components/Footer"; // COMMENTED OUT TO FIX ERRORS
+import Footer from "@/components/Footer";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { useState } from "react";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
@@ -449,7 +449,7 @@ const Funding = () => {
         </div>
       </div>
 
-      {/* <Footer /> */}
+              <Footer />
     </div>
   );
 };
