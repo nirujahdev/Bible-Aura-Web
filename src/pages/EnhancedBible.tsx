@@ -24,7 +24,7 @@ import EnhancedAIChat from '@/components/EnhancedAIChat';
 import { QuickAIChatTrigger } from '@/components/QuickAIChatWidget';
 
 // Import existing utilities
-// import { getAllBooks } from '@/lib/bible-api';
+import { bibleApi } from '@/lib/bible-api';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BibleVerse {
@@ -103,16 +103,19 @@ export default function EnhancedBible() {
 
   const loadBooks = async () => {
     try {
-      // Sample Bible books data - replace with actual API call
-      const booksData: BibleBook[] = [
-        { id: 'genesis', name: 'Genesis', chapters: 50, testament: 'old', category: 'Law' },
-        { id: 'exodus', name: 'Exodus', chapters: 40, testament: 'old', category: 'Law' },
-        { id: 'matthew', name: 'Matthew', chapters: 28, testament: 'new', category: 'Gospels' },
-        { id: 'mark', name: 'Mark', chapters: 16, testament: 'new', category: 'Gospels' },
-        { id: 'luke', name: 'Luke', chapters: 24, testament: 'new', category: 'Gospels' },
-        { id: 'john', name: 'John', chapters: 21, testament: 'new', category: 'Gospels' },
-        { id: 'psalms', name: 'Psalms', chapters: 150, testament: 'old', category: 'Poetry' },
-      ];
+      // Use the actual Bible API to get books
+      const bibleId = 'de4e12af7f28f599-02'; // KJV Bible ID
+      const apiBooks = bibleApi.getStaticBooks(bibleId);
+      
+      // Convert to our expected format
+      const booksData: BibleBook[] = apiBooks.map(book => ({
+        id: book.id.toLowerCase(),
+        name: book.name,
+        chapters: book.chaptersCount || 1,
+        testament: book.testament?.toLowerCase() as 'old' | 'new' || 'old',
+        category: book.category || 'Other'
+      }));
+      
       setBooks(booksData);
       if (booksData.length > 0 && !selectedBook) {
         setSelectedBook(booksData.find(b => b.name === 'Genesis') || booksData[0]);
@@ -132,8 +135,22 @@ export default function EnhancedBible() {
     
     setLoading(true);
     try {
-      // For now, we'll use sample verses - you can replace this with actual API call
-      const sampleVerses: BibleVerse[] = [
+      // Use the actual Bible API to get chapter verses
+      const bibleId = 'de4e12af7f28f599-02'; // KJV Bible ID
+      const bookId = selectedBook.id.toUpperCase();
+      const apiVerses = await bibleApi.fetchChapter(bookId, selectedChapter, bibleId);
+      
+      // Convert to our expected format
+      const verses: BibleVerse[] = apiVerses.map(verse => ({
+        book_name: selectedBook.name,
+        chapter: selectedChapter,
+        verse: verse.verse,
+        text: verse.text,
+        translation: selectedTranslation
+      }));
+      
+      // If no verses from API, use fallback sample verses
+      const fallbackVerses: BibleVerse[] = [
         {
           book_name: selectedBook.name,
           chapter: selectedChapter,
@@ -149,7 +166,9 @@ export default function EnhancedBible() {
           translation: selectedTranslation
         }
       ];
-      setVerses(sampleVerses);
+      
+      // Use API verses if available, otherwise use fallback verses
+      setVerses(verses.length > 0 ? verses : fallbackVerses);
     } catch (error) {
       console.error('Error loading chapter:', error);
       toast({
