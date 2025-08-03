@@ -86,6 +86,38 @@ const Journal = () => {
 
       if (error) {
         console.error('Supabase error:', error);
+        
+        // Handle specific database errors
+        if (error.message.includes('column') && error.message.includes('does not exist')) {
+          setError('Database schema update required. Please refresh the page.');
+          toast({
+            title: "Database Update Required",
+            description: "The database schema needs to be updated. Please refresh the page or contact support.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        if (error.message.includes('relation') && error.message.includes('does not exist')) {
+          setError('Journal table not found. Please contact support.');
+          toast({
+            title: "Database Error",
+            description: "The journal table is missing. Please contact support.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        if (error.message.includes('permission denied') || error.message.includes('RLS')) {
+          setError('Access permission issue. Please sign out and sign back in.');
+          toast({
+            title: "Permission Error",
+            description: "Please sign out and sign back in to refresh your permissions.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         throw error;
       }
       
@@ -99,16 +131,32 @@ const Journal = () => {
         word_count: entry.word_count || 0,
         reading_time: entry.reading_time || 1,
         language: entry.language || 'english',
-        category: entry.category || 'General'
+        category: entry.category || 'General',
+        is_pinned: entry.is_pinned || false,
+        template_used: entry.template_used || null,
+        metadata: entry.metadata || null
       }));
       
       setEntries(processedData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading entries:', error);
       setError('Failed to load journal entries');
+      
+      // Show user-friendly error message based on error type
+      const errorMessage = error?.message || 'Unknown error occurred';
+      let userMessage = "Failed to load journal entries. Please try again.";
+      
+      if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        userMessage = "Network error. Please check your connection and try again.";
+      } else if (errorMessage.includes('timeout')) {
+        userMessage = "Request timed out. Please try again.";
+      } else if (errorMessage.includes('JWT') || errorMessage.includes('token')) {
+        userMessage = "Session expired. Please sign in again.";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to load journal entries. Please try again.",
+        description: userMessage,
         variant: "destructive"
       });
     } finally {

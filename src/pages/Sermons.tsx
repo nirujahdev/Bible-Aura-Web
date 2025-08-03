@@ -231,13 +231,77 @@ const Sermons = () => {
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
-      setSermons(data || []);
-    } catch (error) {
+      if (error) {
+        console.error('Supabase error:', error);
+        
+        // Handle specific database errors
+        if (error.message.includes('column') && error.message.includes('does not exist')) {
+          toast({
+            title: "Database Update Required",
+            description: "The database schema needs to be updated. Please refresh the page or contact support.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        if (error.message.includes('relation') && error.message.includes('does not exist')) {
+          toast({
+            title: "Database Error",
+            description: "The sermons table is missing. Please contact support.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        if (error.message.includes('permission denied') || error.message.includes('RLS')) {
+          toast({
+            title: "Permission Error",
+            description: "Please sign out and sign back in to refresh your permissions.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        throw error;
+      }
+      
+      // Process data with proper defaults
+      const processedData = (data || []).map(sermon => ({
+        ...sermon,
+        tags: sermon.tags || [],
+        main_points: sermon.main_points || [],
+        illustrations: sermon.illustrations || [],
+        applications: sermon.applications || [],
+        scripture_references: sermon.scripture_references || [],
+        language: sermon.language || 'english',
+        category: sermon.category || 'general',
+        is_draft: sermon.is_draft !== null ? sermon.is_draft : true,
+        status: sermon.status || 'draft',
+        word_count: sermon.word_count || 0,
+        estimated_time: sermon.estimated_time || 0,
+        estimated_duration: sermon.estimated_duration || 0,
+        ai_generated: sermon.ai_generated || false
+      }));
+      
+      setSermons(processedData);
+    } catch (error: any) {
       console.error('Error loading sermons:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error?.message || 'Unknown error occurred';
+      let userMessage = "Failed to load sermons. Please try again.";
+      
+      if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        userMessage = "Network error. Please check your connection and try again.";
+      } else if (errorMessage.includes('timeout')) {
+        userMessage = "Request timed out. Please try again.";
+      } else if (errorMessage.includes('JWT') || errorMessage.includes('token')) {
+        userMessage = "Session expired. Please sign in again.";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to load sermons",
+        description: userMessage,
         variant: "destructive"
       });
     } finally {

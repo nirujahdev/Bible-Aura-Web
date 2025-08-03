@@ -1,271 +1,250 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { AuthProvider, useAuth } from "./hooks/useAuth";
-import { Toaster } from "./components/ui/toaster";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { queryClient } from "./lib/queryClient";
-import { Suspense, lazy } from "react";
-import LoadingScreen from "./components/LoadingScreen";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { ModernLayout } from '@/components/ModernLayout';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import SmartRedirect from '@/components/SmartRedirect';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { logDatabaseStatus } from '@/utils/databaseTest';
 
-// Lazy load all page components for better performance
-const Auth = lazy(() => import("./pages/Auth"));
-const Home = lazy(() => import("./pages/Home"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Bible = lazy(() => import("./pages/Bible"));
-const BibleAI = lazy(() => import("./pages/BibleAI"));
-const Blog = lazy(() => import("./pages/Blog"));
+// Pages
+import Home from '@/pages/Home';
+import About from '@/pages/About';
+import Features from '@/pages/Features';
+import Pricing from '@/pages/Pricing';
+import Contact from '@/pages/Contact';
+import Auth from '@/pages/Auth';
+import Dashboard from '@/pages/Dashboard';
+import Bible from '@/pages/Bible';
+import BibleAI from '@/pages/BibleAI';
+import BibleQA from '@/pages/BibleQA';
+import Journal from '@/pages/Journal';
+import StudyHub from '@/pages/StudyHub';
+import TopicalStudy from '@/pages/TopicalStudy';
+import ParablesStudy from '@/pages/ParablesStudy';
+import Sermons from '@/pages/Sermons';
+import SermonWriter from '@/pages/SermonWriter';
+import SermonLibrary from '@/pages/SermonLibrary';
+import Songs from '@/pages/Songs';
+import Favorites from '@/pages/Favorites';
+import Profile from '@/pages/Profile';
+import Blog from '@/pages/Blog';
+import NotFound from '@/pages/NotFound';
+import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
+import SubscriptionCancelled from '@/pages/SubscriptionCancelled';
 
-// Blog post pages
-const HowAITransformsBibleStudy = lazy(() => import("./pages/blog/HowAITransformsBibleStudy"));
-const BibleAIVsTraditionalStudy = lazy(() => import("./pages/blog/BibleAIVsTraditionalStudy"));
-const BibleStudyAIBenefits = lazy(() => import("./pages/blog/BibleStudyAIBenefits"));
-const AIBibleInsightsAccuracy = lazy(() => import("./pages/blog/AIBibleInsightsAccuracy"));
+// Feature pages
+import AIFeatures from '@/pages/features/AIFeatures';
+import BibleStudy from '@/pages/features/BibleStudy';
+import PersonalTools from '@/pages/features/PersonalTools';
+import ContentCreation from '@/pages/features/ContentCreation';
+import LearningResources from '@/pages/features/LearningResources';
+import AdvancedStudy from '@/pages/features/AdvancedStudy';
 
-const Journal = lazy(() => import("./pages/Journal"));
-const Profile = lazy(() => import("./pages/Profile"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Blog posts
+import HowAITransformsBibleStudy from '@/pages/blog/HowAITransformsBibleStudy';
+import BibleStudyAIBenefits from '@/pages/blog/BibleStudyAIBenefits';
+import AIBibleInsightsAccuracy from '@/pages/blog/AIBibleInsightsAccuracy';
+import BibleAIVsTraditionalStudy from '@/pages/blog/BibleAIVsTraditionalStudy';
 
-const BibleQA = lazy(() => import("./pages/BibleQA"));
-const ParablesStudy = lazy(() => import("./pages/ParablesStudy"));
-const TopicalStudy = lazy(() => import("./pages/TopicalStudy"));
-const StudyHub = lazy(() => import("./pages/StudyHub"));
-const Sermons = lazy(() => import("./pages/Sermons"));
-const SermonWriter = lazy(() => import("./pages/SermonWriter"));
-const Songs = lazy(() => import("./pages/Songs"));
-const Favorites = lazy(() => import("./pages/Favorites"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const Features = lazy(() => import("./pages/Features"));
-const SubscriptionSuccess = lazy(() => import("./pages/SubscriptionSuccess"));
-const SubscriptionCancelled = lazy(() => import("./pages/SubscriptionCancelled"));
+import './App.css';
+import EnhancedBible from '@/pages/EnhancedBible';
 
-// Feature category pages
-const BibleStudy = lazy(() => import("./pages/features/BibleStudy"));
-const AIFeatures = lazy(() => import("./pages/features/AIFeatures"));
-const ContentCreation = lazy(() => import("./pages/features/ContentCreation"));
-const PersonalTools = lazy(() => import("./pages/features/PersonalTools"));
-const LearningResources = lazy(() => import("./pages/features/LearningResources"));
-const AdvancedStudy = lazy(() => import("./pages/features/AdvancedStudy"));
-
-// Component imports
-import ProtectedRoute from "./components/ProtectedRoute";
-import { ModernSidebar } from "./components/ModernSidebar";
-import EnhancedAIChat from "./components/EnhancedAIChat";
-import SmartRedirect from "./components/SmartRedirect";
-const DeviceSelection = lazy(() => import("./components/DeviceSelection"));
-
-function AppRoutes() {
-  const { user } = useAuth();
-
-  return (
-    <Suspense fallback={<LoadingScreen />}>
-      <Routes>
-        {/* Public landing pages - no authentication required */}
-        <Route path="/" element={user ? <SmartRedirect /> : <Home />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        
-        {/* Device Selection - First-time user experience */}
-        <Route path="/device-selection" element={
-          <ProtectedRoute>
-            <DeviceSelection />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/features" element={<Features />} />
-        
-        {/* Feature Category Pages - Public (but with auth prompts) */}
-        <Route path="/features/bible-study" element={<BibleStudy />} />
-        <Route path="/features/ai-features" element={<AIFeatures />} />
-        <Route path="/features/content-creation" element={<ContentCreation />} />
-        <Route path="/features/personal-tools" element={<PersonalTools />} />
-        <Route path="/features/learning-resources" element={<LearningResources />} />
-        <Route path="/features/advanced-study" element={<AdvancedStudy />} />
-        
-        {/* SEO-Optimized Landing Pages */}
-        <Route path="/bible-ai" element={<BibleAI />} />
-        <Route path="/ai-bible-study" element={<BibleAI />} />
-        <Route path="/bible-chat" element={<BibleAI />} />
-        <Route path="/digital-bible" element={<BibleAI />} />
-        <Route path="/bible-journal" element={<BibleAI />} />
-        
-        {/* Blog Pages */}
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
-        <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
-        <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
-        <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
-        <Route path="/blog/ai-bible-chat-features" element={<BibleAI />} />
-        <Route path="/blog/smart-bible-search-techniques" element={<BibleAI />} />
-        <Route path="/blog/biblical-ai-assistant-guide" element={<BibleAI />} />
-        <Route path="/blog/christian-ai-technology-future" element={<BibleAI />} />
-
-        {/* Main AI Chat - The primary app experience */}
-        <Route path="/ai-chat" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <EnhancedAIChat />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-
-        {/* Dashboard - Mobile optimized */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/bible" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <Bible />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/songs" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <Songs />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/study" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/study-hub" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/bible-qa" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/bible-characters" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/sermons" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <Sermons />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/sermon-writer" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <SermonWriter />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/topical-study" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/sermon-library" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/parables-study" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <StudyHub />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/favorites" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <Favorites />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/journal" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <Journal />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <ModernSidebar>
-              <Profile />
-            </ModernSidebar>
-          </ProtectedRoute>
-        } />
-
-        {/* Subscription Pages */}
-        <Route path="/subscription/success" element={<SubscriptionSuccess />} />
-        <Route path="/subscription/cancelled" element={<SubscriptionCancelled />} />
-
-        {/* Legacy redirects */}
-        <Route path="/chat" element={<Navigate to="/ai-chat" replace />} />
-        <Route path="/funding" element={<Navigate to="/pricing" replace />} />
-
-        {/* 404 fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on authentication errors
+        if (error instanceof Error && error.message.includes('JWT')) {
+          return false;
+        }
+        // Don't retry on permission errors
+        if (error instanceof Error && error.message.includes('permission')) {
+          return false;
+        }
+        // Retry up to 3 times for other errors
+        return failureCount < 3;
+      },
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+  },
+});
 
 function App() {
+  useEffect(() => {
+    // Run database health check on startup in development
+    if (process.env.NODE_ENV === 'development') {
+      logDatabaseStatus();
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen bg-white">
-              <AppRoutes />
-              <Toaster />
-            </div>
-          </Router>
-        </AuthProvider>
-        {/* React Query DevTools - only shows in development */}
-        <ReactQueryDevtools initialIsOpen={false} />
+        <Router>
+          <SmartRedirect />
+          <div className="App">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<ModernLayout><Home /></ModernLayout>} />
+              <Route path="/about" element={<ModernLayout><About /></ModernLayout>} />
+              <Route path="/features" element={<ModernLayout><Features /></ModernLayout>} />
+              <Route path="/pricing" element={<ModernLayout><Pricing /></ModernLayout>} />
+              <Route path="/contact" element={<ModernLayout><Contact /></ModernLayout>} />
+              <Route path="/auth" element={<ModernLayout><Auth /></ModernLayout>} />
+              <Route path="/blog" element={<ModernLayout><Blog /></ModernLayout>} />
+              
+              {/* Feature pages */}
+              <Route path="/features/ai" element={<ModernLayout><AIFeatures /></ModernLayout>} />
+              <Route path="/features/bible-study" element={<ModernLayout><BibleStudy /></ModernLayout>} />
+              <Route path="/features/personal-tools" element={<ModernLayout><PersonalTools /></ModernLayout>} />
+              <Route path="/features/content-creation" element={<ModernLayout><ContentCreation /></ModernLayout>} />
+              <Route path="/features/learning" element={<ModernLayout><LearningResources /></ModernLayout>} />
+              <Route path="/features/advanced-study" element={<ModernLayout><AdvancedStudy /></ModernLayout>} />
+              
+              {/* Blog posts */}
+              <Route path="/blog/how-ai-transforms-bible-study" element={<ModernLayout><HowAITransformsBibleStudy /></ModernLayout>} />
+              <Route path="/blog/bible-study-ai-benefits" element={<ModernLayout><BibleStudyAIBenefits /></ModernLayout>} />
+              <Route path="/blog/ai-bible-insights-accuracy" element={<ModernLayout><AIBibleInsightsAccuracy /></ModernLayout>} />
+              <Route path="/blog/bible-ai-vs-traditional-study" element={<ModernLayout><BibleAIVsTraditionalStudy /></ModernLayout>} />
+              
+              {/* Subscription pages */}
+              <Route path="/subscription/success" element={<ModernLayout><SubscriptionSuccess /></ModernLayout>} />
+              <Route path="/subscription/cancelled" element={<ModernLayout><SubscriptionCancelled /></ModernLayout>} />
+
+              {/* Protected routes with enhanced error handling */}
+              <Route path="/dashboard" element={
+                <ErrorBoundary fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center">
+                      <h2 className="text-xl font-semibold mb-2">Dashboard Error</h2>
+                      <p className="text-gray-600 mb-4">Unable to load dashboard. Please try refreshing.</p>
+                      <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded">
+                        Refresh Page
+                      </button>
+                    </div>
+                  </div>
+                }>
+                  <ProtectedRoute><ModernLayout><Dashboard /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/bible" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><EnhancedBible /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/bible-ai" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><BibleAI /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/bible-qa" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><BibleQA /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/journal" element={
+                <ErrorBoundary fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                      <h2 className="text-xl font-semibold mb-2">Journal Error</h2>
+                      <p className="text-gray-600 mb-4">Unable to load journal. This might be due to a database issue.</p>
+                      <div className="space-y-2">
+                        <button onClick={() => window.location.reload()} className="w-full px-4 py-2 bg-blue-600 text-white rounded">
+                          Refresh Page
+                        </button>
+                        <button onClick={() => window.location.href = '/dashboard'} className="w-full px-4 py-2 bg-gray-600 text-white rounded">
+                          Go to Dashboard
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }>
+                  <ProtectedRoute><ModernLayout><Journal /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/study-hub" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><StudyHub /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/topical-study" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><TopicalStudy /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/parables" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><ParablesStudy /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/sermons" element={
+                <ErrorBoundary fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                      <h2 className="text-xl font-semibold mb-2">Sermons Error</h2>
+                      <p className="text-gray-600 mb-4">Unable to load sermons. This might be due to a database issue.</p>
+                      <div className="space-y-2">
+                        <button onClick={() => window.location.reload()} className="w-full px-4 py-2 bg-blue-600 text-white rounded">
+                          Refresh Page
+                        </button>
+                        <button onClick={() => window.location.href = '/dashboard'} className="w-full px-4 py-2 bg-gray-600 text-white rounded">
+                          Go to Dashboard
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }>
+                  <ProtectedRoute><ModernLayout><Sermons /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/sermon-writer" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><SermonWriter /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/sermon-library" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><SermonLibrary /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/songs" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><Songs /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/favorites" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><Favorites /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              <Route path="/profile" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><ModernLayout><Profile /></ModernLayout></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+
+              {/* Catch all route */}
+              <Route path="*" element={<ModernLayout><NotFound /></ModernLayout>} />
+            </Routes>
+          </div>
+          <Toaster />
+        </Router>
       </QueryClientProvider>
-      <Analytics />
-      <SpeedInsights />
     </ErrorBoundary>
   );
 }
