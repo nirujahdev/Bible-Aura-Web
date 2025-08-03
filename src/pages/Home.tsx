@@ -1,20 +1,22 @@
-import React from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
   BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
+// import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks"; // COMMENTED OUT TO FIX ERRORS
+// import { ManualContextualLinks } from "@/components/ContextualLinks"; // COMMENTED OUT TO FIX ERRORS
+// import Footer from "@/components/Footer"; // COMMENTED OUT TO FIX ERRORS
+// import FAQ from "@/components/FAQ"; // COMMENTED OUT TO FIX ERRORS
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
 const Home = () => {
-  // SEO optimization - with error handling
-  try {
-    useSEO(SEO_CONFIG.HOME);
-  } catch (error) {
-    console.error('SEO Error:', error);
-  }
+  // SEO optimization
+  useSEO(SEO_CONFIG.HOME);
+
+
 
   return (
     <div className="min-h-screen bg-background w-full">
@@ -178,6 +180,158 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Sermon Writing Feature Showcase */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-purple-100 rounded-full">
+                <Mic className="h-8 w-8 text-purple-600" />
+              </div>
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Professional Sermon Writer
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Create compelling sermons with our advanced writing tools, Bible integration, and AI assistance
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <BookOpen className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Integrated Bible Access
+                  </h3>
+                  <p className="text-gray-600">
+                    Access multiple Bible translations instantly. Click any verse to add it directly to your sermon with proper formatting.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Bot className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    AI Writing Assistant
+                  </h3>
+                  <p className="text-gray-600">
+                    Get inspiration, theological insights, and writing suggestions from our biblical AI assistant trained on sound doctrine.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Professional Templates
+                  </h3>
+                  <p className="text-gray-600">
+                    Start with proven sermon structures including three-point sermons, expository preaching, and topical studies.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="h-5 w-5 text-purple-600" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Smart Analytics
+                  </h3>
+                  <p className="text-gray-600">
+                    Track word count, estimated speaking time, and reading level to perfect your sermon delivery.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
+                >
+                  <Link to="/sermon-writer">
+                    <Mic className="h-5 w-5 mr-2" />
+                    Start Writing Sermons
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="lg:pl-8">
+              <div className="bg-white rounded-xl shadow-2xl p-6 border">
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Mic className="h-5 w-5 text-purple-600" />
+                      <span className="font-semibold text-gray-900">Sermon Writer</span>
+                    </div>
+                    <div className="flex space-x-1">
+                      <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="border-b border-gray-200 mb-4">
+                    <div className="flex space-x-1 -mb-px">
+                      <div className="bg-purple-50 text-purple-600 px-3 py-2 text-sm font-medium border-b-2 border-purple-600">
+                        Editor
+                      </div>
+                      <div className="text-gray-500 px-3 py-2 text-sm">
+                        Bible
+                      </div>
+                      <div className="text-gray-500 px-3 py-2 text-sm">
+                        AI Chat
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <span className="font-medium">Title:</span>
+                    <span className="bg-gray-50 px-2 py-1 rounded">The Good Shepherd</span>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-3 rounded-lg text-sm leading-relaxed">
+                    <div className="font-semibold text-gray-900 mb-2"># Introduction</div>
+                    <div className="text-gray-700 mb-3">
+                      Jesus said, "I am the good shepherd. The good shepherd lays down his life for the sheep." - John 10:11
+                    </div>
+                    <div className="font-semibold text-gray-900 mb-1">## Main Point 1: The Shepherd's Love</div>
+                    <div className="text-gray-600 text-xs">The depth of Christ's sacrificial love...</div>
+                  </div>
+                  
+                  <div className="flex justify-between text-xs text-gray-500 pt-2 border-t">
+                    <span>1,247 words • 8 min read</span>
+                    <span className="text-green-600">● Live saved</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Smart Analysis Section */}
       <section className="py-12 md:py-20 bg-white">
         <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
@@ -243,29 +397,100 @@ const Home = () => {
           <p className="text-base md:text-lg lg:text-xl mb-6 md:mb-8 opacity-90 max-w-3xl mx-auto">
             Start your spiritual transformation today with AI-powered biblical insights and community support.
           </p>
-          <Button asChild size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-xl shadow-lg w-full sm:w-auto">
-            <Link to="/auth">
-              <span className="text-orange-600 mr-2">✦</span>
-              START YOUR JOURNEY
-            </Link>
+          <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-xl shadow-lg w-full sm:w-auto">
+            <span className="text-orange-600 mr-2">✦</span>
+            START YOUR JOURNEY
           </Button>
         </div>
       </section>
 
-      {/* Simple Footer */}
-      <footer className="bg-black text-white py-16">
-        <div className="w-full px-4 sm:px-6 lg:px-12 text-center">
-          <h3 className="text-2xl font-bold text-orange-400 mb-3">
-            ✦Bible Aura
-          </h3>
-          <p className="text-white text-base mb-6">
-            AI-Powered Biblical Insight
-          </p>
-          <div className="text-sm text-gray-400">
-            © 2024 Bible Aura. All rights reserved.
+
+
+      {/* Quick Action Links for SEO */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+          </div>
+          {/* <QuickActionSEOLinks /> */}
+        </div>
+      </section>
+
+
+
+
+
+
+
+      {/* FAQ Section */}
+      {/* <FAQ /> */}
+
+
+
+      {/* SEO Backlinks */}
+      {/* <SEOBacklinks currentPage="/" category="general" /> */}
+
+      {/* Enhanced Privacy & Legal Section */}
+      <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-blue-50 border-t">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white text-lg">🔒</span>
+              </div>
+            </div>
+            
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+              Your Privacy & Security Matter
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+                <h4 className="font-semibold text-gray-900 mb-3">🛡️ Data Protection</h4>
+                <p className="text-gray-600 text-sm md:text-base">
+                  We only ask for your Google email for account verification and security. Your personal content is encrypted and never shared.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
+                <h4 className="font-semibold text-gray-900 mb-3">🔐 Complete Privacy</h4>
+                <p className="text-gray-600 text-sm md:text-base">
+                  Your journals, sermons, chat conversations, and spiritual journey remain completely private and secure.
+                </p>
+              </div>
+            </div>
+
+            {/* Prominent Legal Links */}
+            <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-orange-200 max-w-2xl mx-auto">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Legal Information</h4>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">
+                Learn more about how we protect your data and the terms governing your use of Bible Aura
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                >
+                  <a href="/privacy-policy.html">
+                    🛡️ Privacy Policy
+                  </a>
+                </Button>
+                <Button 
+                  asChild 
+                  size="lg" 
+                  variant="outline"
+                  className="border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                >
+                  <a href="/terms-of-service.html">
+                    📋 Terms of Service
+                  </a>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      </section>
+
+              {/* <Footer /> */}
     </div>
   );
 };
