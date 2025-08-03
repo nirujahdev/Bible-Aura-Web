@@ -39,14 +39,11 @@ const isFromEmailLink = typeof window !== 'undefined' && (() => {
 // Enhanced Supabase client configuration
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    // Use localStorage for session persistence
-    storage: typeof window !== 'undefined' ? localStorage : undefined,
+    // Session persistence disabled - users must authenticate each time
+    persistSession: false,
     
-    // Always persist sessions for better user experience
-    persistSession: true,
-    
-    // Auto-refresh tokens to prevent session expiry
-    autoRefreshToken: true,
+    // More restrictive session settings for better security
+    autoRefreshToken: false,
     
     // Always detect auth sessions in URL for magic links and OAuth
     detectSessionInUrl: true,
