@@ -91,7 +91,6 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/features" element={<Features />} />
               <Route path="/pricing" element={<Pricing />} />
-              <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/blog" element={<Blog />} />
               
