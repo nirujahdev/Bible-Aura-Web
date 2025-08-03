@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { hasDevicePreference } from '@/lib/devicePreferences';
-import { GlobalNavigation } from '@/components/GlobalNavigation';
 import { 
   Eye, 
   EyeOff, 
@@ -28,6 +27,7 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
+import { GlobalNavigation } from '@/components/GlobalNavigation';
 
 export default function Auth() {
   // SEO optimization
@@ -474,17 +474,12 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 relative overflow-hidden">
-      {/* Add GlobalNavigation */}
-      <GlobalNavigation variant="landing" />
-      
-      {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-orange-400/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-300/3 rounded-full blur-3xl animate-pulse delay-500"></div>
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary/80 flex overflow-hidden w-full">
+      {/* Add GlobalNavigation for consistent navigation */}
+      <div className="absolute top-0 left-0 w-full z-50">
+        <GlobalNavigation variant="landing" />
       </div>
-
+      
       {/* Left Side - Features Showcase (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-white">
         <div className="flex flex-col items-center justify-center p-6 text-gray-800 w-full">

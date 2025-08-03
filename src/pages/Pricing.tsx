@@ -449,7 +449,7 @@ const Funding = () => {
         </div>
       </div>
 
-              <Footer />
+      <Footer />
     </div>
   );
 };
