@@ -17,9 +17,9 @@ import {
 } from 'lucide-react';
 
 // Import our new components
-import { EnhancedReadingPlans } from '@/components/EnhancedReadingPlans';
-import { CalendarChapterSelector } from '@/components/CalendarChapterSelector';
-import { EnhancedBibleSidebar } from '@/components/EnhancedBibleSidebar';
+import EnhancedReadingPlans from '@/components/EnhancedReadingPlans';
+import CalendarChapterSelector from '@/components/CalendarChapterSelector';
+import EnhancedBibleSidebar from '@/components/EnhancedBibleSidebar';
 import EnhancedAIChat from '@/components/EnhancedAIChat';
 import { QuickAIChatTrigger } from '@/components/QuickAIChatWidget';
 
