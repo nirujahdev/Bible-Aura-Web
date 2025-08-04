@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import EnhancedAIChat from '@/components/EnhancedAIChat';
 import { useDevicePreference } from '@/hooks/useDevicePreference';
+import EnhancedSermonIntegration from '@/components/EnhancedSermonIntegration';
 
 interface DashboardStats {
   journalEntries: number;
@@ -389,6 +390,21 @@ const Dashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Enhanced Features Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-orange-500 text-lg">✦</span>
+                New: Enhanced AI Features
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EnhancedSermonIntegration showFullFeatures={false} />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Bible Aura Features - Responsive Grid */}
         <div>

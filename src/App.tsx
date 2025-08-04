@@ -50,6 +50,7 @@ import BibleAIVsTraditionalStudy from '@/pages/blog/BibleAIVsTraditionalStudy';
 
 import './App.css';
 import EnhancedBible from '@/pages/EnhancedBible';
+import EnhancedSermonHub from '@/pages/EnhancedSermonHub';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -239,6 +240,12 @@ function App() {
               <Route path="/profile" element={
                 <ErrorBoundary>
                   <ProtectedRoute><Profile /></ProtectedRoute>
+                </ErrorBoundary>
+              } />
+
+              <Route path="/enhanced-sermon-hub" element={
+                <ErrorBoundary>
+                  <ProtectedRoute><EnhancedSermonHub /></ProtectedRoute>
                 </ErrorBoundary>
               } />
 

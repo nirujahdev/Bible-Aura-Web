@@ -475,7 +475,7 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col">
+    <div className="fixed right-0 top-0 h-full w-full sm:w-80 md:w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
         <div className="flex items-center gap-2">
@@ -506,7 +506,7 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {message.type === 'ai' ? (
-                <div className="max-w-[80%]">
+                <div className="max-w-[85%]">
                   <StructuredAIResponse 
                     content={message.content} 
                     timestamp={message.timestamp}
@@ -514,7 +514,7 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
                 </div>
               ) : (
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
+                  className={`max-w-[85%] p-3 rounded-lg ${
                     message.type === 'user'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-900'
@@ -547,24 +547,24 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
         </div>
       </ScrollArea>
 
-      {/* Mode Selector - Now positioned above the input */}
+      {/* Mode Selector - Improved layout */}
       <div className="p-2 sm:p-3 border-t border-gray-100 bg-gray-50">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {CHAT_MODES.map((mode) => (
             <Button
               key={mode.id}
               variant={activeMode === mode.id ? "default" : "outline"}
               size="sm"
               onClick={() => handleModeChange(mode.id)}
-              className={`text-xs px-2 py-1 h-8 ${
+              className={`text-xs px-2 py-2 h-auto flex flex-col items-center gap-1 ${
                 activeMode === mode.id 
-                  ? 'bg-orange-500 text-white' 
-                  : 'hover:bg-orange-50 hover:border-orange-200'
+                  ? 'bg-orange-500 text-white border-orange-500' 
+                  : 'hover:bg-orange-50 hover:border-orange-200 text-gray-700'
               }`}
               title={mode.description}
             >
-              <mode.icon className="h-3 w-3 mr-1" />
-              <span className="truncate">{mode.name}</span>
+              <mode.icon className="h-4 w-4" />
+              <span className="text-xs font-medium">{mode.name}</span>
             </Button>
           ))}
         </div>

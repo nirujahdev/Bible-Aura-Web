@@ -3,19 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
-  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3
+  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3, Globe, Church, Users, Heart, ArrowRight
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks";
 import { ManualContextualLinks } from "@/components/ContextualLinks";
 import Footer from "@/components/Footer";
 import FAQ from "@/components/FAQ";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { Badge } from "@/components/ui/badge";
 
 const Home = () => {
   // SEO optimization
   useSEO(SEO_CONFIG.HOME);
-
+  const navigate = useNavigate();
 
 
   return (
@@ -388,109 +389,165 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Enhanced Sermon Generator Feature Highlight */}
+      <section className="py-16 bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="bg-orange-500 text-white mb-4">New Feature</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              🧠 Enhanced Sermon Generator
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Create comprehensive, theologically sound sermons with our advanced AI. 
+              Supports multiple languages, denominations, and audience types.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-orange-500 rounded-lg">
+                  <Globe className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Multi-Language Support</h3>
+                  <p className="text-gray-600">Generate sermons in English, Tamil, and Sinhala with cultural sensitivity and theological accuracy.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-orange-500 rounded-lg">
+                  <Church className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Denominational Perspectives</h3>
+                  <p className="text-gray-600">Tailor your sermon's theology and approach to match your specific denominational framework.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-orange-500 rounded-lg">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Audience Targeting</h3>
+                  <p className="text-gray-600">Customize content, illustrations, and applications for youth, adults, families, or seekers.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-orange-500 rounded-lg">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Comprehensive Manuscripts</h3>
+                  <p className="text-gray-600">Get full sermon manuscripts with illustrations, applications, and worship suggestions.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 border border-orange-200">
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Generate Your Sermon</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">Topic or Scripture</label>
+                      <div className="h-10 bg-gray-100 rounded-lg flex items-center px-3 text-gray-500">
+                        Faith in difficult times
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Audience</label>
+                        <div className="h-10 bg-gray-100 rounded-lg flex items-center px-3 text-gray-500">
+                          Adults
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Type</label>
+                        <div className="h-10 bg-gray-100 rounded-lg flex items-center px-3 text-gray-500">
+                          Topical
+                        </div>
+                      </div>
+                    </div>
+                    <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate Comprehensive Sermon
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-center text-sm text-gray-500">
+                  ✦ Trusted by pastors worldwide
+                </div>
+              </div>
+              
+              {/* Floating indicators */}
+              <div className="absolute -top-4 -right-4 bg-orange-500 text-white p-2 rounded-full">
+                <Zap className="h-5 w-5" />
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-red-500 text-white p-2 rounded-full">
+                <Heart className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <Button 
+              size="lg" 
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={() => navigate('/enhanced-sermon-hub')}
+            >
+              <Sparkles className="h-5 w-5 mr-2" />
+              Try Enhanced Sermon Generator
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-12 md:py-20 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight">
-            Transform Your Spiritual Life with AI-Powered Insights
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Transform Your Bible Study Experience?
           </h2>
-          <p className="text-base md:text-lg lg:text-xl mb-6 md:mb-8 opacity-90 max-w-3xl mx-auto">
-            Start your spiritual transformation today with AI-powered biblical insights and community support.
+          <p className="text-xl md:text-2xl mb-8 text-orange-100">
+            Join thousands of believers discovering deeper insights with Bible Aura's AI-powered tools
           </p>
-          <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-xl shadow-lg w-full sm:w-auto">
-            <span className="text-orange-600 mr-2">✦</span>
-            START YOUR JOURNEY
-          </Button>
-        </div>
-      </section>
-
-
-
-      {/* Quick Action Links for SEO */}
-      <section className="py-12 md:py-16 bg-white">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
-          <div className="text-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="bg-white text-orange-600 hover:bg-gray-100"
+              asChild
+            >
+              <Link to="/auth">
+                Get Started Free
+              </Link>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-orange-600"
+              asChild
+            >
+              <Link to="/features">
+                Explore Features
+              </Link>
+            </Button>
           </div>
-          <QuickActionSEOLinks />
         </div>
       </section>
-
-
-
-
-
-
 
       {/* FAQ Section */}
       <FAQ />
 
-
-
-      {/* SEO Backlinks */}
+      {/* SEO Content */}
       <SEOBacklinks currentPage="/" category="general" />
+      <QuickActionSEOLinks />
+      <ManualContextualLinks />
 
-      {/* Enhanced Privacy & Legal Section */}
-      <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-blue-50 border-t">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-white text-lg">🔒</span>
-              </div>
-            </div>
-            
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              Your Privacy & Security Matter
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-                <h4 className="font-semibold text-gray-900 mb-3">🛡️ Data Protection</h4>
-                <p className="text-gray-600 text-sm md:text-base">
-                  We only ask for your Google email for account verification and security. Your personal content is encrypted and never shared.
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
-                <h4 className="font-semibold text-gray-900 mb-3">🔐 Complete Privacy</h4>
-                <p className="text-gray-600 text-sm md:text-base">
-                  Your journals, sermons, chat conversations, and spiritual journey remain completely private and secure.
-                </p>
-              </div>
-            </div>
-
-            {/* Prominent Legal Links */}
-            <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-orange-200 max-w-2xl mx-auto">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Legal Information</h4>
-              <p className="text-gray-600 mb-6 text-sm md:text-base">
-                Learn more about how we protect your data and the terms governing your use of Bible Aura
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  asChild 
-                  size="lg" 
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
-                >
-                  <a href="/privacy-policy.html">
-                    🛡️ Privacy Policy
-                  </a>
-                </Button>
-                <Button 
-                  asChild 
-                  size="lg" 
-                  variant="outline"
-                  className="border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
-                >
-                  <a href="/terms-of-service.html">
-                    📋 Terms of Service
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-              <Footer />
+      <Footer />
     </div>
   );
 };

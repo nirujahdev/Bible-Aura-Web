@@ -1,7 +1,7 @@
 import { 
   Plus, Home, Grid3X3, HelpCircle, Settings, User, MessageCircle, 
   Book, Music, Users, Headphones, BookOpen, Mic, TreePine, Heart, FileText,
-  Star, LogOut, LogIn, LucideIcon, Menu, Search, Bookmark, PenTool, Library
+  Star, LogOut, LogIn, LucideIcon, Menu, Search, Bookmark, PenTool, Library, MessageSquare, GraduationCap
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"

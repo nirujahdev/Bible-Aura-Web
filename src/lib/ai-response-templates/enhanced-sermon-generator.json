@@ -1,0 +1,226 @@
+{
+  "mode": "enhanced_sermon",
+  "name": "Comprehensive Sermon Generator - Enhanced",
+  "purpose": "Generate comprehensive, theologically sound, and practically applicable sermons with advanced features and customization",
+  "targetLength": "Variable based on user selection (5 mins to 45+ mins)",
+  "responseStructure": {
+    "format": "structured_comprehensive_sermon",
+    "mainTitle": "✮ ENHANCED SERMON: [Dynamic Title Based on Input]",
+    "sections": [
+      {
+        "icon": "🎯",
+        "title": "Sermon Overview & Configuration",
+        "content": "Complete sermon metadata and structural overview",
+        "requirements": [
+          "Dynamic title generation based on topic, scripture, mood, and audience",
+          "Central message crafted for specific denomination and audience",
+          "3-4 main points tailored to sermon type (expository, topical, narrative, etc.)",
+          "Target audience consideration (youth, adults, families, seekers, etc.)",
+          "Denominational lens integration (evangelical, pentecostal, catholic, etc.)",
+          "Occasion-specific adaptation (Sunday service, special events, holidays)",
+          "Language-specific cultural considerations for Tamil and Sinhala"
+        ]
+      },
+      {
+        "icon": "✨",
+        "title": "Dynamic Opening Hook",
+        "content": "Audience-specific engaging introduction",
+        "requirements": [
+          "Age-appropriate stories and illustrations for target audience",
+          "Cultural relevance for selected demographic and language",
+          "Current events integration when appropriate",
+          "Personal connection points that resonate with audience type",
+          "Smooth transition to main scripture passage",
+          "Attention-grabbing questions or scenarios",
+          "Mood-appropriate tone (inspiring, challenging, comforting, etc.)"
+        ]
+      },
+      {
+        "icon": "📖",
+        "title": "Scripture Foundation & Exegesis",
+        "content": "Deep biblical analysis with denominational perspective",
+        "requirements": [
+          "Full scripture text in selected language",
+          "Historical and cultural context (200-400 words based on length)",
+          "Original language insights (Hebrew/Greek terms and meanings)",
+          "Author's intent and original audience consideration",
+          "Literary structure and genre analysis",
+          "Denominational interpretation framework",
+          "Cross-textual references supporting main themes",
+          "Theological safeguards against misinterpretation"
+        ]
+      },
+      {
+        "icon": "⛪",
+        "title": "Denominational Theological Framework",
+        "content": "Doctrine-specific theological foundation",
+        "requirements": [
+          "Key theological concepts explained through denominational lens",
+          "Integration with core denominational beliefs and practices",
+          "How passage fits in God's redemptive plan (denomination-specific view)",
+          "Address potential denominational questions or concerns",
+          "Connect to core Christian doctrines (Trinity, salvation, sanctification)",
+          "Avoid controversial inter-denominational issues unless specifically requested",
+          "Maintain biblical authority while respecting denominational traditions"
+        ]
+      },
+      {
+        "icon": "💡",
+        "title": "Dynamic Main Points (2-4 points based on length)",
+        "content": "Sermon-type specific main points with comprehensive support",
+        "requirements": [
+          "Point structure adapted to sermon type (expository vs topical vs narrative)",
+          "Each point includes: clear statement, biblical foundation, practical illustrations",
+          "Audience-appropriate examples and applications",
+          "Cultural sensitivity for international audiences",
+          "Progressive building toward central message",
+          "Transition sentences between points",
+          "Interactive elements for youth audiences",
+          "Deeper theological content for mature believers"
+        ]
+      },
+      {
+        "icon": "🌍",
+        "title": "Cultural & Practical Applications",
+        "content": "Real-world, culturally relevant applications",
+        "requirements": [
+          "Life-stage specific applications (singles, families, retirees)",
+          "Professional context applications (workplace, business, ministry)",
+          "Cultural context considerations (Western, Eastern, traditional, modern)",
+          "Economic sensitivity (applications for various financial situations)",
+          "Gender-appropriate applications without stereotyping",
+          "Modern technology and social media integration where relevant",
+          "Community and family structure considerations"
+        ]
+      },
+      {
+        "icon": "🔥",
+        "title": "Compelling Call to Action",
+        "content": "Audience and occasion-specific response invitation",
+        "requirements": [
+          "Age-appropriate commitment levels and expectations",
+          "Clear, measurable action steps",
+          "Spiritual decision guidance (salvation, rededication, baptism)",
+          "Community engagement opportunities",
+          "Personal growth and discipleship pathways",
+          "Support resources and follow-up processes",
+          "Cultural sensitivity in response expectations"
+        ]
+      },
+      {
+        "icon": "🙏",
+        "title": "Memorable Closing & Benediction",
+        "content": "Impactful conclusion with blessing",
+        "requirements": [
+          "Summary of key takeaways",
+          "Hope-filled and encouraging final thoughts",
+          "Denominational-appropriate benediction or blessing",
+          "Preview of upcoming messages or series",
+          "Call for ongoing spiritual transformation",
+          "Culturally appropriate closing elements"
+        ]
+      },
+      {
+        "icon": "📚",
+        "title": "Comprehensive Study Resources",
+        "content": "Extended learning and growth materials",
+        "requirements": [
+          "5-10 discussion questions for small groups",
+          "Memory verse suggestions with context",
+          "Additional scripture passages for deeper study",
+          "Prayer points and meditation suggestions",
+          "Recommended books, podcasts, and online resources",
+          "Practical action items for the week",
+          "Family devotional adaptations",
+          "Youth group discussion starters"
+        ]
+      },
+      {
+        "icon": "🎵",
+        "title": "Worship Integration Suggestions (Optional)",
+        "content": "Music and worship flow recommendations",
+        "requirements": [
+          "Opening worship songs that prepare hearts for the message",
+          "Response songs that reinforce key themes",
+          "Closing songs that send people out with purpose",
+          "Cultural and denominational music preferences",
+          "Traditional hymns and contemporary options",
+          "Special music or performance suggestions",
+          "Instrumental or prayer music recommendations"
+        ]
+      }
+    ]
+  },
+  "advancedFeatures": {
+    "multiLanguageSupport": {
+      "english": "Standard biblical English with contemporary application",
+      "tamil": "Tamil cultural context with appropriate biblical terminology",
+      "sinhala": "Sinhala cultural context with Buddhist-majority sensitivity"
+    },
+    "audienceAdaptation": {
+      "youth": "Interactive elements, modern illustrations, technology integration",
+      "adults": "Practical applications, career and family focus, life balance",
+      "seniors": "Life experience validation, legacy themes, wisdom sharing",
+      "families": "Parent-child applications, household management, generational blessing",
+      "seekers": "Basic biblical concepts, non-judgmental tone, invitation focus",
+      "newBelievers": "Foundational teaching, growth encouragement, discipleship pathway",
+      "matureBelievers": "Deeper theology, leadership development, ministry application"
+    },
+    "denominationalLenses": {
+      "evangelical": "Biblical authority, personal relationship with Jesus, evangelism focus",
+      "pentecostal": "Holy Spirit emphasis, spiritual gifts, divine healing themes",
+      "baptist": "Believer's baptism, congregational polity, missions emphasis",
+      "catholic": "Sacramental theology, tradition and scripture, social justice",
+      "orthodox": "Ancient traditions, mystical theology, liturgical elements",
+      "reformed": "Sovereignty of God, predestination, covenant theology",
+      "methodist": "Social holiness, grace emphasis, practical Christianity",
+      "lutheran": "Law and gospel distinction, sacramental life, liturgical structure"
+    },
+    "occasionalAdaptations": {
+      "easter": "Resurrection themes, victory over death, new life in Christ",
+      "christmas": "Incarnation wonder, God with us, gift of salvation",
+      "funeral": "Comfort, hope, eternal perspective, grief processing",
+      "wedding": "Covenant love, biblical marriage, unity in Christ",
+      "baptism": "New birth, identity in Christ, public declaration",
+      "communion": "Remembrance, sacrifice, unity in the body"
+    },
+    "lengthOptimization": {
+      "short": "Single main point, simple illustration, clear application",
+      "medium": "2-3 main points, multiple illustrations, comprehensive application",
+      "long": "3-4 main points, deep theological content, extensive application",
+      "extended": "4+ main points, academic depth, comprehensive study guide"
+    }
+  },
+  "qualitySafeguards": {
+    "theologicalAccuracy": "Cross-reference with orthodox Christian theology",
+    "biblicalIntegrity": "Verify all scripture references and contexts",
+    "culturalSensitivity": "Avoid cultural stereotypes and insensitive assumptions",
+    "denominationalRespect": "Honor traditions while maintaining biblical truth",
+    "practicalRelevance": "Ensure all applications are achievable and realistic",
+    "linguisticAppropriate": "Use language level appropriate for target audience"
+  },
+  "outputFormat": {
+    "structure": "Use ✮ for main title, 📖 for major sections, • for bullet points",
+    "wordCount": "Adaptive based on length selection (1000-7500 words)",
+    "includeTimestamps": "Add estimated timing for each section",
+    "formatOptions": "Support outline-only, full manuscript, or devotional versions"
+  },
+  "examples": {
+    "youthSermonTopic": "Social media and identity in Christ",
+    "adultExpositoryScripture": "Philippians 4:10-20 - contentment in all circumstances",
+    "familyTopicalTheme": "Building a Christ-centered home",
+    "evangelisticMessage": "The love of God demonstrated through the cross",
+    "seniorDevotional": "Finishing well - lessons from Paul's final letter"
+  },
+  "restrictions": [
+    "Maintain theological orthodoxy across all denominational perspectives",
+    "Include specific scripture references throughout with proper context",
+    "Provide practical applications for modern life in every section",
+    "Balance doctrinal depth with accessible language for target audience",
+    "Use appropriate cultural examples and avoid stereotypes",
+    "Ensure all content is biblically grounded and practically relevant",
+    "Adapt language complexity to audience type and denominational expectations",
+    "Include safeguards against potential misinterpretation or controversy",
+    "Provide clear action steps and spiritual growth pathways"
+  ]
+} 

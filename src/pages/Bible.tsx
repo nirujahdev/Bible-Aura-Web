@@ -405,7 +405,7 @@ export default function Bible() {
     try {
       if (isFavorite) {
         const { error } = await supabase
-          .from('verse_highlights')
+          .from('bookmarks')
           .delete()
           .eq('user_id', user.id)
           .eq('verse_id', verseId);
@@ -417,13 +417,21 @@ export default function Bible() {
         setFavorites(newFavorites);
       } else {
         const { error } = await supabase
-          .from('verse_highlights')
+          .from('bookmarks')
           .upsert({
             user_id: user.id,
             verse_id: verseId,
+            book_name: verse.book_name,
+            chapter: verse.chapter,
+            verse: verse.verse,
+            verse_text: verse.text,
+            verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+            notes: null,
+            tags: [],
             color: 'yellow',
+            is_favorite: true,
             category: 'favorite',
-            is_favorite: true
+            highlight_color: 'yellow'
           });
         
         if (error) throw error;

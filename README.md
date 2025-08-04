@@ -1,204 +1,111 @@
-# ✦ Bible Aura - AI-Powered Biblical Insight
+# Bible Aura ✦
 
-## Recent Updates
+A comprehensive Bible study and sermon preparation platform powered by AI, designed for pastors, Bible students, and spiritual seekers.
 
-### ✅ Bible Page Features - FULLY COMPLETE ✅
+## 🌟 New: Enhanced Sermon Generator
 
-The Bible page has been completely enhanced with all features working properly:
+**🧠 Core Purpose**: Automatically generate structured, biblically sound, and theologically rich sermons tailored to your specific needs.
 
-**✅ FAVORITES System:**
-- Add verses to favorites with heart icon
-- Remove from favorites
-- Persistent storage in database
-- Visual indicators for favorited verses
+### 🎯 Key Features
 
-**✅ HIGHLIGHTS System:**
-- 5 different highlight colors (yellow, green, blue, purple, red)
-- Click highlighter icon to choose color
-- Highlight verses for study organization
-- Database persistence per user
+- **Multi-Language Support**: Generate sermons in English, Tamil, and Sinhala
+- **Denominational Perspectives**: Evangelical, Pentecostal, Baptist, Catholic, Methodist, Presbyterian, Lutheran, and more
+- **Audience Targeting**: Youth, Adults, Families, Seekers, New Believers, Mature Believers
+- **Comprehensive Output**: Full manuscripts with illustrations, applications, and study guides
+- **Multiple Sermon Types**: Expository, Topical, Narrative, Biographical, Devotional, Evangelistic
+- **Customizable Length**: From 5-minute devotionals to 45+ minute teachings
 
-**✅ AI ANALYSIS:**
-- 6 different analysis types: Theological, Historical, Devotional, Application, Cross-References, Commentary
-- Professional AI insights for spiritual growth
-- Mock AI responses for demonstration (easily replaceable with real AI)
-- **NO DeepSeek references** - generic AI system
+### 🛠️ How It Works
 
-**✅ NOTES System:**
-- Add personal notes to any verse
-- 5 note categories: Reflection, Prayer, Study, Insight, Question
-- Tag system for organization
-- Favorite notes feature
-- Full CRUD operations (Create, Read, Update, Delete)
+1. **Input Configuration**
+   - Enter your topic or scripture reference
+   - Select target audience and denominational perspective
+   - Choose sermon type, length, and language
+   - Set mood/tone and occasion
 
-**✅ Additional Features:**
-- **🌍 Multiple Bible Translations**: 9 popular English translations + Tamil Bible
-- **📖 Public Domain Options**: KJV, ASV, WEB are completely free to use
-- **🔍 Cross-Translation Search**: Search across different translations
-- Bible verse search (English & Tamil)
-- Reading progress tracking
-- Book and chapter navigation
-- Mobile-responsive design
-- Error handling and offline graceful degradation
+2. **AI Generation Process**
+   - Theological alignment through denominational lens
+   - Biblical enrichment with cross-references
+   - Cultural adaptation for target audience
+   - Comprehensive structure generation
 
-### 🆕 **NEW: Multiple Bible Translations**
+3. **Comprehensive Output**
+   - Dynamic title generation
+   - Engaging opening hooks
+   - Deep scripture foundation and exegesis
+   - Theological framework
+   - 2-4 main points with illustrations
+   - Real-world applications
+   - Call to action
+   - Study guide with discussion questions
+   - Optional worship song suggestions
 
-Bible Aura now supports **9 most popular English translations** plus Tamil:
+### 🔐 Quality Safeguards
 
-**📚 Available Translations:**
-- **KJV** (King James Version) - Public Domain ✅
-- **NIV** (New International Version)
-- **ESV** (English Standard Version) 
-- **NLT** (New Living Translation)
-- **NASB** (New American Standard Bible)
-- **NKJV** (New King James Version)
-- **NET** (New English Translation)
-- **ASV** (American Standard Version) - Public Domain ✅
-- **WEB** (World English Bible) - Public Domain ✅
-- **TAMIL** (Tamil Bible) - Complete Tamil translation
+- ✅ Theological accuracy verification
+- ✅ Biblical integrity checks
+- ✅ Cultural sensitivity measures
+- ✅ Denominational respect
+- ✅ Practical relevance validation
 
-**✨ Translation Features:**
-- **Easy Translation Switching**: Toggle between any translation instantly
-- **Smart Caching**: Translations load once and cache for speed
-- **Cross-Reference Compatible**: All features work across translations
-- **Search Across Translations**: Find verses in your preferred translation
+## 🚀 Quick Start
 
-**How to Use Bible Features:**
-1. **Navigate to Bible page**
-2. **Select book and chapter** from sidebar
-3. **For each verse, use the action icons:**
-   - 🎨 **Highlighter** - Choose color to highlight verse
-   - ❤️ **Heart** - Add/remove from favorites  
-   - 📝 **Note** - Add personal notes and reflections
-   - 🧠 **Brain** - Get AI analysis and insights
-   - 📋 **Copy** - Copy verse to clipboard
+1. Navigate to `/enhanced-sermon-hub`
+2. Fill in your sermon requirements
+3. Click "Generate Comprehensive Sermon"
+4. Review, edit, and save your sermon
+5. Export or share as needed
 
-All features are fully functional and store data securely in your personal database!
+## 📚 Use Cases
 
----
+- **Pastors**: Sunday morning messages, midweek teachings
+- **Bible Students**: Sermon practice, theological study
+- **Youth Leaders**: Age-appropriate messages
+- **Missionaries**: Culturally sensitive preaching
+- **Lay Preachers**: Professional-quality sermon preparation
 
-### ✅ Journal Functionality - FULLY COMPLETE ✅
+## 🌍 Multi-Language & Cultural Support
 
-The journal page has been completely fixed and enhanced:
+- **English**: Contemporary biblical English with modern applications
+- **Tamil**: Cultural context with appropriate biblical terminology
+- **Sinhala**: Buddhist-majority sensitivity with Christian messaging
 
-**Fixed Issues:**
-- ✅ **Database Schema Fixed**: Resolved "entry_data" column error by updating database types
-- ✅ **Bible Loading Fixed**: Added robust error handling for Bible file loading
-- ✅ **Save Functionality**: Journal entries now save properly with all fields
-- ✅ **Type Conflicts Resolved**: Fixed TypeScript interface conflicts
+## 🎨 Technical Features
 
-**Enhanced Features:**
-- ✅ **Complete Journal Editor**: Rich text formatting, Bible verse integration
-- ✅ **Bible Verse Search**: Search by keyword or specific reference
-- ✅ **Multi-language Support**: English, Tamil, and Sinhala language options
-- ✅ **Writing Statistics**: Word count, reading time, character count
-- ✅ **Error Handling**: Graceful fallbacks when Bible files aren't available
-- ✅ **Responsive Design**: Works on desktop and mobile
-- ✅ **Auto-save Features**: Automatic word count and reading time calculation
+- **React + TypeScript**: Modern web application
+- **Advanced AI Integration**: Comprehensive sermon generation
+- **Database Integration**: Save and manage sermons
+- **Export Options**: PDF, text, sharing capabilities
+- **Responsive Design**: Works on desktop and mobile
 
-**How to Use Journal:**
-1. Navigate to the Journal page
-2. Click "New Entry" to create a journal entry
-3. Add title and content
-4. Use "Add Bible Verse" to search and insert verses
-5. Save your entry - it will be stored in your personal database
+## 📖 Available Routes
 
-The journal is now fully functional and ready for use!
+- `/enhanced-sermon-hub` - Main sermon generator interface
+- `/sermons` - Traditional sermon tools
+- `/sermon-writer` - Manual sermon writing
+- `/sermon-library` - Sermon collection management
 
----
-
-# Bible Aura 🙏
-
-A beautiful, modern Bible application with journaling, study tools, and spiritual growth features.
-
-## Features
-
-- **Bible Reading**: Read the Bible in English (KJV) and Tamil
-- **Personal Journal**: Document your spiritual journey with categories, moods, and verse references
-- **AI-Powered Chat**: Get biblical insights and answers to your spiritual questions
-- **Daily Verses**: Receive inspiring verses each day
-- **Study Tools**: Highlights, notes, and reading plans
-- **Sermon Library**: Organize and access sermon content
-
-## Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Bible-Aura
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.local.template .env.local
-   # Edit .env.local with your Supabase credentials
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-## Configuration
-
-### Supabase Setup
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Copy your project URL and anon key to `.env.local`
-3. Run the database setup:
-   ```bash
-   node setup-database.js
-   ```
-
-### Troubleshooting Journal Issues
-
-If journaling isn't working:
-
-1. **Check Authentication**: Make sure you're signed in
-2. **Verify Database Setup**: Check if the `journal_entries` table exists in your Supabase dashboard
-3. **Environment Variables**: Ensure `.env.local` has correct Supabase credentials
-4. **Console Errors**: Open browser dev tools to check for error messages
-
-**Common Solutions:**
-- Clear browser cache and reload the page
-- Sign out and sign back in
-- Check Supabase dashboard for table permissions
-- Ensure Row Level Security policies are properly configured
-
-## Development
+## 🔧 Installation & Setup
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
+npm install
+npm run dev
 ```
 
-## Tech Stack
+## 🤝 Contributing
 
-- **Frontend**: React, TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Backend**: Supabase (Auth, Database, Storage)
-- **Build Tool**: Vite
-- **Deployment**: Vercel
-
-## Contributing
+We welcome contributions to improve the Enhanced Sermon Generator:
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
+3. Implement enhancements
 4. Test thoroughly
 5. Submit a pull request
 
-## License
+## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License.
 
 ---
 
-Built with ❤️ for the Christian community
+**✦ Bible Aura** - Empowering ministry through technology

@@ -10,7 +10,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Calendar, BookOpen, Target, Clock, Play, Pause, Check, 
-  ChevronRight, Star, Heart, Award, X, AlertTriangle 
+  ChevronRight, Star, Heart, Award, X, AlertTriangle, 
+  Trophy, Flame, CheckCircle2, Quote
 } from 'lucide-react';
 
 interface ReadingPlan {
@@ -65,32 +66,56 @@ const motivationalVerses = [
   }
 ];
 
+// Daily verses to display with reading plans
+const dailyVerses = [
+  {
+    text: "This is the day the Lord has made; let us rejoice and be glad in it.",
+    reference: "Psalm 118:24"
+  },
+  {
+    text: "Trust in the Lord with all your heart and lean not on your own understanding.",
+    reference: "Proverbs 3:5"
+  },
+  {
+    text: "I can do all things through Christ who strengthens me.",
+    reference: "Philippians 4:13"
+  },
+  {
+    text: "The Lord your God is with you, the Mighty Warrior who saves.",
+    reference: "Zephaniah 3:17"
+  },
+  {
+    text: "Be strong and courageous. Do not be afraid; do not be discouraged.",
+    reference: "Joshua 1:9"
+  }
+];
+
 const predefinedPlans: ReadingPlan[] = [
   {
     id: 'bible-year',
     name: 'Bible in a Year',
-    description: 'Complete the Bible in one year',
+    description: 'Complete the Bible in one year with structured daily readings',
     duration_days: 365,
-    plan_data: [] // Will be generated
+    plan_data: []
   },
   {
     id: 'new-testament-90',
     name: 'New Testament in 90 Days',
-    description: 'Focus on the New Testament',
+    description: 'Focus on the New Testament with manageable daily portions',
     duration_days: 90,
     plan_data: []
   },
   {
     id: 'psalms-month',
     name: 'Psalms in a Month',
-    description: 'One chapter of Psalms daily',
+    description: 'Explore the book of Psalms with daily devotions',
     duration_days: 31,
     plan_data: []
   },
   {
     id: 'gospels-30',
     name: 'Gospels in 30 Days',
-    description: 'Read through the four Gospels',
+    description: 'Journey through the life of Jesus in the four Gospels',
     duration_days: 30,
     plan_data: []
   }
@@ -107,6 +132,7 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
   const [weekReadings, setWeekReadings] = useState<DailyReading[]>([]);
   const [showQuitDialog, setShowQuitDialog] = useState(false);
   const [motivationalVerse, setMotivationalVerse] = useState(motivationalVerses[0]);
+  const [todaysDailyVerse] = useState(dailyVerses[new Date().getDay()]);
 
   useEffect(() => {
     if (user) {
@@ -363,41 +389,79 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
     return currentPlan.reading_plans.duration_days - currentPlan.completed_days.length;
   };
 
+  const getStreakCount = () => {
+    if (!currentPlan?.completed_days) return 0;
+    const sorted = [...currentPlan.completed_days].sort((a, b) => b - a);
+    let streak = 0;
+    let expected = currentPlan.current_day - 1;
+    
+    for (const day of sorted) {
+      if (day === expected) {
+        streak++;
+        expected--;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+          <p className="text-sm text-gray-600">Loading your reading plans...</p>
+        </div>
       </div>
     );
   }
 
   if (!currentPlan) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
+        {/* Daily Verse Header */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Quote className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-blue-900 mb-1">Daily Verse</p>
+                <blockquote className="text-blue-800 font-medium">
+                  "{todaysDailyVerse.text}"
+                </blockquote>
+                <cite className="text-sm text-blue-600 mt-1 block">— {todaysDailyVerse.reference}</cite>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Choose Your Reading Plan</h2>
-          <p className="text-gray-600">Start your journey through God's Word</p>
+          <p className="text-gray-600">Start your journey through God's Word with a structured plan</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {availablePlans.map((plan) => (
-            <Card key={plan.id} className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-orange-200">
+            <Card key={plan.id} className="hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-orange-200 group">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg text-gray-800">{plan.name}</CardTitle>
-                    <Badge variant="outline" className="mt-2">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg text-gray-800 group-hover:text-orange-700 transition-colors">
+                      {plan.name}
+                    </CardTitle>
+                    <Badge variant="outline" className="mt-2 bg-orange-50 text-orange-700 border-orange-200">
                       {plan.duration_days} days
                     </Badge>
                   </div>
-                  <BookOpen className="h-6 w-6 text-orange-600" />
+                  <BookOpen className="h-6 w-6 text-orange-600 group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 mb-4">{plan.description}</p>
+                <p className="text-gray-600 mb-4 text-sm leading-relaxed">{plan.description}</p>
                 <Button 
                   onClick={() => startReadingPlan(plan)}
-                  className="w-full bg-orange-600 hover:bg-orange-700"
+                  className="w-full bg-orange-600 hover:bg-orange-700 transition-colors"
                 >
                   <Play className="w-4 h-4 mr-2" />
                   Start Plan
@@ -411,19 +475,38 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
   }
 
   return (
-    <div className="space-y-6">
-      {/* Current Plan Overview */}
-      <Card className="border-l-4 border-l-orange-600">
-        <CardHeader>
-          <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Daily Verse */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Quote className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
             <div>
-              <CardTitle className="text-xl text-gray-800">{currentPlan.reading_plans.name}</CardTitle>
+              <p className="text-sm font-medium text-blue-900 mb-1">Daily Verse</p>
+              <blockquote className="text-blue-800 font-medium">
+                "{todaysDailyVerse.text}"
+              </blockquote>
+              <cite className="text-sm text-blue-600 mt-1 block">— {todaysDailyVerse.reference}</cite>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Current Plan Overview - Improved Layout */}
+      <Card className="border-l-4 border-l-orange-600 shadow-lg">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-orange-600" />
+                {currentPlan.reading_plans.name}
+              </CardTitle>
               <p className="text-gray-600 mt-1">{currentPlan.reading_plans.description}</p>
             </div>
             <Button 
               variant="outline" 
               onClick={handleQuitPlan}
-              className="text-red-600 border-red-200 hover:bg-red-50"
+              className="text-red-600 border-red-200 hover:bg-red-50 flex-shrink-0"
             >
               <X className="w-4 h-4 mr-2" />
               Quit Plan
@@ -431,50 +514,66 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Progress Bar */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Progress</span>
+                <span className="text-sm font-medium text-gray-700">Overall Progress</span>
                 <span className="text-sm text-gray-600">
                   {currentPlan.completed_days.length} of {currentPlan.reading_plans.duration_days} days
                 </span>
               </div>
-              <Progress value={getProgressPercentage()} className="h-2" />
+              <Progress value={getProgressPercentage()} className="h-3" />
+              <p className="text-xs text-gray-500 mt-1">{Math.round(getProgressPercentage())}% complete</p>
             </div>
             
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-orange-50 rounded-lg">
                 <div className="text-2xl font-bold text-orange-600">{currentPlan.current_day}</div>
-                <div className="text-xs text-gray-500">Current Day</div>
+                <div className="text-xs text-gray-600">Current Day</div>
               </div>
-              <div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">{currentPlan.completed_days.length}</div>
-                <div className="text-xs text-gray-500">Completed</div>
+                <div className="text-xs text-gray-600">Completed</div>
               </div>
-              <div>
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{getDaysRemaining()}</div>
-                <div className="text-xs text-gray-500">Remaining</div>
+                <div className="text-xs text-gray-600">Remaining</div>
+              </div>
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600 flex items-center justify-center gap-1">
+                  <Flame className="h-5 w-5" />
+                  {getStreakCount()}
+                </div>
+                <div className="text-xs text-gray-600">Day Streak</div>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Today's Reading */}
+      {/* Today's Reading - Enhanced */}
       {todaysReading && (
-        <Card>
+        <Card className="border border-green-200 bg-green-50/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-orange-600" />
+              <Calendar className="w-5 h-5 text-green-600" />
               Today's Reading - Day {todaysReading.day}
+              {currentPlan.completed_days.includes(todaysReading.day) && (
+                <Badge className="bg-green-600 text-white">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Completed
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {todaysReading.readings.map((reading, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-4 bg-white rounded-lg border border-green-200 shadow-sm">
                   <div className="flex items-center gap-3">
-                    <BookOpen className="w-4 h-4 text-gray-600" />
+                    <BookOpen className="w-5 h-5 text-green-600" />
                     <div>
                       <div className="font-medium text-gray-800">{reading.book}</div>
                       <div className="text-sm text-gray-600">Chapter {reading.chapters}</div>
@@ -485,12 +584,13 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
                       size="sm"
                       variant="outline"
                       onClick={() => onNavigateToVerse?.(reading.book, parseInt(reading.chapters))}
+                      className="border-green-200 text-green-700 hover:bg-green-50"
                     >
                       Read
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                     {currentPlan.completed_days.includes(todaysReading.day) ? (
-                      <Badge variant="default" className="bg-green-600">
+                      <Badge className="bg-green-600 text-white">
                         <Check className="w-3 h-3 mr-1" />
                         Done
                       </Badge>
@@ -498,10 +598,10 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
                       <Button
                         size="sm"
                         onClick={() => markDayCompleted(todaysReading.day)}
-                        className="bg-orange-600 hover:bg-orange-700"
+                        className="bg-green-600 hover:bg-green-700 text-white"
                       >
                         <Check className="w-4 h-4 mr-1" />
-                        Mark Done
+                        Mark Complete
                       </Button>
                     )}
                   </div>
@@ -512,48 +612,74 @@ export function EnhancedReadingPlans({ onNavigateToVerse }: EnhancedReadingPlans
         </Card>
       )}
 
-      {/* Week Overview */}
+      {/* Week Overview - Improved */}
       {weekReadings.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-blue-600" />
-              This Week's Plan
+              This Week's Schedule
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-64">
+            <ScrollArea className="h-80">
               <div className="space-y-2">
-                {weekReadings.map((reading) => (
-                  <div 
-                    key={reading.day}
-                    className={`flex items-center justify-between p-2 rounded ${
-                      currentPlan.completed_days.includes(reading.day)
-                        ? 'bg-green-50 border border-green-200'
-                        : reading.day === currentPlan.current_day
-                        ? 'bg-orange-50 border border-orange-200'
-                        : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                        currentPlan.completed_days.includes(reading.day)
-                          ? 'bg-green-600 text-white'
-                          : reading.day === currentPlan.current_day
-                          ? 'bg-orange-600 text-white'
-                          : 'bg-gray-300 text-gray-600'
-                      }`}>
-                        {reading.day}
+                {weekReadings.map((reading) => {
+                  const isCompleted = currentPlan.completed_days.includes(reading.day);
+                  const isCurrent = reading.day === currentPlan.current_day;
+                  const isPast = reading.day < currentPlan.current_day && !isCompleted;
+                  
+                  return (
+                    <div 
+                      key={reading.day}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                        isCompleted
+                          ? 'bg-green-50 border-green-200 shadow-sm'
+                          : isCurrent
+                          ? 'bg-orange-50 border-orange-200 shadow-sm'
+                          : isPast
+                          ? 'bg-red-50 border-red-200'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                          isCompleted
+                            ? 'bg-green-600 text-white'
+                            : isCurrent
+                            ? 'bg-orange-600 text-white'
+                            : isPast
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}>
+                          {isCompleted ? <Check className="w-4 h-4" /> : reading.day}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">
+                            Day {reading.day}
+                            {isCurrent && <span className="text-orange-600 ml-2">(Today)</span>}
+                            {isPast && <span className="text-red-600 ml-2">(Missed)</span>}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {reading.readings.map(r => `${r.book} ${r.chapters}`).join(', ')}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm">
-                        {reading.readings.map(r => `${r.book} ${r.chapters}`).join(', ')}
+                      <div className="flex items-center gap-2">
+                        {!isCompleted && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => markDayCompleted(reading.day)}
+                            className="text-xs"
+                          >
+                            Mark Done
+                          </Button>
+                        )}
                       </div>
                     </div>
-                    {currentPlan.completed_days.includes(reading.day) && (
-                      <Check className="w-4 h-4 text-green-600" />
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           </CardContent>

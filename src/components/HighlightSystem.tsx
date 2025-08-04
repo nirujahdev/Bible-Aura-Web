@@ -182,7 +182,7 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
       if (currentHighlight) {
         // Update existing highlight favorite status
         const { data, error } = await supabase
-          .from('verse_highlights')
+          .from('bookmarks')
           .update({
             is_favorite: !currentHighlight.is_favorite,
             category: !currentHighlight.is_favorite ? 'favorite' : currentHighlight.category,
@@ -198,13 +198,16 @@ export function HighlightSystem({ verseId, currentHighlight, onHighlightChange, 
       } else {
         // Create new favorite highlight
         const { data, error } = await supabase
-          .from('verse_highlights')
+          .from('bookmarks')
           .insert([{
             user_id: user.id,
             verse_id: verseId,
             color: 'yellow',
             category: 'favorite',
-            is_favorite: true
+            is_favorite: true,
+            highlight_color: 'yellow',
+            notes: null,
+            tags: []
           }])
           .select()
           .single();

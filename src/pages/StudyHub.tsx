@@ -21,8 +21,9 @@ import {
   ChevronRight, ChevronLeft, Plus, Filter, Eye,
   Mic, Calendar, Target, Lightbulb, Compass, Home,
   Globe, Shield, Zap, Building, Library, PenTool,
-  MessageCircle, Volume2, Play, Pause, RotateCcw
+  MessageCircle, Volume2, Play, Pause, RotateCcw, Sparkles
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Types
 interface StudyModule {
@@ -204,6 +205,7 @@ const StudyHub: React.FC = () => {
   useSEO(SEO_CONFIG.STUDY_HUB);
   
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
   // Core state
   const [activeModule, setActiveModule] = useState<string>('verse-explorer');
@@ -591,6 +593,47 @@ const StudyHub: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Enhanced Sermon Generator Feature */}
+        <Card className="group hover:shadow-lg transition-all duration-300 border-orange-200 hover:border-orange-300">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800">Enhanced Sermon Generator</h3>
+                  <Badge className="bg-orange-500 text-white text-xs">AI Powered</Badge>
+                  <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">New</Badge>
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Create comprehensive, theologically sound sermons with advanced AI. Supports multiple languages, denominations, and audience types with full customization.
+                </p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant="outline" className="text-xs">Multi-language</Badge>
+                  <Badge variant="outline" className="text-xs">Denominational Lens</Badge>
+                  <Badge variant="outline" className="text-xs">Audience Targeting</Badge>
+                  <Badge variant="outline" className="text-xs">Full Manuscripts</Badge>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button 
+                    size="sm" 
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    onClick={() => navigate('/enhanced-sermon-hub')}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Try Enhanced Generator
+                  </Button>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <Star className="h-4 w-4 mr-1 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">New Feature</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Character Detail Modal - Mobile Optimized */}

@@ -382,7 +382,7 @@ export async function saveBookmark(verse: BibleVerse, userId: string): Promise<b
   try {
     const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
     const { error } = await supabase
-      .from('user_bookmarks')
+      .from('bookmarks')
       .insert({
         user_id: userId,
         verse_id: verseId,
@@ -391,6 +391,12 @@ export async function saveBookmark(verse: BibleVerse, userId: string): Promise<b
         verse: verse.verse,
         verse_text: verse.text,
         verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+        notes: null,
+        tags: [],
+        color: 'yellow',
+        is_favorite: true,
+        category: 'bookmark',
+        highlight_color: 'yellow',
         created_at: new Date().toISOString()
       });
 
@@ -405,7 +411,7 @@ export async function saveBookmark(verse: BibleVerse, userId: string): Promise<b
 export async function getUserBookmarks(userId: string): Promise<BibleVerse[]> {
   try {
     const { data, error } = await supabase
-      .from('user_bookmarks')
+      .from('bookmarks')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -422,7 +428,7 @@ export async function getUserBookmarks(userId: string): Promise<BibleVerse[]> {
       language: 'english' as const // Default to English, can be enhanced later
     }));
   } catch (error) {
-    console.error('Error getting bookmarks:', error);
+    console.error('Error fetching bookmarks:', error);
     return [];
   }
 } 
