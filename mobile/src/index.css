@@ -1,0 +1,868 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+
+/* React Quill Editor Styles */
+@import 'react-quill/dist/quill.snow.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+✦Bible Aura Design System
+AI-Powered Biblical Insight
+Primary: #f85700 (Vibrant Orange)
+Typography: Montserrat (300-900)
+Simple, Clean Design Philosophy
+*/
+
+@layer base {
+  /* Mobile Performance Optimizations */
+  html {
+    /* scroll-behavior: smooth; */ /* Removed for mobile performance */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  
+  /* Mobile-first responsive improvements */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+  
+  /* Optimize font loading for mobile */
+  @font-face {
+    font-family: 'Montserrat';
+    font-display: swap;
+  }
+  
+  :root {
+    /* Core ✦Bible Aura Colors */
+    --aura-orange: 16 100% 49%;        /* #f85700 */
+    --aura-orange-light: 22 100% 58%;   /* #ff7f39 */
+    --aura-orange-dark: 14 100% 42%;    /* #d64900 */
+    --aura-white: 0 0% 100%;            /* #ffffff */
+    --aura-black: 0 0% 0%;              /* #000000 */
+
+    /* Primary System Colors */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 16 100% 49%;              /* ✦Bible Aura Orange */
+    --primary-foreground: 0 0% 100%;
+    --primary-50: 16 100% 97%;
+    --primary-100: 16 100% 93%;
+    --primary-200: 16 100% 86%;
+    --primary-300: 18 100% 76%;
+    --primary-400: 20 100% 66%;
+    --primary-500: 16 100% 49%;          /* Main color */
+    --primary-600: 14 100% 42%;
+    --primary-700: 12 100% 36%;
+    --primary-800: 10 100% 30%;
+    --primary-900: 8 100% 24%;
+
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 16 20% 95%;
+    --muted-foreground: 16 20% 45%;
+
+    --accent: 16 50% 90%;
+    --accent-foreground: 16 100% 49%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 16 30% 90%;
+    --input: 16 30% 95%;
+    --ring: 16 100% 49%;
+
+    /* Spiritual Theme Colors */
+    --spiritual: 16 100% 49%;
+    --spiritual-foreground: 0 0% 100%;
+    --spiritual-light: 22 100% 58%;
+    --spiritual-dark: 14 100% 42%;
+    
+    --divine: 18 100% 55%;
+    --divine-foreground: 0 0% 100%;
+    --divine-light: 24 100% 65%;
+    --divine-dark: 16 100% 45%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 16 100% 49%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 16 20% 95%;
+    --sidebar-accent-foreground: 16 100% 49%;
+    --sidebar-border: 16 30% 90%;
+    --sidebar-ring: 16 100% 49%;
+  }
+
+  .dark {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 16 100% 49%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 16 100% 49%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 16 100% 49%;
+
+    --spiritual: 16 100% 49%;
+    --spiritual-foreground: 0 0% 100%;
+    
+    --divine: 18 100% 55%;
+    --divine-foreground: 0 0% 100%;
+
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 16 100% 49%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 16 100% 49%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    /* Prevent white screen by ensuring body always has background */
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Fallback for root element */
+  #root {
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+    position: relative;
+  }
+
+  /* Background styling for divine experience */
+  html {
+    /* scroll-behavior: smooth; */
+    background-color: hsl(var(--background));
+  }
+
+  /* Divine selection styling */
+  ::selection {
+    background: hsl(16 100% 49% / 0.2);
+    color: hsl(16 100% 49%);
+  }
+
+  /* Sacred focus states */
+  :focus-visible {
+    outline: 2px solid hsl(16 100% 49%);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Loading state fallback */
+  .loading-fallback {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: hsl(var(--background));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  /* Ensure navigation is always clickable */
+  nav, .nav-divine {
+    position: relative;
+    z-index: 1000;
+    pointer-events: auto;
+  }
+
+  /* Ensure buttons and links are clickable */
+  button, a, .btn-divine {
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Fix any overlay issues */
+  .fixed {
+    pointer-events: none;
+  }
+
+  .fixed > * {
+    pointer-events: auto;
+  }
+}
+
+@layer components {
+  /* Divine Button Variants - Simplified */
+  .btn-divine {
+    @apply relative overflow-hidden bg-aura-gradient text-white font-medium px-4 py-2 rounded-lg 
+           shadow-md transition-all duration-200 hover:scale-[1.02] 
+           hover:shadow-lg active:scale-[0.98];
+  }
+
+  .btn-divine::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent 
+           opacity-0 transition-opacity duration-300 transform -translate-x-full;
+  }
+
+  .btn-divine:hover::before {
+    @apply opacity-10 translate-x-full;
+    transition: transform 0.4s ease-in-out;
+  }
+
+  /* Sacred Card Styling - Simplified */
+  .card-sacred {
+    @apply bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-orange-100 
+           dark:border-orange-900/20 backdrop-blur-sm relative overflow-hidden
+           hover:shadow-md transition-all duration-200 hover:translate-y-[-1px];
+  }
+
+  .card-sacred::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent 
+           opacity-0 transition-opacity duration-200;
+  }
+
+  .card-sacred:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Spiritual Input Fields - Simplified */
+  .input-spiritual {
+    @apply border border-orange-200 focus:border-primary focus:ring-1 focus:ring-primary/20 
+           rounded-md px-3 py-2 bg-white dark:bg-gray-800 transition-all duration-200
+           placeholder:text-gray-400 dark:placeholder:text-gray-500;
+  }
+
+  .input-spiritual:focus {
+    @apply shadow-sm;
+  }
+
+  /* Holy Text Effects - Simplified */
+  .text-divine {
+    @apply font-semibold text-transparent bg-clip-text bg-aura-gradient;
+  }
+
+  .text-sacred {
+    @apply text-primary font-medium;
+  }
+
+  /* Celestial Loading Spinner - Simplified */
+  .spinner-celestial {
+    @apply animate-spin rounded-full border-2 border-orange-200 border-t-primary;
+  }
+
+  /* Divine Navigation */
+  .nav-divine {
+    @apply backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-orange-100 
+           dark:border-orange-900/20 sticky top-0 z-50;
+  }
+
+  /* Sacred Scrollbar */
+  .scrollbar-sacred::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-sacred::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+  }
+
+  .scrollbar-sacred::-webkit-scrollbar-thumb {
+    @apply bg-aura-gradient rounded-full hover:shadow-aura-glow;
+  }
+
+  /* Simple Hover Effects */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
+  }
+
+  .simple-fade {
+    @apply transition-opacity duration-300;
+  }
+}
+
+@layer utilities {
+  /* Simple Typography */
+  .font-semibold {
+    font-weight: 600;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  /* Simple Transitions */
+  .transition-base {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  /* Hover Effects - Simplified */
+  .hover-divine:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(248, 87, 0, 0.15);
+  }
+
+  .hover-sacred:hover {
+    filter: brightness(1.05) saturate(1.1);
+    transform: scale(1.02);
+  }
+
+  .hover-celestial:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Custom Float Animation */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Mobile-first utilities */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .mobile-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+
+  /* Improved mobile typography */
+  @media (max-width: 640px) {
+    .text-responsive {
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    
+    .text-responsive-lg {
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    
+    .text-responsive-xl {
+      font-size: 1.125rem;
+      line-height: 1.4;
+    }
+  }
+}
+
+/* Keyframe Animations */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+  }
+  33% { 
+    transform: translateY(-3px) rotate(1deg); 
+  }
+  66% { 
+    transform: translateY(3px) rotate(-1deg); 
+  }
+}
+
+@keyframes celestial-float {
+  0%, 100% { 
+    transform: translateY(0px) scale(1); 
+    opacity: 0.6;
+  }
+  50% { 
+    transform: translateY(-8px) scale(1.1); 
+    opacity: 1;
+  }
+}
+
+@keyframes divine-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(248, 87, 0, 0.4);
+  }
+  50% { 
+    transform: scale(1.05); 
+    box-shadow: 0 0 0 10px rgba(248, 87, 0, 0);
+  }
+}
+
+@keyframes sacred-fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes spiritual-gradient {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+@keyframes aura-rotate {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation classes */
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+/* New Enhanced Animations for AI Features Section */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+  }
+  33% { 
+    transform: translateY(-10px) rotate(120deg); 
+  }
+  66% { 
+    transform: translateY(-5px) rotate(240deg); 
+  }
+}
+
+@keyframes gradient {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+@keyframes spin-slow {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes enhanced-pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.05);
+  }
+}
+
+@keyframes celestial-float {
+  0%, 100% { 
+    transform: translateY(0px) translateX(0px); 
+    opacity: 0.6;
+  }
+  25% { 
+    transform: translateY(-20px) translateX(10px); 
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-10px) translateX(-5px); 
+    opacity: 1;
+  }
+  75% { 
+    transform: translateY(-30px) translateX(15px); 
+    opacity: 0.7;
+  }
+}
+
+/* Animation Utility Classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 400% 400%;
+  animation: gradient 4s ease infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
+
+.animate-enhanced-pulse {
+  animation: enhanced-pulse 2s ease-in-out infinite;
+}
+
+.animate-celestial-float {
+  animation: celestial-float 8s ease-in-out infinite;
+}
+
+/* Enhanced Hover Effects */
+.group:hover .group-hover\:animate-enhanced-glow {
+  animation: enhanced-pulse 1s ease-in-out infinite;
+}
+
+/* Backdrop Blur Support */
+.backdrop-blur-xs {
+  backdrop-filter: blur(2px);
+}
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: blur(12px);
+}
+
+.backdrop-blur-xl {
+  backdrop-filter: blur(16px);
+}
+
+.backdrop-blur-2xl {
+  backdrop-filter: blur(24px);
+}
+
+.backdrop-blur-3xl {
+  backdrop-filter: blur(40px);
+}
+
+/* Enhanced Shadow Effects */
+.shadow-3xl {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}
+
+.shadow-inner-glow {
+  box-shadow: inset 0 2px 4px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Custom Gradient Text Effects */
+.text-gradient-orange {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Simplified gradients to prevent rendering issues */
+@layer utilities {
+  .bg-aura-gradient {
+    background: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(22 100% 58%) 100%);
+  }
+  
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(16 100% 49%) 0%, hsl(18 100% 55%) 100%);
+  }
+}
+
+/* Enhanced Landing Page Animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Animation Classes */
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out forwards;
+}
+
+.animate-slideInLeft {
+  animation: slide-in-left 0.5s ease-out forwards;
+}
+
+.animate-slideInRight {
+  animation: slide-in-right 0.5s ease-out forwards;
+}
+
+/* Delay classes for staggered animations */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+.delay-900 { animation-delay: 900ms; }
+.delay-1000 { animation-delay: 1000ms; }
+.delay-1100 { animation-delay: 1100ms; }
+
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-1000 { animation-delay: 1000ms; }
+.animation-delay-2000 { animation-delay: 2000ms; }
+.animation-delay-3000 { animation-delay: 3000ms; }
+.animation-delay-4000 { animation-delay: 4000ms; }
+
+/* Simplified Animation Utilities */
+@layer utilities {
+  .btn-group {
+    @apply flex flex-col sm:flex-row gap-3 lg:gap-4;
+  }
+
+  .text-spacing {
+    @apply space-y-2 sm:space-y-3;
+  }
+
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary via-primary-600 to-primary-700;
+  }
+
+  .card-hover {
+    @apply hover:shadow-md;
+  }
+
+  /* Simplified loading spinner */
+  .loading-spinner {
+    @apply border-2 border-gray-200 border-t-primary rounded-full;
+  }
+}
+
+/* Minimal Essential Animations Only */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation Classes - Essential Only */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+/* Mobile Performance Optimization Utilities */
+.gpu-accelerated {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.touch-optimized {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mobile-optimized {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Enhanced mobile typography */
+.mobile-text {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fast animations for mobile */
+.fast-transition {
+  transition: all 0.15s ease-out;
+  will-change: transform, opacity;
+}
+
+/* Mobile-first containers */
+.mobile-container {
+  padding: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .mobile-container {
+    padding: 2rem;
+  }
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .gpu-accelerated {
+    will-change: auto;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce expensive box-shadows on mobile */
+  .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Optimize gradients for mobile performance */
+  .bg-gradient-to-r, .bg-gradient-to-br {
+    background-attachment: scroll;
+  }
+  
+  /* Faster transforms on mobile */
+  .hover\:scale-105:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Improve text readability on mobile */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

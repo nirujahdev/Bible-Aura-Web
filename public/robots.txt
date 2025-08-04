@@ -24,7 +24,11 @@ Allow: /songs
 Allow: /sermon-writer
 Allow: /sermon-library
 Allow: /privacy-policy.html
+Allow: /privacy-policy
+Allow: /privacy
 Allow: /terms-of-service.html
+Allow: /terms-of-service  
+Allow: /terms
 
 # Disallow authentication and admin pages
 Disallow: /auth

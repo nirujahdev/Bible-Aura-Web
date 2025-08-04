@@ -137,6 +137,21 @@
     <priority>0.4</priority>
 </url>
 
+<!-- Canonical Legal Page URLs -->
+<url>
+    <loc>https://bibleaura.xyz/privacy-policy</loc>
+    <lastmod>2024-12-31</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/terms-of-service</loc>
+    <lastmod>2024-12-31</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+</url>
+
 <!-- Additional Study Pages -->
 <url>
     <loc>https://bibleaura.xyz/topical-study</loc>

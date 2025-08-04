@@ -84,6 +84,26 @@
       "source": "/bible-verse-analysis",
       "destination": "/bible-ai",
       "permanent": true
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy-policy.html",
+      "permanent": true
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy-policy.html", 
+      "permanent": true
+    },
+    {
+      "source": "/terms-of-service",
+      "destination": "/terms-of-service.html",
+      "permanent": true
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms-of-service.html",
+      "permanent": true
     }
   ],
   "headers": [
@@ -123,6 +143,40 @@
     },
     {
       "source": "/terms",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow"
+        }
+      ]
+    },
+    {
+      "source": "/privacy-policy.html",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow"
+        }
+      ]
+    },
+    {
+      "source": "/terms-of-service.html",
       "headers": [
         {
           "key": "Content-Type",
