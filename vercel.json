@@ -8,10 +8,48 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
     },
     {
-      "source": "/((?!api|_next|_static|favicon.ico|sitemap.xml|robots.txt|manifest.json|.*\\.).*)",
-      "destination": "/index.html"
+      "src": "/sitemap-index.xml", 
+      "dest": "/sitemap-index.xml"
+    },
+    {
+      "src": "/seo-sitemap.xml",
+      "dest": "/seo-sitemap.xml"
+    },
+    {
+      "src": "/features-sitemap.xml",
+      "dest": "/features-sitemap.xml"
+    },
+    {
+      "src": "/blog-sitemap.xml", 
+      "dest": "/blog-sitemap.xml"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/privacy-policy.html",
+      "dest": "/privacy-policy.html"
+    },
+    {
+      "src": "/terms-of-service.html",
+      "dest": "/terms-of-service.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "redirects": [

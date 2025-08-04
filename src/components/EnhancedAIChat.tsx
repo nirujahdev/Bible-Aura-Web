@@ -203,7 +203,7 @@ Use ${translation} Bible translation for all verse references.
     const systemPrompt = `${basePrompt}${formatOverride}`;
 
     const requestBody = {
-      model: 'gpt-4o-mini',
+      model: 'deepseek-chat',
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages
@@ -213,11 +213,11 @@ Use ${translation} Bible translation for all verse references.
       stream: false
     };
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY}`
       },
       body: JSON.stringify(requestBody),
       signal: controller.signal
@@ -233,7 +233,7 @@ Use ${translation} Bible translation for all verse references.
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response format from OpenAI API');
+      throw new Error('Invalid response format from DeepSeek API');
     }
 
     return data.choices[0].message.content;
@@ -372,7 +372,7 @@ const EnhancedAIChat: React.FC = () => {
         role: 'assistant',
         content: response,
         timestamp: new Date().toISOString(),
-        model: 'gpt-4o-mini'
+        model: 'deepseek-chat'
       };
 
       const finalMessages = [...newMessages, assistantMessage];
