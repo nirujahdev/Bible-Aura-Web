@@ -75,7 +75,7 @@ Keep it warm, biblical, and uplifting.`;
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer sk-6251eb1f9fb8476cb2aba1431ab3c114',
+        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
