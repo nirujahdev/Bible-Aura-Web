@@ -84,10 +84,26 @@ function App() {
             <Routes>
               {/* Public routes - ModernLayout removed to fix errors */}
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/pricing" element={<Funding />} />
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/about" element={
+                <ErrorBoundary>
+                  <About />
+                </ErrorBoundary>
+              } />
+              <Route path="/features" element={
+                <ErrorBoundary>
+                  <Features />
+                </ErrorBoundary>
+              } />
+              <Route path="/pricing" element={
+                <ErrorBoundary>
+                  <Funding />
+                </ErrorBoundary>
+              } />
+              <Route path="/auth" element={
+                <ErrorBoundary>
+                  <Auth />
+                </ErrorBoundary>
+              } />
               <Route path="/blog" element={<Blog />} />
               
               {/* Feature pages */}
