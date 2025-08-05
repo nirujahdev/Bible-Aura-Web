@@ -6,7 +6,6 @@ import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // import SmartRedirect from '@/components/SmartRedirect'; // REMOVED - NOT USED
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { logDatabaseStatus } from '@/utils/databaseTest';
 
 // Pages
 import Home from '@/pages/Home';
@@ -74,10 +73,7 @@ const queryClient = new QueryClient({
 
 function App() {
   useEffect(() => {
-    // Run database health check on startup in development
-    if (process.env.NODE_ENV === 'development') {
-      logDatabaseStatus();
-    }
+    // App initialization complete
   }, []);
 
   return (
