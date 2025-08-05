@@ -95,7 +95,7 @@ function App() {
               <Route path="/features/bible-study" element={<BibleStudy />} />
               <Route path="/features/personal-tools" element={<PersonalTools />} />
               <Route path="/features/content-creation" element={<ContentCreation />} />
-              <Route path="/features/learning" element={<LearningResources />} />
+              <Route path="/features/learning-resources" element={<LearningResources />} />
               <Route path="/features/advanced-study" element={<AdvancedStudy />} />
               
               {/* Blog posts */}
