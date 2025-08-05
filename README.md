@@ -1,4 +1,4 @@
-# Bible Aura ✦
+# ✦Bible Aura 
 
 A comprehensive Bible study and sermon preparation platform powered by AI, designed for pastors, Bible students, and spiritual seekers.
 
