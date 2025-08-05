@@ -83,7 +83,11 @@ function App() {
           <div className="App">
             <Routes>
               {/* Public routes - ModernLayout removed to fix errors */}
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={
+                <ErrorBoundary>
+                  <Home />
+                </ErrorBoundary>
+              } />
               <Route path="/about" element={
                 <ErrorBoundary>
                   <About />
@@ -107,12 +111,36 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               
               {/* Feature pages */}
-              <Route path="/features/ai" element={<AIFeatures />} />
-              <Route path="/features/bible-study" element={<BibleStudy />} />
-              <Route path="/features/personal-tools" element={<PersonalTools />} />
-              <Route path="/features/content-creation" element={<ContentCreation />} />
-              <Route path="/features/learning-resources" element={<LearningResources />} />
-              <Route path="/features/advanced-study" element={<AdvancedStudy />} />
+              <Route path="/features/ai" element={
+                <ErrorBoundary>
+                  <AIFeatures />
+                </ErrorBoundary>
+              } />
+              <Route path="/features/bible-study" element={
+                <ErrorBoundary>
+                  <BibleStudy />
+                </ErrorBoundary>
+              } />
+              <Route path="/features/personal-tools" element={
+                <ErrorBoundary>
+                  <PersonalTools />
+                </ErrorBoundary>
+              } />
+              <Route path="/features/content-creation" element={
+                <ErrorBoundary>
+                  <ContentCreation />
+                </ErrorBoundary>
+              } />
+              <Route path="/features/learning-resources" element={
+                <ErrorBoundary>
+                  <LearningResources />
+                </ErrorBoundary>
+              } />
+              <Route path="/features/advanced-study" element={
+                <ErrorBoundary>
+                  <AdvancedStudy />
+                </ErrorBoundary>
+              } />
               
               {/* Blog posts */}
               <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
