@@ -6,20 +6,18 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJh
 
 // Enhanced validation and debugging
 console.log('🔧 Supabase Configuration:', {
-  url: SUPABASE_URL ? 'SET' : 'MISSING',
-  key: SUPABASE_PUBLISHABLE_KEY ? 'SET' : 'MISSING',
+  url: SUPABASE_URL ? 'SET' : 'USING_FALLBACK',
+  key: SUPABASE_PUBLISHABLE_KEY ? 'SET' : 'USING_FALLBACK',
   environment: import.meta.env.MODE
 });
 
-// Validate environment variables
-if (!SUPABASE_URL) {
-  console.error('❌ Missing SUPABASE_URL environment variable');
-  throw new Error('Supabase URL is required');
+// Log warnings for missing environment variables (non-blocking)
+if (!import.meta.env.VITE_SUPABASE_URL) {
+  console.warn('⚠️ Using fallback SUPABASE_URL - consider setting VITE_SUPABASE_URL');
 }
 
-if (!SUPABASE_PUBLISHABLE_KEY) {
-  console.error('❌ Missing SUPABASE_PUBLISHABLE_KEY environment variable');
-  throw new Error('Supabase anon key is required');
+if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  console.warn('⚠️ Using fallback SUPABASE_ANON_KEY - consider setting VITE_SUPABASE_ANON_KEY');
 }
 
 // Enhanced detection for auth-related URLs
