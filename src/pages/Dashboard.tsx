@@ -201,7 +201,10 @@ export default function Dashboard() {
 
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || message.trim();
-    if (!textToSend || isLoading || !activeConversation) return;
+    if (!textToSend || isLoading || !user) return;
+
+    setMessage('');
+    setIsLoading(true);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -210,27 +213,75 @@ export default function Dashboard() {
       timestamp: new Date().toLocaleString()
     };
 
-    // Add user message to current conversation
-    const updatedConversations = conversations.map(conv => {
-      if (conv.id === activeConversation) {
-        const newMessages = [...conv.messages, userMessage];
-        const newTitle = conv.messages.length === 0 ? textToSend.slice(0, 30) + '...' : conv.title;
-        
-        // Save to database
-        saveConversationToDatabase(conv.id, newMessages, conv.messages.length === 0 ? newTitle : undefined);
-        
-        return { 
-          ...conv, 
-          messages: newMessages,
-          title: newTitle
-        };
-      }
-      return conv;
-    });
+    let currentActiveConversation = activeConversation;
+    let updatedConversations = [...conversations];
 
-    setConversations(updatedConversations);
-    setMessage('');
-    setIsLoading(true);
+    // If no active conversation exists, create one automatically
+    if (!currentActiveConversation) {
+      const newConversation: Conversation = {
+        id: Date.now().toString(),
+        title: textToSend.slice(0, 30) + (textToSend.length > 30 ? '...' : ''),
+        messages: [userMessage],
+        created_at: new Date().toLocaleDateString(),
+        mode: chatMode,
+        language: language,
+        translation: translation
+      };
+
+      try {
+        const { data, error } = await supabase
+          .from('ai_conversations')
+          .insert({
+            user_id: user.id,
+            title: newConversation.title,
+            messages: [userMessage],
+            mode: chatMode,
+            language: language,
+            translation: translation,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        newConversation.id = data.id;
+        updatedConversations = [newConversation, ...conversations];
+        setConversations(updatedConversations);
+        setActiveConversation(data.id);
+        currentActiveConversation = data.id;
+      } catch (error) {
+        console.error('Error creating new chat:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create new conversation. Please try again.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      // Add user message to existing conversation
+      updatedConversations = conversations.map(conv => {
+        if (conv.id === currentActiveConversation) {
+          const newMessages = [...conv.messages, userMessage];
+          const newTitle = conv.messages.length === 0 ? textToSend.slice(0, 30) + (textToSend.length > 30 ? '...' : '') : conv.title;
+          
+          // Save to database
+          saveConversationToDatabase(conv.id, newMessages, conv.messages.length === 0 ? newTitle : undefined);
+          
+          return { 
+            ...conv, 
+            messages: newMessages,
+            title: newTitle
+          };
+        }
+        return conv;
+      });
+
+      setConversations(updatedConversations);
+    }
 
     // Simulate AI response (replace with actual AI integration)
     setTimeout(async () => {
@@ -242,7 +293,7 @@ export default function Dashboard() {
       };
 
       const finalUpdatedConversations = updatedConversations.map(conv => {
-        if (conv.id === activeConversation) {
+        if (conv.id === currentActiveConversation) {
           const finalMessages = [...conv.messages, aiMessage];
           
           // Save AI response to database
