@@ -4,9 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Search, Bookmark, Heart, ChevronLeft, ChevronRight, 
-  Book, MessageCircle, FileText, Highlighter, Copy, Share2
+  Book, MessageCircle, FileText, Highlighter, Copy, Share2,
+  Menu, X, BookOpen, ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,6 +60,7 @@ export default function Bible() {
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   const [showBookSelector, setShowBookSelector] = useState(false);
   const [showChapterSelector, setShowChapterSelector] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(!isMobile);
 
   useEffect(() => {
     loadBooks();
@@ -498,13 +502,370 @@ How can I apply this to my life?
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      <div className="flex h-screen">
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <div className="w-80 bg-white border-r border-gray-200 overflow-hidden">
+            {/* Sidebar Header */}
+            <div className="p-4 border-b border-gray-200 bg-orange-500">
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-5 w-5 text-white" />
+                <h2 className="text-lg font-semibold text-white">Bible Navigation</h2>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-white mb-1 block">Language</label>
+                  <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
+                    <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map((lang) => (
+                        <SelectItem key={lang.value} value={lang.value}>
+                          {lang.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedLanguage === 'english' && (
+                  <div>
+                    <label className="text-sm font-medium text-white mb-1 block">Translation</label>
+                    <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                      <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ENGLISH_TRANSLATIONS.map((translation) => (
+                          <SelectItem key={translation.code} value={translation.code}>
+                            {translation.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar Content */}
+            <div className="flex-1 overflow-auto p-4 space-y-4">
+              {/* Search */}
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Search verses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch();
+                      }
+                    }}
+                  />
+                  <Button onClick={handleSearch} disabled={loading} size="sm">
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Book Selection */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800 mb-3">Select Book</h3>
+                <div className="space-y-3">
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">
+                        <span>Old Testament ({oldTestamentBooks.length})</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-2 gap-1">
+                        {oldTestamentBooks.map((book) => (
+                          <Button
+                            key={book.id}
+                            variant={selectedBook?.id === book.id ? "default" : "outline"}
+                            onClick={() => handleBookSelect(book.name)}
+                            className={`text-xs p-2 h-8 ${
+                              selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                            }`}
+                          >
+                            {book.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">
+                        <span>New Testament ({newTestamentBooks.length})</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-2 gap-1">
+                        {newTestamentBooks.map((book) => (
+                          <Button
+                            key={book.id}
+                            variant={selectedBook?.id === book.id ? "default" : "outline"}
+                            onClick={() => handleBookSelect(book.name)}
+                            className={`text-xs p-2 h-8 ${
+                              selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                            }`}
+                          >
+                            {book.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </div>
+
+              {/* Chapter Selection */}
+              {selectedBook && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                    {selectedBook.name} - Chapters
+                  </h3>
+                  <div className="grid grid-cols-6 gap-1 max-h-32 overflow-y-auto">
+                    {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                      <Button
+                        key={chapter}
+                        variant={selectedChapter === chapter ? "default" : "outline"}
+                        onClick={() => setSelectedChapter(chapter)}
+                        className={`h-8 text-xs ${
+                          selectedChapter === chapter ? 'bg-orange-500' : ''
+                        }`}
+                      >
+                        {chapter}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Search Results */}
+              {searchResults.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">Results ({searchResults.length})</h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {searchResults.slice(0, 10).map((verse) => (
+                      <div
+                        key={verse.id}
+                        className="p-2 bg-gray-50 rounded text-sm cursor-pointer hover:bg-gray-100"
+                        onClick={() => {
+                          const book = books.find(b => b.name === verse.book_name);
+                          if (book) {
+                            setSelectedBook(book);
+                            setSelectedChapter(verse.chapter);
+                            setSearchResults([]);
+                            setSearchQuery('');
+                          }
+                        }}
+                      >
+                        <div className="font-medium text-orange-600 mb-1">
+                          {verse.book_name} {verse.chapter}:{verse.verse}
+                        </div>
+                        <div className="text-gray-700">
+                          {verse.text.substring(0, 100)}...
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Sidebar */}
+        <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+          <SheetContent side="left" className="w-80 p-0">
+            <div className="h-full overflow-auto">
+              <div className="p-4 border-b border-gray-200 bg-orange-500">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-white" />
+                    <h2 className="text-lg font-semibold text-white">Bible Navigation</h2>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-white mb-1 block">Language</label>
+                    <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
+                      <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES.map((lang) => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedLanguage === 'english' && (
+                    <div>
+                      <label className="text-sm font-medium text-white mb-1 block">Translation</label>
+                      <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                        <SelectTrigger className="bg-white/20 border-white/30 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ENGLISH_TRANSLATIONS.map((translation) => (
+                            <SelectItem key={translation.code} value={translation.code}>
+                              {translation.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* Search for mobile */}
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Search verses..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSearch();
+                        }
+                      }}
+                    />
+                    <Button onClick={handleSearch} disabled={loading} size="sm">
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Book Selection for mobile */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800 mb-3">Select Book</h3>
+                  <div className="space-y-3">
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between">
+                          <span>Old Testament ({oldTestamentBooks.length})</span>
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-2">
+                        <div className="grid grid-cols-2 gap-1">
+                          {oldTestamentBooks.map((book) => (
+                            <Button
+                              key={book.id}
+                              variant={selectedBook?.id === book.id ? "default" : "outline"}
+                              onClick={() => {
+                                handleBookSelect(book.name);
+                                setShowSidebar(false);
+                              }}
+                              className={`text-xs p-2 h-8 ${
+                                selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                              }`}
+                            >
+                              {book.name}
+                            </Button>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between">
+                          <span>New Testament ({newTestamentBooks.length})</span>
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-2">
+                        <div className="grid grid-cols-2 gap-1">
+                          {newTestamentBooks.map((book) => (
+                            <Button
+                              key={book.id}
+                              variant={selectedBook?.id === book.id ? "default" : "outline"}
+                              onClick={() => {
+                                handleBookSelect(book.name);
+                                setShowSidebar(false);
+                              }}
+                              className={`text-xs p-2 h-8 ${
+                                selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                              }`}
+                            >
+                              {book.name}
+                            </Button>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                </div>
+
+                {/* Chapter Selection for mobile */}
+                {selectedBook && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                      {selectedBook.name} - Chapters
+                    </h3>
+                    <div className="grid grid-cols-5 gap-1 max-h-32 overflow-y-auto">
+                      {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                        <Button
+                          key={chapter}
+                          variant={selectedChapter === chapter ? "default" : "outline"}
+                          onClick={() => {
+                            setSelectedChapter(chapter);
+                            setShowSidebar(false);
+                          }}
+                          className={`h-8 text-xs ${
+                            selectedChapter === chapter ? 'bg-orange-500' : ''
+                          }`}
+                        >
+                          {chapter}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
       {/* Orange Top Bar with Chapter/Verse Navigation */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
           {/* Top Controls Row */}
           <div className="flex items-center justify-between mb-4">
-            {/* Left: Book and Translation Selectors */}
+            {/* Left: Menu Button and Title */}
             <div className="flex items-center gap-4">
+              {/* Mobile Menu Button */}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSidebar(true)}
+                  className="text-white hover:bg-white/20"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
+              
               <div className="flex items-center gap-2">
                 <Book className="h-6 w-6" />
                 <h1 className="text-xl font-bold">Bible Study</h1>
@@ -881,6 +1242,8 @@ How can I apply this to my life?
           onClose={() => setAiChatOpen(false)}
         />
       )}
+        </div>
+      </div>
     </div>
   );
 }
