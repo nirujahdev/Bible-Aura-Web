@@ -350,43 +350,56 @@ const Sermons = () => {
     try {
       const sermonData = {
         title: title || 'Untitled Sermon',
-        content,
+        content: content || '',
         scripture_reference: scriptureRefs || null,
-        scripture_references: scriptureRefs ? scriptureRefs.split(',').map(s => s.trim()).filter(Boolean) : null,
+        scripture_references: scriptureRefs ? scriptureRefs.split(',').map(s => s.trim()).filter(Boolean) : [],
         notes: privateNotes || null,
         private_notes: privateNotes || null,
         tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         status,
         series_name: seriesName || null,
-        word_count: wordCount,
-        estimated_time: estimatedTime,
-        estimated_duration: estimatedTime,
         language: 'english' as const,
         category: 'general',
         is_draft: status === 'draft',
-        user_id: user.id,
+        ai_generated: false,
+        template_type: null,
+        // Don't set word_count and estimated_time manually - let database triggers handle it
         updated_at: new Date().toISOString()
       };
 
-      if (selectedSermon) {
-        const { error } = await supabase
+      let savedSermon;
+
+      if (selectedSermon && selectedSermon.id) {
+        // Update existing sermon
+        const { data, error } = await supabase
           .from('sermons')
           .update(sermonData)
-          .eq('id', selectedSermon.id);
+          .eq('id', selectedSermon.id)
+          .eq('user_id', user.id)
+          .select()
+          .single();
         
         if (error) {
           console.error('Error updating sermon:', error);
-          throw error;
+          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            throw new Error('You do not have permission to update this sermon.');
+          }
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            throw new Error('Database schema issue. Please refresh the page and try again.');
+          }
+          throw new Error(error.message || 'Failed to update sermon');
         }
         
-        const updatedSermon = { ...selectedSermon, ...sermonData };
-        setSelectedSermon(updatedSermon);
-        setSermons(prev => prev.map(s => s.id === selectedSermon.id ? updatedSermon : s));
+        savedSermon = data;
+        setSelectedSermon(savedSermon);
+        setSermons(prev => prev.map(s => s.id === selectedSermon.id ? savedSermon : s));
       } else {
+        // Create new sermon
         const { data, error } = await supabase
           .from('sermons')
           .insert([{ 
-            ...sermonData, 
+            ...sermonData,
+            user_id: user.id,
             created_at: new Date().toISOString() 
           }])
           .select()
@@ -394,30 +407,40 @@ const Sermons = () => {
         
         if (error) {
           console.error('Error creating sermon:', error);
-          throw error;
+          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            throw new Error('You do not have permission to create sermons. Please sign out and sign back in.');
+          }
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            throw new Error('Database schema issue. Please refresh the page and try again.');
+          }
+          if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+            throw new Error('Database table is missing. Please contact support.');
+          }
+          throw new Error(error.message || 'Failed to create sermon');
         }
         
-        setSelectedSermon(data);
-        setSermons(prev => [data, ...prev]);
+        savedSermon = data;
+        setSelectedSermon(savedSermon);
+        setSermons(prev => [savedSermon, ...prev]);
       }
 
       if (!isAutoSave) {
         toast({
           title: "Success",
-          description: "Sermon saved successfully",
+          description: `Sermon ${selectedSermon?.id ? 'updated' : 'saved'} successfully`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving sermon:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save sermon",
+        description: error.message || "Failed to save sermon. Please try again.",
         variant: "destructive"
       });
     } finally {
       if (!isAutoSave) setSaving(false);
     }
-  }, [user, title, content, scriptureRefs, privateNotes, tags, status, seriesName, wordCount, estimatedTime, selectedSermon]);
+  }, [user, title, content, scriptureRefs, privateNotes, tags, status, seriesName, selectedSermon]);
 
   const handleNewSermon = () => {
     setSelectedSermon({
@@ -466,13 +489,29 @@ const Sermons = () => {
   };
 
   const handleDeleteSermon = async (sermonId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to delete sermons.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('sermons')
         .delete()
-        .eq('id', sermonId);
+        .eq('id', sermonId)
+        .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting sermon:', error);
+        if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          throw new Error('You do not have permission to delete this sermon.');
+        }
+        throw new Error(error.message || 'Failed to delete sermon');
+      }
 
       setSermons(prev => prev.filter(s => s.id !== sermonId));
       if (selectedSermon?.id === sermonId) {
@@ -484,18 +523,18 @@ const Sermons = () => {
         setTags("");
         setSeriesName("");
         setStatus('draft');
-        setViewMode('dashboard'); // Return to dashboard after deleting current sermon
+        setViewMode('dashboard');
       }
 
       toast({
         title: "Success",
         description: "Sermon deleted successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting sermon:', error);
       toast({
         title: "Error",
-        description: "Failed to delete sermon",
+        description: error.message || "Failed to delete sermon. Please try again.",
         variant: "destructive"
       });
     }

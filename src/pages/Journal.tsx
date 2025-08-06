@@ -58,6 +58,8 @@ const Journal = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  // Enhanced state for templates
+  const [templateData, setTemplateData] = useState<any>(null);
 
   // Load entries on component mount
   useEffect(() => {
@@ -66,6 +68,7 @@ const Journal = () => {
     }
   }, [user]);
 
+  // Enhanced load entries with better error handling
   const loadEntries = async () => {
     if (!user) {
       setLoading(false);
@@ -82,20 +85,39 @@ const Journal = () => {
 
       if (error) {
         console.error('Error loading entries:', error);
-        toast({
-          title: "Error loading entries",
-          description: "Failed to load your journal entries. Please try again.",
-          variant: "destructive"
-        });
-        return;
+        if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          toast({
+            title: "Permission Error",
+            description: "Please sign out and sign back in to refresh your permissions.",
+            variant: "destructive"
+          });
+          return;
+        }
+        if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+          toast({
+            title: "Database Error",
+            description: "The journal table is missing. Please contact support.",
+            variant: "destructive"
+          });
+          return;
+        }
+        throw new Error(error.message || 'Failed to load journal entries');
       }
 
-      setEntries(data || []);
-    } catch (error) {
-      console.error('Error:', error);
+      // Process entries with enhanced metadata handling
+      const processedEntries = (data || []).map(entry => ({
+        ...entry,
+        metadata: entry.metadata || {},
+        tags: entry.tags || [],
+        verse_references: entry.verse_references || []
+      }));
+
+      setEntries(processedEntries);
+    } catch (error: any) {
+      console.error('Error loading entries:', error);
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Error loading entries",
+        description: error.message || "Failed to load your journal entries. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -172,35 +194,51 @@ const Journal = () => {
     }
 
     try {
+      const dataToSave = {
+        title: entryData.title || null,
+        content: entryData.content || '',
+        mood: entryData.mood || null,
+        spiritual_state: entryData.spiritual_state || null,
+        verse_reference: entryData.verse_reference || null,
+        verse_text: entryData.verse_text || null,
+        verse_references: entryData.verse_references || [],
+        tags: entryData.tags || [],
+        is_private: entryData.is_private !== undefined ? entryData.is_private : true,
+        language: entryData.language || 'english',
+        category: entryData.category || 'personal',
+        metadata: {
+          ...entryData.metadata,
+          gratitude_items: entryData.gratitude_items || [],
+          prayer_requests: entryData.prayer_requests || [],
+          spiritual_insights: entryData.spiritual_insights || [],
+          reflection_type: entryData.reflection_type || 'general', // morning, evening, general
+          devotion_completed: entryData.devotion_completed || false
+        },
+        is_pinned: entryData.is_pinned || false,
+        template_used: entryData.template_used || null,
+        entry_date: entryData.entry_date || selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString()
+      };
+
       if (editingEntry) {
         // Update existing entry
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('journal_entries')
-          .update({
-            title: entryData.title,
-            content: entryData.content,
-            mood: entryData.mood,
-            spiritual_state: entryData.spiritual_state,
-            verse_reference: entryData.verse_reference,
-            verse_text: entryData.verse_text,
-            verse_references: entryData.verse_references || [],
-            tags: entryData.tags || [],
-            is_private: entryData.is_private !== undefined ? entryData.is_private : true,
-            word_count: entryData.word_count || 0,
-            reading_time: entryData.reading_time || 0,
-            language: entryData.language || 'english',
-            category: entryData.category || 'personal',
-            metadata: entryData.metadata,
-            is_pinned: entryData.is_pinned || false,
-            template_used: entryData.template_used,
-            updated_at: new Date().toISOString()
-          })
+          .update(dataToSave)
           .eq('id', editingEntry.id)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .select()
+          .single();
 
         if (error) {
           console.error('Error updating entry:', error);
-          throw error;
+          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            throw new Error('You do not have permission to update this entry.');
+          }
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            throw new Error('Database schema issue. Please refresh the page and try again.');
+          }
+          throw new Error(error.message || 'Failed to update journal entry');
         }
 
         toast({
@@ -209,34 +247,28 @@ const Journal = () => {
         });
       } else {
         // Create new entry
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('journal_entries')
-          .insert({
-            title: entryData.title,
-            content: entryData.content,
-            mood: entryData.mood,
-            spiritual_state: entryData.spiritual_state,
-            verse_reference: entryData.verse_reference,
-            verse_text: entryData.verse_text,
-            verse_references: entryData.verse_references || [],
-            tags: entryData.tags || [],
-            is_private: entryData.is_private !== undefined ? entryData.is_private : true,
-            word_count: entryData.word_count || 0,
-            reading_time: entryData.reading_time || 0,
-            language: entryData.language || 'english',
-            category: entryData.category || 'personal',
-            metadata: entryData.metadata,
-            is_pinned: entryData.is_pinned || false,
-            template_used: entryData.template_used,
+          .insert([{
+            ...dataToSave,
             user_id: user.id,
-            entry_date: entryData.entry_date || selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
 
         if (error) {
           console.error('Error creating entry:', error);
-          throw error;
+          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            throw new Error('You do not have permission to create journal entries. Please sign out and sign back in.');
+          }
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            throw new Error('Database schema issue. Please refresh the page and try again.');
+          }
+          if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+            throw new Error('Database table is missing. Please contact support.');
+          }
+          throw new Error(error.message || 'Failed to create journal entry');
         }
 
         toast({
@@ -254,14 +286,21 @@ const Journal = () => {
       console.error('Error saving entry:', error);
       toast({
         title: "Error saving entry",
-        description: error?.message || "Failed to save your journal entry. Please try again.",
+        description: error.message || "Failed to save your journal entry. Please try again.",
         variant: "destructive"
       });
     }
   };
 
   const handleDeleteEntry = async (entryId: string) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to delete journal entries.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -270,22 +309,100 @@ const Journal = () => {
         .eq('id', entryId)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting entry:', error);
+        if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          throw new Error('You do not have permission to delete this entry.');
+        }
+        throw new Error(error.message || 'Failed to delete journal entry');
+      }
 
+      setEntries(prev => prev.filter(e => e.id !== entryId));
       toast({
         title: "Entry deleted",
-        description: "Your journal entry has been deleted.",
+        description: "Your journal entry has been deleted successfully.",
       });
-
-      await loadEntries();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting entry:', error);
       toast({
-        title: "Error",
-        description: "Failed to delete the entry. Please try again.",
+        title: "Error deleting entry",
+        description: error.message || "Failed to delete journal entry. Please try again.",
         variant: "destructive"
       });
     }
+  };
+
+  // Quick template creators for daily devotion
+  const createMorningReflection = () => {
+    const template = {
+      title: `Morning Reflection - ${format(new Date(), 'MMMM do, yyyy')}`,
+      content: `🌅 **Morning Prayer & Reflection**
+
+**Today's Scripture:** 
+[Add today's verse here]
+
+**Morning Gratitude:**
+• 
+• 
+• 
+
+**Prayer Requests:**
+• 
+• 
+
+**Goals for Today:**
+• 
+• 
+
+**How can I serve God today?**
+
+
+**Morning Prayer:**
+"Lord, thank You for this new day. Guide my steps and help me to..."`,
+      category: 'devotion',
+      reflection_type: 'morning',
+      template_used: 'morning_reflection'
+    };
+    
+    setEditingEntry(null);
+    setShowEditor(true);
+    setTemplateData(template); // Set template data for the editor
+  };
+
+  const createEveningReflection = () => {
+    const template = {
+      title: `Evening Reflection - ${format(new Date(), 'MMMM do, yyyy')}`,
+      content: `🌙 **Evening Prayer & Reflection**
+
+**Today's Highlights:**
+• 
+• 
+
+**What am I grateful for today?**
+• 
+• 
+• 
+
+**How did I see God working today?**
+
+
+**Areas for Growth:**
+• 
+• 
+
+**Prayer of Thanksgiving:**
+"Heavenly Father, thank You for today. I'm especially grateful for..."
+
+**Tomorrow's Prayer:**
+"Lord, help me tomorrow to..."`,
+      category: 'devotion',
+      reflection_type: 'evening',
+      template_used: 'evening_reflection'
+    };
+    
+    setEditingEntry(null);
+    setShowEditor(true);
+    setTemplateData(template); // Set template data for the editor
   };
 
   if (!user) {
@@ -341,6 +458,31 @@ const Journal = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+            </div>
+
+            {/* Quick Templates for Daily Devotion */}
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-700 mb-2">Quick Templates</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={createMorningReflection}
+                  className="text-xs border-orange-200 hover:bg-orange-50 hover:border-orange-300"
+                >
+                  <Sun className="h-3 w-3 mr-1" />
+                  Morning
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={createEveningReflection}
+                  className="text-xs border-blue-200 hover:bg-blue-50 hover:border-blue-300"
+                >
+                  <Cloud className="h-3 w-3 mr-1" />
+                  Evening
+                </Button>
+              </div>
             </div>
 
             {/* View Mode Toggle */}
@@ -563,7 +705,9 @@ const Journal = () => {
                 onCancel={() => {
                   setShowEditor(false);
                   setEditingEntry(null);
+                  setTemplateData(null); // Clear template data on cancel
                 }}
+                templateData={templateData} // Pass template data to the editor
               />
             </div>
           )}

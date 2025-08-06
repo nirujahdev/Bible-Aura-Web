@@ -48,20 +48,22 @@ interface EnhancedJournalEditorProps {
   onSave: (entry: JournalEntryForm) => void;
   onCancel: () => void;
   isEditing?: boolean;
+  templateData?: any; // Add templateData prop for daily devotion templates
 }
 
 export function EnhancedJournalEditor({
   initialEntry,
   onSave,
   onCancel,
-  isEditing = false
+  isEditing = false,
+  templateData
 }: EnhancedJournalEditorProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Core states
+  // Core states - initialize with template data if provided
   const [entry, setEntry] = useState<Partial<JournalEntryForm>>({
     title: '',
     content: '',
@@ -73,7 +75,8 @@ export function EnhancedJournalEditor({
     entry_date: new Date().toISOString().split('T')[0],
     language: 'english',
     category: 'personal',
-    ...initialEntry
+    ...initialEntry,
+    ...(templateData || {}) // Apply template data if provided
   });
 
   // UI states
@@ -93,7 +96,18 @@ export function EnhancedJournalEditor({
     { id: 'personal', name: 'Personal', icon: '📖' },
     { id: 'study', name: 'Study', icon: '🔍' },
     { id: 'prayer', name: 'Prayer', icon: '🙏' },
+    { id: 'devotion', name: 'Devotion', icon: '🌅' }, // Add devotion category
   ];
+
+  // Handle template data initialization
+  useEffect(() => {
+    if (templateData) {
+      setEntry(prev => ({
+        ...prev,
+        ...templateData
+      }));
+    }
+  }, [templateData]);
 
   // Calculate writing stats
   useEffect(() => {
