@@ -171,7 +171,7 @@ export default function Dashboard() {
     }
   };
 
-  // Navigation items matching the design
+  // Navigation items with correct paths
   const navigationItems = [
     { icon: MessageCircle, path: '/dashboard', label: 'Chat', isActive: true },
     { icon: BookOpen, path: '/bible', label: 'Bible' },
@@ -182,13 +182,13 @@ export default function Dashboard() {
     { icon: Heart, path: '/favorites', label: 'Favorites' }
   ];
 
-  // Sidebar content matching the exact design
+  // Sidebar content with white theme and orange icons
   const SidebarContent = () => (
-    <div className="flex h-full bg-gray-900 text-white">
-      {/* Left icon bar */}
-      <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col">
+    <div className="flex h-full bg-white">
+      {/* Left icon bar - White background with orange icons */}
+      <div className="w-16 bg-white border-r border-gray-200 flex flex-col shadow-sm">
         <div className="p-4">
-          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
         </div>
@@ -198,10 +198,10 @@ export default function Dashboard() {
             <Link
               key={index}
               to={item.path}
-              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
+              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 ${
                 item.isActive 
-                  ? 'bg-orange-500 text-white' 
-                  : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                  ? 'bg-orange-50 text-orange-600 shadow-md' 
+                  : 'text-gray-500 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm'
               }`}
               title={item.label}
             >
@@ -210,16 +210,16 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="p-2 space-y-2">
+        <div className="p-2 space-y-2 border-t border-gray-100">
           <Link 
             to="/profile"
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-all duration-200"
             title="Settings"
           >
             <Settings className="h-5 w-5" />
           </Link>
           
-          <Avatar className="w-12 h-12 rounded-lg">
+          <Avatar className="w-12 h-12 rounded-lg border-2 border-orange-100">
             <AvatarImage src={profile?.avatar_url} />
             <AvatarFallback className="bg-orange-500 text-white text-sm rounded-lg">
               {getUserName().charAt(0).toUpperCase()}
@@ -228,16 +228,16 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Chat History Panel */}
-      <div className="w-64 bg-gray-900 border-r border-gray-700 flex flex-col">
+      {/* Chat History Panel - Light gray background */}
+      <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-700">
+        <div className="p-4 border-b border-gray-200 bg-white">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Chat History</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Chat History</h2>
             <Button 
               onClick={createNewConversation}
               size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white h-8 w-8 p-0 rounded-lg"
+              className="bg-orange-500 hover:bg-orange-600 text-white h-8 w-8 p-0 rounded-lg shadow-sm"
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -246,7 +246,7 @@ export default function Dashboard() {
           <Button 
             onClick={createNewConversation}
             variant="outline" 
-            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500"
+            className="w-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
@@ -259,14 +259,14 @@ export default function Dashboard() {
             {conversations.map((conv) => (
               <div
                 key={conv.id}
-                className={`group relative p-3 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors ${
-                  activeConversation === conv.id ? 'bg-gray-800 border border-gray-600' : ''
+                className={`group relative p-3 rounded-lg cursor-pointer hover:bg-white transition-colors ${
+                  activeConversation === conv.id ? 'bg-white shadow-sm border border-orange-200' : ''
                 }`}
                 onClick={() => setActiveConversation(conv.id)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-200 truncate">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       {conv.title}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -279,15 +279,15 @@ export default function Dashboard() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400 hover:text-white"
+                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
                       >
                         <MoreVertical className="h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                    <DropdownMenuContent align="end" className="bg-white border-gray-200 shadow-lg">
                       <DropdownMenuItem 
                         onClick={() => deleteConversation(conv.id)}
-                        className="text-gray-300 hover:bg-gray-700"
+                        className="text-gray-700 hover:bg-gray-50"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -350,7 +350,7 @@ export default function Dashboard() {
         {/* Desktop Header */}
         <div className="hidden lg:flex items-center justify-between p-4 border-b bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white font-bold">✦</span>
             </div>
             <div>
@@ -361,7 +361,7 @@ export default function Dashboard() {
           
           <Button 
             onClick={createNewConversation}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
@@ -373,7 +373,7 @@ export default function Dashboard() {
           {currentConversation?.messages.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-md mx-auto p-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                   <Sparkles className="h-8 w-8 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -385,21 +385,21 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   <Button 
                     variant="outline" 
-                    className="w-full text-left"
+                    className="w-full text-left border-orange-200 text-gray-700 hover:bg-orange-50"
                     onClick={() => setMessage("What does John 3:16 mean?")}
                   >
                     "What does John 3:16 mean?"
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="w-full text-left"
+                    className="w-full text-left border-orange-200 text-gray-700 hover:bg-orange-50"
                     onClick={() => setMessage("How can I grow in my faith?")}
                   >
                     "How can I grow in my faith?"
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="w-full text-left"
+                    className="w-full text-left border-orange-200 text-gray-700 hover:bg-orange-50"
                     onClick={() => setMessage("Explain the parable of the prodigal son")}
                   >
                     "Explain the parable of the prodigal son"
@@ -415,16 +415,16 @@ export default function Dashboard() {
                   className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                       <span className="text-white text-sm font-bold">✦</span>
                     </div>
                   )}
                   
                   <div className={`max-w-2xl ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
-                    <div className={`p-4 rounded-2xl ${
+                    <div className={`p-4 rounded-2xl shadow-sm ${
                       msg.role === 'user' 
                         ? 'bg-orange-500 text-white rounded-br-md' 
-                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                        : 'bg-gray-50 text-gray-900 rounded-bl-md border border-gray-100'
                     }`}>
                       <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     </div>
@@ -443,10 +443,10 @@ export default function Dashboard() {
               
               {isLoading && (
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-sm">
                     <span className="text-white text-sm font-bold">✦</span>
                   </div>
-                  <div className="bg-gray-100 p-4 rounded-2xl rounded-bl-md">
+                  <div className="bg-gray-50 p-4 rounded-2xl rounded-bl-md border border-gray-100">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
@@ -470,7 +470,7 @@ export default function Dashboard() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Ask me anything about the Bible..."
-                  className="min-h-[44px] max-h-32 resize-none border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-12"
+                  className="min-h-[44px] max-h-32 resize-none border-gray-200 focus:border-orange-500 focus:ring-orange-500 pr-12"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -481,7 +481,7 @@ export default function Dashboard() {
                 <Button 
                   onClick={sendMessage}
                   disabled={!message.trim() || isLoading}
-                  className="absolute right-2 bottom-2 bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0 rounded-lg"
+                  className="absolute right-2 bottom-2 bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0 rounded-lg shadow-sm"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
