@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/useAuth';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { Analytics } from '@vercel/analytics/react';
 
 // Import basic pages
 import Home from '@/pages/Home';
@@ -110,6 +111,7 @@ function App() {
                 } />
               </Routes>
               <Toaster />
+              <Analytics />
             </div>
           </Router>
         </QueryClientProvider>
