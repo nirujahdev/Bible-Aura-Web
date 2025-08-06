@@ -446,24 +446,7 @@ export default function Dashboard() {
                   <span className="text-white font-bold text-3xl">✦</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">Welcome to Bible Aura AI</h3>
-                <p className="text-gray-600 mb-6">Choose a chat mode below and start your spiritual conversation</p>
-                
-                {/* Chat Mode Selection */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md mb-6">
-                  {CHAT_MODES.map((mode) => (
-                    <Button
-                      key={mode.id}
-                      variant={chatMode === mode.id ? "default" : "outline"}
-                      className={`p-4 h-auto text-left ${chatMode === mode.id ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
-                      onClick={() => setChatMode(mode.id)}
-                    >
-                      <div>
-                        <div className="font-medium">{mode.name}</div>
-                        <div className="text-xs opacity-70">{mode.description}</div>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
+                <p className="text-gray-600 mb-6">Start your spiritual conversation with our AI assistant</p>
                 
                 <Button onClick={createNewChat} className="bg-orange-500 hover:bg-orange-600">
                   <Plus className="w-4 h-4 mr-2" />
