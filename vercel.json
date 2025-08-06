@@ -16,7 +16,6 @@
       "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
     }
   },
-  "functions": {},
   "routes": [
     {
       "src": "/sitemap.xml",
