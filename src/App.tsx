@@ -11,7 +11,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import Home from '@/pages/Home';
 import About from '@/pages/About';
 import Features from '@/pages/Features';
-import Funding from '@/pages/Pricing';
+import Pricing from '@/pages/Pricing';
 // import Contact from '@/pages/Contact'; // REMOVED - not in original navigation
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
@@ -100,7 +100,7 @@ function App() {
               } />
               <Route path="/pricing" element={
                 <ErrorBoundary>
-                  <Funding />
+                  <Pricing />
                 </ErrorBoundary>
               } />
               <Route path="/auth" element={

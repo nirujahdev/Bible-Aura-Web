@@ -45,14 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     let subscription: any;
     
+    console.log('🔐 Auth initialization started');
+    
     // Faster loading timeout
     const loadingTimeout = setTimeout(() => {
       if (isMounted && !initialized) {
-        console.log('Auth loading timeout, setting loading to false');
+        console.log('⏰ Auth loading timeout reached, setting loading to false');
         setLoading(false);
         setInitialized(true);
       }
-    }, 1500);
+    }, 3000); // Reduced from 5000ms to 3000ms
 
     const initializeAuth = async () => {
       try {

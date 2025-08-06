@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { PayHereButton } from "@/components/PayHereButton";
 
-const Funding = () => {
+const Pricing = () => {
   // SEO optimization
   useSEO(SEO_CONFIG.PRICING);
   
@@ -454,4 +454,4 @@ const Funding = () => {
   );
 };
 
-export default Funding; 
+export default Pricing; 

@@ -4,13 +4,22 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://foleepziqgrdgkljedux.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbGVlcHppcWdyZGdrbGplZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNzkxNTgsImV4cCI6MjA2NzY1NTE1OH0.XyTKj6ayTYWnoJRUrkKyuNlQSfE6PMGeBHDdafqMs9g";
 
+// Enhanced validation and debugging
+console.log('🔧 Supabase Configuration:', {
+  url: SUPABASE_URL ? 'SET' : 'MISSING',
+  key: SUPABASE_PUBLISHABLE_KEY ? 'SET' : 'MISSING',
+  environment: import.meta.env.MODE
+});
+
 // Validate environment variables
 if (!SUPABASE_URL) {
-  console.error('Missing SUPABASE_URL environment variable');
+  console.error('❌ Missing SUPABASE_URL environment variable');
+  throw new Error('Supabase URL is required');
 }
 
 if (!SUPABASE_PUBLISHABLE_KEY) {
-  console.error('Missing SUPABASE_PUBLISHABLE_KEY environment variable');
+  console.error('❌ Missing SUPABASE_PUBLISHABLE_KEY environment variable');
+  throw new Error('Supabase anon key is required');
 }
 
 // Enhanced detection for auth-related URLs

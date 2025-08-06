@@ -3,6 +3,23 @@ import App from './App.tsx'
 import './index.css'
 import LoadingScreen from './components/LoadingScreen.tsx'
 
+// Enhanced error handling for production debugging
+window.addEventListener('error', (event) => {
+  console.error('Global error caught:', event.error);
+  console.error('Error details:', {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    stack: event.error?.stack
+  });
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  console.error('Promise rejection details:', event);
+});
+
 // Service Worker Registration for PWA
 const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
