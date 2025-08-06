@@ -7,13 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
   Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
-  Shield, Mail, Lock, Eye, EyeOff
+  Shield, Mail, Lock, Eye, EyeOff, Settings, Type, 
+  Languages, Bot, Bell, Palette, Moon, Sun
 } from "lucide-react";
 import { ModernLayout } from "@/components/ModernLayout";
 
@@ -64,6 +67,17 @@ const Profile = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [isResetLoading, setIsResetLoading] = useState(false);
 
+  // App Settings states
+  const [fontSize, setFontSize] = useState(16);
+  const [lineHeight, setLineHeight] = useState(1.6);
+  const [showVerseNumbers, setShowVerseNumbers] = useState(true);
+  const [defaultAIMode, setDefaultAIMode] = useState("chat");
+  const [defaultLanguage, setDefaultLanguage] = useState("english");
+  const [notifications, setNotifications] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [autoSave, setAutoSave] = useState(true);
+  const [activeTab, setActiveTab] = useState("profile");
+
   const translations = [
     { value: "ESV", label: "English Standard Version" },
     { value: "NIV", label: "New International Version" },
@@ -71,6 +85,19 @@ const Profile = () => {
     { value: "NASB", label: "New American Standard Bible" },
     { value: "NLT", label: "New Living Translation" },
     { value: "NKJV", label: "New King James Version" }
+  ];
+
+  const aiModes = [
+    { value: "chat", label: "💬 AI Chat" },
+    { value: "verse", label: "📖 Verse Analysis" },
+    { value: "parable", label: "🌱 Parables" },
+    { value: "character", label: "👤 Bible Characters" },
+    { value: "qa", label: "❓ Quick Q&A" }
+  ];
+
+  const languages = [
+    { value: "english", label: "English" },
+    { value: "tamil", label: "Tamil" }
   ];
 
   useEffect(() => {
@@ -257,8 +284,8 @@ const Profile = () => {
               <User className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-              <p className="text-gray-600">Manage your account and spiritual preferences</p>
+              <h1 className="text-2xl font-bold text-gray-900">Profile & Settings</h1>
+              <p className="text-gray-600">Manage your account, preferences, and spiritual settings</p>
             </div>
           </div>
         <div className="flex flex-wrap gap-3">
@@ -279,6 +306,22 @@ const Profile = () => {
 
       {/* Main Content */}
       <div className="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto">
+        
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab Content */}
+          <TabsContent value="profile" className="space-y-6">
         {/* Profile Card */}
         <Card className="mb-4 sm:mb-6">
           <CardHeader className="pb-4 sm:pb-6">
@@ -593,6 +636,146 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+
+          {/* Settings Tab Content */}
+          <TabsContent value="settings" className="space-y-6">
+            
+            {/* Reading Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Type className="h-5 w-5 text-blue-600" />
+                  Reading Preferences
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Font Size: {fontSize}px
+                  </label>
+                  <input
+                    type="range"
+                    min="12"
+                    max="24"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Line Height: {lineHeight}
+                  </label>
+                  <input
+                    type="range"
+                    min="1.2"
+                    max="2.0"
+                    step="0.1"
+                    value={lineHeight}
+                    onChange={(e) => setLineHeight(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Show Verse Numbers</label>
+                    <p className="text-xs text-gray-500">Display verse numbers when reading</p>
+                  </div>
+                  <Switch checked={showVerseNumbers} onCheckedChange={setShowVerseNumbers} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* AI Chat Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-orange-600" />
+                  AI Chat Preferences
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Default AI Mode</label>
+                  <Select value={defaultAIMode} onValueChange={setDefaultAIMode}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {aiModes.map((mode) => (
+                        <SelectItem key={mode.value} value={mode.value}>
+                          {mode.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Default Language</label>
+                  <Select value={defaultLanguage} onValueChange={setDefaultLanguage}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map((lang) => (
+                        <SelectItem key={lang.value} value={lang.value}>
+                          {lang.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* App Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-purple-600" />
+                  App Preferences
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Push Notifications</label>
+                    <p className="text-xs text-gray-500">Receive daily verse and prayer reminders</p>
+                  </div>
+                  <Switch checked={notifications} onCheckedChange={setNotifications} />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Dark Mode</label>
+                    <p className="text-xs text-gray-500">Switch to dark theme</p>
+                  </div>
+                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Auto-Save</label>
+                    <p className="text-xs text-gray-500">Automatically save your work</p>
+                  </div>
+                  <Switch checked={autoSave} onCheckedChange={setAutoSave} />
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button onClick={saveProfile} disabled={loading} className="w-full">
+                    <Save className="h-4 w-4 mr-2" />
+                    Save All Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
     </ModernLayout>
