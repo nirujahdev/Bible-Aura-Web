@@ -10,32 +10,17 @@ interface ContextualLink {
 
 const contextualMappings: Record<string, ContextualLink[]> = {
   'bible study': [
-    { text: 'AI Bible Chat', href: '/bible-ai', type: 'internal', description: 'Ask AI questions about scripture' },
-    { text: 'Study Hub', href: '/study-hub', type: 'internal', description: 'Comprehensive Bible study tools' },
-    { text: 'Bible Characters', href: '/bible-characters', type: 'internal', description: 'Learn about Biblical figures' }
+    { text: 'Bible AI chat', href: '/bible-ai', type: 'internal', description: 'AI-powered Bible study assistant' },
+    { text: 'Study Hub', href: '/study-hub', type: 'internal', description: 'Advanced Bible study tools' },
+    { text: 'Bible reading', href: '/bible', type: 'internal', description: 'Read and study the Bible' },
+    { text: 'Bible journal', href: '/journal', type: 'internal', description: 'Personal Bible study journal' },
+    { text: 'Bible characters', href: '/bible-characters', type: 'internal', description: 'Learn about biblical figures' },
+    { text: 'Parables study', href: '/parables', type: 'internal', description: 'Deep dive into biblical parables' },
+    { text: 'Topical study', href: '/topical-study', type: 'internal', description: 'Study Bible by topics' },
+    { text: 'Sermon library', href: '/sermons', type: 'internal', description: 'Access sermon resources' }
   ],
-  'ai bible': [
-    { text: 'Bible AI features', href: '/bible-ai', type: 'internal', description: 'Explore AI-powered Bible tools' },
-    { text: 'AI Bible study guide', href: '/blog/how-ai-transforms-bible-study', type: 'internal', description: 'Complete guide to AI Bible study' },
-    { text: 'AI vs traditional study', href: '/blog/bible-ai-vs-traditional-study', type: 'internal', description: 'Compare study methods' }
-  ],
-  'bible chat': [
-    { text: 'Start AI Bible Chat', href: '/bible-ai', type: 'internal', description: 'Interactive Biblical Q&A' },
-    { text: 'AI chat features guide', href: '/blog/ai-bible-chat-features', type: 'internal', description: 'Master AI Bible chat tools' }
-  ],
-  'biblical insights': [
-    { text: 'AI Bible insights', href: '/bible-ai', type: 'internal', description: 'Get AI-powered Biblical understanding' },
-    { text: 'Bible study tools', href: '/bible', type: 'internal', description: 'Comprehensive scripture study' },
-    { text: 'Topical Bible study', href: '/study-hub', type: 'internal', description: 'Study by topics and themes' }
-  ],
-  'scripture': [
-    { text: 'Bible reading', href: '/bible', type: 'internal', description: 'Read Bible online with study tools' },
-    { text: 'Bible search', href: '/bible', type: 'internal', description: 'Search verses and passages' },
-    { text: 'Daily Bible verses', href: '/dashboard', type: 'internal', description: 'Get daily scripture inspiration' }
-  ],
-  'worship': [
-    { text: 'Christian songs', href: '/songs', type: 'internal', description: 'Collection of worship songs' },
-    { text: 'Bible-based worship', href: '/songs', type: 'internal', description: 'Scriptural worship resources' }
+  'daily devotion': [
+    { text: 'Daily verse', href: '/', type: 'internal', description: 'Get daily scripture inspiration' }
   ],
   'sermon': [
     { text: 'Sermon library', href: '/sermons', type: 'internal', description: 'Access sermon resources' },

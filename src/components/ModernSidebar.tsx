@@ -1,6 +1,6 @@
 import { 
   Plus, Home, Grid3X3, HelpCircle, Settings, User, MessageCircle, 
-  Book, Music, Users, Headphones, BookOpen, Mic, TreePine, Heart, FileText,
+  Book, Users, Headphones, BookOpen, Mic, TreePine, Heart, FileText,
   Star, LogOut, LogIn, LucideIcon, Menu, Search, Bookmark, PenTool, Library, MessageSquare, GraduationCap
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
@@ -55,11 +55,6 @@ const gridMenuItems: GridMenuItem[] = [
     isSpecial: true
   },
   {
-    label: "Songs",
-    icon: Music,
-    path: "/songs"
-  },
-  {
     label: "Sermons",
     icon: PenTool,
     path: "/sermons"
@@ -81,7 +76,7 @@ const sidebarTopItems: SidebarIconItem[] = [
 ]
 
 const sidebarBottomItems: SidebarIconItem[] = [
-  { icon: Settings, path: "/profile", tooltip: "Settings" }
+  { icon: Settings, path: "/profile", tooltip: "Profile & Settings" }
 ]
 
 // Define all navigation items for mobile
@@ -95,11 +90,6 @@ const allNavigationItems: NavigationItem[] = [
     title: "Bible",
     url: "/bible",
     icon: BookOpen,
-  },
-  {
-    title: "Songs",
-    url: "/songs",
-    icon: Music,
   },
   {
     title: "Study Hub",
@@ -128,7 +118,7 @@ const allNavigationItems: NavigationItem[] = [
     icon: PenTool,
   },
   {
-    title: "Profile",
+    title: "Profile & Settings",
     url: "/profile",
     icon: User,
   },
@@ -349,7 +339,6 @@ function MobileNavigationHeader() {
     { icon: BookOpen, path: "/bible", label: "Bible", description: "Read & study scripture" },
     { icon: Library, path: "/study-hub", label: "Study Hub", description: "Deep biblical study" },
     { icon: PenTool, path: "/journal", label: "Journal", description: "Personal reflections" },
-    { icon: Music, path: "/songs", label: "Songs", description: "Worship & praise" },
     { icon: Heart, path: "/favorites", label: "Favorites", description: "Saved content" },
   ]
 

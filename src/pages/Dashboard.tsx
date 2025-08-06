@@ -179,11 +179,11 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
     <ModernLayout>
       <div className="h-screen flex bg-gray-100">
         {/* Chat History Sidebar */}
-        <div className="w-80 bg-gray-800 text-white flex flex-col">
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-gray-700">
+          <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Chat History</h2>
+              <h2 className="text-lg font-semibold text-gray-900">AI Chat</h2>
               <Button 
                 onClick={createNewConversation}
                 size="sm"
@@ -201,17 +201,17 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
               {conversations.map((conv) => (
                 <div
                   key={conv.id}
-                  className={`group relative p-3 rounded cursor-pointer hover:bg-gray-700 transition-colors mb-1 ${
-                    activeConversation === conv.id ? 'bg-gray-700' : ''
+                  className={`group relative p-3 rounded cursor-pointer hover:bg-gray-50 transition-colors mb-1 ${
+                    activeConversation === conv.id ? 'bg-gray-100 border border-orange-200' : ''
                   }`}
                   onClick={() => setActiveConversation(conv.id)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">
+                      <p className="text-sm font-medium text-gray-900 truncate">
                         {conv.title}
                       </p>
-                      <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
                         <span>{conv.created_at}</span>
                         <span>{conv.messages.length} messages</span>
                       </div>
@@ -222,15 +222,15 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400 hover:text-gray-200"
+                          className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
                         >
                           <MoreVertical className="h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-gray-700 border-gray-600">
+                      <DropdownMenuContent align="end" className="bg-white border-gray-200">
                         <DropdownMenuItem 
                           onClick={() => deleteConversation(conv.id)}
-                          className="text-gray-200 hover:bg-gray-600"
+                          className="text-gray-700 hover:bg-gray-100"
                         >
                           Delete
                         </DropdownMenuItem>

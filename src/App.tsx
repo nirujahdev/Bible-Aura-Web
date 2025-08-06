@@ -25,7 +25,6 @@ import StudyHub from '@/pages/StudyHub';
 import Sermons from '@/pages/Sermons';
 import SermonWriter from '@/pages/SermonWriter';
 import EnhancedSermonHub from '@/pages/EnhancedSermonHub';
-import Songs from '@/pages/Songs';
 import Favorites from '@/pages/Favorites';
 import TopicalStudy from '@/pages/TopicalStudy';
 import ParablesStudy from '@/pages/ParablesStudy';
@@ -167,12 +166,6 @@ function App() {
                 <Route path="/enhanced-sermon-hub" element={
                   <ProtectedRoute>
                     <EnhancedSermonHub />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/songs" element={
-                  <ProtectedRoute>
-                    <Songs />
                   </ProtectedRoute>
                 } />
                 

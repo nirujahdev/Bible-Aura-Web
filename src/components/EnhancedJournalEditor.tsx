@@ -144,7 +144,37 @@ export function EnhancedJournalEditor({
     ...initialEntry
   });
 
+  // UI states
+  const [showSettings, setShowSettings] = useState(false);
+
   const [saving, setSaving] = useState(false);
+
+  // Constants
+  const CATEGORIES = [
+    { id: 'personal', name: 'Personal', icon: '📖' },
+    { id: 'study', name: 'Study', icon: '🔍' },
+    { id: 'prayer', name: 'Prayer', icon: '🙏' },
+  ];
+
+  const MOODS = [
+    { id: 'happy', name: 'Happy', icon: '😊' },
+    { id: 'sad', name: 'Sad', icon: '😢' },
+    { id: 'peaceful', name: 'Peaceful', icon: '😌' },
+  ];
+
+  // Helper getters and setters for entry properties
+  const title = entry.title || '';
+  const setTitle = (value: string) => setEntry(prev => ({ ...prev, title: value }));
+  const category = entry.category || 'personal';
+  const setCategory = (value: string) => setEntry(prev => ({ ...prev, category: value }));
+  const mood = entry.mood || null;
+  const setMood = (value: string) => setEntry(prev => ({ ...prev, mood: value }));
+
+  // Helper function for text formatting
+  const applyFormatting = (format: string) => {
+    // Simple formatting implementation
+    console.log('Apply formatting:', format);
+  };
   const [currentLanguage, setCurrentLanguage] = useState<'english' | 'tamil' | 'sinhala'>('english');
   
   // Writing stats
@@ -484,7 +514,7 @@ export function EnhancedJournalEditor({
               
               <Button
                 onClick={handleSave}
-                disabled={saving || !title.trim()}
+                disabled={saving || !entry.title?.trim()}
                 className="bg-orange-500 hover:bg-orange-600 text-white min-h-[44px] px-4 touch-optimized"
               >
                 {saving ? (
@@ -587,7 +617,7 @@ export function EnhancedJournalEditor({
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowBibleVerse(true)}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 min-h-[40px] px-3 touch-optimized"
+                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 min-h-[40px] px-3 touch-optimized"
                 >
                   <Quote className="h-4 w-4 mr-1" />
                   {isMobile ? 'Verse' : 'Add Bible Verse'}

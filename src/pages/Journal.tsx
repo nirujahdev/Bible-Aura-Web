@@ -138,7 +138,7 @@ const Journal = () => {
   const getMoodIcon = (mood: string | null) => {
     switch (mood) {
       case 'happy': return <Smile className="h-4 w-4 text-yellow-500" />;
-      case 'sad': return <Frown className="h-4 w-4 text-blue-500" />;
+              case 'sad': return <Frown className="h-4 w-4 text-orange-500" />;
       case 'peaceful': return <Sun className="h-4 w-4 text-orange-500" />;
       case 'anxious': return <Cloud className="h-4 w-4 text-gray-500" />;
       case 'grateful': return <Heart className="h-4 w-4 text-red-500" />;
@@ -216,7 +216,7 @@ const Journal = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
                   <PenTool className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -226,7 +226,7 @@ const Journal = () => {
               </div>
               <Button
                 onClick={handleNewEntry}
-                className="bg-green-500 hover:bg-green-600 h-9 w-9 p-0 rounded-xl"
+                className="bg-orange-500 hover:bg-orange-600 h-9 w-9 p-0 rounded-xl"
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -280,7 +280,7 @@ const Journal = () => {
                             {format(date, 'd')}
                           </span>
                           {hasEntries && (
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full"></div>
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full"></div>
                           )}
                         </div>
                       );
@@ -308,7 +308,7 @@ const Journal = () => {
                       <Button
                         onClick={handleNewEntry}
                         size="sm"
-                        className="bg-green-500 hover:bg-green-600"
+                        className="bg-orange-500 hover:bg-orange-600"
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         New Entry
@@ -383,7 +383,7 @@ const Journal = () => {
               <ScrollArea className="flex-1 p-3">
                 {loading ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin h-8 w-8 border-2 border-green-500 border-t-transparent rounded-full mx-auto"></div>
+                    <div className="animate-spin h-8 w-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
                     <p className="text-sm text-gray-500 mt-2">Loading entries...</p>
                   </div>
                 ) : filteredEntries.length === 0 ? (
@@ -395,7 +395,7 @@ const Journal = () => {
                     <Button
                       onClick={handleNewEntry}
                       size="sm"
-                      className="bg-green-500 hover:bg-green-600"
+                      className="bg-orange-500 hover:bg-orange-600"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       New Entry
@@ -455,7 +455,7 @@ const Journal = () => {
               </p>
               <Button
                 onClick={handleNewEntry}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 text-base"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 text-base"
               >
                 <Plus className="h-5 w-5 mr-2" />
                 Start Writing

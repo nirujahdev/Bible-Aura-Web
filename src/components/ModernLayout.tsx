@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  MessageCircle, BookOpen, Music, BarChart3, 
+  MessageCircle, BookOpen, BarChart3, 
   Heart, FileText, User, Settings,
   Headphones, Home
 } from 'lucide-react';
@@ -24,11 +24,10 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: () => <span className="text-2xl font-bold">✦</span>, tooltip: 'AI Chat Dashboard' },
+  { name: 'Dashboard', href: '/dashboard', icon: () => <span className="text-2xl font-bold">✦</span>, tooltip: 'AI Chat' },
   { name: 'Chat', href: '/bible-ai', icon: MessageCircle, tooltip: 'AI Bible Chat' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
-  { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
-  { name: 'Profile', href: '/profile', icon: User, tooltip: 'User Profile' },
+  { name: 'Profile', href: '/profile', icon: User, tooltip: 'Profile & Settings' },
   { name: 'Analytics', href: '/study-hub', icon: BarChart3, tooltip: 'Study Hub' },
   { name: 'Sermons', href: '/sermons', icon: Headphones, tooltip: 'Sermons' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
