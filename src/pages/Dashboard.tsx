@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Send, Plus, MoreVertical, Settings, MessageCircle, Filter,
-  Languages, BookOpen
+  Languages, BookOpen, Bot
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
@@ -29,7 +30,19 @@ interface Conversation {
   title: string;
   messages: Message[];
   created_at: string;
+  mode?: string;
+  language?: string;
+  translation?: string;
 }
+
+// AI Chat modes
+const CHAT_MODES = [
+  { id: 'aichat', name: '💬 AI Chat', description: 'General Bible discussion' },
+  { id: 'verse', name: '📖 Verse Analysis', description: 'Deep verse study' },
+  { id: 'parables', name: '📚 Parables', description: 'Parable explanations' },
+  { id: 'characters', name: '👥 Characters', description: 'Biblical character study' },
+  { id: 'qa', name: '❓ Q&A', description: 'Question & Answer format' },
+];
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
@@ -47,70 +60,104 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
-  // State management
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: '1',
-      title: 'What does John 3:16 mean',
-      messages: [
-        {
-          id: '1',
-          role: 'user',
-          content: 'What does John 3:16 mean',
-          timestamp: 'Aug 3, 1:10 AM'
-        },
-        {
-          id: '2',
-          role: 'assistant',
-          content: `"For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life." (John 3:16)
-
-This verse is often called the "Gospel in a nutshell" because it contains the essence of Christian faith:
-
-**God's Love**: Shows the depth of God's love for humanity
-**God's Gift**: Jesus Christ is God's ultimate gift to us
-**Belief**: Faith in Jesus is the requirement for salvation
-**Eternal Promise**: Believers receive eternal life, not condemnation
-
-This verse demonstrates that salvation is available to everyone ("whoever believes") and is a free gift from God, not something we can earn.`,
-          timestamp: 'Aug 3, 1:10 AM'
-        }
-      ],
-      created_at: 'Aug 3, 1:10 AM'
-    }
-  ]);
-  
-  const [activeConversation, setActiveConversation] = useState<string>('1');
+  // State management - Start with empty conversations
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguage] = useState('English');
   const [translation, setTranslation] = useState('KJV King James');
   const [cleanMode, setCleanMode] = useState(false);
+  const [chatMode, setChatMode] = useState('aichat');
 
   const getUserName = () => {
-    if (profile?.display_name) return profile.display_name.split(' ')[0];
+    if (profile?.display_name) return profile.display_name;
     if (user?.email) return user.email.split('@')[0];
-    return 'Benaiah';
+    return 'User';
   };
 
-  const currentConversation = conversations.find(c => c.id === activeConversation);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // Load user conversations from Supabase
   useEffect(() => {
-    scrollToBottom();
-  }, [currentConversation?.messages]);
+    if (user) {
+      loadUserConversations();
+    }
+  }, [user]);
 
-  const createNewConversation = () => {
+  const loadUserConversations = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('ai_conversations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedConversations: Conversation[] = (data || []).map(conv => ({
+        id: conv.id,
+        title: conv.title,
+        messages: Array.isArray(conv.messages) ? conv.messages : [],
+        created_at: new Date(conv.created_at).toLocaleDateString(),
+        mode: conv.mode || 'aichat',
+        language: conv.language || 'English',
+        translation: conv.translation || 'KJV'
+      }));
+
+      setConversations(formattedConversations);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load conversation history",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const createNewChat = async () => {
+    if (!user) return;
+
     const newConversation: Conversation = {
       id: Date.now().toString(),
-      title: 'New Conversation',
+      title: 'New Chat',
       messages: [],
-      created_at: new Date().toLocaleString()
+      created_at: new Date().toLocaleDateString(),
+      mode: chatMode,
+      language: language,
+      translation: translation
     };
-    setConversations(prev => [newConversation, ...prev]);
-    setActiveConversation(newConversation.id);
+
+    try {
+      const { data, error } = await supabase
+        .from('ai_conversations')
+        .insert({
+          user_id: user.id,
+          title: newConversation.title,
+          messages: [],
+          mode: chatMode,
+          language: language,
+          translation: translation,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      newConversation.id = data.id;
+      setConversations([newConversation, ...conversations]);
+      setActiveConversation(data.id);
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create new chat",
+        variant: "destructive"
+      });
+    }
   };
 
   const sendMessage = async (messageText?: string) => {
@@ -182,7 +229,7 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">AI Chat</h2>
               <Button 
-                onClick={createNewConversation}
+                onClick={createNewChat}
                 size="sm"
                 className="bg-orange-500 hover:bg-orange-600 text-white h-8 px-3 rounded"
               >
@@ -257,35 +304,22 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
 
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto bg-gray-50">
-            {currentConversation?.messages.length === 0 ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center max-w-2xl mx-auto p-8">
-                  <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-3xl font-bold text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]">✦</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Hello {getUserName()}!
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    How can I assist you with your biblical studies today?
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                    {suggestionQuestions.map((question, index) => (
-                      <Button 
-                        key={index}
-                        variant="outline" 
-                        className="p-4 h-auto text-left border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-orange-300"
-                        onClick={() => sendMessage(question)}
-                      >
-                        {question}
-                      </Button>
-                    ))}
+            {activeConversation ? (
+              conversations.find(c => c.id === activeConversation)?.messages.length === 0 ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center max-w-2xl mx-auto p-8">
+                    <Bot className="w-16 h-16 text-orange-500 mx-auto mb-6" />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                      Hello {getUserName()}!
+                    </h2>
+                    <p className="text-gray-600 mb-8">
+                      I'm your Bible Aura AI assistant. Start a conversation by typing your question below.
+                    </p>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="max-w-4xl mx-auto p-6 space-y-6">
-                {currentConversation?.messages.map((msg) => (
+              ) : (
+                <div className="max-w-4xl mx-auto p-6 space-y-6">
+                {conversations.find(c => c.id === activeConversation)?.messages.map((msg) => (
                   <div 
                     key={msg.id} 
                     className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -387,12 +421,16 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
             
             {/* Message Input */}
             <div className="flex gap-3">
-              <Select defaultValue="AI Chat">
-                <SelectTrigger className="w-32">
+              <Select value={chatMode} onValueChange={setChatMode}>
+                <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="AI Chat">AI Chat</SelectItem>
+                  {CHAT_MODES.map((mode) => (
+                    <SelectItem key={mode.id} value={mode.id}>
+                      {mode.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               
@@ -400,8 +438,9 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
                 <Input
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask me anything about the Bible... (AI Chat)"
+                  placeholder={`Ask me anything about the Bible... (${CHAT_MODES.find(m => m.id === chatMode)?.name || 'AI Chat'})`}
                   className="pr-12 h-12"
+                  disabled={!activeConversation}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -411,7 +450,7 @@ This verse demonstrates that salvation is available to everyone ("whoever believ
                 />
                 <Button 
                   onClick={() => sendMessage()}
-                  disabled={!message.trim() || isLoading}
+                  disabled={!message.trim() || isLoading || !activeConversation}
                   className="absolute right-2 top-2 bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0 rounded"
                 >
                   <Send className="h-4 w-4" />
