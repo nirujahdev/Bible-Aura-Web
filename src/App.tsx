@@ -12,6 +12,7 @@ import Auth from '@/pages/Auth';
 import About from '@/pages/About';
 import Blog from '@/pages/Blog';
 import Pricing from '@/pages/Pricing';
+import Dashboard from '@/pages/Dashboard';
 
 // Import feature pages
 import BibleStudy from '@/pages/features/BibleStudy';
@@ -20,6 +21,9 @@ import PersonalTools from '@/pages/features/PersonalTools';
 import ContentCreation from '@/pages/features/ContentCreation';
 import LearningResources from '@/pages/features/LearningResources';
 import AdvancedStudy from '@/pages/features/AdvancedStudy';
+
+// Import components
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Create query client
 const queryClient = new QueryClient({
@@ -72,6 +76,13 @@ function App() {
                 <Route path="/features/learning-resources" element={<LearningResources />} />
                 <Route path="/features/advanced-study" element={<AdvancedStudy />} />
                 
+                {/* Protected routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                
                 {/* Placeholder routes for missing pages */}
                 <Route path="/features" element={<PlaceholderPage title="All Features" description="Explore all Bible Aura features in one place. Coming soon!" />} />
                 <Route path="/contact" element={<PlaceholderPage title="Contact Us" description="Get in touch with the Bible Aura team. Contact form coming soon!" />} />
@@ -79,7 +90,6 @@ function App() {
                 <Route path="/bible-ai" element={<PlaceholderPage title="Bible AI Chat" description="Chat with our AI Bible assistant. Coming soon!" />} />
                 <Route path="/bible-qa" element={<PlaceholderPage title="Bible Q&A" description="Ask questions about the Bible and get AI-powered answers. Coming soon!" />} />
                 <Route path="/journal" element={<PlaceholderPage title="Bible Journal" description="Keep a digital Bible journal with AI insights. Coming soon!" />} />
-                <Route path="/dashboard" element={<PlaceholderPage title="Study Dashboard" description="Your personal Bible study dashboard. Coming soon!" />} />
                 <Route path="/study-hub" element={<PlaceholderPage title="Study Hub" description="Comprehensive Bible study resources. Coming soon!" />} />
                 <Route path="/sermons" element={<PlaceholderPage title="Sermon Library" description="Browse our collection of inspiring sermons. Coming soon!" />} />
                 <Route path="/sermon-writer" element={<PlaceholderPage title="Sermon Writer" description="Create sermons with AI assistance. Coming soon!" />} />
