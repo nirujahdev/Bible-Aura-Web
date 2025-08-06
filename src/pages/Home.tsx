@@ -8,7 +8,7 @@ import {
 import { Link } from "react-router-dom";
 // import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks"; // COMMENTED OUT TO FIX ERRORS
 // import { ManualContextualLinks } from "@/components/ContextualLinks"; // COMMENTED OUT TO FIX ERRORS
-import Footer from "@/components/Footer";
+// import Footer from "@/components/Footer"; // COMMENTED OUT TO FIX ERRORS
 // import FAQ from "@/components/FAQ"; // COMMENTED OUT TO FIX ERRORS
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
@@ -487,7 +487,7 @@ const Home = () => {
         </div>
       </section>
 
-      <Footer />
+              {/* <Footer /> */}
     </div>
   );
 };
