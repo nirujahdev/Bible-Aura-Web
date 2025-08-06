@@ -74,43 +74,43 @@ interface Conversation {
 // Chat modes using the detailed JSON templates
 const CHAT_MODES = {
   chat: {
-    name: "AI Chat",
-    description: AI_RESPONSE_TEMPLATES.chat.purpose,
+    name: "💬 AI Chat",
+    description: "Conversational assistant for Bible questions and guidance",
     language: 'english',
     icon: MessageCircle,
     color: 'bg-orange-500'
   },
   verse: {
-    name: "Verse Study",
-    description: AI_RESPONSE_TEMPLATES.verse.purpose,
+    name: "📖 Verse Analysis",
+    description: "Deep structured analysis of specific Bible verses",
     language: 'english',
     icon: BookOpen,
     color: 'bg-blue-500'
   },
   qa: {
-    name: "Q&A",
-    description: AI_RESPONSE_TEMPLATES.qa.purpose,
+    name: "❓ Quick Q&A",
+    description: "Fast biblical answers with scripture support",
     language: 'english',
     icon: Brain,
     color: 'bg-purple-500'
   },
   parable: {
-    name: "Parables",
-    description: AI_RESPONSE_TEMPLATES.parable.purpose,
+    name: "🌱 Parables",
+    description: "Detailed explanation of Jesus' parables with applications",
     language: 'english',
     icon: Sparkles,
     color: 'bg-green-500'
   },
   character: {
-    name: "Characters",
-    description: AI_RESPONSE_TEMPLATES.character.purpose,
+    name: "👤 Bible Characters", 
+    description: "Comprehensive profiles of Biblical figures and their lessons",
     language: 'english',
     icon: User,
     color: 'bg-indigo-500'
   },
   topical: {
-    name: "Study",
-    description: AI_RESPONSE_TEMPLATES.topical.purpose,
+    name: "📚 Topic Study",
+    description: "In-depth study of Biblical topics and themes",
     language: 'english',
     icon: Target,
     color: 'bg-amber-500'
@@ -172,35 +172,100 @@ const callBiblicalAI = async (
 
     const basePrompt = generateSystemPrompt(mode);
     
-    const formatOverride = `
+    const enhancedInstructions = `
 
-CRITICAL FORMATTING OVERRIDE - FOLLOW EXACTLY:
-- Start responses with ✮ followed by main title
-- Put TWO line breaks after the title
-- Each section starts with ↗ followed by section name
-- Put ONE line break after section header
-- Each bullet point starts with • followed by content
-- Put ONE line break after each bullet point  
-- Put TWO line breaks between sections
-- NO emojis like 📖 🎯 ✝️ etc.
-- NO hashtags, asterisks, or markdown symbols (#*@$_)
+DEEPSEEK AI - BIBLE ACCURACY REQUIREMENTS:
+- Use ${translation} Bible translation for ALL verse references
+- Base information ONLY on biblical sources and orthodox interpretation
+- Include specific biblical references with chapter:verse format
+- Maintain theological accuracy and biblical authority
+- NO modern speculation or non-biblical theories
 
-EXACT FORMAT TO FOLLOW:
-✮ MAIN TITLE
+${mode === 'verse' ? `
+VERSE ANALYSIS FORMAT (Follow this structure exactly):
+✮ [VERSE REFERENCE] ANALYSIS
 
-↗ Section Name
-• First point here
-• Second point here
+↗ Verse
+• Complete verse text with biblical reference and translation
+• Key terms: Define difficult Hebrew/Greek words with meanings
+• Important phrases and their theological significance
 
-↗ Another Section
-• Another point here
-• Final point here
+↗ Historical Context  
+• Original author and intended audience from Scripture
+• Cultural and historical background from biblical sources only
+• Time period and circumstances of writing
 
-${language === 'tamil' ? 'Respond in Tamil language using Tamil script.' : 'Respond in English.'}
-Use ${translation} Bible translation for all verse references.
+↗ Theological Doctrine
+• Key biblical doctrines and principles taught
+• Connection to fundamental Christian beliefs
+• How this verse supports biblical theology
+
+↗ Cross Reference
+• 3-4 related Bible verses with complete chapter:verse references
+• Clear explanation of how each verse connects to the main passage
+• Include both Old and New Testament connections where relevant
+
+↗ Summary
+• Core spiritual message in clear, simple language
+• Practical application for believers based on biblical principles
+• How this verse encourages faith and guides Christian living
+` : mode === 'character' ? `
+CHARACTER PROFILE FORMAT:
+✮ [CHARACTER NAME] - BIBLICAL PROFILE
+
+↗ Basic Information
+• Full biblical name, meaning, and pronunciation
+• Time period, location, and historical context
+• Family lineage and tribal/national background
+
+↗ Biblical Account
+• Key Scripture passages where they appear
+• Major events, accomplishments, and failures
+• Their role in God's redemptive plan and biblical history
+
+↗ Character Analysis
+• Strengths, gifts, and godly qualities demonstrated
+• Areas of weakness, sin, or spiritual struggles
+• Character growth and lessons learned through trials
+
+↗ Spiritual Significance
+• What their life teaches about faith, obedience, and trust in God
+• Biblical principles and truths demonstrated through their example
+• Practical lessons for modern Christians from their story
+` : mode === 'parable' ? `
+PARABLE EXPLANATION FORMAT:
+✮ THE PARABLE OF [PARABLE NAME]
+
+↗ The Story
+• Brief, accurate retelling of the parable from Scripture
+• Key characters, setting, and sequence of events
+• The outcome or conclusion of the parable
+
+↗ Context & Audience
+• Who Jesus was teaching and why (from Gospel context)
+• What prompted Jesus to tell this specific parable
+• Cultural background necessary to understand the story
+
+↗ Spiritual Truth
+• The main spiritual lesson Jesus intended to teach
+• Connection to Kingdom of Heaven themes and principles
+• Core biblical message and theological significance
+
+↗ Modern Application
+• How this truth applies to Christians today
+• Practical ways to live out this biblical principle
+• Contemporary examples that illustrate the same truth
+` : `
+CONVERSATIONAL BIBLE CHAT:
+- Provide warm, helpful biblical guidance
+- Include relevant Scripture references with chapter:verse
+- Keep responses encouraging and practical
+- Use clear, accessible language while being theologically sound`}
+
+${language === 'tamil' ? 'LANGUAGE: Respond in Tamil using Tamil script.' : 'LANGUAGE: Respond in English.'}
 `;
 
-    const systemPrompt = `${basePrompt}${formatOverride}`;
+    const systemPrompt = `${basePrompt}${enhancedInstructions}`;
 
     const requestBody = {
       model: 'deepseek-chat',
@@ -208,8 +273,11 @@ Use ${translation} Bible translation for all verse references.
         { role: 'system', content: systemPrompt },
         ...messages
       ],
-      max_tokens: 1000,
-      temperature: 0.7,
+      max_tokens: mode === 'verse' || mode === 'character' || mode === 'parable' || mode === 'topical' ? 1500 : 800,
+      temperature: 0.2, // Lower temperature for more consistent, structured formatting
+      top_p: 0.9,
+      frequency_penalty: 0.1,
+      presence_penalty: 0.1,
       stream: false
     };
 
