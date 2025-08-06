@@ -141,26 +141,31 @@ try {
         display: flex; 
         align-items: center; 
         justify-content: center;
-        font-family: system-ui, -apple-system, sans-serif;
-        background: white;
-        color: #333;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        background: #ffffff;
+        color: #1f2937;
+        margin: 0;
+        padding: 1rem;
       ">
-        <div style="text-align: center; padding: 2rem;">
-          <h1 style="color: #f85700; margin-bottom: 1rem;">✦Bible Aura</h1>
-          <p>Unable to load the application. Please refresh the page.</p>
+        <div style="text-align: center; max-width: 400px;">
+          <h1 style="color: #f97316; margin: 0 0 1rem 0; font-size: 2rem; font-weight: 700;">✦Bible Aura</h1>
+          <p style="margin: 0 0 1.5rem 0; color: #6b7280; line-height: 1.5;">Unable to load the application. Please check your internet connection and try again.</p>
           <button 
             onclick="window.location.reload()" 
             style="
-              background: #f85700; 
+              background: #f97316; 
               color: white; 
               border: none; 
-              padding: 0.5rem 1rem; 
+              padding: 0.75rem 1.5rem; 
               border-radius: 0.5rem; 
-              margin-top: 1rem;
+              font-size: 1rem;
               cursor: pointer;
+              transition: background-color 0.2s;
             "
+            onmouseover="this.style.backgroundColor='#ea580c'"
+            onmouseout="this.style.backgroundColor='#f97316'"
           >
-            Refresh Page
+            Reload Application
           </button>
         </div>
       </div>

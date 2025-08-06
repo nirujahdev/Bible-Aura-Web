@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
@@ -17,21 +17,41 @@ const Home = () => {
   // SEO optimization
   useSEO(SEO_CONFIG.HOME);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Ensure component loads properly to prevent white screens
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show minimal loading state to prevent white screen
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading Bible Aura...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background w-full">
       {/* Global Navigation */}
       <GlobalNavigation variant="landing" />
 
-      {/* Hero Section - Optimized for Laptop View */}
-      <section className="relative py-12 md:py-16 lg:py-20 px-4 md:px-6 lg:px-10 bg-gradient-to-br from-gray-50 via-white to-orange-50 overflow-hidden pt-24 md:pt-28 lg:pt-32">
+      {/* Hero Section - Enhanced Mobile Optimization */}
+      <section className="relative py-8 md:py-12 lg:py-16 xl:py-20 px-4 md:px-6 lg:px-10 bg-gradient-to-br from-gray-50 via-white to-orange-50 overflow-hidden pt-20 md:pt-24 lg:pt-28 xl:pt-32">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-32 md:w-48 lg:w-64 h-32 md:h-48 lg:h-64 bg-orange-400/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-48 md:w-64 lg:w-80 h-48 md:h-64 lg:h-80 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-24 md:w-32 lg:w-48 xl:w-64 h-24 md:h-32 lg:h-48 xl:h-64 bg-orange-400/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-32 md:w-48 lg:w-64 xl:w-80 h-32 md:h-48 lg:h-64 xl:h-80 bg-yellow-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
           
-          {/* Floating icons - Subtle animations */}
+          {/* Floating icons - Hidden on mobile for performance */}
           <div className="hidden lg:block absolute top-20 left-20 text-orange-400/20 animate-pulse">
             <Sparkles className="h-6 w-6" />
           </div>
@@ -40,13 +60,13 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="relative w-full max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left Side - Content - Optimized Sizing */}
-            <div className="text-center lg:text-left flex flex-col justify-center order-1 space-y-4 md:space-y-6 lg:space-y-8">
-              {/* Header Icon - No jumping */}
-              <div className="inline-flex items-center justify-center w-12 md:w-14 lg:w-16 h-12 md:h-14 lg:h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mx-auto lg:mx-0 shadow-lg">
-                <Sparkles className="h-6 md:h-7 lg:h-8 w-6 md:w-7 lg:w-8" />
+        <div className="relative w-full max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 items-center">
+            {/* Left Side - Content - Enhanced Mobile Sizing */}
+            <div className="text-center lg:text-left flex flex-col justify-center order-2 lg:order-1 space-y-3 md:space-y-4 lg:space-y-6 xl:space-y-8">
+              {/* Header Icon - Responsive sizing */}
+              <div className="inline-flex items-center justify-center w-10 md:w-12 lg:w-14 xl:w-16 h-10 md:h-12 lg:h-14 xl:h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mx-auto lg:mx-0 shadow-lg">
+                <Sparkles className="h-5 md:h-6 lg:h-7 xl:h-8 w-5 md:w-6 lg:w-7 xl:w-8" />
               </div>
 
               {/* Main Title - Better proportions */}
@@ -545,7 +565,7 @@ const Home = () => {
       {/* SEO Content */}
       <SEOBacklinks currentPage="/" category="general" />
       <QuickActionSEOLinks />
-      <ManualContextualLinks />
+              <ManualContextualLinks context="general" />
 
       <Footer />
     </div>

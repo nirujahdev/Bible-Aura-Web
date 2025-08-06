@@ -47,91 +47,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     console.log('🔐 Auth initialization started');
     
-    // Faster loading timeout
-    const loadingTimeout = setTimeout(() => {
-      if (isMounted && !initialized) {
-        console.log('⏰ Auth loading timeout reached, setting loading to false');
+    // Faster loading timeout to prevent white screens
+    const initTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.log('⚡ Auth initialization timeout - setting loading to false');
         setLoading(false);
         setInitialized(true);
       }
-    }, 3000); // Reduced from 5000ms to 3000ms
+    }, 2000); // Reduced from default to prevent long white screens
 
     const initializeAuth = async () => {
       try {
-        if (typeof window === 'undefined') {
-          console.log('Server-side render, skipping auth initialization');
-          if (isMounted) {
-            setLoading(false);
-            setInitialized(true);
-          }
-          return;
-        }
-
-        // Check for URL-based auth first (magic links, OAuth callbacks)
-        const urlHash = window.location.hash;
-        const urlSearch = window.location.search;
-        const hasAuthParams = urlHash.includes('access_token') || 
-                             urlHash.includes('refresh_token') ||
-                             urlSearch.includes('token_hash') ||
-                             urlSearch.includes('type=');
-
-        if (hasAuthParams) {
-          console.log('Auth parameters detected in URL, waiting for Supabase to process...');
-          // Wait a bit longer for URL-based auth to complete
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-
-        // Get current session with timeout
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session check timeout')), 4000)
-        );
-
-        const { data: { session }, error: sessionError } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any;
+        // Get initial session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('Session error:', sessionError);
+          console.error('❌ Session error:', sessionError);
           if (isMounted) {
-            clearTimeout(loadingTimeout);
             setLoading(false);
             setInitialized(true);
-            setSession(null);
-            setUser(null);
-            setProfile(null);
           }
           return;
         }
 
-        if (isMounted) {
-          clearTimeout(loadingTimeout);
-          console.log('Session found:', !!session);
+        if (session?.user && isMounted) {
+          console.log('✅ User found in session:', session.user.email);
+          setUser(session.user);
           setSession(session);
-          setUser(session?.user ?? null);
           
-          if (session?.user) {
-            // Fetch profile asynchronously
-            fetchUserProfile(session.user.id).catch(error => {
-              console.error('Profile fetch error:', error);
-            });
-          } else {
-            setProfile(null);
-          }
-          
+          // Load profile
+          await loadUserProfile(session.user.id);
+        } else {
+          console.log('ℹ️ No active session found');
+        }
+        
+        if (isMounted) {
           setLoading(false);
           setInitialized(true);
         }
+        
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('❌ Auth initialization error:', error);
         if (isMounted) {
-          clearTimeout(loadingTimeout);
           setLoading(false);
           setInitialized(true);
-          setSession(null);
-          setUser(null);
-          setProfile(null);
         }
       }
     };
@@ -145,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('Auth state change:', event, !!session);
           
           try {
-            clearTimeout(loadingTimeout);
+            clearTimeout(initTimeout); // Clear the new timeout
             
             // Handle different auth events
             if (event === 'SIGNED_IN') {
@@ -154,9 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(session?.user ?? null);
               
               if (session?.user) {
-                fetchUserProfile(session.user.id).catch(error => {
-                  console.error('Profile fetch error in sign in:', error);
-                });
+                await loadUserProfile(session.user.id);
               }
             } else if (event === 'SIGNED_OUT') {
               console.log('User signed out');
@@ -173,9 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(session?.user ?? null);
               
               if (session?.user && !profile) {
-                fetchUserProfile(session.user.id).catch(error => {
-                  console.error('Profile fetch error in auth state change:', error);
-                });
+                await loadUserProfile(session.user.id);
               } else if (!session) {
                 setProfile(null);
               }
@@ -198,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Auth listener setup error:', error);
       if (isMounted) {
-        clearTimeout(loadingTimeout);
+        clearTimeout(initTimeout);
         setLoading(false);
         setInitialized(true);
       }
@@ -216,11 +171,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error('Error unsubscribing from auth:', error);
         }
       }
-      clearTimeout(loadingTimeout);
+      clearTimeout(initTimeout);
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  const loadUserProfile = async (userId: string) => {
     try {
       if (!userId || typeof window === 'undefined') {
         return;
@@ -543,7 +498,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       } else {
         // Refresh profile data
-        await fetchUserProfile(user.id);
+        await loadUserProfile(user.id);
         toast({
           title: "Profile updated",
           description: "Your profile has been successfully updated.",

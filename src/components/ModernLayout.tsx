@@ -21,17 +21,18 @@ interface SidebarItem {
   name: string;
   href: string;
   icon: any;
-  tooltip: string;
+  tooltip?: string;
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: 'AI Chat', href: '/ai-chat', icon: MessageCircle, tooltip: 'AI Bible Chat Assistant' },
+  { name: 'Dashboard', href: '/dashboard', icon: Home, tooltip: 'Dashboard Overview' },
+  { name: 'AI Chat', href: '/bible-ai', icon: MessageCircle, tooltip: 'AI Bible Chat Assistant' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
-  { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
   { name: 'Study Hub', href: '/study-hub', icon: Library, tooltip: 'Study Hub - Q&A, Sermons, Parables & Bible Characters' },
-  { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermons' },
-  { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
-  { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
+  { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Personal Journal' },
+  { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermon Library' },
+  { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
+  { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Your Favorites' },
 ];
 
 export function ModernLayout({ children }: ModernLayoutProps) {

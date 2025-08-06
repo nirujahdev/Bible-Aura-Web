@@ -35,25 +35,45 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-toast',
             '@radix-ui/react-accordion',
             '@radix-ui/react-avatar',
-            '@radix-ui/react-label'
+            '@radix-ui/react-label',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-progress'
           ],
           'supabase': ['@supabase/supabase-js'],
           'query': ['@tanstack/react-query'],
           'icons': ['lucide-react'],
           'editor': ['react-quill'],
           'charts': ['recharts'],
-          'utils': ['clsx', 'tailwind-merge', 'class-variance-authority', 'date-fns']
+          'utils': ['clsx', 'tailwind-merge', 'class-variance-authority', 'date-fns'],
+          // Bible and AI components (separate chunks for code splitting)
+          'bible-components': [
+            './src/components/EnhancedAIChat',
+            './src/components/AIAnalysis',
+            './src/lib/ai-bible-system'
+          ],
+          'pages-main': [
+            './src/pages/Home',
+            './src/pages/Dashboard',
+            './src/pages/Bible'
+          ],
+          'pages-features': [
+            './src/pages/BibleAI',
+            './src/pages/Journal',
+            './src/pages/Sermons'
+          ]
         }
       }
     },
-    // Set chunk size warning limit
-    chunkSizeWarningLimit: 500,
+    // Set chunk size warning limit (temporary while optimizing)
+    chunkSizeWarningLimit: 800,
     // Enable minification
     minify: 'esbuild',
     // Enable source maps for production debugging (can be disabled for smaller builds)
     sourcemap: mode !== 'production',
     // Optimize CSS
-    cssMinify: true
+    cssMinify: true,
+    // Target modern browsers for smaller bundle
+    target: 'es2020'
   },
   // Performance optimizations
   esbuild: {

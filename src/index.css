@@ -23,11 +23,31 @@ Simple, Clean Design Philosophy
     -ms-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Prevent white screen by ensuring html always has background */
+    background-color: #ffffff;
+    min-height: 100%;
   }
   
   body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: none;
+    /* Prevent white screen by ensuring body always has background */
+    background-color: #ffffff;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Root element should always fill the screen */
+  #root {
+    min-height: 100vh;
+    background-color: #ffffff;
+  }
+
+  /* App wrapper should always have background */
+  .App {
+    min-height: 100vh;
+    background-color: #ffffff;
   }
   
   /* Mobile-first responsive improvements */

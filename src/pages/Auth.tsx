@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { hasDevicePreference } from '@/lib/devicePreferences';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Eye, 
   EyeOff, 
@@ -403,7 +404,7 @@ export default function Auth() {
       setFormErrors({});
 
       // Use supabase client directly since we're in a reset flow
-      const { supabase } = await import('@/integrations/supabase/client');
+      // supabase is now imported statically at the top
       
       const { error } = await supabase.auth.updateUser({
         password: newPassword

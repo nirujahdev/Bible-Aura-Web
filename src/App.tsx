@@ -1,56 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-// import { ModernLayout } from '@/components/ModernLayout'; // REMOVED - CAUSING ERRORS
+import { ModernLayout } from '@/components/ModernLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
-// import SmartRedirect from '@/components/SmartRedirect'; // REMOVED - NOT USED
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/hooks/useAuth';
+import LoadingScreen from '@/components/LoadingScreen';
 
-// Pages
+// Immediate load pages (small and frequently accessed)
 import Home from '@/pages/Home';
 import About from '@/pages/About';
 import Features from '@/pages/Features';
 import Pricing from '@/pages/Pricing';
-// import Contact from '@/pages/Contact'; // REMOVED - not in original navigation
 import Auth from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
-import Bible from '@/pages/Bible';
-import BibleAI from '@/pages/BibleAI';
-import BibleQA from '@/pages/BibleQA';
-import Journal from '@/pages/Journal';
-import StudyHub from '@/pages/StudyHub';
-import TopicalStudy from '@/pages/TopicalStudy';
-import ParablesStudy from '@/pages/ParablesStudy';
-import Sermons from '@/pages/Sermons';
-import SermonWriter from '@/pages/SermonWriter';
-import SermonLibrary from '@/pages/SermonLibrary';
-import Songs from '@/pages/Songs';
-import Favorites from '@/pages/Favorites';
-import Profile from '@/pages/Profile';
-import Blog from '@/pages/Blog';
 import NotFound from '@/pages/NotFound';
-import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
-import SubscriptionCancelled from '@/pages/SubscriptionCancelled';
 
-// Feature pages
-import AIFeatures from '@/pages/features/AIFeatures';
-import BibleStudy from '@/pages/features/BibleStudy';
-import PersonalTools from '@/pages/features/PersonalTools';
-import ContentCreation from '@/pages/features/ContentCreation';
-import LearningResources from '@/pages/features/LearningResources';
-import AdvancedStudy from '@/pages/features/AdvancedStudy';
+// Lazy load pages (heavy or less frequently accessed)
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Bible = lazy(() => import('@/pages/Bible'));
+const BibleAI = lazy(() => import('@/pages/BibleAI'));
+const BibleQA = lazy(() => import('@/pages/BibleQA'));
+const Journal = lazy(() => import('@/pages/Journal'));
+const StudyHub = lazy(() => import('@/pages/StudyHub'));
+const TopicalStudy = lazy(() => import('@/pages/TopicalStudy'));
+const ParablesStudy = lazy(() => import('@/pages/ParablesStudy'));
+const Sermons = lazy(() => import('@/pages/Sermons'));
+const SermonWriter = lazy(() => import('@/pages/SermonWriter'));
+const SermonLibrary = lazy(() => import('@/pages/SermonLibrary'));
+const Songs = lazy(() => import('@/pages/Songs'));
+const Favorites = lazy(() => import('@/pages/Favorites'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const Blog = lazy(() => import('@/pages/Blog'));
+const EnhancedBible = lazy(() => import('@/pages/EnhancedBible'));
+const EnhancedSermonHub = lazy(() => import('@/pages/EnhancedSermonHub'));
+const SubscriptionSuccess = lazy(() => import('@/pages/SubscriptionSuccess'));
+const SubscriptionCancelled = lazy(() => import('@/pages/SubscriptionCancelled'));
 
-// Blog posts
-import HowAITransformsBibleStudy from '@/pages/blog/HowAITransformsBibleStudy';
-import BibleStudyAIBenefits from '@/pages/blog/BibleStudyAIBenefits';
-import AIBibleInsightsAccuracy from '@/pages/blog/AIBibleInsightsAccuracy';
-import BibleAIVsTraditionalStudy from '@/pages/blog/BibleAIVsTraditionalStudy';
+// Feature pages (lazy loaded)
+const AIFeatures = lazy(() => import('@/pages/features/AIFeatures'));
+const BibleStudy = lazy(() => import('@/pages/features/BibleStudy'));
+const PersonalTools = lazy(() => import('@/pages/features/PersonalTools'));
+const ContentCreation = lazy(() => import('@/pages/features/ContentCreation'));
+const LearningResources = lazy(() => import('@/pages/features/LearningResources'));
+const AdvancedStudy = lazy(() => import('@/pages/features/AdvancedStudy'));
+
+// Blog posts (lazy loaded)
+const HowAITransformsBibleStudy = lazy(() => import('@/pages/blog/HowAITransformsBibleStudy'));
+const BibleStudyAIBenefits = lazy(() => import('@/pages/blog/BibleStudyAIBenefits'));
+const AIBibleInsightsAccuracy = lazy(() => import('@/pages/blog/AIBibleInsightsAccuracy'));
+const BibleAIVsTraditionalStudy = lazy(() => import('@/pages/blog/BibleAIVsTraditionalStudy'));
 
 import './App.css';
-import EnhancedBible from '@/pages/EnhancedBible';
-import EnhancedSermonHub from '@/pages/EnhancedSermonHub';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,42 +76,47 @@ const queryClient = new QueryClient({
 function App() {
   useEffect(() => {
     // App initialization complete
+    console.log('✦ Bible Aura App initialized successfully');
   }, []);
 
   return (
     <ErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
-        <Router>
-          <div className="App">
-            <Routes>
-              {/* Public routes - ModernLayout removed to fix errors */}
-              <Route path="/" element={
-                <ErrorBoundary>
-                  <Home />
-                </ErrorBoundary>
+          <Router>
+            <div className="App min-h-screen bg-background">
+              <Routes>
+                {/* Public routes - No layout wrapper for landing pages */}
+                <Route path="/" element={
+                  <ErrorBoundary>
+                    <Home />
+                  </ErrorBoundary>
+                } />
+                <Route path="/about" element={
+                  <ErrorBoundary>
+                    <About />
+                  </ErrorBoundary>
+                } />
+                <Route path="/features" element={
+                  <ErrorBoundary>
+                    <Features />
+                  </ErrorBoundary>
+                } />
+                <Route path="/pricing" element={
+                  <ErrorBoundary>
+                    <Pricing />
+                  </ErrorBoundary>
+                } />
+                <Route path="/auth" element={
+                  <ErrorBoundary>
+                    <Auth />
+                  </ErrorBoundary>
+                } />
+              <Route path="/blog" element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <Blog />
+                </Suspense>
               } />
-              <Route path="/about" element={
-                <ErrorBoundary>
-                  <About />
-                </ErrorBoundary>
-              } />
-              <Route path="/features" element={
-                <ErrorBoundary>
-                  <Features />
-                </ErrorBoundary>
-              } />
-              <Route path="/pricing" element={
-                <ErrorBoundary>
-                  <Pricing />
-                </ErrorBoundary>
-              } />
-              <Route path="/auth" element={
-                <ErrorBoundary>
-                  <Auth />
-                </ErrorBoundary>
-              } />
-              <Route path="/blog" element={<Blog />} />
               
               {/* Feature pages */}
               <Route path="/features/ai" element={
@@ -167,31 +173,57 @@ function App() {
                     </div>
                   </div>
                 }>
-                  <ProtectedRoute><Dashboard /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Suspense fallback={<LoadingScreen />}>
+                        <Dashboard />
+                      </Suspense>
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/bible" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><Bible /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Suspense fallback={<LoadingScreen />}>
+                        <Bible />
+                      </Suspense>
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/enhanced-bible" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><EnhancedBible /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <EnhancedBible />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/bible-ai" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><BibleAI /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Suspense fallback={<LoadingScreen />}>
+                        <BibleAI />
+                      </Suspense>
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/bible-qa" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><BibleQA /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <BibleQA />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
 
@@ -212,25 +244,43 @@ function App() {
                     </div>
                   </div>
                 }>
-                  <ProtectedRoute><Journal /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Suspense fallback={<LoadingScreen />}>
+                        <Journal />
+                      </Suspense>
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/study-hub" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><StudyHub /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <StudyHub />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/topical-study" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><TopicalStudy /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <TopicalStudy />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/parables" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><ParablesStudy /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <ParablesStudy />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
@@ -251,43 +301,73 @@ function App() {
                     </div>
                   </div>
                 }>
-                  <ProtectedRoute><Sermons /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Suspense fallback={<LoadingScreen />}>
+                        <Sermons />
+                      </Suspense>
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/sermon-writer" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><SermonWriter /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <SermonWriter />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/sermon-library" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><SermonLibrary /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <SermonLibrary />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/songs" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><Songs /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Songs />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/favorites" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><Favorites /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Favorites />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
               
               <Route path="/profile" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><Profile /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <Profile />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
 
               <Route path="/enhanced-sermon-hub" element={
                 <ErrorBoundary>
-                  <ProtectedRoute><EnhancedSermonHub /></ProtectedRoute>
+                  <ProtectedRoute>
+                    <ModernLayout>
+                      <EnhancedSermonHub />
+                    </ModernLayout>
+                  </ProtectedRoute>
                 </ErrorBoundary>
               } />
 

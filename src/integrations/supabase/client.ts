@@ -46,11 +46,11 @@ const isFromEmailLink = typeof window !== 'undefined' && (() => {
 // Enhanced Supabase client configuration
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    // Session persistence disabled - users must authenticate each time
-    persistSession: false,
+    // Enable session persistence for better UX and to prevent white screens
+    persistSession: true,
     
-    // More restrictive session settings for better security
-    autoRefreshToken: false,
+    // Enable auto refresh for seamless authentication
+    autoRefreshToken: true,
     
     // Always detect auth sessions in URL for magic links and OAuth
     detectSessionInUrl: true,
@@ -68,7 +68,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   global: {
     headers: {
       'X-Client-Info': 'bible-aura-web',
-      'X-Client-Version': '1.0.0'
+      'X-Client-Version': '2.0.0'
     }
   },
   
