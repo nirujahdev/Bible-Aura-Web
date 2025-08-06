@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => ({
               './src/pages/Bible'
             ],
           'pages-features': [
-            './src/pages/BibleAI',
+            './src/pages/BibleQA',
             './src/pages/Journal',
             './src/pages/Sermons'
           ]
