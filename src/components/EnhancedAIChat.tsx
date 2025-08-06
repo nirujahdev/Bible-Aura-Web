@@ -72,7 +72,7 @@ interface Conversation {
 }
 
 // Chat modes using the detailed JSON templates
-const CHAT_MODES = {
+export const CHAT_MODES = {
   chat: {
     name: "💬 AI Chat",
     description: "Conversational assistant for Bible questions and guidance",
@@ -115,10 +115,42 @@ const CHAT_MODES = {
     icon: Target,
     color: 'bg-amber-500'
   }
-};
+  };
 
-// Dashboard question cards
+// Dashboard question cards based on the image
 const QUICK_PROMPTS = [
+  {
+    id: 1,
+    text: "What does Romans 8:28 mean for my daily life?",
+    prompt: "What does Romans 8:28 mean for my daily life?",
+    icon: BookOpen,
+    color: "bg-blue-500"
+  },
+  {
+    id: 2,
+    text: "Explain the parable of the Good Samaritan",
+    prompt: "Explain the parable of the Good Samaritan",
+    icon: Heart,
+    color: "bg-green-500"
+  },
+  {
+    id: 3,
+    text: "What are the fruits of the Spirit?",
+    prompt: "What are the fruits of the Spirit?",
+    icon: Sparkles,
+    color: "bg-purple-500"
+  },
+  {
+    id: 4,
+    text: "How can I strengthen my faith during difficult times?",
+    prompt: "How can I strengthen my faith during difficult times?",
+    icon: Target,
+    color: "bg-amber-500"
+  }
+];
+
+// Backup prompts
+const BACKUP_PROMPTS = [
   {
     id: 1,
     text: "What does Romans 8:28 mean for my daily life?",
@@ -379,6 +411,9 @@ const EnhancedAIChat: React.FC = () => {
           .update({
             title,
             messages,
+            mode: currentMode,
+            language: currentLanguage,
+            translation: currentTranslation,
             updated_at: new Date().toISOString()
           })
           .eq('id', currentConversationId);
@@ -389,6 +424,9 @@ const EnhancedAIChat: React.FC = () => {
             user_id: user.id,
             title,
             messages,
+            mode: currentMode,
+            language: currentLanguage,
+            translation: currentTranslation,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -499,7 +537,11 @@ const EnhancedAIChat: React.FC = () => {
   };
 
   const isMobile = useIsMobile();
-  const [inputValue, setInputValue] = useState(input);
+  
+  // Initialize input state
+  useEffect(() => {
+    setInput(input);
+  }, [input]);
 
   return (
     <div className="flex flex-col h-full bg-gray-50 relative max-w-4xl mx-auto">
@@ -627,7 +669,7 @@ const EnhancedAIChat: React.FC = () => {
             {/* Header for Dashboard */}
             <div className="space-y-2 sm:space-y-3">
               <div className="text-4xl mb-4">✦</div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Hello benaiah!</h2>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Hello Benaiah!</h2>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 How can I assist you with your biblical studies today?
               </p>
@@ -640,7 +682,7 @@ const EnhancedAIChat: React.FC = () => {
                   key={prompt.id}
                   variant="outline"
                   onClick={() => {
-                    setInputValue(prompt.prompt);
+                    setInput(prompt.prompt);
                     setShowQuickPrompts(false);
                     handleSendMessage(prompt.prompt);
                   }}
@@ -671,8 +713,8 @@ const EnhancedAIChat: React.FC = () => {
                 className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 {message.role === 'assistant' && (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
                   </div>
                 )}
 
@@ -706,8 +748,8 @@ const EnhancedAIChat: React.FC = () => {
             
             {isLoading && (
               <div className="flex gap-2 sm:gap-3">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
-                  <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0 mt-1">
+                  <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
                 </div>
                 
                 <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
@@ -739,7 +781,7 @@ const EnhancedAIChat: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setInputValue(suggestion);
+                    setInput(suggestion);
                     handleSendMessage(suggestion);
                   }}
                   className="whitespace-nowrap text-xs px-2 py-1 h-7 touch-optimized bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100"
@@ -755,8 +797,8 @@ const EnhancedAIChat: React.FC = () => {
           <div className="flex-1">
             <div className="relative">
               <Textarea
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -792,7 +834,7 @@ const EnhancedAIChat: React.FC = () => {
           
           <Button
             onClick={() => handleSendMessage()}
-            disabled={!inputValue.trim() || isLoading}
+            disabled={!input.trim() || isLoading}
             className="bg-orange-500 hover:bg-orange-600 text-white min-h-[44px] px-4 sm:px-6 touch-optimized"
           >
             {isLoading ? (
