@@ -1,174 +1,27 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import LoadingScreen from './components/LoadingScreen.tsx'
 
-// Enhanced error handling for production debugging
-window.addEventListener('error', (event) => {
-  console.error('Global error caught:', event.error);
-  console.error('Error details:', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    stack: event.error?.stack
-  });
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-  console.error('Promise rejection details:', event);
-});
-
-// Service Worker Registration for PWA
-const registerServiceWorker = async () => {
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      });
-      
-      console.log('Service Worker registered successfully:', registration.scope);
-      
-      // Handle updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New content is available, notify user
-              console.log('New content available! Please refresh.');
-              // You could show a toast or banner here
-            }
-          });
-        }
-      });
-      
-      // Register for background sync if supported
-      if ('sync' in window.ServiceWorkerRegistration.prototype) {
-        try {
-          const swRegistration = await navigator.serviceWorker.ready;
-          // Background sync registration with proper typing
-          if ('sync' in swRegistration) {
-            await (swRegistration as any).sync.register('background-sync');
-            console.log('Background sync registered');
-          }
-        } catch (syncError) {
-          console.warn('Background sync registration failed:', syncError);
-        }
-      }
-      
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-    }
-  }
-};
-
-// Register for push notifications (optional)
-const requestNotificationPermission = async () => {
-  if ('Notification' in window && 'serviceWorker' in navigator) {
-    const permission = await Notification.requestPermission();
-    console.log('Notification permission:', permission);
-  }
-};
-
-// PWA Install prompt handling
-const handlePWAInstall = () => {
-  let deferredPrompt: any;
-  
-  window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent Chrome 67 and earlier from automatically showing the prompt
-    e.preventDefault();
-    // Stash the event so it can be triggered later
-    deferredPrompt = e;
-    console.log('PWA install prompt available');
-    
-    // You could show a custom install button here
-    // and call deferredPrompt.prompt() when clicked
-  });
-  
-  window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed');
-    deferredPrompt = null;
-  });
-};
-
-// Get root element with error handling
-const rootElement = document.getElementById("root");
+// Get the root element
+const rootElement = document.getElementById('root');
 
 if (!rootElement) {
-  throw new Error("Root element not found. This is likely a build issue.");
+  throw new Error('Root element not found');
 }
 
-// Create root with error handling
-try {
-  const root = createRoot(rootElement);
-  
-  // Render with loading fallback
-  root.render(<App />);
-  
-  // Hide any initial loading screen immediately
-  const initialLoader = document.getElementById('initial-loader');
-  if (initialLoader) {
-    initialLoader.style.display = 'none';
+// Create root and render the app
+const root = createRoot(rootElement);
+
+root.render(<App />);
+
+// Hide the initial loader after a short delay
+setTimeout(() => {
+  const loader = document.getElementById('initial-loader');
+  if (loader) {
+    loader.style.opacity = '0';
+    loader.style.transition = 'opacity 0.3s ease-out';
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 300);
   }
-  
-  // Initialize PWA features after render (safely)
-  try {
-    registerServiceWorker();
-    handlePWAInstall();
-  } catch (pwaError) {
-    console.warn('PWA initialization failed:', pwaError);
-  }
-  
-  // Request notification permission after user interaction (safely)
-  try {
-    document.addEventListener('click', () => {
-      requestNotificationPermission();
-    }, { once: true });
-  } catch (eventError) {
-    console.warn('Event listener setup failed:', eventError);
-  }
-  
-} catch (error) {
-  console.error('Failed to render React app:', error);
-  
-  // Fallback content in case React fails to load
-  if (rootElement) {
-    rootElement.innerHTML = `
-      <div style="
-        min-height: 100vh; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        background: #ffffff;
-        color: #1f2937;
-        margin: 0;
-        padding: 1rem;
-      ">
-        <div style="text-align: center; max-width: 400px;">
-          <h1 style="color: #f97316; margin: 0 0 1rem 0; font-size: 2rem; font-weight: 700;">✦Bible Aura</h1>
-          <p style="margin: 0 0 1.5rem 0; color: #6b7280; line-height: 1.5;">Unable to load the application. Please check your internet connection and try again.</p>
-          <button 
-            onclick="window.location.reload()" 
-            style="
-              background: #f97316; 
-              color: white; 
-              border: none; 
-              padding: 0.75rem 1.5rem; 
-              border-radius: 0.5rem; 
-              font-size: 1rem;
-              cursor: pointer;
-              transition: background-color 0.2s;
-            "
-            onmouseover="this.style.backgroundColor='#ea580c'"
-            onmouseout="this.style.backgroundColor='#f97316'"
-          >
-            Reload Application
-          </button>
-        </div>
-      </div>
-    `;
-  }
-}
+}, 1000);
