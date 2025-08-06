@@ -38,7 +38,7 @@ interface JournalEntry {
   language: 'english' | 'tamil' | 'sinhala';
   category: string;
   metadata: any;
-  is_pinned: boolean;
+  is_pinned?: boolean;
   template_used: string | null;
 }
 
@@ -67,12 +67,17 @@ const Journal = () => {
   }, [user]);
 
   const loadEntries = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('journal_entries')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('entry_date', { ascending: false });
 
       if (error) {
@@ -138,7 +143,7 @@ const Journal = () => {
   const getMoodIcon = (mood: string | null) => {
     switch (mood) {
       case 'happy': return <Smile className="h-4 w-4 text-yellow-500" />;
-              case 'sad': return <Frown className="h-4 w-4 text-orange-500" />;
+      case 'sad': return <Frown className="h-4 w-4 text-orange-500" />;
       case 'peaceful': return <Sun className="h-4 w-4 text-orange-500" />;
       case 'anxious': return <Cloud className="h-4 w-4 text-gray-500" />;
       case 'grateful': return <Heart className="h-4 w-4 text-red-500" />;
@@ -157,18 +162,46 @@ const Journal = () => {
   };
 
   const handleSaveEntry = async (entryData: any) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save journal entries.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       if (editingEntry) {
         // Update existing entry
         const { error } = await supabase
           .from('journal_entries')
           .update({
-            ...entryData,
+            title: entryData.title,
+            content: entryData.content,
+            mood: entryData.mood,
+            spiritual_state: entryData.spiritual_state,
+            verse_reference: entryData.verse_reference,
+            verse_text: entryData.verse_text,
+            verse_references: entryData.verse_references || [],
+            tags: entryData.tags || [],
+            is_private: entryData.is_private !== undefined ? entryData.is_private : true,
+            word_count: entryData.word_count || 0,
+            reading_time: entryData.reading_time || 0,
+            language: entryData.language || 'english',
+            category: entryData.category || 'personal',
+            metadata: entryData.metadata,
+            is_pinned: entryData.is_pinned || false,
+            template_used: entryData.template_used,
             updated_at: new Date().toISOString()
           })
-          .eq('id', editingEntry.id);
+          .eq('id', editingEntry.id)
+          .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating entry:', error);
+          throw error;
+        }
 
         toast({
           title: "Entry updated",
@@ -179,14 +212,32 @@ const Journal = () => {
         const { error } = await supabase
           .from('journal_entries')
           .insert({
-            ...entryData,
-            user_id: user?.id,
-            entry_date: selectedDate?.toISOString() || new Date().toISOString(),
+            title: entryData.title,
+            content: entryData.content,
+            mood: entryData.mood,
+            spiritual_state: entryData.spiritual_state,
+            verse_reference: entryData.verse_reference,
+            verse_text: entryData.verse_text,
+            verse_references: entryData.verse_references || [],
+            tags: entryData.tags || [],
+            is_private: entryData.is_private !== undefined ? entryData.is_private : true,
+            word_count: entryData.word_count || 0,
+            reading_time: entryData.reading_time || 0,
+            language: entryData.language || 'english',
+            category: entryData.category || 'personal',
+            metadata: entryData.metadata,
+            is_pinned: entryData.is_pinned || false,
+            template_used: entryData.template_used,
+            user_id: user.id,
+            entry_date: entryData.entry_date || selectedDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating entry:', error);
+          throw error;
+        }
 
         toast({
           title: "Entry saved",
@@ -194,18 +245,65 @@ const Journal = () => {
         });
       }
 
+      // Close editor and refresh entries
       setShowEditor(false);
       setEditingEntry(null);
-      loadEntries();
-    } catch (error) {
+      await loadEntries();
+
+    } catch (error: any) {
       console.error('Error saving entry:', error);
       toast({
         title: "Error saving entry",
-        description: "Failed to save your journal entry. Please try again.",
+        description: error?.message || "Failed to save your journal entry. Please try again.",
         variant: "destructive"
       });
     }
   };
+
+  const handleDeleteEntry = async (entryId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('journal_entries')
+        .delete()
+        .eq('id', entryId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Entry deleted",
+        description: "Your journal entry has been deleted.",
+      });
+
+      await loadEntries();
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the entry. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (!user) {
+    return (
+      <ModernLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+              Sign in Required
+            </h2>
+            <p className="text-gray-600">
+              Please sign in to access your journal.
+            </p>
+          </div>
+        </div>
+      </ModernLayout>
+    );
+  }
 
   return (
     <ModernLayout>
@@ -220,221 +318,197 @@ const Journal = () => {
                   <PenTool className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-semibold text-gray-900">Journal</h1>
-                  <p className="text-sm text-gray-500">{entries.length} entries</p>
+                  <h1 className="text-lg font-bold text-gray-900">My Journal</h1>
+                  <p className="text-sm text-gray-600">Personal reflections</p>
                 </div>
               </div>
-              <Button
+              <Button 
                 onClick={handleNewEntry}
-                className="bg-orange-500 hover:bg-orange-600 h-9 w-9 p-0 rounded-xl"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                size="sm"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4 mr-1" />
+                New
               </Button>
             </div>
 
-            {/* View Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search entries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2 mb-4">
               <Button
                 variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                 size="sm"
-                className="flex-1 h-8"
                 onClick={() => setViewMode('calendar')}
+                className={viewMode === 'calendar' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
-                <CalendarIcon className="h-4 w-4 mr-2" />
+                <CalendarIcon className="h-4 w-4 mr-1" />
                 Calendar
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
-                className="flex-1 h-8"
                 onClick={() => setViewMode('list')}
+                className={viewMode === 'list' ? 'bg-orange-500 hover:bg-orange-600' : ''}
               >
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-1" />
                 List
               </Button>
             </div>
           </div>
 
-          {/* Calendar View */}
-          {viewMode === 'calendar' && (
-            <>
-              {/* Mini Calendar */}
-              <div className="p-4 border-b border-gray-200">
+          {/* Content based on view mode */}
+          <div className="flex-1 overflow-hidden">
+            {viewMode === 'calendar' ? (
+              <div className="p-4">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  className="rounded-md border-0"
-                  components={{
-                    DayContent: ({ date }) => {
-                      const dayEntries = getEntriesForDate(date);
-                      const hasEntries = dayEntries.length > 0;
-                      
-                      return (
-                        <div className="relative w-full h-full flex items-center justify-center">
-                          <span className={`text-sm ${
-                            isSameDay(date, selectedDate || new Date()) 
-                              ? 'font-semibold' 
-                              : ''
-                          }`}>
-                            {format(date, 'd')}
-                          </span>
-                          {hasEntries && (
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full"></div>
-                          )}
-                        </div>
-                      );
+                  className="rounded-md border"
+                  modifiers={{
+                    hasEntry: (date) => getEntriesForDate(date).length > 0,
+                  }}
+                  modifiersStyles={{
+                    hasEntry: {
+                      backgroundColor: '#f97316',
+                      color: 'white',
+                      fontWeight: 'bold'
                     }
                   }}
                 />
+                
+                {/* Selected date entries */}
+                {selectedDate && (
+                  <div className="mt-4">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      {format(selectedDate, 'MMM d, yyyy')}
+                    </h3>
+                    <ScrollArea className="h-32">
+                      <div className="space-y-2">
+                        {selectedDateEntries.length > 0 ? (
+                          selectedDateEntries.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleEditEntry(entry)}
+                            >
+                              <div className="font-medium text-sm text-gray-900 truncate">
+                                {entry.title || 'Untitled'}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {entry.word_count} words • {entry.reading_time} min read
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-gray-500 text-center py-4">
+                            No entries for this date
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
               </div>
-
-              {/* Selected Date Entries */}
-              <div className="flex-1 overflow-hidden">
-                <div className="p-3 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {selectedDateEntries.length} {selectedDateEntries.length === 1 ? 'entry' : 'entries'}
-                  </p>
+            ) : (
+              // List view
+              <div className="p-4">
+                {/* Category filter */}
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Category</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="All">All ({entries.length})</option>
+                    {categories.map((category) => (
+                      <option key={category.name} value={category.name}>
+                        {category.name} ({category.count})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <ScrollArea className="flex-1 p-3">
-                  {selectedDateEntries.length === 0 ? (
-                    <div className="text-center py-8">
-                      <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-sm text-gray-500 mb-3">No entries for this date</p>
-                      <Button
-                        onClick={handleNewEntry}
-                        size="sm"
-                        className="bg-orange-500 hover:bg-orange-600"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Entry
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {selectedDateEntries.map((entry) => (
-                        <Card 
-                          key={entry.id} 
+                {/* Entries list */}
+                <ScrollArea className="h-[calc(100vh-250px)]">
+                  <div className="space-y-3">
+                    {loading ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500">Loading entries...</div>
+                      </div>
+                    ) : filteredEntries.length > 0 ? (
+                      filteredEntries.map((entry) => (
+                        <Card
+                          key={entry.id}
                           className="cursor-pointer hover:shadow-md transition-shadow"
                           onClick={() => handleEditEntry(entry)}
                         >
-                          <CardContent className="p-3">
-                            <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium text-sm text-gray-900 line-clamp-1">
-                                {entry.title || 'Untitled Entry'}
-                              </h4>
-                              {getMoodIcon(entry.mood)}
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-sm font-medium truncate">
+                                {entry.title || 'Untitled'}
+                              </CardTitle>
+                              <div className="flex items-center gap-1">
+                                {getMoodIcon(entry.mood)}
+                                {entry.is_pinned && <Star className="h-3 w-3 text-yellow-500" />}
+                              </div>
                             </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
                             <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                               {entry.content}
                             </p>
-                            <div className="flex items-center justify-between">
-                              <Badge variant="outline" className="text-xs">
-                                {entry.category}
-                              </Badge>
-                              <span className="text-xs text-gray-400">
-                                {format(new Date(entry.created_at), 'h:mm a')}
-                              </span>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span>{formatDate(entry.entry_date)}</span>
+                              <span>{entry.word_count} words</span>
                             </div>
+                            {entry.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {entry.tags.slice(0, 2).map((tag, index) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                                {entry.tags.length > 2 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{entry.tags.length - 2}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
-                      ))}
-                    </div>
-                  )}
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <PenTool className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                        <div className="text-gray-500">No entries found</div>
+                        <Button
+                          onClick={handleNewEntry}
+                          className="mt-4 bg-orange-500 hover:bg-orange-600"
+                          size="sm"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create your first entry
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </ScrollArea>
               </div>
-            </>
-          )}
-
-          {/* List View */}
-          {viewMode === 'list' && (
-            <>
-              {/* Search and Filter */}
-              <div className="p-4 border-b border-gray-200 space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search entries..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-9"
-                  />
-                </div>
-
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full h-9 px-3 text-sm border border-gray-200 rounded-md bg-white"
-                >
-                  <option value="All">All Categories</option>
-                  {categories.map(category => (
-                    <option key={category.name} value={category.name}>
-                      {category.name} ({category.count})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Entries List */}
-              <ScrollArea className="flex-1 p-3">
-                {loading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin h-8 w-8 border-2 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
-                    <p className="text-sm text-gray-500 mt-2">Loading entries...</p>
-                  </div>
-                ) : filteredEntries.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500 mb-3">
-                      {searchQuery || selectedCategory !== 'All' ? 'No matching entries found' : 'No entries yet'}
-                    </p>
-                    <Button
-                      onClick={handleNewEntry}
-                      size="sm"
-                      className="bg-orange-500 hover:bg-orange-600"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Entry
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {filteredEntries.map((entry) => (
-                      <Card 
-                        key={entry.id} 
-                        className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => handleEditEntry(entry)}
-                      >
-                        <CardContent className="p-3">
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-medium text-sm text-gray-900 line-clamp-1">
-                              {entry.title || 'Untitled Entry'}
-                            </h4>
-                            {getMoodIcon(entry.mood)}
-                          </div>
-                          <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                            {entry.content}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <Badge variant="outline" className="text-xs">
-                              {entry.category}
-                            </Badge>
-                            <span className="text-xs text-gray-400">
-                              {formatDate(entry.entry_date)}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Main Content Area */}
@@ -462,35 +536,35 @@ const Journal = () => {
               </Button>
             </div>
           ) : (
-                       <div className="w-full h-full">
-               <EnhancedJournalEditor
-                 initialEntry={editingEntry ? {
-                   id: editingEntry.id,
-                   title: editingEntry.title || '',
-                   content: editingEntry.content || '',
-                   mood: editingEntry.mood,
-                   spiritual_state: editingEntry.spiritual_state,
-                   verse_reference: editingEntry.verse_reference,
-                   verse_text: editingEntry.verse_text,
-                   verse_references: editingEntry.verse_references || [],
-                   tags: editingEntry.tags || [],
-                   is_private: editingEntry.is_private,
-                   entry_date: editingEntry.entry_date,
-                   word_count: editingEntry.word_count,
-                   reading_time: editingEntry.reading_time,
-                   language: editingEntry.language,
-                   category: editingEntry.category,
-                   metadata: editingEntry.metadata,
-                   is_pinned: editingEntry.is_pinned,
-                   template_used: editingEntry.template_used
-                 } : undefined}
-                 isEditing={!!editingEntry}
-                 onSave={handleSaveEntry}
-                 onCancel={() => {
-                   setShowEditor(false);
-                   setEditingEntry(null);
-                 }}
-               />
+            <div className="w-full h-full">
+              <EnhancedJournalEditor
+                initialEntry={editingEntry ? {
+                  id: editingEntry.id,
+                  title: editingEntry.title || '',
+                  content: editingEntry.content || '',
+                  mood: editingEntry.mood,
+                  spiritual_state: editingEntry.spiritual_state,
+                  verse_reference: editingEntry.verse_reference,
+                  verse_text: editingEntry.verse_text,
+                  verse_references: editingEntry.verse_references || [],
+                  tags: editingEntry.tags || [],
+                  is_private: editingEntry.is_private,
+                  entry_date: editingEntry.entry_date,
+                  word_count: editingEntry.word_count,
+                  reading_time: editingEntry.reading_time,
+                  language: editingEntry.language,
+                  category: editingEntry.category,
+                  metadata: editingEntry.metadata,
+                  is_pinned: editingEntry.is_pinned,
+                  template_used: editingEntry.template_used
+                } : undefined}
+                isEditing={!!editingEntry}
+                onSave={handleSaveEntry}
+                onCancel={() => {
+                  setShowEditor(false);
+                  setEditingEntry(null);
+                }}
+              />
             </div>
           )}
         </div>
