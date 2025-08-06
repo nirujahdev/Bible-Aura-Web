@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  Send, Plus, MoreVertical, Trash2, Sparkles, Bot
+  Send, Plus, MoreVertical, Trash2, Bot
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -249,8 +249,8 @@ export default function Dashboard() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b bg-white">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold">✦</span>
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-300/50">
+                  <span className="text-white font-bold text-xl drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">✦</span>
                 </div>
                 <div>
                   <div className="font-bold text-gray-900 text-lg">Bible Aura AI</div>
@@ -272,8 +272,8 @@ export default function Dashboard() {
               {currentConversation?.messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center max-w-md mx-auto p-8">
-                    <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <Sparkles className="h-8 w-8 text-white" />
+                    <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-orange-300/50">
+                      <span className="text-3xl font-bold text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]">✦</span>
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">
                       Hello {getUserName()}!
@@ -314,8 +314,8 @@ export default function Dashboard() {
                       className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       {msg.role === 'assistant' && (
-                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <span className="text-white text-sm font-bold">✦</span>
+                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm shadow-orange-300/50">
+                          <span className="text-white text-lg font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]">✦</span>
                         </div>
                       )}
                       
@@ -342,8 +342,8 @@ export default function Dashboard() {
                   
                   {isLoading && (
                     <div className="flex gap-4">
-                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-sm">
-                        <span className="text-white text-sm font-bold">✦</span>
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-sm shadow-orange-300/50">
+                        <span className="text-white text-lg font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]">✦</span>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-2xl rounded-bl-md border border-gray-100">
                         <div className="flex space-x-1">

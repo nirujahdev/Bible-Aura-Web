@@ -20,6 +20,7 @@ import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS } fr
 import SermonToolbar from '@/components/SermonToolbar';
 import SermonAIAssistant from '@/components/SermonAIAssistant';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { ModernLayout } from '@/components/ModernLayout';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -1700,7 +1701,8 @@ const Sermons = () => {
 
   // Clean and simple dashboard view
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ModernLayout>
+      <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -1883,6 +1885,7 @@ const Sermons = () => {
         )}
       </div>
     </div>
+    </ModernLayout>
   );
 };
 

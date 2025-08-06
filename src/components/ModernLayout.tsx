@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   MessageCircle, BookOpen, Music, BarChart3, 
-  Heart, FileText, User, Settings, Sparkles,
+  Heart, FileText, User, Settings,
   Headphones, Home
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -24,7 +24,7 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: Sparkles, tooltip: 'AI Chat Dashboard' },
+  { name: 'Dashboard', href: '/dashboard', icon: () => <span className="text-2xl font-bold">✦</span>, tooltip: 'AI Chat Dashboard' },
   { name: 'Chat', href: '/bible-ai', icon: MessageCircle, tooltip: 'AI Bible Chat' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Songs', href: '/songs', icon: Music, tooltip: 'Worship Songs' },
@@ -62,6 +62,7 @@ export function ModernLayout({ children }: ModernLayoutProps) {
         <div className="flex-1 py-6 px-2 space-y-2">
           {sidebarItems.map((item) => {
             const active = isActive(item.href);
+            const IconComponent = item.icon;
             return (
               <div key={item.name} className="relative group">
                 <Link
@@ -69,12 +70,23 @@ export function ModernLayout({ children }: ModernLayoutProps) {
                   className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 relative",
                     active 
-                      ? "bg-orange-500 text-white shadow-lg" 
+                      ? "bg-orange-500 text-white shadow-lg shadow-orange-300/50" 
                       : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                   )}
                   title={item.tooltip}
                 >
-                  <item.icon className="h-6 w-6" />
+                  {item.name === 'Dashboard' ? (
+                    <span className={cn(
+                      "text-2xl font-bold",
+                      active 
+                        ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" 
+                        : "text-orange-500 drop-shadow-[0_0_6px_rgba(255,165,0,0.6)]"
+                    )}>
+                      ✦
+                    </span>
+                  ) : (
+                    <IconComponent className="h-6 w-6" />
+                  )}
                 </Link>
                 
                 {/* Tooltip */}
@@ -159,7 +171,7 @@ export function ModernLayout({ children }: ModernLayoutProps) {
             <div className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-3">
-                  <Sparkles className="h-6 w-6" />
+                  <span className="text-2xl font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">✦</span>
                 </div>
                 <h1 className="text-xl font-bold">Bible Aura</h1>
                 <p className="text-sm text-white/80 mt-1">AI Biblical Assistant</p>
@@ -169,31 +181,45 @@ export function ModernLayout({ children }: ModernLayoutProps) {
             {/* Mobile Navigation */}
             <div className="flex-1 overflow-y-auto px-4 py-4">
               <div className="space-y-1">
-                {sidebarItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all ${
-                      isActive(item.href) 
-                        ? 'bg-orange-50 border-l-4 border-orange-500' 
-                        : ''
-                    }`}
-                  >
-                    <item.icon className={`h-5 w-5 ${
-                      isActive(item.href) 
-                        ? 'text-orange-500' 
-                        : 'text-gray-600'
-                    }`} />
-                    <span className={`font-medium text-sm ${
-                      isActive(item.href) 
-                        ? 'text-orange-500' 
-                        : 'text-gray-700'
-                    }`}>
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
+                {sidebarItems.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all ${
+                        isActive(item.href) 
+                          ? 'bg-orange-50 border-l-4 border-orange-500' 
+                          : ''
+                      }`}
+                    >
+                      {item.name === 'Dashboard' ? (
+                        <span className={cn(
+                          "text-xl font-bold",
+                          isActive(item.href) 
+                            ? "text-orange-500 drop-shadow-[0_0_6px_rgba(255,165,0,0.6)]" 
+                            : "text-orange-500 drop-shadow-[0_0_4px_rgba(255,165,0,0.4)]"
+                        )}>
+                          ✦
+                        </span>
+                      ) : (
+                        <IconComponent className={`h-5 w-5 ${
+                          isActive(item.href) 
+                            ? 'text-orange-500' 
+                            : 'text-gray-600'
+                        }`} />
+                      )}
+                      <span className={`font-medium text-sm ${
+                        isActive(item.href) 
+                          ? 'text-orange-500' 
+                          : 'text-gray-700'
+                      }`}>
+                        {item.name}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 

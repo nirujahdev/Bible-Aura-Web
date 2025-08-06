@@ -15,7 +15,7 @@ import {
   Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
   Shield, Mail, Lock, Eye, EyeOff
 } from "lucide-react";
-import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { ModernLayout } from "@/components/ModernLayout";
 
 interface UserProfile {
   id: string;
@@ -249,12 +249,18 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 w-full">
-      <UnifiedHeader
-        icon={User}
-        title="My Profile"
-        subtitle="Manage your account and spiritual preferences"
-      >
+    <ModernLayout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 w-full">
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="p-3 bg-orange-500 rounded-xl">
+              <User className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+              <p className="text-gray-600">Manage your account and spiritual preferences</p>
+            </div>
+          </div>
         <div className="flex flex-wrap gap-3">
           <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
             <div className="flex items-center gap-2 text-sm font-medium">
@@ -269,7 +275,7 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      </UnifiedHeader>
+        </div>
 
       {/* Main Content */}
       <div className="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto">
@@ -589,6 +595,7 @@ const Profile = () => {
         </Card>
       </div>
     </div>
+    </ModernLayout>
   );
 };
 
