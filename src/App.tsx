@@ -14,6 +14,7 @@ import Blog from '@/pages/Blog';
 import Pricing from '@/pages/Pricing';
 import Dashboard from '@/pages/Dashboard';
 
+
 // Import feature pages
 import BibleStudy from '@/pages/features/BibleStudy';
 import AIFeatures from '@/pages/features/AIFeatures';

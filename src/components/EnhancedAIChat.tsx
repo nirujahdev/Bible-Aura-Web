@@ -117,33 +117,33 @@ const CHAT_MODES = {
   }
 };
 
-// Quick start prompts optimized for mobile
+// Dashboard question cards
 const QUICK_PROMPTS = [
   {
     id: 1,
-    text: "Daily verse inspiration",
-    prompt: "Give me an inspiring Bible verse for today with explanation",
+    text: "What does Romans 8:28 mean for my daily life?",
+    prompt: "What does Romans 8:28 mean for my daily life?",
     icon: Heart,
     color: "bg-rose-500"
   },
   {
     id: 2,
-    text: "Prayer guidance",
-    prompt: "Help me with prayer for my current situation",
+    text: "Explain the parable of the Good Samaritan",
+    prompt: "Explain the parable of the Good Samaritan",
     icon: Sparkles,
     color: "bg-purple-500"
   },
   {
     id: 3,
-    text: "Bible study help",
-    prompt: "I need help understanding a Bible passage",
+    text: "What are the fruits of the Spirit?",
+    prompt: "What are the fruits of the Spirit?",
     icon: BookOpen,
     color: "bg-blue-500"
   },
   {
     id: 4,
-    text: "Faith questions",
-    prompt: "I have questions about my faith journey",
+    text: "How can I strengthen my faith during difficult times?",
+    prompt: "How can I strengthen my faith during difficult times?",
     icon: Search,
     color: "bg-green-500"
   }
@@ -556,14 +556,12 @@ const EnhancedAIChat: React.FC = () => {
           /* Welcome Screen - Mobile-First Design */
           <div className="max-w-sm sm:max-w-md mx-auto text-center space-y-4 sm:space-y-6 px-2 sm:px-4">
             
-            {/* Compact Header for Mobile */}
+            {/* Header for Dashboard */}
             <div className="space-y-2 sm:space-y-3">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto">
-                <Bot className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-              </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Welcome to Bible AI</h2>
+              <div className="text-4xl mb-4">✦</div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Hello benaiah!</h2>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Ask me anything about the Bible. I'm here to help you explore God's word with AI-powered insights.
+                How can I assist you with your biblical studies today?
               </p>
             </div>
 
@@ -588,29 +586,13 @@ const EnhancedAIChat: React.FC = () => {
                       <div className="font-medium text-gray-900 text-sm sm:text-base group-hover:text-orange-700 transition-colors">
                         {prompt.text}
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-2">
-                        {prompt.prompt}
-                      </div>
                     </div>
                   </div>
                 </Button>
               ))}
             </div>
 
-            {/* Mobile Quick Tips */}
-            <div className="mt-6 p-3 sm:p-4 bg-blue-50 rounded-xl border border-blue-100">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Lightbulb className="h-3 w-3 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="text-sm font-medium text-blue-900 mb-1">Quick Tip</div>
-                  <div className="text-xs sm:text-sm text-blue-700">
-                    Try asking specific questions like "What does John 3:16 mean?" or "Tell me about David's story"
-                  </div>
-                </div>
-              </div>
-            </div>
+
           </div>
         ) : (
           /* Chat Messages - Mobile-Optimized */

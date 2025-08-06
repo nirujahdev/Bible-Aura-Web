@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
-import { hasDevicePreference } from '@/lib/devicePreferences';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Eye, 
@@ -168,7 +167,7 @@ export default function Auth() {
     }
   }, []);
 
-  // Handle successful authentication with better redirect logic
+  // Handle successful authentication with direct dashboard redirect
   useEffect(() => {
     console.log('Auth state check:', { user: !!user, loading, isMagicLinkAuth });
     
@@ -177,21 +176,11 @@ export default function Auth() {
       setIsMagicLinkAuth(false);
       setAuthSuccess('Authentication successful! Redirecting...');
       
-      // Check if user has already selected device preference
-      const userHasDevicePreference = hasDevicePreference();
       const urlParams = new URLSearchParams(window.location.search);
       const redirectTo = urlParams.get('redirect');
       
-      // Determine final redirect destination
-      let finalRedirect = '/dashboard';
-      
-      if (redirectTo) {
-        // If there's a specific redirect URL, use it
-        finalRedirect = redirectTo;
-      } else if (!userHasDevicePreference) {
-        // If user hasn't selected device preference, go to device selection
-        finalRedirect = '/device-selection';
-      }
+      // Determine final redirect destination - go to dashboard unless specific redirect
+      const finalRedirect = redirectTo || '/dashboard';
       
       // Delay redirect slightly to show success message
       setTimeout(() => {
