@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { ModernLayout } from "@/components/ModernLayout";
 import { 
   PenTool, Plus, MoreVertical, ArrowLeft, Settings, 
   Calendar, Search, Filter, Heart, Star, BookOpen,
@@ -217,7 +218,8 @@ const Journal = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ModernLayout>
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center space-x-3">
@@ -609,6 +611,7 @@ const Journal = () => {
         )}
       </ScrollArea>
     </div>
+    </ModernLayout>
   );
 };
 

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { ModernLayout } from '@/components/ModernLayout';
 
 interface Song {
   id: string;
@@ -102,7 +103,8 @@ export default function Songs() {
   };
 
   return (
-    <div className="min-h-screen bg-background w-full">
+    <ModernLayout>
+      <div className="min-h-screen bg-background w-full">
       {/* Header */}
       <div className="bg-aura-gradient text-white border-b sticky top-0 z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -230,5 +232,6 @@ export default function Songs() {
           )}
         </div>
     </div>
+    </ModernLayout>
   );
 } 
