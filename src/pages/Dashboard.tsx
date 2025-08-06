@@ -442,11 +442,13 @@ export default function Dashboard() {
               )
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-white font-bold text-3xl">✦</span>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg mb-4">
+                  <div className="w-8 h-8 rotate-45 bg-white/20 rounded-lg"></div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Welcome to Bible Aura AI</h3>
-                <p className="text-gray-600 mb-6">Start your spiritual conversation with our AI assistant</p>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  Hello {getUserName()}!
+                </h3>
+                <p className="text-gray-600 mb-6">How can I assist you with your Bible studies today?</p>
                 
                 <Button onClick={createNewChat} className="bg-orange-500 hover:bg-orange-600">
                   <Plus className="w-4 h-4 mr-2" />

@@ -292,109 +292,185 @@ export default function BiblePageExact() {
             </Tabs>
           </div>
 
-          {/* Chapters Section */}
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-medium text-gray-900 mb-3">Chapters - {selectedBook}</h3>
-            <div className="grid grid-cols-8 gap-2">
-              {Array.from({ length: BIBLE_BOOKS.find(b => b.name === selectedBook)?.chapters || 27 }, (_, i) => (
-                <Button
-                  key={i + 1}
-                  variant={selectedChapter === i + 1 ? "default" : "outline"}
-                  size="sm"
-                  className={`h-8 w-8 text-xs p-0 ${selectedChapter === i + 1 ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
-                  onClick={() => setSelectedChapter(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Language & Translation - Same Row */}
-          <div className="p-4 border-b border-gray-200 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Language</label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="Tamil">Tamil</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Translation</label>
-                <Select value={translation} onValueChange={setTranslation}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="KJV">KJV</SelectItem>
-                    <SelectItem value="NIV">NIV</SelectItem>
-                    <SelectItem value="ESV">ESV</SelectItem>
-                    <SelectItem value="NLT">NLT</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500">Public Domain - Free to use</p>
-          </div>
-
-          {/* Books Section - Same Row for Old & New Testament */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Books</h3>
-              
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {/* Old Testament */}
-                <div>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between p-2 h-auto"
-                    onClick={() => setExpandedTestament(expandedTestament === 'Old' ? 'New' : 'Old')}
-                  >
-                    <span className="font-medium text-sm">Old Testament</span>
-                    <span className="text-xs text-gray-500">39</span>
-                  </Button>
-                </div>
-                
-                {/* New Testament */}
-                <div>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between p-2 h-auto"
-                    onClick={() => setExpandedTestament(expandedTestament === 'New' ? 'Old' : 'New')}
-                  >
-                    <span className="font-medium text-sm">New Testament</span>
-                    <span className="text-xs text-gray-500">27</span>
-                  </Button>
+          {/* Conditional Sidebar Content */}
+          {(activeTab === 'read' || activeTab === 'search') && (
+            <>
+              {/* Chapters Section */}
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="font-medium text-gray-900 mb-3">Chapters - {selectedBook}</h3>
+                <div className="grid grid-cols-8 gap-2">
+                  {Array.from({ length: BIBLE_BOOKS.find(b => b.name === selectedBook)?.chapters || 27 }, (_, i) => (
+                    <Button
+                      key={i + 1}
+                      variant={selectedChapter === i + 1 ? "default" : "outline"}
+                      size="sm"
+                      className={`h-8 w-8 text-xs p-0 ${selectedChapter === i + 1 ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                      onClick={() => setSelectedChapter(i + 1)}
+                    >
+                      {i + 1}
+                    </Button>
+                  ))}
                 </div>
               </div>
-              
-              {/* Expanded Testament Books */}
-              <div className="space-y-1">
-                {BIBLE_BOOKS.filter(book => book.testament === expandedTestament).map(book => (
-                  <div
-                    key={book.name}
-                    className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
-                      selectedBook === book.name ? 'bg-orange-100 text-orange-800' : 'hover:bg-gray-100'
-                    }`}
-                    onClick={() => {
-                      setSelectedBook(book.name);
-                      setSelectedChapter(1);
-                    }}
-                  >
-                    <span className="text-sm font-medium">{book.name}</span>
-                    <span className="text-xs text-gray-500">{book.chapters}</span>
+
+              {/* Books Navigation */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-4">
+                  <h3 className="font-medium text-gray-900 mb-3">Books</h3>
+                  <div className="space-y-1">
+                    {BIBLE_BOOKS.map((book) => (
+                      <Button
+                        key={book.name}
+                        variant={selectedBook === book.name ? "default" : "ghost"}
+                        className={`w-full justify-start text-left ${selectedBook === book.name ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                        onClick={() => {
+                          setSelectedBook(book.name);
+                          setSelectedChapter(1);
+                        }}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span>{book.name}</span>
+                          <span className="text-xs opacity-70">{book.chapters}</span>
+                        </div>
+                      </Button>
+                    ))}
                   </div>
-                ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Plans Tab Content - Shown in Sidebar */}
+          {activeTab === 'plans' && (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Plans Header */}
+              <div className="bg-orange-500 text-white p-4">
+                <h2 className="text-lg font-bold">Reading Plans</h2>
+                <p className="text-orange-100 text-sm">Track your Bible study progress</p>
+              </div>
+
+              {/* Reading Plans Interface */}
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900">Your Reading Plans</h3>
+                  <Button 
+                    size="sm"
+                    onClick={() => {
+                      const newPlan: SimpleReadingPlan = {
+                        id: Date.now().toString(),
+                        name: `${selectedBook} Study Plan`,
+                        description: `Complete reading plan for ${selectedBook}`,
+                        totalDays: BIBLE_BOOKS.find(b => b.name === selectedBook)?.chapters || 1,
+                        currentDay: 1,
+                        progress: 0,
+                        isActive: true
+                      };
+                      setReadingPlans([newPlan, ...readingPlans]);
+                      toast({
+                        title: "Plan Created",
+                        description: `New reading plan for ${selectedBook} created!`
+                      });
+                    }}
+                    className="bg-orange-500 hover:bg-orange-600 text-xs px-2 py-1 h-auto"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Create Plan
+                  </Button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  {readingPlans.length > 0 ? (
+                    <div className="space-y-3">
+                      {readingPlans.map((plan) => (
+                        <div key={plan.id} className="border rounded-lg p-3 bg-white shadow-sm">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-gray-900 text-sm">{plan.name}</h4>
+                            {plan.isActive && (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">{plan.description}</p>
+                          <div className="text-xs text-gray-500 mb-2">
+                            Day {plan.currentDay} of {plan.totalDays}
+                          </div>
+                          
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                            <div 
+                              className="bg-orange-500 h-1.5 rounded-full transition-all duration-300" 
+                              style={{ width: `${(plan.progress / plan.totalDays) * 100}%` }}
+                            ></div>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const updatedPlan = {
+                                  ...plan,
+                                  currentDay: Math.min(plan.currentDay + 1, plan.totalDays),
+                                  progress: plan.progress + 1
+                                };
+                                setReadingPlans(plans => 
+                                  plans.map(p => p.id === plan.id ? updatedPlan : p)
+                                );
+                                
+                                toast({
+                                  title: "Progress Updated",
+                                  description: `Marked day ${plan.currentDay} as complete!`
+                                });
+                              }}
+                              disabled={plan.progress >= plan.totalDays}
+                              className="bg-orange-500 hover:bg-orange-600 text-xs h-auto py-1"
+                            >
+                              Mark as Read
+                            </Button>
+                            
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedChapter(plan.currentDay);
+                                setActiveTab('read');
+                              }}
+                              className="text-xs h-auto py-1"
+                            >
+                              Read Today's Chapter
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 mt-4">
+                      <BookOpen className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm font-medium mb-1">No Reading Plans Yet</p>
+                      <p className="text-xs mb-3">Create a reading plan to track your progress</p>
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          const newPlan: SimpleReadingPlan = {
+                            id: Date.now().toString(),
+                            name: `${selectedBook} Study Plan`,
+                            description: `Complete reading plan for ${selectedBook}`,
+                            totalDays: BIBLE_BOOKS.find(b => b.name === selectedBook)?.chapters || 1,
+                            currentDay: 1,
+                            progress: 0,
+                            isActive: true
+                          };
+                          setReadingPlans([newPlan]);
+                        }}
+                        className="bg-orange-500 hover:bg-orange-600 text-xs px-2 py-1 h-auto"
+                      >
+                        Create Your First Plan
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Main Content Area - Changes based on active tab */}
@@ -543,137 +619,6 @@ export default function BiblePageExact() {
                   ) : (
                     <div className="text-center text-gray-500 mt-8">
                       Enter a search term to find verses
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PLANS TAB CONTENT */}
-          {activeTab === 'plans' && (
-            <div className="h-full flex flex-col">
-              {/* Plans Header */}
-              <div className="bg-orange-500 text-white p-6">
-                <h1 className="text-2xl font-bold">Reading Plans</h1>
-                <p className="text-orange-100">Track your Bible study progress</p>
-              </div>
-
-              {/* Reading Plans Interface */}
-              <div className="flex-1 p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Your Reading Plans</h3>
-                  <Button 
-                    onClick={() => {
-                      const newPlan: SimpleReadingPlan = {
-                        id: Date.now().toString(),
-                        name: `${selectedBook} Study Plan`,
-                        description: `Complete reading plan for ${selectedBook}`,
-                        totalDays: BIBLE_BOOKS.find(b => b.name === selectedBook)?.chapters || 1,
-                        currentDay: 1,
-                        progress: 0,
-                        isActive: true
-                      };
-                      setReadingPlans([newPlan, ...readingPlans]);
-                      toast({
-                        title: "Plan Created",
-                        description: `New reading plan for ${selectedBook} created!`
-                      });
-                    }}
-                    className="bg-orange-500 hover:bg-orange-600"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Plan
-                  </Button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto">
-                  {readingPlans.length > 0 ? (
-                    <div className="space-y-4">
-                      {readingPlans.map((plan) => (
-                        <div key={plan.id} className="border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-gray-900">{plan.name}</h4>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-500">
-                                Day {plan.currentDay} of {plan.totalDays}
-                              </span>
-                              {plan.isActive && (
-                                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                  Active
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
-                          
-                          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                            <div 
-                              className="bg-orange-500 h-2 rounded-full transition-all duration-300" 
-                              style={{ width: `${(plan.progress / plan.totalDays) * 100}%` }}
-                            ></div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                const updatedPlan = {
-                                  ...plan,
-                                  currentDay: Math.min(plan.currentDay + 1, plan.totalDays),
-                                  progress: plan.progress + 1
-                                };
-                                setReadingPlans(plans => 
-                                  plans.map(p => p.id === plan.id ? updatedPlan : p)
-                                );
-                                
-                                toast({
-                                  title: "Progress Updated",
-                                  description: `Marked day ${plan.currentDay} as complete!`
-                                });
-                              }}
-                              disabled={plan.progress >= plan.totalDays}
-                              className="bg-orange-500 hover:bg-orange-600"
-                            >
-                              Mark as Read
-                            </Button>
-                            
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedChapter(plan.currentDay);
-                                setActiveTab('read');
-                              }}
-                            >
-                              Read Today's Chapter
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500 mt-8">
-                      <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-lg font-medium mb-2">No Reading Plans Yet</p>
-                      <p className="text-sm mb-4">Create a reading plan to track your Bible study progress</p>
-                      <Button 
-                        onClick={() => {
-                          const newPlan: SimpleReadingPlan = {
-                            id: Date.now().toString(),
-                            name: `${selectedBook} Study Plan`,
-                            description: `Complete reading plan for ${selectedBook}`,
-                            totalDays: BIBLE_BOOKS.find(b => b.name === selectedBook)?.chapters || 1,
-                            currentDay: 1,
-                            progress: 0,
-                            isActive: true
-                          };
-                          setReadingPlans([newPlan]);
-                        }}
-                        className="bg-orange-500 hover:bg-orange-600"
-                      >
-                        Create Your First Plan
-                      </Button>
                     </div>
                   )}
                 </div>
