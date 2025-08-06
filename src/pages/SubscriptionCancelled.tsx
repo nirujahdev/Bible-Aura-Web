@@ -64,7 +64,7 @@ export default function SubscriptionCancelled() {
                   Try Again
                 </Button>
                 <Button 
-                  onClick={() => navigate('/')} 
+                  onClick={() => navigate('/dashboard')} 
                   variant="outline" 
                   className="border-orange-200 hover:bg-orange-50"
                 >

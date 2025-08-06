@@ -51,11 +51,11 @@ export default defineConfig(({ mode }) => ({
             './src/components/AIAnalysis',
             './src/lib/ai-bible-system'
           ],
-          'pages-main': [
-            './src/pages/Home',
-    
-            './src/pages/Bible'
-          ],
+                      'pages-main': [
+              './src/pages/Home',
+              './src/pages/Dashboard',
+              './src/pages/Bible'
+            ],
           'pages-features': [
             './src/pages/BibleAI',
             './src/pages/Journal',

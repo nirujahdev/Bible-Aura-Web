@@ -37,7 +37,7 @@ const LearningResources = () => {
       description: "Start each day with curated devotional content, scripture readings, and inspirational messages to strengthen your faith journey.",
       icon: Calendar,
       features: ["Daily content", "Scripture readings", "Inspirational messages", "Faith building"],
-      link: "/auth"
+      link: "/dashboard"
     },
     {
       title: "Study Plans",

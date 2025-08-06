@@ -202,6 +202,12 @@ export const SEO_CONFIG = {
     keywords: "Bible Q&A, Bible questions and answers, ask Bible AI, Bible AI questions, scripture questions, biblical questions, christian questions, faith questions, spiritual questions, bible aura qa, bible aura questions, AI Bible answers, biblical answers, christian answers, faith answers, spiritual answers, bible help, scripture help, biblical help, christian help, faith help, spiritual help, bible guidance, scripture guidance, biblical guidance, christian guidance, faith guidance, spiritual guidance, theological questions, biblical theology questions",
     canonicalUrl: "https://bibleaura.xyz/bible-qa"
   },
+  DASHBOARD: {
+    title: "Bible Study Dashboard | Your Personal AI Bible Study Center | Bible Aura",
+    description: "Access your personalized Bible study dashboard with AI insights, reading progress, journal entries, saved verses, and intelligent study recommendations tailored to your spiritual growth.",
+    keywords: "Bible study dashboard, personal Bible study, AI Bible dashboard, bible aura dashboard, christian dashboard, faith dashboard, spiritual dashboard, bible study tracker, scripture study tracker, biblical insights dashboard, christian insights dashboard, bible progress, scripture progress, biblical progress, christian progress, faith progress, spiritual progress, bible analytics, scripture analytics, biblical analytics, christian analytics, faith analytics, spiritual analytics, bible study statistics, scripture study statistics",
+    canonicalUrl: "https://bibleaura.xyz/dashboard"
+  },
   FAVORITES: {
     title: "Favorite Bible Verses | Save & Organize Scripture with AI | Bible Aura",
     description: "Save, organize, and revisit your favorite Bible verses with Bible Aura's intelligent bookmarking system. Get AI insights on your saved verses and track your spiritual growth.",

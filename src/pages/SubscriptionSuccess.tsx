@@ -101,7 +101,7 @@ export default function SubscriptionSuccess() {
               
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button 
-                  onClick={() => navigate('/')} 
+                  onClick={() => navigate('/dashboard')} 
                   className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8"
                 >
                   Start Your Journey

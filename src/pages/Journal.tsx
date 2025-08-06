@@ -221,7 +221,7 @@ const Journal = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center space-x-3">
-                      <Link to="/">
+                      <Link to="/dashboard">
             <Button variant="ghost" size="sm" className="text-white p-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
