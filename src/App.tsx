@@ -18,6 +18,7 @@ import NotFound from '@/pages/NotFound';
 // Import main application pages
 import Bible from '@/pages/Bible';
 import EnhancedBible from '@/pages/EnhancedBible';
+import BiblePageExact from '@/pages/BiblePageExact';
 import BibleQA from '@/pages/BibleQA';
 import Journal from '@/pages/Journal';
 import StudyHub from '@/pages/StudyHub';
@@ -128,7 +129,7 @@ function App() {
                 
                 <Route path="/bible" element={
                   <ProtectedRoute>
-                    <Bible />
+                    <BiblePageExact />
                   </ProtectedRoute>
                 } />
                 
