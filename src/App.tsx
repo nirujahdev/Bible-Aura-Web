@@ -85,7 +85,7 @@ function App() {
             <div className="App min-h-screen bg-background">
               <Routes>
                 {/* Public routes */}
-                <Route path="/home" element={<Home />} />
+                <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={<Blog />} />
@@ -107,8 +107,8 @@ function App() {
                 <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
                 <Route path="/blog/:slug" element={<PlaceholderPage title="Blog Article" description="This blog article is being prepared. Check back soon!" />} />
                 
-                {/* Main Application - Dashboard as both home and AI chat */}
-                <Route path="/" element={
+                {/* Main Application - Dashboard and AI chat */}
+                <Route path="/app" element={
                   <ProtectedRoute>
                     <Dashboard />
                   </ProtectedRoute>

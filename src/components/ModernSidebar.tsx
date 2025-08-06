@@ -63,7 +63,7 @@ const gridMenuItems: GridMenuItem[] = [
   {
     label: "AI Chat",
     icon: MessageCircle,
-    path: "/"
+    path: "/dashboard"
   }
 ]
 
@@ -104,7 +104,7 @@ const allNavigationItems: NavigationItem[] = [
 
   {
     title: "AI Chat",
-    url: "/",
+    url: "/dashboard",
     icon: MessageCircle,
   },
   {
