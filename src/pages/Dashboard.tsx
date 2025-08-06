@@ -37,11 +37,11 @@ interface Conversation {
 
 // AI Chat modes
 const CHAT_MODES = [
-  { id: 'aichat', name: '💬 AI Chat', description: 'General Bible discussion' },
-  { id: 'verse', name: '📖 Verse Analysis', description: 'Deep verse study' },
-  { id: 'parables', name: '📚 Parables', description: 'Parable explanations' },
-  { id: 'characters', name: '👥 Characters', description: 'Biblical character study' },
-  { id: 'qa', name: '❓ Q&A', description: 'Question & Answer format' },
+  { id: 'aichat', name: 'AI Chat', description: 'General Bible discussion' },
+  { id: 'verse', name: 'Verse Analysis', description: 'Deep verse study' },
+  { id: 'parables', name: 'Parables', description: 'Parable explanations' },
+  { id: 'characters', name: 'Characters', description: 'Biblical character study' },
+  { id: 'qa', name: 'Q&A', description: 'Question & Answer format' },
 ];
 
 export default function Dashboard() {
@@ -49,11 +49,6 @@ export default function Dashboard() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversations]);
   
   // Mobile-friendly dashboard - no redirect needed since this IS the main page
   
@@ -67,6 +62,11 @@ export default function Dashboard() {
 
   // State management - Start with empty conversations
   const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversations]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
