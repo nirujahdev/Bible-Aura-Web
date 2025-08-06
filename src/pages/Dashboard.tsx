@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   MessageCircle, BookOpen, PenTool, Send, Plus, Menu, Settings, LogOut,
-  Sparkles, User, Bot, MoreVertical, Trash2, Edit3, History
+  Sparkles, User, Bot, MoreVertical, Trash2, Edit3, History, Heart,
+  Library, Music, Brain, Home, FileText
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,18 +55,32 @@ export default function Dashboard() {
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: '1',
-      title: 'Understanding Romans 8:28',
+      title: 'Explain John 3:14 in simple words',
       messages: [
         {
           id: '1',
           role: 'user',
-          content: 'What does Romans 8:28 mean?',
+          content: 'Explain John 3:14 in simple words',
           timestamp: new Date().toISOString()
         },
         {
           id: '2',
           role: 'assistant',
-          content: 'Romans 8:28 teaches us that "all things work together for good to those who love God, to those who are the called according to His purpose." This verse doesn\'t mean that everything that happens is good, but rather that God can work even difficult circumstances together for our ultimate good and His glory.',
+          content: `1. "And as Moses lifted up the serpent in the wilderness, even so must the Son of Man be lifted up." (John 3:14)
+
+2. Historical context:
+   - Refers to Numbers 21:4-9 when Israelites were bitten by snakes
+   - Moses made a bronze snake on a pole to heal them
+   - Jesus compares this to His coming crucifixion
+
+3. Theological meaning:
+   - Jesus would be "lifted up" on the cross
+   - Just looking at the bronze snake brought healing
+   - Similarly, believing in Christ brings salvation
+
+4. Practical application:
+   - Our salvation comes by looking to Jesus
+   - No complicated rituals - simple faith is enough`,
           timestamp: new Date().toISOString()
         }
       ],
@@ -121,7 +136,7 @@ export default function Dashboard() {
         ? { 
             ...conv, 
             messages: [...conv.messages, userMessage],
-            title: conv.messages.length === 0 ? message.slice(0, 50) + '...' : conv.title
+            title: conv.messages.length === 0 ? message.slice(0, 30) + '...' : conv.title
           }
         : conv
     ));
@@ -156,127 +171,133 @@ export default function Dashboard() {
     }
   };
 
-  // Sidebar content
+  // Navigation items matching the design
+  const navigationItems = [
+    { icon: MessageCircle, path: '/dashboard', label: 'Chat', isActive: true },
+    { icon: BookOpen, path: '/bible', label: 'Bible' },
+    { icon: Library, path: '/study-hub', label: 'Study Hub' },
+    { icon: FileText, path: '/journal', label: 'Journal' },
+    { icon: PenTool, path: '/sermons', label: 'Sermons' },
+    { icon: Music, path: '/songs', label: 'Songs' },
+    { icon: Heart, path: '/favorites', label: 'Favorites' }
+  ];
+
+  // Sidebar content matching the exact design
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-gray-50">
-      {/* Header */}
-      <div className="p-4 border-b bg-white">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+    <div className="flex h-full bg-gray-900 text-white">
+      {/* Left icon bar */}
+      <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <div className="p-4">
+          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="font-bold text-gray-900">Bible Aura</h1>
-            <p className="text-xs text-gray-600">AI Biblical Assistant</p>
           </div>
         </div>
         
-        <Button 
-          onClick={createNewConversation}
-          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Chat
-        </Button>
-      </div>
-
-      {/* Conversations */}
-      <div className="flex-1 overflow-y-auto p-2">
-        <div className="space-y-1">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              className={`group relative p-3 rounded-lg cursor-pointer hover:bg-white transition-colors ${
-                activeConversation === conv.id ? 'bg-white shadow-sm border border-orange-200' : ''
+        <div className="flex-1 flex flex-col space-y-2 px-2">
+          {navigationItems.map((item, index) => (
+            <Link
+              key={index}
+              to={item.path}
+              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
+                item.isActive 
+                  ? 'bg-orange-500 text-white' 
+                  : 'text-gray-400 hover:bg-gray-700 hover:text-white'
               }`}
-              onClick={() => setActiveConversation(conv.id)}
+              title={item.label}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {conv.title}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {conv.messages.length} messages
-                  </p>
-                </div>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0"
-                    >
-                      <MoreVertical className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => deleteConversation(conv.id)}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+              <item.icon className="h-5 w-5" />
+            </Link>
           ))}
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="p-4 border-t bg-white">
-        <div className="space-y-2">
-          <Link to="/bible">
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Bible Study
-            </Button>
+        <div className="p-2 space-y-2">
+          <Link 
+            to="/profile"
+            className="w-12 h-12 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            title="Settings"
+          >
+            <Settings className="h-5 w-5" />
           </Link>
-          <Link to="/sermons">
-            <Button variant="ghost" size="sm" className="w-full justify-start">
-              <PenTool className="h-4 w-4 mr-2" />
-              Sermons
-            </Button>
-          </Link>
+          
+          <Avatar className="w-12 h-12 rounded-lg">
+            <AvatarImage src={profile?.avatar_url} />
+            <AvatarFallback className="bg-orange-500 text-white text-sm rounded-lg">
+              {getUserName().charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
 
-      {/* User Profile */}
-      <div className="p-4 border-t bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-orange-500 text-white text-sm">
-                {getUserName().charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium text-gray-900">{getUserName()}</p>
-              <p className="text-xs text-gray-500">Free Plan</p>
-            </div>
+      {/* Chat History Panel */}
+      <div className="w-64 bg-gray-900 border-r border-gray-700 flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Chat History</h2>
+            <Button 
+              onClick={createNewConversation}
+              size="sm"
+              className="bg-orange-500 hover:bg-orange-600 text-white h-8 w-8 p-0 rounded-lg"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link to="/profile">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => signOut()}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button 
+            onClick={createNewConversation}
+            variant="outline" 
+            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Chat
+          </Button>
+        </div>
+
+        {/* Conversations List */}
+        <div className="flex-1 overflow-y-auto p-2">
+          <div className="space-y-1">
+            {conversations.map((conv) => (
+              <div
+                key={conv.id}
+                className={`group relative p-3 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors ${
+                  activeConversation === conv.id ? 'bg-gray-800 border border-gray-600' : ''
+                }`}
+                onClick={() => setActiveConversation(conv.id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-200 truncate">
+                      {conv.title}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {conv.messages.length} messages
+                    </p>
+                  </div>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400 hover:text-white"
+                      >
+                        <MoreVertical className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                      <DropdownMenuItem 
+                        onClick={() => deleteConversation(conv.id)}
+                        className="text-gray-300 hover:bg-gray-700"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -285,7 +306,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white flex">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-80 border-r border-gray-200">
+      <div className="hidden lg:block w-80">
         <SidebarContent />
       </div>
 
@@ -309,8 +330,13 @@ export default function Dashboard() {
           </Sheet>
           
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-orange-500" />
-            <span className="font-semibold">Bible Aura AI</span>
+            <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
+              <span className="text-white text-sm font-bold">✦</span>
+            </div>
+            <div>
+              <div className="font-bold text-gray-900">Bible Aura AI</div>
+              <div className="text-xs text-gray-600">Your Biblical Study Assistant</div>
+            </div>
           </div>
           
           <Avatar className="h-8 w-8">
@@ -319,6 +345,27 @@ export default function Dashboard() {
               {getUserName().charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center justify-between p-4 border-b bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">✦</span>
+            </div>
+            <div>
+              <div className="font-bold text-gray-900 text-lg">Bible Aura AI</div>
+              <div className="text-sm text-gray-600">Your Biblical Study Assistant</div>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={createNewConversation}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Chat
+          </Button>
         </div>
 
         {/* Chat Messages */}
@@ -333,7 +380,7 @@ export default function Dashboard() {
                   Hello {getUserName()}!
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  I'm your AI Biblical assistant. Ask me anything about Scripture, theology, or faith.
+                  How can I assist you today?
                 </p>
                 <div className="space-y-2">
                   <Button 
@@ -368,18 +415,18 @@ export default function Dashboard() {
                   className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-white" />
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-sm font-bold">✦</span>
                     </div>
                   )}
                   
                   <div className={`max-w-2xl ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
                     <div className={`p-4 rounded-2xl ${
                       msg.role === 'user' 
-                        ? 'bg-orange-500 text-white' 
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-orange-500 text-white rounded-br-md' 
+                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
                     }`}>
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                     </div>
                   </div>
                   
@@ -396,10 +443,10 @@ export default function Dashboard() {
               
               {isLoading && (
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-white" />
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">✦</span>
                   </div>
-                  <div className="bg-gray-100 p-4 rounded-2xl">
+                  <div className="bg-gray-100 p-4 rounded-2xl rounded-bl-md">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
@@ -418,25 +465,27 @@ export default function Dashboard() {
         <div className="border-t bg-white p-4">
           <div className="max-w-4xl mx-auto">
             <div className="flex gap-3">
-              <Textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ask me anything about the Bible..."
-                className="flex-1 min-h-[44px] max-h-32 resize-none border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-              />
-              <Button 
-                onClick={sendMessage}
-                disabled={!message.trim() || isLoading}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 h-11 px-4"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+              <div className="flex-1 relative">
+                <Textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Ask me anything about the Bible..."
+                  className="min-h-[44px] max-h-32 resize-none border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-12"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                />
+                <Button 
+                  onClick={sendMessage}
+                  disabled={!message.trim() || isLoading}
+                  className="absolute right-2 bottom-2 bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0 rounded-lg"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             <p className="text-xs text-gray-500 mt-2 text-center">
