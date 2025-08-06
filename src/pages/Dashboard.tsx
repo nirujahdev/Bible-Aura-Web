@@ -49,6 +49,11 @@ export default function Dashboard() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversations]);
   
   // Mobile-friendly dashboard - no redirect needed since this IS the main page
   
@@ -319,54 +324,75 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="max-w-4xl mx-auto p-6 space-y-6">
-                {conversations.find(c => c.id === activeConversation)?.messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
-                    className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {msg.role === 'assistant' && (
-                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]">✦</span>
-                      </div>
-                    )}
-                    
-                    <div className={`max-w-2xl ${msg.role === 'user' ? 'order-1' : 'order-2'}`}>
-                      <div className={`p-4 rounded-2xl ${
+                  {conversations.find(c => c.id === activeConversation)?.messages.map((msg) => (
+                    <div 
+                      key={msg.id} 
+                      className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {msg.role === 'assistant' && (
+                        <Bot className="w-8 h-8 text-orange-500 flex-shrink-0 mt-1" />
+                      )}
+                      
+                      <div className={`max-w-[80%] p-4 rounded-2xl ${
                         msg.role === 'user' 
-                          ? 'bg-orange-500 text-white rounded-br-md' 
-                          : 'bg-white text-gray-900 rounded-bl-md border border-gray-200 shadow-sm'
+                          ? 'bg-orange-500 text-white ml-auto' 
+                          : 'bg-white text-gray-800 border border-gray-200'
                       }`}>
-                        <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <p className="text-xs opacity-70 mt-2">{msg.timestamp}</p>
+                      </div>
+                      
+                      {msg.role === 'user' && (
+                        <Avatar className="w-8 h-8 flex-shrink-0">
+                          <AvatarFallback className="bg-blue-500 text-white text-xs">
+                            {getUserName().charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {isLoading && (
+                    <div className="flex gap-3">
+                      <Bot className="w-8 h-8 text-orange-500 flex-shrink-0 mt-1" />
+                      <div className="bg-white text-gray-800 p-4 rounded-2xl border border-gray-200">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                          <span>Thinking...</span>
+                        </div>
                       </div>
                     </div>
-                    
-                    {msg.role === 'user' && (
-                      <Avatar className="w-8 h-8 flex-shrink-0 order-2">
-                        <AvatarImage src={profile?.avatar_url} />
-                        <AvatarFallback className="bg-blue-500 text-white text-sm">
-                          {getUserName().charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                ))}
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              )
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Bot className="w-16 h-16 text-orange-500 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Welcome to Bible Aura AI</h3>
+                <p className="text-gray-600 mb-6">Choose a chat mode below and start your spiritual conversation</p>
                 
-                {isLoading && (
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]">✦</span>
-                    </div>
-                    <div className="bg-white p-4 rounded-2xl rounded-bl-md border border-gray-200">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                {/* Chat Mode Selection */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md mb-6">
+                  {CHAT_MODES.map((mode) => (
+                    <Button
+                      key={mode.id}
+                      variant={chatMode === mode.id ? "default" : "outline"}
+                      className={`p-4 h-auto text-left ${chatMode === mode.id ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                      onClick={() => setChatMode(mode.id)}
+                    >
+                      <div>
+                        <div className="font-medium">{mode.name}</div>
+                        <div className="text-xs opacity-70">{mode.description}</div>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    </Button>
+                  ))}
+                </div>
                 
-                <div ref={messagesEndRef} />
+                <Button onClick={createNewChat} className="bg-orange-500 hover:bg-orange-600">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Start New Chat
+                </Button>
               </div>
             )}
           </div>
