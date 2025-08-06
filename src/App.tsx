@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/ProtectedRoute';
 // import SmartRedirect from '@/components/SmartRedirect'; // REMOVED - NOT USED
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { AuthProvider } from '@/hooks/useAuth';
 
 // Pages
 import Home from '@/pages/Home';
@@ -78,7 +79,8 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
         <Router>
           <div className="App">
             <Routes>
@@ -296,6 +298,7 @@ function App() {
           <Toaster />
         </Router>
       </QueryClientProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
