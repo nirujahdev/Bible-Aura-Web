@@ -6,14 +6,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { useSEO } from '@/hooks/useSEO';
 import { ModernLayout } from '@/components/ModernLayout';
 import { 
   Search, BookOpen, Users, Crown, TreePine, Library, 
   Heart, Star, Share, Languages, Grid, Filter,
   ChevronDown, Plus, Eye, ExternalLink, 
-  PenTool, Lightbulb, Globe
+  PenTool, Lightbulb, Globe, Clock
 } from 'lucide-react';
+
+// SEO Configuration for Study Hub
+const SEO_CONFIG = {
+  title: "Study Hub - Comprehensive Bible Study Tools | Bible Aura",
+  description: "Explore in-depth Bible studies with our comprehensive Study Hub. Access topical studies, character profiles, and parable explanations to deepen your faith journey.",
+  keywords: "bible study, topical study, bible characters, parables, spiritual growth, christian education",
+  ogTitle: "Study Hub - Deep Bible Study Made Simple",
+  ogDescription: "Access comprehensive Bible study tools including topical studies, character profiles, and parable explanations. Perfect for personal study and group discussions."
+};
 
 const StudyHub = () => {
   const { user } = useAuth();
@@ -21,7 +30,7 @@ const StudyHub = () => {
   const isMobile = useIsMobile();
   
   // SEO optimization
-  useSEO(SEO_CONFIG.STUDY_HUB);
+  useSEO(SEO_CONFIG);
 
   const [activeSection, setActiveSection] = useState('topical');
   const [searchQuery, setSearchQuery] = useState('');

@@ -186,72 +186,74 @@ export function EnhancedJournalEditor({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div className="h-full bg-white flex flex-col">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-3 flex-1">
+          <Button
+            onClick={onCancel}
+            variant="ghost"
+            className="p-2"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {isEditing ? 'Edit Entry' : 'New Journal Entry'}
+          </h1>
+        </div>
         
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center gap-3">
+          {isMobile && (
             <Button
-              onClick={onCancel}
               variant="ghost"
+              onClick={() => setShowSettings(!showSettings)}
               className="p-2"
             >
-              <X className="h-5 w-5" />
+              <Settings className="h-4 w-4" />
             </Button>
-            <h2 className="text-lg font-semibold text-gray-800">
-              {isEditing ? 'Edit Entry' : 'New Journal Entry'}
-            </h2>
-          </div>
+          )}
           
-          <div className="flex items-center gap-2">
-            {isMobile && (
-              <Button
-                variant="ghost"
-                onClick={() => setShowSettings(!showSettings)}
-                className="p-2"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving || !entry.title?.trim() || !entry.content?.trim()}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2"
+          >
+            {saving ? (
+              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
             )}
-            
-            <Button
-              onClick={handleSave}
-              disabled={saving || !entry.title?.trim() || !entry.content?.trim()}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2"
-            >
-              {saving ? (
-                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              {isMobile ? 'Save' : 'Save Entry'}
-            </Button>
-          </div>
+            {isMobile ? 'Save' : 'Save Entry'}
+          </Button>
         </div>
+      </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-hidden flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* Editor Area */}
+        <div className="flex-1 flex flex-col">
           
           {/* Title Input */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-6 border-b border-gray-200">
             <Input
               placeholder="Entry title..."
               value={entry.title || ''}
               onChange={(e) => setEntry(prev => ({ ...prev, title: e.target.value }))}
-              className="text-lg font-medium border-0 shadow-none px-0 focus-visible:ring-0"
+              className="text-2xl font-bold border-0 shadow-none px-0 focus-visible:ring-0 placeholder:text-gray-400"
               autoFocus={!isMobile}
             />
           </div>
 
           {/* Toolbar */}
-          {(!isMobile || !showSettings) && (
-            <div className="flex items-center gap-2 p-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => formatText('bold')}
-                className="p-2"
+                className="p-2 hover:bg-gray-200"
               >
                 <Bold className="h-4 w-4" />
               </Button>
@@ -259,7 +261,7 @@ export function EnhancedJournalEditor({
                 variant="ghost"
                 size="sm"
                 onClick={() => formatText('italic')}
-                className="p-2"
+                className="p-2 hover:bg-gray-200"
               >
                 <Italic className="h-4 w-4" />
               </Button>
@@ -267,35 +269,34 @@ export function EnhancedJournalEditor({
                 variant="ghost"
                 size="sm"
                 onClick={() => formatText('bullet')}
-                className="p-2"
+                className="p-2 hover:bg-gray-200"
               >
                 <List className="h-4 w-4" />
               </Button>
-              
-              <Separator orientation="vertical" className="h-6 mx-2" />
-              
-              <div className="flex items-center gap-4 text-sm text-gray-600">
-                <span>{stats.wordCount} words</span>
-                <span>{stats.readingTime} min read</span>
-              </div>
             </div>
-          )}
+            
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span>{stats.wordCount} words</span>
+              <span>{stats.readingTime} min read</span>
+            </div>
+          </div>
 
           {/* Content Editor */}
-          <div className="flex-1 p-4">
+          <div className="flex-1 p-6 overflow-y-auto">
             <Textarea
               ref={textareaRef}
               placeholder="Write your thoughts, prayers, and reflections here..."
               value={entry.content || ''}
               onChange={(e) => setEntry(prev => ({ ...prev, content: e.target.value }))}
-              className="w-full h-full min-h-[300px] border-0 shadow-none resize-none focus-visible:ring-0 text-base leading-relaxed"
+              className="w-full h-full min-h-[400px] border-0 shadow-none resize-none focus-visible:ring-0 text-lg leading-relaxed"
               style={{
-                fontSize: isMobile ? '16px' : '14px',
+                fontSize: isMobile ? '16px' : '18px',
+                fontFamily: 'Inter, system-ui, sans-serif'
               }}
             />
           </div>
 
-          {/* Settings Panel (Mobile) */}
+          {/* Mobile Settings Panel */}
           {isMobile && showSettings && (
             <div className="border-t border-gray-200 p-4 bg-gray-50">
               <div className="space-y-4">
@@ -328,75 +329,75 @@ export function EnhancedJournalEditor({
               </div>
             </div>
           )}
-
-          {/* Sidebar (Desktop) */}
-          {!isMobile && (
-            <div className="w-80 border-l border-gray-200 p-4 bg-gray-50">
-              <div className="space-y-6">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2 block">Category</Label>
-                  <Select 
-                    value={entry.category || 'personal'} 
-                    onValueChange={(value) => setEntry(prev => ({ ...prev, category: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.icon} {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">Private Entry</Label>
-                  <Switch 
-                    checked={entry.is_private !== false}
-                    onCheckedChange={(checked) => setEntry(prev => ({ ...prev, is_private: checked }))}
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2 block">Entry Date</Label>
-                  <Input
-                    type="date"
-                    value={entry.entry_date || new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setEntry(prev => ({ ...prev, entry_date: e.target.value }))}
-                  />
-                </div>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Writing Stats</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-gray-600 space-y-1">
-                    <div className="flex justify-between">
-                      <span>Words:</span>
-                      <span>{stats.wordCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Characters:</span>
-                      <span>{stats.charCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Reading time:</span>
-                      <span>{stats.readingTime} min</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Paragraphs:</span>
-                      <span>{stats.paragraphs}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
-
         </div>
+
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <div className="w-80 border-l border-gray-200 bg-gray-50 p-6 overflow-y-auto">
+            <div className="space-y-6">
+              <div>
+                <Label className="text-sm font-medium text-gray-700 mb-3 block">Category</Label>
+                <Select 
+                  value={entry.category || 'personal'} 
+                  onValueChange={(value) => setEntry(prev => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.icon} {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Private Entry</Label>
+                <Switch 
+                  checked={entry.is_private !== false}
+                  onCheckedChange={(checked) => setEntry(prev => ({ ...prev, is_private: checked }))}
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700 mb-3 block">Entry Date</Label>
+                <Input
+                  type="date"
+                  value={entry.entry_date || new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setEntry(prev => ({ ...prev, entry_date: e.target.value }))}
+                />
+              </div>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Writing Stats</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-gray-600 space-y-2">
+                  <div className="flex justify-between">
+                    <span>Words:</span>
+                    <span className="font-medium">{stats.wordCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Characters:</span>
+                    <span className="font-medium">{stats.charCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Reading time:</span>
+                    <span className="font-medium">{stats.readingTime} min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Paragraphs:</span>
+                    <span className="font-medium">{stats.paragraphs}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
