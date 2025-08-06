@@ -123,7 +123,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                   variant="outline" 
                   className="border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300 rounded-full px-5 py-2 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
                 >
-                  <Link to="/auth">
+                  <Link to="/auth?redirect=%2Fdashboard">
                     <LogIn className="h-4 w-4 mr-2" />
                     Sign In
                   </Link>
@@ -133,7 +133,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                   asChild 
                   className="bg-gradient-to-r from-primary to-primary/80 text-white hover:from-primary/90 hover:to-primary/70 transition-all duration-300 rounded-full px-5 py-2 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
                 >
-                  <Link to="/auth">
+                  <Link to="/auth?redirect=%2Fdashboard">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Get Started
                   </Link>
@@ -217,7 +217,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
               {/* Auth Buttons */}
               <div className="border-t border-primary/20 pt-6 px-6 space-y-4">
                 <Link
-                  to="/auth"
+                  to="/auth?redirect=%2Fdashboard"
                   onClick={closeMobileMenu}
                   className="flex items-center justify-center space-x-2 w-full px-6 py-4 border-2 border-primary/20 text-primary rounded-2xl hover:bg-primary hover:text-white transition-all duration-300 font-semibold text-lg"
                 >
@@ -225,7 +225,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                   <span>Sign In</span>
                 </Link>
                 <Link
-                  to="/auth"
+                  to="/auth?redirect=%2Fdashboard"
                   onClick={closeMobileMenu}
                   className="flex items-center justify-center space-x-2 w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/90 text-white rounded-2xl hover:from-primary/90 hover:to-primary/80 transition-all duration-300 font-semibold text-lg"
                 >

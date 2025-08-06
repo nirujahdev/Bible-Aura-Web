@@ -77,7 +77,7 @@ const Home = () => {
               {/* CTA Button - No animations */}
               <div className="pt-2 lg:pt-4">
                 <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-base lg:text-lg px-6 lg:px-8 py-4 lg:py-5 rounded-xl shadow-lg hover:scale-105 transition-transform w-full sm:w-auto">
-                  <Link to="/auth">
+                  <Link to="/auth?redirect=%2Fdashboard">
                     <Sparkles className="h-4 lg:h-5 w-4 lg:w-5 mr-2" />
                     START YOUR JOURNEY
                   </Link>

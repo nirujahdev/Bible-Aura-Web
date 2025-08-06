@@ -193,7 +193,7 @@ export function ModernHeader({
               asChild 
               className="bg-orange-500 text-white hover:bg-orange-600 font-bold shadow-lg text-sm lg:text-base px-6 py-2.5"
             >
-              <Link to="/auth">
+              <Link to="/auth?redirect=%2Fdashboard">
                 Start Your Journey
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
