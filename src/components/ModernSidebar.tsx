@@ -75,7 +75,7 @@ const gridMenuItems: GridMenuItem[] = [
 // Sidebar icon navigation - Updated with better icons
 const sidebarTopItems: SidebarIconItem[] = [
   { icon: MessageCircle, action: "new", tooltip: "New Chat" },
-  { icon: Home, path: "/dashboard", tooltip: "Dashboard" },
+  { icon: Home, path: "/", tooltip: "Home" },
   { icon: BookOpen, path: "/bible", tooltip: "Bible" },
   { icon: Search, path: "/study-hub", tooltip: "AI Study" }
 ]
@@ -88,7 +88,7 @@ const sidebarBottomItems: SidebarIconItem[] = [
 const allNavigationItems: NavigationItem[] = [
   {
     title: "Home",
-    url: "/dashboard",
+    url: "/",
     icon: Home,
   },
   {

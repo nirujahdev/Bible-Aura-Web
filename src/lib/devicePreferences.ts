@@ -59,23 +59,24 @@ export function hasDevicePreference(): boolean {
 }
 
 /**
- * Get the recommended dashboard route based on device preference
+ * Get the recommended route based on device preference
+ * Note: Dashboard is now laptop/desktop only
  */
-export function getRecommendedDashboardRoute(): string {
+export function getRecommendedRoute(): string {
   const preference = getDevicePreference();
   
   if (!preference) {
-    return '/dashboard'; // Default
+    return '/'; // Default to landing page
   }
   
-  // You can customize these routes based on your app structure
+  // Dashboard is laptop/desktop only, mobile users go to landing page
   switch (preference.type) {
     case 'mobile':
-      return '/dashboard'; // Mobile-optimized dashboard
+      return '/'; // Landing page for mobile users
     case 'desktop':
-      return '/dashboard'; // Desktop-optimized dashboard
+      return '/dashboard'; // Dashboard for desktop users
     default:
-      return '/dashboard';
+      return '/';
   }
 }
 

@@ -21,10 +21,10 @@ export default function MobileDeviceSelection() {
     }
   }, [user, loading, navigate]);
 
-  // If user already has a preference, redirect to dashboard
+  // If user already has a preference, redirect to landing page (no mobile dashboard)
   useEffect(() => {
     if (!loading && user && hasPreference) {
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, loading, hasPreference, navigate]);
 
@@ -55,12 +55,12 @@ export default function MobileDeviceSelection() {
       // Store the user's preference using the hook
       updatePreference(deviceType);
       
-      // Navigate to dashboard
-      navigate('/dashboard', { replace: true });
+      // Navigate to landing page (dashboard is laptop-only now)
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Error setting device preference:', error);
-      // Still navigate to dashboard as fallback
-      navigate('/dashboard', { replace: true });
+      // Still navigate to landing page as fallback
+      navigate('/', { replace: true });
     }
   };
 

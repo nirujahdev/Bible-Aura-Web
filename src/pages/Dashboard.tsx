@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import EnhancedAIChat from '@/components/EnhancedAIChat';
 import { useDevicePreference } from '@/hooks/useDevicePreference';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Navigate } from 'react-router-dom';
 import EnhancedSermonIntegration from '@/components/EnhancedSermonIntegration';
 
 interface DashboardStats {
@@ -162,11 +164,17 @@ const getAIInsight = async (prompt: string): Promise<string> => {
   return insights[Math.floor(Math.random() * insights.length)] + "\n\n• Trust in His timing\n• Seek His wisdom in prayer\n• He will never leave nor forsake you";
 };
 
-// Main Dashboard Component - Responsive for both laptop and mobile
+// Main Dashboard Component - LAPTOP/DESKTOP ONLY
 const Dashboard = () => {
   const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
   const { preference } = useDevicePreference();
+  const isMobile = useIsMobile();
+  
+  // Redirect mobile users to landing page
+  if (isMobile) {
+    return <Navigate to="/" replace />;
+  }
   
   // SEO optimization
   useSEO(SEO_CONFIG.DASHBOARD);
