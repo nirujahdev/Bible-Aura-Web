@@ -179,8 +179,8 @@ export default function Auth() {
       const urlParams = new URLSearchParams(window.location.search);
       const redirectTo = urlParams.get('redirect');
       
-      // Determine final redirect destination - go to dashboard unless specific redirect
-      const finalRedirect = redirectTo || '/dashboard';
+      // Determine final redirect destination - go to main app unless specific redirect
+      const finalRedirect = redirectTo || '/';
       
       // Delay redirect slightly to show success message
       setTimeout(() => {

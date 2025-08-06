@@ -37,10 +37,7 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Redirect mobile users to landing page
-  if (isMobile) {
-    return <Navigate to="/" replace />;
-  }
+  // Mobile-friendly dashboard - no redirect needed since this IS the main page
   
   // SEO optimization
   useSEO(SEO_CONFIG.DASHBOARD);

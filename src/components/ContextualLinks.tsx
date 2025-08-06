@@ -10,7 +10,7 @@ interface ContextualLink {
 
 const contextualMappings: Record<string, ContextualLink[]> = {
   'bible study': [
-    { text: 'Bible AI chat', href: '/bible-ai', type: 'internal', description: 'AI-powered Bible study assistant' },
+    { text: 'Bible AI chat', href: '/', type: 'internal', description: 'AI-powered Bible study assistant' },
     { text: 'Study Hub', href: '/study-hub', type: 'internal', description: 'Advanced Bible study tools' },
     { text: 'Bible reading', href: '/bible', type: 'internal', description: 'Read and study the Bible' },
     { text: 'Bible journal', href: '/journal', type: 'internal', description: 'Personal Bible study journal' },
@@ -115,7 +115,7 @@ export function ManualContextualLinks({ context, limit = 4 }: ManualContextualLi
     switch (context) {
       case 'bible-study':
         return [
-          { text: 'AI Bible Chat Assistant', href: '/bible-ai', type: 'internal', description: 'Ask AI about Biblical topics' },
+          { text: 'AI Bible Chat Assistant', href: '/', type: 'internal', description: 'Ask AI about Biblical topics' },
           { text: 'Bible Characters Study', href: '/bible-characters', type: 'internal', description: 'Explore Biblical figures' },
           { text: 'Topical Bible Study', href: '/study-hub', type: 'internal', description: 'Study by topics' },
           { text: 'Bible Reading Tools', href: '/bible', type: 'internal', description: 'Multiple translations and tools' }
@@ -123,7 +123,7 @@ export function ManualContextualLinks({ context, limit = 4 }: ManualContextualLi
       
       case 'ai-features':
         return [
-          { text: 'AI Bible Chat', href: '/bible-ai', type: 'internal', description: 'Interactive Biblical Q&A' },
+          { text: 'AI Bible Chat', href: '/', type: 'internal', description: 'Interactive Biblical Q&A' },
           { text: 'How AI Transforms Bible Study', href: '/blog/how-ai-transforms-bible-study', type: 'internal', description: 'Complete AI Bible guide' },
           { text: 'AI vs Traditional Study', href: '/blog/bible-ai-vs-traditional-study', type: 'internal', description: 'Compare study methods' },
           { text: 'AI Bible Benefits', href: '/blog/bible-study-ai-benefits', type: 'internal', description: 'Benefits of AI Bible study' }
@@ -140,14 +140,14 @@ export function ManualContextualLinks({ context, limit = 4 }: ManualContextualLi
       case 'journal':
         return [
           { text: 'Personal Bible Journal', href: '/journal', type: 'internal', description: 'Write Bible reflections' },
-          { text: 'AI Bible Insights', href: '/bible-ai', type: 'internal', description: 'Get AI help with journaling' },
+          { text: 'AI Bible Insights', href: '/', type: 'internal', description: 'Get AI help with journaling' },
           { text: 'Bible Study Tools', href: '/bible', type: 'internal', description: 'Tools for deeper study' },
-          { text: 'Daily Bible Reading', href: '/dashboard', type: 'internal', description: 'Daily scripture and inspiration' }
+          { text: 'Daily Bible Reading', href: '/', type: 'internal', description: 'Daily scripture and inspiration' }
         ];
       
       default:
         return [
-          { text: 'AI Bible Chat', href: '/bible-ai', type: 'internal', description: 'Ask AI about scripture' },
+          { text: 'AI Bible Chat', href: '/', type: 'internal', description: 'Ask AI about scripture' },
           { text: 'Bible Study', href: '/bible', type: 'internal', description: 'Read and study scripture' },
           { text: 'Study Hub', href: '/study-hub', type: 'internal', description: 'Comprehensive Bible resources' },
           { text: 'Bible Journal', href: '/journal', type: 'internal', description: 'Personal Bible notes' }

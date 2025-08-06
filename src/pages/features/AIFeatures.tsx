@@ -23,14 +23,14 @@ const AIFeatures = () => {
       description: "Get deep AI-powered analysis of Bible verses with historical context, theological insights, and practical applications for modern life.",
       icon: Brain,
       features: ["Verse-by-verse analysis", "Historical context", "Theological insights", "Practical applications"],
-      link: "/bible-ai"
+      link: "/"
     },
     {
       title: "AI Chat Assistant",
       description: "Converse with our AI Bible assistant for instant answers to biblical questions, scripture explanations, and spiritual guidance.",
       icon: MessageCircle,
       features: ["24/7 Bible assistance", "Scripture explanations", "Spiritual guidance", "Instant responses"],
-      link: "/bible-ai"
+      link: "/"
     },
     {
       title: "Smart Verse Search",
@@ -44,7 +44,7 @@ const AIFeatures = () => {
       description: "Discover hidden connections and deeper meanings in Scripture with AI-powered pattern recognition and cross-referencing.",
       icon: Lightbulb,
       features: ["Scripture connections", "Pattern recognition", "Cross-references", "Deeper meanings"],
-      link: "/bible-ai"
+      link: "/"
     },
     {
       title: "Biblical Q&A",

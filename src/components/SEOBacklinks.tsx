@@ -20,7 +20,7 @@ interface SEOBacklinksProps {
 const allLinks: RelatedLink[] = [
   {
     title: "Bible AI - Intelligent Biblical Assistant",
-    href: "/bible-ai",
+    href: "/",
     description: "Experience the power of Bible AI technology with instant Biblical Q&A, verse analysis, and AI-powered spiritual insights",
     icon: Bot,
     category: "ai",
@@ -36,7 +36,7 @@ const allLinks: RelatedLink[] = [
   },
   {
     title: "AI Bible Chat - Ask Questions to Bible AI",
-    href: "/bible-ai",
+    href: "/",
     description: "Chat with our advanced Bible AI system for instant answers to Biblical questions and personalized spiritual guidance",
     icon: MessageSquare,
     category: "ai",
@@ -179,7 +179,7 @@ export function QuickActionSEOLinks() {
   const quickActions = [
     {
       title: "Bible AI Chat",
-      href: "/bible-ai",
+      href: "/",
       description: "Ask Bible AI questions and get instant Biblical insights with our intelligent assistant",
       icon: MessageSquare,
       color: "blue",

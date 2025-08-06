@@ -63,7 +63,7 @@ const gridMenuItems: GridMenuItem[] = [
   {
     label: "AI Chat",
     icon: MessageCircle,
-    path: "/bible-ai"
+    path: "/"
   }
 ]
 
@@ -104,7 +104,7 @@ const allNavigationItems: NavigationItem[] = [
 
   {
     title: "AI Chat",
-    url: "/bible-ai",
+    url: "/",
     icon: MessageCircle,
   },
   {
@@ -335,7 +335,7 @@ function MobileNavigationHeader() {
   }
 
   const mobileNavItems = [
-    { icon: MessageCircle, path: "/ai-chat", label: "AI Chat", description: "Biblical AI assistant" },
+    { icon: MessageCircle, path: "/", label: "AI Chat", description: "Biblical AI assistant" },
     { icon: BookOpen, path: "/bible", label: "Bible", description: "Read & study scripture" },
     { icon: Library, path: "/study-hub", label: "Study Hub", description: "Deep biblical study" },
     { icon: PenTool, path: "/journal", label: "Journal", description: "Personal reflections" },

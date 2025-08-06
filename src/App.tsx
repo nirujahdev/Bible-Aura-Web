@@ -18,7 +18,6 @@ import NotFound from '@/pages/NotFound';
 // Import main application pages
 import Bible from '@/pages/Bible';
 import EnhancedBible from '@/pages/EnhancedBible';
-import BibleAI from '@/pages/BibleAI';
 import BibleQA from '@/pages/BibleQA';
 import Journal from '@/pages/Journal';
 import StudyHub from '@/pages/StudyHub';
@@ -86,7 +85,7 @@ function App() {
             <div className="App min-h-screen bg-background">
               <Routes>
                 {/* Public routes */}
-                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={<Blog />} />
@@ -108,8 +107,20 @@ function App() {
                 <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
                 <Route path="/blog/:slug" element={<PlaceholderPage title="Blog Article" description="This blog article is being prepared. Check back soon!" />} />
                 
-                {/* Protected routes - Main Application */}
+                {/* Main Application - Dashboard as both home and AI chat */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/ai-chat" element={
                   <ProtectedRoute>
                     <Dashboard />
                   </ProtectedRoute>
@@ -124,12 +135,6 @@ function App() {
                 <Route path="/enhanced-bible" element={
                   <ProtectedRoute>
                     <EnhancedBible />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/bible-ai" element={
-                  <ProtectedRoute>
-                    <BibleAI />
                   </ProtectedRoute>
                 } />
                 
