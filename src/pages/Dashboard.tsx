@@ -1,22 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Send, Plus, MoreVertical, Settings, MessageCircle, Filter,
-  Languages, BookOpen, Bot
-} from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
-import { Navigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Textarea } from '@/components/ui/textarea';
 import { ModernLayout } from '@/components/ModernLayout';
+import { Navigate } from 'react-router-dom';
+import { useSEO } from '@/hooks/useSEO';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  Plus, Send, MoreVertical, Filter, Languages, BookOpen
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+// SEO Configuration
+const SEO_CONFIG = {
+  DASHBOARD: {
+    title: 'Dashboard - Bible Aura AI Assistant',
+    description: 'Access your personalized Bible study dashboard with AI-powered insights, chat history, and spiritual guidance.',
+    keywords: 'bible dashboard, ai assistant, spiritual guidance, bible study, chat history'
+  }
+};
 
 interface Message {
   id: string;
@@ -50,8 +56,6 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Mobile-friendly dashboard - no redirect needed since this IS the main page
-  
   // SEO optimization
   useSEO(SEO_CONFIG.DASHBOARD);
 
@@ -60,13 +64,8 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
-  // State management - Start with empty conversations
+  // State management
   const [conversations, setConversations] = useState<Conversation[]>([]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversations]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +73,11 @@ export default function Dashboard() {
   const [translation, setTranslation] = useState('KJV King James');
   const [cleanMode, setCleanMode] = useState(false);
   const [chatMode, setChatMode] = useState('aichat');
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversations]);
 
   const getUserName = () => {
     if (profile?.display_name) return profile.display_name;
@@ -111,6 +115,11 @@ export default function Dashboard() {
       }));
 
       setConversations(formattedConversations);
+      
+      // Auto-select first conversation if available
+      if (formattedConversations.length > 0 && !activeConversation) {
+        setActiveConversation(formattedConversations[0].id);
+      }
     } catch (error) {
       console.error('Error loading conversations:', error);
       toast({
@@ -165,9 +174,34 @@ export default function Dashboard() {
     }
   };
 
+  const saveConversationToDatabase = async (conversationId: string, messages: Message[], title?: string) => {
+    if (!user) return;
+
+    try {
+      const updateData: any = {
+        messages: messages,
+        updated_at: new Date().toISOString()
+      };
+
+      if (title) {
+        updateData.title = title;
+      }
+
+      const { error } = await supabase
+        .from('ai_conversations')
+        .update(updateData)
+        .eq('id', conversationId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+    }
+  };
+
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || message.trim();
-    if (!textToSend || isLoading) return;
+    if (!textToSend || isLoading || !activeConversation) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -177,21 +211,29 @@ export default function Dashboard() {
     };
 
     // Add user message to current conversation
-    setConversations(prev => prev.map(conv => 
-      conv.id === activeConversation 
-        ? { 
-            ...conv, 
-            messages: [...conv.messages, userMessage],
-            title: conv.messages.length === 0 ? textToSend.slice(0, 30) + '...' : conv.title
-          }
-        : conv
-    ));
+    const updatedConversations = conversations.map(conv => {
+      if (conv.id === activeConversation) {
+        const newMessages = [...conv.messages, userMessage];
+        const newTitle = conv.messages.length === 0 ? textToSend.slice(0, 30) + '...' : conv.title;
+        
+        // Save to database
+        saveConversationToDatabase(conv.id, newMessages, conv.messages.length === 0 ? newTitle : undefined);
+        
+        return { 
+          ...conv, 
+          messages: newMessages,
+          title: newTitle
+        };
+      }
+      return conv;
+    });
 
+    setConversations(updatedConversations);
     setMessage('');
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    // Simulate AI response (replace with actual AI integration)
+    setTimeout(async () => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -199,30 +241,53 @@ export default function Dashboard() {
         timestamp: new Date().toLocaleString()
       };
 
-      setConversations(prev => prev.map(conv => 
-        conv.id === activeConversation 
-          ? { ...conv, messages: [...conv.messages, aiMessage] }
-          : conv
-      ));
+      const finalUpdatedConversations = updatedConversations.map(conv => {
+        if (conv.id === activeConversation) {
+          const finalMessages = [...conv.messages, aiMessage];
+          
+          // Save AI response to database
+          saveConversationToDatabase(conv.id, finalMessages);
+          
+          return { ...conv, messages: finalMessages };
+        }
+        return conv;
+      });
 
+      setConversations(finalUpdatedConversations);
       setIsLoading(false);
     }, 1000);
   };
 
-  const deleteConversation = (id: string) => {
-    setConversations(prev => prev.filter(c => c.id !== id));
-    if (activeConversation === id && conversations.length > 1) {
-      const remaining = conversations.filter(c => c.id !== id);
-      setActiveConversation(remaining[0]?.id || '');
+  const deleteConversation = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_conversations')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setConversations(prev => prev.filter(c => c.id !== id));
+      
+      if (activeConversation === id) {
+        const remaining = conversations.filter(c => c.id !== id);
+        setActiveConversation(remaining.length > 0 ? remaining[0].id : null);
+      }
+
+      toast({
+        title: "Conversation deleted",
+        description: "The conversation has been successfully deleted."
+      });
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete conversation",
+        variant: "destructive"
+      });
     }
   };
-
-  const suggestionQuestions = [
-    "What does Romans 8:28 mean for my daily life?",
-    "Explain the parable of the Good Samaritan",
-    "What are the fruits of the Spirit?",
-    "How can I strengthen my faith during difficult times?"
-  ];
 
   return (
     <ModernLayout>
@@ -278,7 +343,10 @@ export default function Dashboard() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-white border-gray-200">
                         <DropdownMenuItem 
-                          onClick={() => deleteConversation(conv.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConversation(conv.id);
+                          }}
                           className="text-gray-700 hover:bg-gray-100"
                         >
                           Delete
@@ -298,7 +366,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between p-4 border-b bg-white">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-lg drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">✦</span>
+                <span className="text-white font-bold text-lg">✦</span>
               </div>
               <div>
                 <div className="font-bold text-gray-900">Bible Aura AI</div>
@@ -313,7 +381,9 @@ export default function Dashboard() {
               conversations.find(c => c.id === activeConversation)?.messages.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center max-w-2xl mx-auto p-8">
-                    <Bot className="w-16 h-16 text-orange-500 mx-auto mb-6" />
+                    <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="text-white font-bold text-3xl">✦</span>
+                    </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">
                       Hello {getUserName()}!
                     </h2>
@@ -330,7 +400,9 @@ export default function Dashboard() {
                       className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       {msg.role === 'assistant' && (
-                        <Bot className="w-8 h-8 text-orange-500 flex-shrink-0 mt-1" />
+                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                          <span className="text-white font-bold text-sm">✦</span>
+                        </div>
                       )}
                       
                       <div className={`max-w-[80%] p-4 rounded-2xl ${
@@ -354,7 +426,9 @@ export default function Dashboard() {
                   
                   {isLoading && (
                     <div className="flex gap-3">
-                      <Bot className="w-8 h-8 text-orange-500 flex-shrink-0 mt-1" />
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white font-bold text-sm">✦</span>
+                      </div>
                       <div className="bg-white text-gray-800 p-4 rounded-2xl border border-gray-200">
                         <div className="flex items-center gap-2">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
@@ -368,7 +442,9 @@ export default function Dashboard() {
               )
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <Bot className="w-16 h-16 text-orange-500 mb-4" />
+                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-white font-bold text-3xl">✦</span>
+                </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">Welcome to Bible Aura AI</h3>
                 <p className="text-gray-600 mb-6">Choose a chat mode below and start your spiritual conversation</p>
                 
@@ -466,7 +542,6 @@ export default function Dashboard() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={`Ask me anything about the Bible... (${CHAT_MODES.find(m => m.id === chatMode)?.name || 'AI Chat'})`}
                   className="pr-12 h-12"
-                  disabled={!activeConversation}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -476,7 +551,7 @@ export default function Dashboard() {
                 />
                 <Button 
                   onClick={() => sendMessage()}
-                  disabled={!message.trim() || isLoading || !activeConversation}
+                  disabled={!message.trim() || isLoading}
                   className="absolute right-2 top-2 bg-orange-500 hover:bg-orange-600 h-8 w-8 p-0 rounded"
                 >
                   <Send className="h-4 w-4" />
