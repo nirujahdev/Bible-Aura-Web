@@ -268,6 +268,7 @@ export default function EnhancedBible() {
               activeTab={activeSidebarTab}
               recentBooks={recentBooks}
               bookmarkedBooks={bookmarkedBooks}
+              onNavigateToVerse={handleNavigateToVerse}
             />
           </div>
         )}
@@ -282,9 +283,10 @@ export default function EnhancedBible() {
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Enhanced Header */}
-          <div className="bg-white border-b border-gray-200 p-4">
+          {/* Header with Navigation */}
+          <div className="bg-white border-b border-gray-200 px-4 py-3">
             <div className="flex items-center justify-between">
+              {/* Mobile Menu & Logo */}
               <div className="flex items-center gap-3">
                 {isMobile && (
                   <Button
@@ -296,88 +298,30 @@ export default function EnhancedBible() {
                   </Button>
                 )}
                 
-                {selectedBook && (
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-bold text-gray-800">{selectedBook.name}</h1>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowChapterSelector(true)}
-                      className="flex items-center gap-2"
-                    >
-                      <Calendar className="w-4 h-4" />
-                      Chapter {selectedChapter}
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                {/* Quick AI Chat Access */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAIChat(true)}
-                  className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 text-purple-700 hover:from-purple-100 hover:to-blue-100"
-                >
-                  <Bot className="w-4 h-4" />
-                  Ask AI
-                </Button>
-
-                {/* Main Tabs */}
-                <div className="hidden md:flex bg-gray-100 rounded-lg p-1">
-                  {[
-                    { id: 'read', label: 'Read', icon: BookOpen },
-                    { id: 'plans', label: 'Plans', icon: Target },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveMainTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        activeMainTab === tab.id
-                          ? 'bg-white text-orange-600 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-800'
-                      }`}
-                    >
-                      <tab.icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 text-orange-600" />
+                  <h1 className="text-xl font-bold text-gray-800">Bible Reader</h1>
                 </div>
-
-                {/* Settings */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowSettings(true)}
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
               </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAIChat(true)}
+                className="md:hidden"
+              >
+                <Bot className="w-5 h-5" />
+              </Button>
+
+              {/* Settings */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
             </div>
-
-            {/* Mobile Tabs */}
-            {isMobile && (
-              <div className="flex mt-3 bg-gray-100 rounded-lg p-1">
-                {[
-                  { id: 'read', label: 'Read', icon: BookOpen },
-                  { id: 'plans', label: 'Plans', icon: Target },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveMainTab(tab.id)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                      activeMainTab === tab.id
-                        ? 'bg-white text-orange-600 shadow-sm'
-                        : 'text-gray-600'
-                    }`}
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Chapter Navigation */}
@@ -421,61 +365,63 @@ export default function EnhancedBible() {
             </div>
           )}
 
-          {/* Main Content */}
+          {/* Main Content Area - Only Bible Verses */}
           <div className="flex-1 overflow-hidden">
-            {activeMainTab === 'read' && (
-              <ScrollArea className="h-full">
-                <div className="p-6 max-w-4xl mx-auto">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            <ScrollArea className="h-full">
+              <div className="p-6">
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading verses...</p>
+                  </div>
+                ) : verses.length > 0 ? (
+                  <div className="max-w-4xl mx-auto">
+                    <div className="mb-6">
+                      <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                        {selectedBook?.name} {selectedChapter}
+                      </h1>
+                      <Badge variant="outline" className="text-xs">
+                        {selectedTranslation}
+                      </Badge>
                     </div>
-                  ) : (
-                    <div className="space-y-6">
+                    
+                    <div className="space-y-4">
                       {verses.map((verse) => (
                         <div
                           key={`${verse.chapter}-${verse.verse}`}
-                          className="group relative"
+                          className="flex gap-4 group hover:bg-gray-50 -mx-2 px-2 py-2 rounded"
                         >
-                          <div 
-                            className="flex gap-4 p-4 rounded-lg hover:bg-white hover:shadow-sm transition-all"
-                            style={{ 
-                              fontSize: `${fontSize}px`, 
-                              lineHeight: lineHeight 
-                            }}
-                          >
-                            {showVerseNumbers && (
-                              <div className="flex-shrink-0 w-8 text-right">
-                                <Badge 
-                                  variant="outline" 
-                                  className="text-xs font-medium"
-                                >
-                                  {verse.verse}
-                                </Badge>
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <p className="text-gray-800 leading-relaxed">
-                                {verse.text}
-                              </p>
+                          {showVerseNumbers && (
+                            <div className="flex-shrink-0 w-8 text-right">
+                              <span className="text-sm font-medium text-gray-400">
+                                {verse.verse}
+                              </span>
                             </div>
-                          </div>
+                          )}
                           
-                          {/* Verse Actions */}
-                          <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="flex items-center gap-1 bg-white shadow-lg rounded-lg p-1">
+                          <div className="flex-1">
+                            <p 
+                              className="text-gray-800 leading-relaxed"
+                              style={{ 
+                                fontSize: `${fontSize}px`,
+                                lineHeight: lineHeight 
+                              }}
+                            >
+                              {verse.text}
+                            </p>
+                            
+                            <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => copyVerse(verse)}
                                 className="h-8 w-8 p-0"
+                                onClick={() => copyVerse(verse)}
                               >
                                 <Copy className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => shareVerse(verse)}
                                 className="h-8 w-8 p-0"
                               >
                                 <Share className="w-3 h-3" />
@@ -499,20 +445,20 @@ export default function EnhancedBible() {
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
-              </ScrollArea>
-            )}
-
-            {activeMainTab === 'plans' && (
-              <ScrollArea className="h-full">
-                <div className="p-6">
-                  <EnhancedReadingPlans 
-                    onNavigateToVerse={handleNavigateToVerse}
-                  />
-                </div>
-              </ScrollArea>
-            )}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">
+                      Select a Book to Start Reading
+                    </h3>
+                    <p className="text-gray-500">
+                      Choose a book from the sidebar to begin your Bible study
+                    </p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </div>

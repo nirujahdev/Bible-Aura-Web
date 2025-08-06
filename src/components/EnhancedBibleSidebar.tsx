@@ -12,6 +12,7 @@ import {
   Filter, Grid, List, X, Sparkles
 } from 'lucide-react';
 import EnhancedAIChat from './EnhancedAIChat';
+import EnhancedReadingPlans from './EnhancedReadingPlans';
 
 interface BibleBook {
   id: string;
@@ -30,6 +31,7 @@ interface EnhancedBibleSidebarProps {
   recentBooks?: BibleBook[];
   bookmarkedBooks?: BibleBook[];
   className?: string;
+  onNavigateToVerse?: (book: string, chapter: number, verse?: number) => void;
 }
 
 const bookCategories = {
@@ -67,7 +69,8 @@ export function EnhancedBibleSidebar({
   activeTab = 'books',
   recentBooks = [],
   bookmarkedBooks = [],
-  className = ''
+  className = '',
+  onNavigateToVerse
 }: EnhancedBibleSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'category' | 'list'>('category');
@@ -308,6 +311,16 @@ export function EnhancedBibleSidebar({
               </div>
             </ScrollArea>
           </div>
+        )}
+
+        {activeTab === 'plans' && (
+          <ScrollArea className="flex-1">
+            <div className="p-4">
+              <EnhancedReadingPlans 
+                onNavigateToVerse={onNavigateToVerse}
+              />
+            </div>
+          </ScrollArea>
         )}
 
         {activeTab === 'recent' && (

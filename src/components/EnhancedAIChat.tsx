@@ -199,6 +199,12 @@ const callBiblicalAI = async (
   abortController?: AbortController
 ) => {
   try {
+    // Check for API key
+    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
+    if (!apiKey || apiKey === 'demo-key') {
+      throw new Error('AI service is not properly configured. Please check your API key configuration.');
+    }
+
     const controller = abortController || new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -317,7 +323,7 @@ ${language === 'tamil' ? 'LANGUAGE: Respond in Tamil using Tamil script.' : 'LAN
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify(requestBody),
       signal: controller.signal
@@ -327,17 +333,29 @@ ${language === 'tamil' ? 'LANGUAGE: Respond in Tamil using Tamil script.' : 'LAN
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+      console.error('API Error Response:', errorText);
+      
+      if (response.status === 401) {
+        throw new Error('AI service authentication failed. Please check your API key.');
+      } else if (response.status === 429) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      } else if (response.status >= 500) {
+        throw new Error('AI service is temporarily unavailable. Please try again later.');
+      } else {
+        throw new Error(`AI service error (${response.status}). Please try again.`);
+      }
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response format from DeepSeek API');
+      console.error('Invalid API Response:', data);
+      throw new Error('Invalid response from AI service. Please try again.');
     }
 
     return data.choices[0].message.content;
   } catch (error: any) {
+    console.error('AI Call Error:', error);
     if (error.name === 'AbortError') {
       throw new Error('Request timed out. Please try again.');
     }
@@ -486,10 +504,28 @@ const EnhancedAIChat: React.FC = () => {
       await saveConversation(finalMessages);
 
     } catch (error: any) {
-      console.error('Chat error:', error);
+      console.error('Chat error details:', {
+        message: error.message,
+        stack: error.stack,
+        apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY ? 'Present' : 'Missing'
+      });
+      
+      // Remove the failed user message if AI call fails
+      setMessages(prevMessages => prevMessages.slice(0, -1));
+      
+      let errorMessage = "Failed to send message. Please try again.";
+      
+      if (error.message.includes('API key')) {
+        errorMessage = "AI service configuration issue. Please contact support.";
+      } else if (error.message.includes('timeout')) {
+        errorMessage = "Request timed out. Please check your connection and try again.";
+      } else if (error.message.includes('authentication')) {
+        errorMessage = "Authentication failed. Please refresh the page and try again.";
+      }
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to send message. Please try again.",
+        title: "Message Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -668,10 +704,14 @@ const EnhancedAIChat: React.FC = () => {
             
             {/* Header for Dashboard */}
             <div className="space-y-2 sm:space-y-3">
-              <div className="text-4xl mb-4">✦</div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Hello Benaiah!</h2>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg mb-4">
+                <div className="w-8 h-8 rotate-45 bg-white/20 rounded-lg"></div>
+              </div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                Hello {user?.user_metadata?.full_name || 'Friend'}!
+              </h2>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                How can I assist you with your biblical studies today?
+                How can I assist you with your Bible studies today?
               </p>
             </div>
 
@@ -714,7 +754,9 @@ const EnhancedAIChat: React.FC = () => {
               >
                 {message.role === 'assistant' && (
                   <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+                    <div className="inline-flex items-center justify-center w-full h-full rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
+                      <div className="w-3 h-3 rotate-45 bg-white/30 rounded-sm"></div>
+                    </div>
                   </div>
                 )}
 
@@ -749,7 +791,9 @@ const EnhancedAIChat: React.FC = () => {
             {isLoading && (
               <div className="flex gap-2 sm:gap-3">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Bot className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+                  <div className="inline-flex items-center justify-center w-full h-full rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
+                    <div className="w-3 h-3 rotate-45 bg-white/30 rounded-sm"></div>
+                  </div>
                 </div>
                 
                 <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm">
@@ -759,7 +803,7 @@ const EnhancedAIChat: React.FC = () => {
                       <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                       <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
-                    <span className="text-xs sm:text-sm text-gray-500 ml-2">Bible AI is thinking...</span>
+                    <span className="text-xs sm:text-sm text-gray-500 ml-2">Bible Aura AI is thinking...</span>
                   </div>
                 </div>
               </div>

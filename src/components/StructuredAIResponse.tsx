@@ -1,5 +1,10 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { BookOpen, Plus } from 'lucide-react';
 
 interface StructuredAIResponseProps {
   content: string;
@@ -63,7 +68,64 @@ const parseAIResponse = (content: string): ParsedResponse => {
 };
 
 const StructuredAIResponse: React.FC<StructuredAIResponseProps> = ({ content, timestamp }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const parsed = parseAIResponse(content);
+  
+  const addToJournal = async () => {
+    if (!user) {
+      toast({
+        title: "Sign In Required",
+        description: "Please sign in to save to journal",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const journalEntry = `AI Bible Study Insight - ${new Date().toLocaleDateString()}
+
+${content}
+
+Personal Reflection:
+[Add your thoughts and insights about this AI response here]
+
+How does this help my understanding?
+[Personal reflection space]
+
+Action Steps:
+[How will I apply this insight to my life?]`;
+
+      const { error } = await supabase
+        .from('journal_entries')
+        .insert({
+          user_id: user.id,
+          title: `AI Bible Study - ${parsed.mainTitle || 'Bible Insight'}`,
+          content: journalEntry,
+          entry_date: new Date().toISOString(),
+          category: 'ai_study',
+          tags: ['ai_study', 'bible_study'],
+          metadata: {
+            ai_response: content,
+            timestamp: timestamp
+          }
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Added to Journal",
+        description: "AI response saved to your journal for further reflection",
+      });
+    } catch (error) {
+      console.error('Error adding to journal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save to journal",
+        variant: "destructive"
+      });
+    }
+  };
   
   // If parsing fails, show original content
   if (!parsed.mainTitle && parsed.sections.length === 0) {
@@ -75,6 +137,20 @@ const StructuredAIResponse: React.FC<StructuredAIResponseProps> = ({ content, ti
         }}>
           {content}
         </p>
+        
+        {/* Add to Journal Button */}
+        <div className="flex justify-end mt-4">
+          <Button
+            onClick={addToJournal}
+            size="sm"
+            variant="outline"
+            className="bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:text-orange-800"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add to Journal
+          </Button>
+        </div>
+        
         {timestamp && (
           <div className="flex items-center gap-1 mt-3 text-xs text-orange-600/70">
             <span className="w-1 h-1 bg-orange-400 rounded-full"></span>
@@ -132,6 +208,19 @@ const StructuredAIResponse: React.FC<StructuredAIResponseProps> = ({ content, ti
             </CardContent>
           </Card>
         ))}
+      </div>
+      
+      {/* Add to Journal Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={addToJournal}
+          size="sm"
+          variant="outline"
+          className="bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:text-orange-800"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add to Journal
+        </Button>
       </div>
       
       {/* Timestamp */}
