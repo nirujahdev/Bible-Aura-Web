@@ -13,7 +13,7 @@ import {
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, Brain, 
   MessageCircle, BookOpen, Target,
-  Copy, Highlighter, 
+  Copy, Highlighter, FileText,
   ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -387,6 +387,85 @@ export default function Bible() {
       reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
     });
     setAiChatOpen(true);
+  };
+
+  const addToJournal = async (verse: BibleVerse) => {
+    if (!user) {
+      toast({
+        title: "Sign In Required",
+        description: "Please sign in to save to journal",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const journalEntry = `Bible Study Reflection - ${new Date().toLocaleDateString()}
+
+"${verse.text}" - ${verse.book_name} ${verse.chapter}:${verse.verse}
+
+Reflection:
+[Add your thoughts and insights about this verse here]
+
+What does this verse mean to me?
+[Personal reflection space]
+
+How can I apply this to my life?
+[Application notes]`;
+
+      const { error } = await supabase
+        .from('journal_entries')
+        .insert({
+          user_id: user.id,
+          title: `${verse.book_name} ${verse.chapter}:${verse.verse} Reflection`,
+          content: journalEntry,
+          entry_date: new Date().toISOString(),
+          verse_references: [`${verse.book_name} ${verse.chapter}:${verse.verse}`]
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Added to Journal",
+        description: `${verse.book_name} ${verse.chapter}:${verse.verse} saved to your journal`,
+      });
+    } catch (error) {
+      console.error('Error adding to journal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save to journal",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const addToBookmarks = async (verse: BibleVerse) => {
+    if (!user) {
+      toast({
+        title: "Sign In Required",
+        description: "Please sign in to save bookmarks",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const success = await saveBookmark(verse, user.id);
+    if (success) {
+      const newBookmarks = new Set(bookmarks);
+      newBookmarks.add(verse.id);
+      setBookmarks(newBookmarks);
+      
+      toast({
+        title: "Bookmarked",
+        description: `${verse.book_name} ${verse.chapter}:${verse.verse} added to bookmarks`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to bookmark verse",
+        variant: "destructive"
+      });
+    }
   };
 
   const toggleFavorite = async (verse: BibleVerse) => {
@@ -1139,14 +1218,6 @@ export default function Bible() {
                     {!isMobile && 'Random'}
                   </Button>
                 )}
-                
-                <Button
-                  onClick={() => setAiChatOpen(true)}
-                  className={`bg-orange-500 hover:bg-orange-600 text-white ${isMobile ? 'h-9 px-3' : ''}`}
-                >
-                  <MessageCircle className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4 mr-2'}`} />
-                  {!isMobile && 'AI Chat'}
-                </Button>
               </div>
             </div>
 
@@ -1261,10 +1332,24 @@ export default function Bible() {
                         </div>
 
                         {/* Action Buttons - Mobile-Optimized */}
-                        <div className={`flex items-center justify-end gap-2 mt-4 ${
+                        <div className={`flex items-center justify-end gap-1 mt-4 ${
                           isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                         } transition-opacity`}>
                           
+                          {/* AI Logo - Ask AI */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openAiChat(verse)}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50`}
+                          >
+                            <div className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} rounded-full bg-orange-500 flex items-center justify-center`}>
+                              <span className="text-white font-bold text-xs">✦</span>
+                            </div>
+                          </Button>
+
                           {/* Favorite Button */}
                           <Button
                             variant="ghost"
@@ -1283,6 +1368,36 @@ export default function Bible() {
                             }`} />
                           </Button>
 
+                          {/* Bookmark Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => addToBookmarks(verse)}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 ${
+                              isBookmarked 
+                                ? 'text-blue-500 hover:text-blue-600 bg-blue-50' 
+                                : 'text-gray-400 hover:text-blue-500'
+                            }`}
+                          >
+                            <Bookmark className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} ${
+                              isBookmarked ? 'fill-current' : ''
+                            }`} />
+                          </Button>
+
+                          {/* Add to Journal */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => addToJournal(verse)}
+                            className={`touch-optimized ${
+                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                            } p-0 text-gray-400 hover:text-green-500`}
+                          >
+                            <FileText className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                          </Button>
+
                           {/* Highlight Button */}
                           <Button
                             variant="ghost"
@@ -1293,30 +1408,6 @@ export default function Bible() {
                             } p-0 text-gray-400 hover:text-yellow-500`}
                           >
                             <PenTool className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-                          </Button>
-
-                          {/* Copy Button */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyVerse(verse)}
-                            className={`touch-optimized ${
-                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
-                            } p-0 text-gray-400 hover:text-blue-500`}
-                          >
-                            <Copy className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-                          </Button>
-
-                          {/* Share Button */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => shareVerse(verse)}
-                            className={`touch-optimized ${
-                              isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
-                            } p-0 text-gray-400 hover:text-green-500`}
-                          >
-                            <Share2 className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
                           </Button>
                         </div>
                       </div>
