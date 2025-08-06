@@ -38,21 +38,21 @@ const PersonalTools = () => {
       description: "Track your Bible reading journey with detailed analytics, reading streaks, and progress visualization to maintain consistency.",
       icon: TrendingUp,
       features: ["Reading analytics", "Progress streaks", "Goal tracking", "Visual progress"],
-      link: "/dashboard"
+      link: "/auth"
     },
     {
       title: "Study Plans",
       description: "Create and follow personalized Bible reading plans with daily goals, reminders, and progress tracking for structured study.",
       icon: Target,
       features: ["Custom plans", "Daily goals", "Reminders", "Progress tracking"],
-      link: "/dashboard"
+      link: "/auth"
     },
     {
       title: "Spiritual Calendar",
       description: "Organize your spiritual activities with an integrated calendar for prayer times, Bible study sessions, and church events.",
       icon: Calendar,
       features: ["Event scheduling", "Prayer reminders", "Study sessions", "Church events"],
-      link: "/dashboard"
+      link: "/auth"
     },
     {
       title: "Study Profile",

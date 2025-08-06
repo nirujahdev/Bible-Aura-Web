@@ -18,7 +18,7 @@ Allow: /pricing
 Allow: /about
 Allow: /contact
 Allow: /bible-qa
-Allow: /dashboard
+
 Allow: /favorites
 Allow: /songs
 Allow: /sermon-writer

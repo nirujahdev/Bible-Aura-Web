@@ -174,12 +174,6 @@
     <priority>0.7</priority>
 </url>
 
-<url>
-    <loc>https://bibleaura.xyz/dashboard</loc>
-    <lastmod>2024-12-31</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-</url>
 
 <url>
     <loc>https://bibleaura.xyz/favorites</loc>

@@ -31,7 +31,7 @@ const contextualMappings: Record<string, ContextualLink[]> = {
   'scripture': [
     { text: 'Bible reading', href: '/bible', type: 'internal', description: 'Read Bible online with study tools' },
     { text: 'Bible search', href: '/bible', type: 'internal', description: 'Search verses and passages' },
-    { text: 'Daily Bible verses', href: '/dashboard', type: 'internal', description: 'Get daily scripture inspiration' }
+    { text: 'Daily Bible verses', href: '/bible-ai', type: 'internal', description: 'Get daily scripture inspiration' }
   ],
   'worship': [
     { text: 'Christian songs', href: '/songs', type: 'internal', description: 'Collection of worship songs' },
@@ -157,7 +157,7 @@ export function ManualContextualLinks({ context, limit = 4 }: ManualContextualLi
           { text: 'Personal Bible Journal', href: '/journal', type: 'internal', description: 'Write Bible reflections' },
           { text: 'AI Bible Insights', href: '/bible-ai', type: 'internal', description: 'Get AI help with journaling' },
           { text: 'Bible Study Tools', href: '/bible', type: 'internal', description: 'Tools for deeper study' },
-          { text: 'Daily Bible Reading', href: '/dashboard', type: 'internal', description: 'Daily scripture and inspiration' }
+          { text: 'Daily Bible Reading', href: '/bible-ai', type: 'internal', description: 'Daily scripture and inspiration' }
         ];
       
       default:

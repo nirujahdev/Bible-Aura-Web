@@ -25,7 +25,7 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home, tooltip: 'Dashboard Overview' },
+  { name: 'Home', href: '/', icon: Home, tooltip: 'Home Page' },
   { name: 'AI Chat', href: '/bible-ai', icon: MessageCircle, tooltip: 'AI Bible Chat Assistant' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Study Hub', href: '/study-hub', icon: Library, tooltip: 'Study Hub - Q&A, Sermons, Parables & Bible Characters' },

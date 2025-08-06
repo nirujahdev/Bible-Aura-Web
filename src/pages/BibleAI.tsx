@@ -73,7 +73,7 @@ const BibleAI = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <Link to="/dashboard">
+          <Link to="/">
             <Button variant="ghost" size="sm" className="text-white p-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -122,7 +122,7 @@ const BibleAI = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
                 <Zap className="h-5 w-5 mr-2" />
                 Try AI Chat Now
@@ -198,7 +198,7 @@ const BibleAI = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Start AI Chat

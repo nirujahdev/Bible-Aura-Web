@@ -6,7 +6,7 @@ const DYNAMIC_CACHE = 'bible-aura-dynamic-v1.0.1';
 const STATIC_ASSETS = [
   '/',
   '/auth',
-  '/dashboard',
+
   '/bible',
   '/bible-ai',
   '/journal',

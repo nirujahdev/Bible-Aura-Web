@@ -12,7 +12,6 @@ import Auth from '@/pages/Auth';
 import About from '@/pages/About';
 import Blog from '@/pages/Blog';
 import Pricing from '@/pages/Pricing';
-import Dashboard from '@/pages/Dashboard';
 
 
 // Import feature pages
@@ -77,12 +76,7 @@ function App() {
                 <Route path="/features/learning-resources" element={<LearningResources />} />
                 <Route path="/features/advanced-study" element={<AdvancedStudy />} />
                 
-                {/* Protected routes */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
+                {/* Protected routes removed - no dashboard */}
                 
                 {/* Placeholder routes for missing pages */}
                 <Route path="/features" element={<PlaceholderPage title="All Features" description="Explore all Bible Aura features in one place. Coming soon!" />} />

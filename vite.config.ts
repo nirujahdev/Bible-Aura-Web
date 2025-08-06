@@ -53,7 +53,7 @@ export default defineConfig(({ mode }) => ({
           ],
           'pages-main': [
             './src/pages/Home',
-            './src/pages/Dashboard',
+    
             './src/pages/Bible'
           ],
           'pages-features': [
