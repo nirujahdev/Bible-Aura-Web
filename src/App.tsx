@@ -13,7 +13,25 @@ import About from '@/pages/About';
 import Blog from '@/pages/Blog';
 import Pricing from '@/pages/Pricing';
 import Dashboard from '@/pages/Dashboard';
+import NotFound from '@/pages/NotFound';
 
+// Import main application pages
+import Bible from '@/pages/Bible';
+import EnhancedBible from '@/pages/EnhancedBible';
+import BibleAI from '@/pages/BibleAI';
+import BibleQA from '@/pages/BibleQA';
+import Journal from '@/pages/Journal';
+import StudyHub from '@/pages/StudyHub';
+import Sermons from '@/pages/Sermons';
+import SermonWriter from '@/pages/SermonWriter';
+import EnhancedSermonHub from '@/pages/EnhancedSermonHub';
+import Songs from '@/pages/Songs';
+import Favorites from '@/pages/Favorites';
+import TopicalStudy from '@/pages/TopicalStudy';
+import ParablesStudy from '@/pages/ParablesStudy';
+import Profile from '@/pages/Profile';
+import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
+import SubscriptionCancelled from '@/pages/SubscriptionCancelled';
 
 // Import feature pages
 import BibleStudy from '@/pages/features/BibleStudy';
@@ -22,6 +40,12 @@ import PersonalTools from '@/pages/features/PersonalTools';
 import ContentCreation from '@/pages/features/ContentCreation';
 import LearningResources from '@/pages/features/LearningResources';
 import AdvancedStudy from '@/pages/features/AdvancedStudy';
+
+// Import blog pages
+import HowAITransformsBibleStudy from '@/pages/blog/HowAITransformsBibleStudy';
+import AIBibleInsightsAccuracy from '@/pages/blog/AIBibleInsightsAccuracy';
+import BibleStudyAIBenefits from '@/pages/blog/BibleStudyAIBenefits';
+import BibleAIVsTraditionalStudy from '@/pages/blog/BibleAIVsTraditionalStudy';
 
 // Import components
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -70,6 +94,7 @@ function App() {
                 <Route path="/pricing" element={<Pricing />} />
                 
                 {/* Feature pages */}
+                <Route path="/features" element={<PlaceholderPage title="All Features" description="Explore all Bible Aura features in one place. Coming soon!" />} />
                 <Route path="/features/bible-study" element={<BibleStudy />} />
                 <Route path="/features/ai-features" element={<AIFeatures />} />
                 <Route path="/features/personal-tools" element={<PersonalTools />} />
@@ -77,49 +102,114 @@ function App() {
                 <Route path="/features/learning-resources" element={<LearningResources />} />
                 <Route path="/features/advanced-study" element={<AdvancedStudy />} />
                 
-                {/* Protected routes */}
+                {/* Blog post routes */}
+                <Route path="/blog/how-ai-transforms-bible-study" element={<HowAITransformsBibleStudy />} />
+                <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
+                <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
+                <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
+                <Route path="/blog/:slug" element={<PlaceholderPage title="Blog Article" description="This blog article is being prepared. Check back soon!" />} />
+                
+                {/* Protected routes - Main Application */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <Dashboard />
                   </ProtectedRoute>
                 } />
                 
-                {/* Placeholder routes for missing pages */}
-                <Route path="/features" element={<PlaceholderPage title="All Features" description="Explore all Bible Aura features in one place. Coming soon!" />} />
-                <Route path="/contact" element={<PlaceholderPage title="Contact Us" description="Get in touch with the Bible Aura team. Contact form coming soon!" />} />
-                <Route path="/bible" element={<PlaceholderPage title="Digital Bible" description="Read and study the Bible with AI assistance. Coming soon!" />} />
-                <Route path="/bible-ai" element={<PlaceholderPage title="Bible AI Chat" description="Chat with our AI Bible assistant. Coming soon!" />} />
-                <Route path="/bible-qa" element={<PlaceholderPage title="Bible Q&A" description="Ask questions about the Bible and get AI-powered answers. Coming soon!" />} />
-                <Route path="/journal" element={<PlaceholderPage title="Bible Journal" description="Keep a digital Bible journal with AI insights. Coming soon!" />} />
-                <Route path="/study-hub" element={<PlaceholderPage title="Study Hub" description="Comprehensive Bible study resources. Coming soon!" />} />
-                <Route path="/sermons" element={<PlaceholderPage title="Sermon Library" description="Browse our collection of inspiring sermons. Coming soon!" />} />
-                <Route path="/sermon-writer" element={<PlaceholderPage title="Sermon Writer" description="Create sermons with AI assistance. Coming soon!" />} />
-                <Route path="/songs" element={<PlaceholderPage title="Christian Songs" description="Discover Christian music and hymns. Coming soon!" />} />
-                <Route path="/favorites" element={<PlaceholderPage title="Favorite Verses" description="Save and organize your favorite Bible verses. Coming soon!" />} />
-                <Route path="/topical-study" element={<PlaceholderPage title="Topical Study" description="Study the Bible by topics and themes. Coming soon!" />} />
-                <Route path="/parables" element={<PlaceholderPage title="Parables Study" description="Study the parables of Jesus with AI insights. Coming soon!" />} />
-                <Route path="/bible-characters" element={<PlaceholderPage title="Bible Characters" description="Learn about biblical characters and their stories. Coming soon!" />} />
-                <Route path="/profile" element={<PlaceholderPage title="User Profile" description="Manage your Bible Aura profile and preferences. Coming soon!" />} />
+                <Route path="/bible" element={
+                  <ProtectedRoute>
+                    <Bible />
+                  </ProtectedRoute>
+                } />
                 
-                {/* Blog post routes */}
-                <Route path="/blog/:slug" element={<PlaceholderPage title="Blog Article" description="This blog article is being prepared. Check back soon!" />} />
+                <Route path="/enhanced-bible" element={
+                  <ProtectedRoute>
+                    <EnhancedBible />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/bible-ai" element={
+                  <ProtectedRoute>
+                    <BibleAI />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/bible-qa" element={
+                  <ProtectedRoute>
+                    <BibleQA />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/journal" element={
+                  <ProtectedRoute>
+                    <Journal />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/study-hub" element={
+                  <ProtectedRoute>
+                    <StudyHub />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/sermons" element={
+                  <ProtectedRoute>
+                    <Sermons />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/sermon-writer" element={
+                  <ProtectedRoute>
+                    <SermonWriter />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/enhanced-sermon-hub" element={
+                  <ProtectedRoute>
+                    <EnhancedSermonHub />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/songs" element={
+                  <ProtectedRoute>
+                    <Songs />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/favorites" element={
+                  <ProtectedRoute>
+                    <Favorites />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/topical-study" element={
+                  <ProtectedRoute>
+                    <TopicalStudy />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/parables" element={
+                  <ProtectedRoute>
+                    <ParablesStudy />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } />
                 
                 {/* Subscription routes */}
-                <Route path="/subscription/success" element={<PlaceholderPage title="Subscription Successful" description="Thank you for subscribing to Bible Aura! Your subscription is now active." />} />
-                <Route path="/subscription/cancelled" element={<PlaceholderPage title="Subscription Cancelled" description="Your subscription was cancelled. You can try again anytime." />} />
+                <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+                <Route path="/subscription/cancelled" element={<SubscriptionCancelled />} />
                 
-                {/* Fallback */}
-                <Route path="*" element={
-                  <div className="min-h-screen bg-background flex items-center justify-center">
-                    <div className="text-center">
-                      <h1 className="text-2xl font-bold text-orange-500 mb-4">✦Bible Aura</h1>
-                      <p className="text-muted-foreground">Page not found</p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        <a href="/" className="text-orange-500 hover:underline">Go back to Home</a>
-                      </p>
-                    </div>
-                  </div>
-                } />
+                {/* Additional utility routes */}
+                <Route path="/contact" element={<PlaceholderPage title="Contact Us" description="Get in touch with the Bible Aura team. Contact form coming soon!" />} />
+                <Route path="/bible-characters" element={<PlaceholderPage title="Bible Characters" description="Learn about biblical characters and their stories. Coming soon!" />} />
+                
+                {/* Fallback - 404 */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
               <Toaster />
               <Analytics />
