@@ -529,7 +529,7 @@ const StudyHub = () => {
 
   // Render Simplified Journal Sidebar
   const renderJournalSidebar = () => (
-    <div className={`${isSidebarOpen ? 'w-80 md:w-96' : 'w-0'} bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen transition-all duration-300 overflow-hidden`}>
+    <div className={`${isSidebarOpen ? 'w-80 md:w-96 opacity-100' : 'w-0 opacity-0'} bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen transition-all duration-500 ease-in-out overflow-hidden`}>
       <div className="flex-shrink-0 p-4 border-b bg-gray-50 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <PenTool className="h-5 w-5 text-orange-500" />
@@ -690,8 +690,12 @@ const StudyHub = () => {
     <ModernLayout>
       <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white relative">
         
-        {/* Main Content Area - Responsive width based on sidebar */}
-        <div className={`flex-1 overflow-y-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8' : 'px-4 sm:px-6'}`}>
+        {/* Main Content Area - Enhanced Responsive Layout */}
+        <div className={`flex-1 overflow-y-auto transition-all duration-500 ease-in-out ${
+          !isSidebarOpen 
+            ? 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12' 
+            : 'px-3 sm:px-4 lg:px-6 max-w-none'
+        }`}>
           {/* Top Navigation Bar - Sticky */}
                       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
             <div className="mx-auto px-4 sm:px-6 lg:px-8">
@@ -742,17 +746,17 @@ const StudyHub = () => {
                     variant="outline"
                     size="sm"
                     onClick={toggleSidebar}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 transition-all duration-300 hover:bg-orange-50 hover:border-orange-300"
                   >
                     {isSidebarOpen ? (
                       <>
-                        <PanelRightClose className="h-4 w-4" />
-                        <span className="hidden sm:inline">Close</span>
+                        <PanelRightClose className="h-4 w-4 transition-transform duration-300" />
+                        <span className="hidden sm:inline">Close Journal</span>
                       </>
                     ) : (
                       <>
-                        <PanelRightOpen className="h-4 w-4" />
-                        <span className="hidden sm:inline">Journal</span>
+                        <PanelRightOpen className="h-4 w-4 transition-transform duration-300" />
+                        <span className="hidden sm:inline">Open Journal</span>
                       </>
                     )}
                   </Button>
@@ -794,8 +798,12 @@ const StudyHub = () => {
             </div>
           </div>
 
-          {/* Study Content - Scrollable */}
-          <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${!isSidebarOpen ? 'max-w-full' : 'max-w-5xl'}`}>
+          {/* Study Content - Enhanced Responsive Container */}
+          <div className={`mx-auto py-6 sm:py-8 transition-all duration-500 ${
+            !isSidebarOpen 
+              ? 'px-4 sm:px-6 lg:px-8 xl:px-10 max-w-full' 
+              : 'px-3 sm:px-4 lg:px-6 max-w-5xl'
+          }`}>
             
             {/* TOPICAL STUDIES */}
             {activeSection === 'topical' && (
@@ -827,8 +835,12 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Studies Grid - Responsive 2 per row for laptop */}
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!isSidebarOpen ? 'xl:grid-cols-3' : ''}`}>
+                {/* Enhanced Studies Grid - Dynamic Responsive Layout */}
+                <div className={`grid gap-4 sm:gap-6 transition-all duration-500 ${
+                  !isSidebarOpen 
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+                }`}>
                   {topicalStudies
                     .filter(study => 
                       study.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -839,7 +851,7 @@ const StudyHub = () => {
                       difficultyFilter === 'All' || study.difficulty === difficultyFilter
                     )
                     .map((study) => (
-                      <Card key={study.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                      <Card key={study.id} className="hover:shadow-xl transition-all duration-500 ease-in-out border-0 shadow-md bg-white/80 backdrop-blur-sm hover:scale-[1.02] hover:bg-white/90">
                         <CardHeader className="pb-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -979,10 +991,14 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Characters Grid - Responsive 2 per row for laptop */}
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!isSidebarOpen ? 'xl:grid-cols-3' : ''}`}>
+                {/* Enhanced Characters Grid - Dynamic Responsive Layout */}
+                <div className={`grid gap-4 sm:gap-6 transition-all duration-500 ${
+                  !isSidebarOpen 
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+                }`}>
                   {bibleCharacters.map((character) => (
-                    <Card key={character.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                    <Card key={character.id} className="hover:shadow-xl transition-all duration-500 ease-in-out border-0 shadow-md bg-white/80 backdrop-blur-sm hover:scale-[1.02] hover:bg-white/90">
                       <CardHeader className="pb-4">
                         <div className="flex items-center gap-3">
                           <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${character.color}`}>
@@ -1100,10 +1116,14 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Parables Grid - Responsive 2 per row for laptop */}
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!isSidebarOpen ? 'xl:grid-cols-3' : ''}`}>
+                {/* Enhanced Parables Grid - Dynamic Responsive Layout */}
+                <div className={`grid gap-4 sm:gap-6 transition-all duration-500 ${
+                  !isSidebarOpen 
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+                }`}>
                   {filteredParables.map((parable) => (
-                    <Card key={parable.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                    <Card key={parable.id} className="hover:shadow-xl transition-all duration-500 ease-in-out border-0 shadow-md bg-white/80 backdrop-blur-sm hover:scale-[1.02] hover:bg-white/90">
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
@@ -1183,15 +1203,16 @@ const StudyHub = () => {
         {/* Permanent Right Sidebar - Collapsible Journal */}
         {renderJournalSidebar()}
         
-        {/* Journal Sidebar Toggle Button (when closed) */}
+        {/* Enhanced Journal Sidebar Toggle Button (when closed) */}
         {!isSidebarOpen && (
           <Button
             variant="outline"
             size="sm"
             onClick={toggleSidebar}
-            className="fixed top-20 right-4 z-50 bg-white shadow-lg"
+            className="fixed top-20 right-4 z-50 bg-white shadow-xl hover:shadow-2xl border-2 hover:border-orange-300 hover:bg-orange-50 transition-all duration-300 animate-pulse hover:animate-none"
           >
-            <PanelRightOpen className="h-4 w-4" />
+            <PanelRightOpen className="h-4 w-4 text-orange-500" />
+            <span className="sr-only">Open Journal</span>
           </Button>
         )}
       </div>
