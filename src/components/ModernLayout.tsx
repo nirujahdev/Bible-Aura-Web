@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   MessageCircle, BookOpen, BarChart3, 
   Heart, FileText, User, Settings,
-  Headphones, Home
+  Headphones, Home, PenTool
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -27,10 +27,9 @@ const sidebarItems: SidebarItem[] = [
   { name: 'AI Chat', href: '/dashboard', icon: () => <span className="text-2xl font-bold">✦</span>, tooltip: 'AI Chat Dashboard' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Analytics', href: '/study-hub', icon: BarChart3, tooltip: 'Study Hub' },
-  { name: 'Sermons', href: '/sermons', icon: Headphones, tooltip: 'Sermons' },
+  { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermons' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
   { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
-  { name: 'Profile & Settings', href: '/profile', icon: Settings, tooltip: 'Profile & Settings' },
 ];
 
 export function ModernLayout({ children }: ModernLayoutProps) {
@@ -73,7 +72,7 @@ export function ModernLayout({ children }: ModernLayoutProps) {
                   )}
                   title={item.tooltip}
                 >
-                  {item.name === 'Dashboard' ? (
+                  {item.name === 'AI Chat' ? (
                     <span className={cn(
                       "text-2xl font-bold",
                       active 
@@ -109,14 +108,14 @@ export function ModernLayout({ children }: ModernLayoutProps) {
                   ? "bg-orange-500 text-white shadow-lg" 
                   : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
               )}
-              title="Settings"
+              title="Settings & Profile"
             >
-              <Settings className="h-6 w-6" />
+              <User className="h-6 w-6" />
             </Link>
             
             {/* Tooltip */}
             <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
-              Settings
+              Settings & Profile
               <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45"></div>
             </div>
           </div>
@@ -192,7 +191,7 @@ export function ModernLayout({ children }: ModernLayoutProps) {
                           : ''
                       }`}
                     >
-                      {item.name === 'Dashboard' ? (
+                      {item.name === 'AI Chat' ? (
                         <span className={cn(
                           "text-xl font-bold",
                           isActive(item.href) 
@@ -242,8 +241,8 @@ export function ModernLayout({ children }: ModernLayoutProps) {
                   <div className="grid grid-cols-2 gap-2">
                     <Link to="/profile">
                       <Button variant="outline" size="sm" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                        <Settings className="h-4 w-4 mr-1" />
-                        Settings
+                        <User className="h-4 w-4 mr-1" />
+                        Profile
                       </Button>
                     </Link>
                     <Button 

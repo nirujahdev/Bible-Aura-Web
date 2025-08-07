@@ -7,12 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSEO } from '@/hooks/useSEO';
+import { useSidebar, SidebarProvider } from '@/hooks/useSidebar';
 import { ModernLayout } from '@/components/ModernLayout';
 import { 
   Search, BookOpen, Users, Crown, TreePine, Library, 
   Heart, Star, Share, Languages, Grid, Filter,
   ChevronDown, Plus, Eye, ExternalLink, 
-  PenTool, Lightbulb, Globe, Clock
+  PenTool, Lightbulb, Globe, Clock, Settings,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 // SEO Configuration for Study Hub
@@ -28,6 +30,7 @@ const StudyHub = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isExpanded, toggle } = useSidebar();
   
   // SEO optimization
   useSEO(SEO_CONFIG);
@@ -241,7 +244,6 @@ const StudyHub = () => {
   ];
 
   const sidebarItems = [
-    { id: 'verse-explorer', name: 'Verse Explorer', icon: Search, description: 'Deep dive into individual verses' },
     { id: 'topical', name: 'Topical Study', icon: Library, description: 'Explore themes and topics across' },
     { id: 'parables', name: 'Parables Study', icon: TreePine, description: 'Study Jesus\' parables with moder' },
     { id: 'characters', name: 'Bible Characters', icon: Users, description: 'Explore biblical figures and their' }
@@ -272,18 +274,30 @@ const StudyHub = () => {
     <ModernLayout>
       <div className="flex h-screen bg-gray-50">
         
-        {/* Left Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-          {/* Header */}
+        {/* Left Sidebar - Now sticky and with toggle */}
+        <div className={`${isExpanded ? 'w-80' : 'w-16'} bg-white border-r border-gray-200 flex flex-col sticky top-0 transition-all duration-300`}>
+          {/* Header with toggle */}
           <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Library className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between">
+              <div className={`flex items-center gap-3 mb-2 ${!isExpanded && 'justify-center'}`}>
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <Library className="h-5 w-5 text-white" />
+                </div>
+                {isExpanded && (
+                  <div>
+                    <h1 className="text-lg font-bold text-gray-900">Study Hub</h1>
+                    <p className="text-sm text-gray-600">Advanced Bible Study</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">Study Hub</h1>
-                <p className="text-sm text-gray-600">Advanced Bible Study</p>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggle}
+                className="h-8 w-8 p-0"
+              >
+                {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
 
@@ -299,14 +313,17 @@ const StudyHub = () => {
                       activeSection === item.id 
                         ? 'bg-orange-100 text-orange-800 border border-orange-200' 
                         : 'hover:bg-gray-100 text-gray-700'
-                    }`}
+                    } ${!isExpanded && 'justify-center'}`}
                     onClick={() => setActiveSection(item.id)}
+                    title={!isExpanded ? item.name : ''}
                   >
                     <Icon className="h-5 w-5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{item.name}</p>
-                      <p className="text-xs opacity-70 truncate">{item.description}</p>
-                    </div>
+                    {isExpanded && (
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{item.name}</p>
+                        <p className="text-xs opacity-70 truncate">{item.description}</p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -595,21 +612,9 @@ const StudyHub = () => {
             </div>
           )}
 
-          {/* VERSE EXPLORER (Coming Soon) */}
-          {activeSection === 'verse-explorer' && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Verse Explorer</h3>
-                <p className="text-gray-600 mb-4">Deep dive into individual verses with context and insights</p>
-                <p className="text-sm text-gray-500">Coming Soon</p>
-              </div>
-            </div>
-          )}
-
         </div>
 
-        {/* Right Sidebar - Quick Notes & Recent Studies */}
+        {/* Right Sidebar - Only Quick Notes */}
         <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
           
           {/* Quick Notes */}
@@ -630,57 +635,6 @@ const StudyHub = () => {
             </div>
           </div>
 
-          {/* Recent Studies */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <h3 className="font-medium text-gray-900">Recent Studies</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="text-sm">
-                <p className="font-medium text-gray-900">John 3:16 Analysis</p>
-                <p className="text-xs text-gray-500">2 hours ago</p>
-              </div>
-              <div className="text-sm">
-                <p className="font-medium text-gray-900">Prayer Topic Study</p>
-                <p className="text-xs text-gray-500">Yesterday</p>
-              </div>
-              <div className="text-sm">
-                <p className="font-medium text-gray-900">David Character Study</p>
-                <p className="text-xs text-gray-500">3 days ago</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bookmarks */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <Star className="h-4 w-4 text-gray-500" />
-              <h3 className="font-medium text-gray-900">Bookmarks</h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                <span className="text-sm text-gray-700">Romans 8:28</span>
-                <ExternalLink className="h-3 w-3 text-gray-400" />
-              </div>
-              <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                <span className="text-sm text-gray-700">Good Samaritan</span>
-                <ExternalLink className="h-3 w-3 text-gray-400" />
-              </div>
-            </div>
-          </div>
-
-          {/* AI Suggestions */}
-          <div className="flex-1 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="h-4 w-4 text-gray-500" />
-              <h3 className="font-medium text-gray-900">AI Suggestions</h3>
-            </div>
-            <div className="text-sm text-gray-600">
-              <p>Based on your recent studies, you might be interested in exploring themes of redemption and grace.</p>
-            </div>
-          </div>
-
         </div>
 
       </div>
@@ -688,4 +642,10 @@ const StudyHub = () => {
   );
 };
 
-export default StudyHub; 
+const WrappedStudyHub = () => (
+  <SidebarProvider>
+    <StudyHub />
+  </SidebarProvider>
+);
+
+export default WrappedStudyHub; 
