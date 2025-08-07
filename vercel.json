@@ -10,27 +10,22 @@
     "VITE_APP_URL": "https://bibleaura.xyz",
     "VITE_APP_NAME": "Bible Aura"
   },
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/blog/(.*)",
-      "dest": "/blog/$1"
+      "source": "/blog/(.*)",
+      "destination": "/blog/$1"
     },
     {
-      "src": "/sitemap.xml",
-      "dest": "/sitemap.xml"
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
     },
     {
-      "src": "/robots.txt", 
-      "dest": "/robots.txt"
+      "source": "/robots.txt", 
+      "destination": "/robots.txt"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
