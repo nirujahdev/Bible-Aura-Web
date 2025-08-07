@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,8 +18,13 @@ import {
   PenTool, Lightbulb, Globe, Clock, Settings,
   ChevronLeft, ChevronRight, BookmarkPlus, Brain,
   MessageSquare, Sparkles, Send, Save, X,
-  FileText, Tag, Calendar, TrendingUp
+  FileText, Tag, Calendar, TrendingUp, ArrowLeft
 } from 'lucide-react';
+
+// Import individual study components
+import { PrayerStudy } from '@/studies/topical/Prayer';
+import { JesusStudy } from '@/studies/characters/Jesus';
+import { GoodSamaritanStudy } from '@/studies/parables/GoodSamaritan';
 
 // SEO Configuration for Study Hub
 const SEO_CONFIG = {
@@ -43,12 +47,14 @@ const StudyHub = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   
-  // Journal/Notes State
-  const [journalOpen, setJournalOpen] = useState(false);
+  // Current study state
+  const [currentStudy, setCurrentStudy] = useState<{type: string, id: string} | null>(null);
+  
+  // Journal/AI Chat State
+  const [sidebarTab, setSidebarTab] = useState('journal');
   const [journalNotes, setJournalNotes] = useState('');
   const [journalTitle, setJournalTitle] = useState('');
   const [journalCategory, setJournalCategory] = useState('study');
-  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiMessage, setAiMessage] = useState('');
   const [aiConversation, setAiConversation] = useState<Array<{role: string, content: string}>>([]);
 
@@ -180,6 +186,26 @@ const StudyHub = () => {
       modernApplication: 'Leaders today can learn about servant leadership, intercession, and trusting God through difficulties.'
     },
     {
+      id: 'jesus',
+      name: 'Jesus Christ',
+      role: 'Savior & Lord',
+      testament: 'New Testament',
+      timeframe: '4 BC - 30 AD',
+      description: 'The Son of God, Savior of the world, who came to earth to redeem humanity through His perfect life, sacrificial death, and victorious resurrection.',
+      traits: ['Perfect Love', 'Compassion', 'Wisdom', 'Humility', 'Obedience', 'Forgiveness'],
+      notableEvents: ['Incarnation', 'Ministry & Teaching', 'Crucifixion', 'Resurrection', 'Ascension'],
+      lessons: [
+        'Perfect love demonstrated through sacrifice',
+        'Servant leadership is true greatness',
+        'Forgiveness extends even to enemies',
+        'Obedience to God\'s will brings life'
+      ],
+      color: 'bg-purple-100 text-purple-800',
+      icon: '✝️',
+      keyVerses: ['John 3:16', 'John 14:6', 'Philippians 2:6-8'],
+      modernApplication: 'Jesus is our perfect example of love, sacrifice, and obedience to God.'
+    },
+    {
       id: 'esther',
       name: 'Esther',
       role: 'Queen & Deliverer',
@@ -216,25 +242,6 @@ const StudyHub = () => {
       icon: '✍️',
       keyVerses: ['Acts 9:15', 'Philippians 3:7-8', '2 Corinthians 12:9'],
       modernApplication: 'Modern Christians can learn about evangelism, church leadership, and persevering through trials.'
-    },
-    {
-      id: 'mary-mother',
-      name: 'Mary (Mother of Jesus)',
-      role: 'Mother of Messiah',
-      testament: 'New Testament',
-      timeframe: '18 BC - 41 AD',
-      description: 'The virgin chosen by God to bear His Son, demonstrating faith, obedience, and devotion throughout her life.',
-      traits: ['Faithful', 'Humble', 'Trusting', 'Devoted', 'Pondering'],
-      notableEvents: ['Annunciation by Angel Gabriel', 'Birth of Jesus', 'Presentation at Temple', 'Wedding at Cana', 'At the Cross'],
-      lessons: [
-        'God chooses the humble to accomplish great things',
-        'Saying "yes" to God requires faith and trust',
-        'Pondering God\'s words brings understanding'
-      ],
-      color: 'bg-pink-100 text-pink-800',
-      icon: '🌹',
-      keyVerses: ['Luke 1:38', 'Luke 2:19', 'John 19:25'],
-      modernApplication: 'Believers can learn about submission to God\'s will, faith in difficult circumstances, and devotion to Christ.'
     }
   ];
 
@@ -315,16 +322,33 @@ const StudyHub = () => {
   ];
 
   const handleStudyNow = (item: any) => {
-    toast({
-      title: "Study Started",
-      description: `Opening ${item.title || item.name} study...`
-    });
+    // Determine the study type and ID
+    let studyType = '';
+    let studyId = item.id;
+
+    if (activeSection === 'topical') {
+      studyType = 'topical';
+    } else if (activeSection === 'characters') {
+      studyType = 'characters';
+    } else if (activeSection === 'parables') {
+      studyType = 'parables';
+    }
+
+    setCurrentStudy({ type: studyType, id: studyId });
+    
+    // Auto-populate journal with study info
+    setJournalTitle(`Study Notes: ${item.title || item.name}`);
+    setJournalNotes(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
+  };
+
+  const handleBackToOverview = () => {
+    setCurrentStudy(null);
   };
 
   const handleAddToJournal = (item: any) => {
     setJournalTitle(`Study Notes: ${item.title || item.name}`);
     setJournalNotes(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
-    setJournalOpen(true);
+    setSidebarTab('journal');
   };
 
   const handleSaveJournal = async () => {
@@ -347,7 +371,6 @@ const StudyHub = () => {
     // Reset form
     setJournalTitle('');
     setJournalNotes('');
-    setJournalOpen(false);
   };
 
   const handleAIAssistant = async () => {
@@ -375,497 +398,83 @@ const StudyHub = () => {
     return matchesSearch && matchesDifficulty;
   });
 
-  return (
-    <ModernLayout>
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white">
-        
-        {/* Top Navigation Bar */}
-        <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              
-              {/* Left - Study Hub Title */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Library className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Study Hub</h1>
-                  <p className="text-sm text-gray-600">Advanced Bible Study Tools</p>
-                </div>
-              </div>
+  // Render individual study component
+  const renderStudyComponent = () => {
+    if (!currentStudy) return null;
 
-              {/* Center - Navigation Tabs */}
-              <div className="hidden md:flex">
-                <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-                  <TabsList className="bg-gray-100">
-                    {navigationTabs.map((tab) => {
-                      const Icon = tab.icon;
-                      return (
-                        <TabsTrigger
-                          key={tab.id}
-                          value={tab.id}
-                          className="flex items-center gap-2 px-4 py-2"
-                        >
-                          <Icon className="h-4 w-4" />
-                          {tab.name}
-                          <Badge variant="secondary" className="ml-2 text-xs">
-                            {tab.count}
-                          </Badge>
-                        </TabsTrigger>
-                      );
-                    })}
-                  </TabsList>
-                </Tabs>
-              </div>
+    const { type, id } = currentStudy;
 
-              {/* Right - Actions */}
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" className="hidden sm:flex">
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
-                </Button>
-                
-                {/* Journal Sheet Trigger */}
-                <Sheet open={journalOpen} onOpenChange={setJournalOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <PenTool className="h-4 w-4 mr-2" />
-                      Journal
-                    </Button>
-                  </SheetTrigger>
-                </Sheet>
-              </div>
-            </div>
+    switch (type) {
+      case 'topical':
+        if (id === 'prayer') return <PrayerStudy onBack={handleBackToOverview} />;
+        break;
+      case 'characters':
+        if (id === 'jesus') return <JesusStudy onBack={handleBackToOverview} />;
+        break;
+      case 'parables':
+        if (id === 'good-samaritan') return <GoodSamaritanStudy onBack={handleBackToOverview} />;
+        break;
+    }
 
-            {/* Mobile Navigation */}
-            <div className="md:hidden pb-4">
-              <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-                <TabsList className="w-full bg-gray-100">
-                  {navigationTabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <TabsTrigger
-                        key={tab.id}
-                        value={tab.id}
-                        className="flex-1 flex items-center gap-1 text-xs"
-                      >
-                        <Icon className="h-3 w-3" />
-                        <span className="hidden xs:inline">{tab.name}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {tab.count}
-                        </Badge>
-                      </TabsTrigger>
-                    );
-                  })}
-                </TabsList>
-              </Tabs>
-            </div>
+    // Fallback for studies not yet implemented
+    return (
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" onClick={handleBackToOverview} className="p-2">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Study Component</h1>
+            <p className="text-lg text-gray-600">Coming Soon - {type} study for {id}</p>
           </div>
         </div>
-
-        {/* Main Content Area */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          
-          {/* TOPICAL STUDIES */}
-          {activeSection === 'topical' && (
-            <div className="space-y-6">
-              
-              {/* Search and Filter Bar */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search topical studies..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="All Levels" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All">All Levels</SelectItem>
-                      <SelectItem value="Beginner">Beginner</SelectItem>
-                      <SelectItem value="Intermediate">Intermediate</SelectItem>
-                      <SelectItem value="Advanced">Advanced</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Studies Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {topicalStudies
-                  .filter(study => 
-                    study.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    study.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    study.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-                  )
-                  .filter(study => 
-                    difficultyFilter === 'All' || study.difficulty === difficultyFilter
-                  )
-                  .map((study) => (
-                    <Card key={study.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                      <CardHeader className="pb-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="outline" className="text-xs">
-                                {study.difficulty}
-                              </Badge>
-                              <Badge variant="secondary" className="text-xs">
-                                {study.estimatedTime}
-                              </Badge>
-                            </div>
-                            <CardTitle className="text-lg font-bold text-gray-900 leading-tight">
-                              {study.title}
-                            </CardTitle>
-                            <p className="text-sm text-orange-600 font-medium mt-1">
-                              {study.subtitle}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-orange-600">{study.verseCount}</div>
-                            <div className="text-xs text-gray-500">verses</div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="space-y-4">
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          {study.description}
-                        </p>
-                        
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1">
-                          {study.tags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-
-                        {/* Key Insights */}
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 mb-2">Key Insights</p>
-                          <div className="space-y-1">
-                            {study.insights.slice(0, 2).map((insight, index) => (
-                              <div key={index} className="text-xs text-gray-600 flex items-start gap-1">
-                                <span className="text-orange-500 mt-0.5">•</span>
-                                {insight}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        {/* Key Verses */}
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 mb-2">Key Verses</p>
-                          <div className="space-y-1">
-                            {study.keyVerses.map((verse, index) => (
-                              <div key={index} className="text-xs text-orange-600 font-medium">
-                                {verse}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-4 border-t">
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleStudyNow(study)}
-                              className="bg-orange-500 hover:bg-orange-600"
-                            >
-                              <BookOpen className="h-3 w-3 mr-2" />
-                              Study Now
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAddToJournal(study)}
-                            >
-                              <Plus className="h-3 w-3 mr-2" />
-                              Journal
-                            </Button>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <Heart className="h-3 w-3 text-gray-400" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <Share className="h-3 w-3 text-gray-400" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="text-gray-400 mb-4">
+              <BookOpen className="h-16 w-16 mx-auto" />
             </div>
-          )}
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">Study in Development</h3>
+            <p className="text-gray-600 mb-4">
+              This detailed study is being prepared and will be available soon.
+            </p>
+            <Button onClick={handleBackToOverview}>
+              Back to Study Overview
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
-          {/* BIBLE CHARACTERS */}
-          {activeSection === 'characters' && (
-            <div className="space-y-6">
-              
-              {/* Filter Bar */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search biblical characters..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <Select>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="All Testament" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Testament</SelectItem>
-                      <SelectItem value="old">Old Testament</SelectItem>
-                      <SelectItem value="new">New Testament</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="All Roles" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="king">King</SelectItem>
-                      <SelectItem value="prophet">Prophet</SelectItem>
-                      <SelectItem value="apostle">Apostle</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+  // If viewing individual study, render it
+  if (currentStudy) {
+    return (
+      <ModernLayout>
+        <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white">
+          {/* Main Study Content */}
+          <div className="flex-1 overflow-y-auto">
+            {renderStudyComponent()}
+          </div>
+
+          {/* Permanent Right Sidebar */}
+          <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg">
+            <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex-1 flex flex-col">
+              <div className="p-4 border-b">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="journal" className="flex items-center gap-2">
+                    <PenTool className="h-4 w-4" />
+                    Journal
+                  </TabsTrigger>
+                  <TabsTrigger value="ai" className="flex items-center gap-2">
+                    <Brain className="h-4 w-4" />
+                    AI Chat
+                  </TabsTrigger>
+                </TabsList>
               </div>
 
-              {/* Characters Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {bibleCharacters.map((character) => (
-                  <Card key={character.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${character.color}`}>
-                          {character.icon}
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="text-lg font-bold text-gray-900">{character.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">{character.role}</Badge>
-                            <span className="text-xs text-gray-500">{character.testament}</span>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">{character.timeframe}</div>
-                        </div>
-                        <Button variant="ghost" size="sm" className="text-gray-400">
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {character.description}
-                      </p>
-
-                      {/* Character Traits */}
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Character Traits</p>
-                        <div className="flex flex-wrap gap-1">
-                          {character.traits.map((trait, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {trait}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Key Lessons */}
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Key Lessons</p>
-                        <div className="space-y-1">
-                          {character.lessons.slice(0, 2).map((lesson, index) => (
-                            <div key={index} className="text-xs text-gray-600 flex items-start gap-1">
-                              <span className="text-orange-500 mt-0.5">•</span>
-                              {lesson}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Modern Application */}
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Modern Application</p>
-                        <p className="text-xs text-gray-600">
-                          {character.modernApplication}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleStudyNow(character)}
-                            className="bg-orange-500 hover:bg-orange-600"
-                          >
-                            <BookOpen className="h-3 w-3 mr-2" />
-                            Study
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddToJournal(character)}
-                          >
-                            <Plus className="h-3 w-3 mr-2" />
-                            Journal
-                          </Button>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Share className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* PARABLES STUDY */}
-          {activeSection === 'parables' && (
-            <div className="space-y-6">
-              
-              {/* Search and Filter */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search parables..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <div className="flex items-center gap-4">
-                  <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="All Difficulty" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="All">All Difficulty</SelectItem>
-                      <SelectItem value="1">Beginner</SelectItem>
-                      <SelectItem value="2">Intermediate</SelectItem>
-                      <SelectItem value="3">Advanced</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Parables Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredParables.map((parable) => (
-                  <Card key={parable.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg font-bold text-gray-900">{parable.title}</CardTitle>
-                          <p className="text-sm text-orange-600 font-medium mt-1">{parable.theme}</p>
-                          <p className="text-sm text-gray-600 font-medium mt-1">{parable.reference}</p>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg">{parable.stars}</div>
-                          <Badge variant="outline" className="text-xs mt-1">
-                            Level {parable.difficulty}
-                          </Badge>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="space-y-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Summary</p>
-                        <p className="text-sm text-gray-700 leading-relaxed">{parable.summary}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Modern Application</p>
-                        <p className="text-sm text-gray-700 leading-relaxed">{parable.modernApplication}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Key Lessons</p>
-                        <div className="space-y-1">
-                          {parable.keyLessons.map((lesson, index) => (
-                            <div key={index} className="text-xs text-gray-600 flex items-start gap-1">
-                              <span className="text-orange-500 mt-0.5">•</span>
-                              {lesson}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 mb-2">Historical Context</p>
-                        <p className="text-xs text-gray-600 leading-relaxed">{parable.historicalContext}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleStudyNow(parable)}
-                            className="bg-orange-500 hover:bg-orange-600"
-                          >
-                            <BookOpen className="h-3 w-3 mr-2" />
-                            Study
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddToJournal(parable)}
-                          >
-                            <Plus className="h-3 w-3 mr-2" />
-                            Journal
-                          </Button>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Share className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Journal/Notes Sidebar */}
-        <Sheet open={journalOpen} onOpenChange={setJournalOpen}>
-          <SheetContent side="right" className="w-[400px] sm:w-[500px] p-0">
-            <SheetHeader className="p-6 border-b">
-              <SheetTitle className="flex items-center gap-2">
-                <PenTool className="h-5 w-5 text-orange-500" />
-                Study Journal
-              </SheetTitle>
-            </SheetHeader>
-            
-            <div className="flex-1 flex flex-col h-full">
-              {/* Journal Form */}
-              <div className="flex-1 p-6 space-y-4">
+              <TabsContent value="journal" className="flex-1 flex flex-col p-4 space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">
-                    Title
-                  </label>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
                   <Input
                     placeholder="Enter study title..."
                     value={journalTitle}
@@ -874,9 +483,7 @@ const StudyHub = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">
-                    Category
-                  </label>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
                   <Select value={journalCategory} onValueChange={setJournalCategory}>
                     <SelectTrigger>
                       <SelectValue />
@@ -891,93 +498,663 @@ const StudyHub = () => {
                   </Select>
                 </div>
 
-                <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">
-                    Notes
-                  </label>
+                <div className="flex-1 flex flex-col">
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
                   <Textarea
                     placeholder="Write your study notes, insights, and reflections..."
                     value={journalNotes}
                     onChange={(e) => setJournalNotes(e.target.value)}
-                    className="min-h-[200px] resize-none"
+                    className="flex-1 min-h-[200px] resize-none"
                   />
                 </div>
 
-                {/* AI Assistant Toggle */}
-                <div className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Brain className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm font-medium">AI Study Assistant</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
-                    >
-                      {aiAssistantOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </Button>
-                  </div>
-
-                  {aiAssistantOpen && (
-                    <div className="space-y-3 pt-3 border-t">
-                      <div className="max-h-32 overflow-y-auto space-y-2">
-                        {aiConversation.map((message, index) => (
-                          <div key={index} className={`text-xs p-2 rounded ${
-                            message.role === 'user' 
-                              ? 'bg-orange-50 text-orange-800 ml-4' 
-                              : 'bg-purple-50 text-purple-800 mr-4'
-                          }`}>
-                            <span className="font-medium">
-                              {message.role === 'user' ? 'You: ' : 'AI: '}
-                            </span>
-                            {message.content}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Ask AI about this study..."
-                          value={aiMessage}
-                          onChange={(e) => setAiMessage(e.target.value)}
-                          className="text-sm"
-                          onKeyPress={(e) => e.key === 'Enter' && handleAIAssistant()}
-                        />
-                        <Button
-                          size="sm"
-                          onClick={handleAIAssistant}
-                          disabled={!aiMessage.trim()}
-                        >
-                          <Send className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="border-t p-6 space-y-3">
                 <Button
                   onClick={handleSaveJournal}
-                  className="w-full bg-orange-500 hover:bg-orange-600"
+                  className="bg-orange-500 hover:bg-orange-600"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save to Journal
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setJournalOpen(false)}
-                  className="w-full"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Close
-                </Button>
+              </TabsContent>
+
+              <TabsContent value="ai" className="flex-1 flex flex-col p-4">
+                <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+                  {aiConversation.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Brain className="h-12 w-12 text-purple-300 mx-auto mb-4" />
+                      <p className="text-gray-600 text-sm">Ask me anything about this study!</p>
+                    </div>
+                  ) : (
+                    aiConversation.map((message, index) => (
+                      <div key={index} className={`p-3 rounded-lg ${
+                        message.role === 'user' 
+                          ? 'bg-orange-50 text-orange-800 ml-4' 
+                          : 'bg-purple-50 text-purple-800 mr-4'
+                      }`}>
+                        <span className="font-medium text-xs">
+                          {message.role === 'user' ? 'You: ' : 'AI Assistant: '}
+                        </span>
+                        <p className="text-sm mt-1">{message.content}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ask AI about this study..."
+                    value={aiMessage}
+                    onChange={(e) => setAiMessage(e.target.value)}
+                    className="text-sm"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAIAssistant()}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleAIAssistant}
+                    disabled={!aiMessage.trim()}
+                    className="bg-purple-500 hover:bg-purple-600"
+                  >
+                    <Send className="h-3 w-3" />
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </ModernLayout>
+    );
+  }
+
+  // Main overview interface
+  return (
+    <ModernLayout>
+      <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white">
+        
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Top Navigation Bar */}
+          <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                
+                {/* Left - Study Hub Title */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Library className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">Study Hub</h1>
+                    <p className="text-sm text-gray-600">Advanced Bible Study Tools</p>
+                  </div>
+                </div>
+
+                {/* Center - Navigation Tabs */}
+                <div className="hidden md:flex">
+                  <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
+                    <TabsList className="bg-gray-100">
+                      {navigationTabs.map((tab) => {
+                        const Icon = tab.icon;
+                        return (
+                          <TabsTrigger
+                            key={tab.id}
+                            value={tab.id}
+                            className="flex items-center gap-2 px-4 py-2"
+                          >
+                            <Icon className="h-4 w-4" />
+                            {tab.name}
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {tab.count}
+                            </Badge>
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+                  </Tabs>
+                </div>
+
+                {/* Right - Search */}
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" size="sm" className="hidden sm:flex">
+                    <Search className="h-4 w-4 mr-2" />
+                    Search
+                  </Button>
+                </div>
+              </div>
+
+              {/* Mobile Navigation */}
+              <div className="md:hidden pb-4">
+                <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
+                  <TabsList className="w-full bg-gray-100">
+                    {navigationTabs.map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className="flex-1 flex items-center gap-1 text-xs"
+                        >
+                          <Icon className="h-3 w-3" />
+                          <span className="hidden xs:inline">{tab.name}</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {tab.count}
+                          </Badge>
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+                </Tabs>
               </div>
             </div>
-          </SheetContent>
-        </Sheet>
+          </div>
+
+          {/* Study Content */}
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            {/* TOPICAL STUDIES */}
+            {activeSection === 'topical' && (
+              <div className="space-y-6">
+                
+                {/* Search and Filter Bar */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search topical studies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="All Levels" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">All Levels</SelectItem>
+                        <SelectItem value="Beginner">Beginner</SelectItem>
+                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                        <SelectItem value="Advanced">Advanced</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Studies Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                  {topicalStudies
+                    .filter(study => 
+                      study.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      study.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      study.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+                    )
+                    .filter(study => 
+                      difficultyFilter === 'All' || study.difficulty === difficultyFilter
+                    )
+                    .map((study) => (
+                      <Card key={study.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {study.difficulty}
+                                </Badge>
+                                <Badge variant="secondary" className="text-xs">
+                                  {study.estimatedTime}
+                                </Badge>
+                              </div>
+                              <CardTitle className="text-lg font-bold text-gray-900 leading-tight">
+                                {study.title}
+                              </CardTitle>
+                              <p className="text-sm text-orange-600 font-medium mt-1">
+                                {study.subtitle}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-orange-600">{study.verseCount}</div>
+                              <div className="text-xs text-gray-500">verses</div>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        
+                        <CardContent className="space-y-4">
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {study.description}
+                          </p>
+                          
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-1">
+                            {study.tags.map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+
+                          {/* Key Insights */}
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 mb-2">Key Insights</p>
+                            <div className="space-y-1">
+                              {study.insights.slice(0, 2).map((insight, index) => (
+                                <div key={index} className="text-xs text-gray-600 flex items-start gap-1">
+                                  <span className="text-orange-500 mt-0.5">•</span>
+                                  {insight}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Key Verses */}
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 mb-2">Key Verses</p>
+                            <div className="space-y-1">
+                              {study.keyVerses.map((verse, index) => (
+                                <div key={index} className="text-xs text-orange-600 font-medium">
+                                  {verse}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t">
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleStudyNow(study)}
+                                className="bg-orange-500 hover:bg-orange-600"
+                              >
+                                <BookOpen className="h-3 w-3 mr-2" />
+                                Study Now
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleAddToJournal(study)}
+                              >
+                                <Plus className="h-3 w-3 mr-2" />
+                                Journal
+                              </Button>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Heart className="h-3 w-3 text-gray-400" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Share className="h-3 w-3 text-gray-400" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* BIBLE CHARACTERS */}
+            {activeSection === 'characters' && (
+              <div className="space-y-6">
+                
+                {/* Filter Bar */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search biblical characters..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Select>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="All Testament" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Testament</SelectItem>
+                        <SelectItem value="old">Old Testament</SelectItem>
+                        <SelectItem value="new">New Testament</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="All Roles" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        <SelectItem value="king">King</SelectItem>
+                        <SelectItem value="prophet">Prophet</SelectItem>
+                        <SelectItem value="apostle">Apostle</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Characters Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {bibleCharacters.map((character) => (
+                    <Card key={character.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${character.color}`}>
+                            {character.icon}
+                          </div>
+                          <div className="flex-1">
+                            <CardTitle className="text-lg font-bold text-gray-900">{character.name}</CardTitle>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">{character.role}</Badge>
+                              <span className="text-xs text-gray-500">{character.testament}</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">{character.timeframe}</div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="text-gray-400">
+                            <Heart className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent className="space-y-4">
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {character.description}
+                        </p>
+
+                        {/* Character Traits */}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Character Traits</p>
+                          <div className="flex flex-wrap gap-1">
+                            {character.traits.map((trait, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {trait}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Key Lessons */}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Key Lessons</p>
+                          <div className="space-y-1">
+                            {character.lessons.slice(0, 2).map((lesson, index) => (
+                              <div key={index} className="text-xs text-gray-600 flex items-start gap-1">
+                                <span className="text-orange-500 mt-0.5">•</span>
+                                {lesson}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Modern Application */}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Modern Application</p>
+                          <p className="text-xs text-gray-600">
+                            {character.modernApplication}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4 border-t">
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleStudyNow(character)}
+                              className="bg-orange-500 hover:bg-orange-600"
+                            >
+                              <BookOpen className="h-3 w-3 mr-2" />
+                              Study
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAddToJournal(character)}
+                            >
+                              <Plus className="h-3 w-3 mr-2" />
+                              Journal
+                            </Button>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Share className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PARABLES STUDY */}
+            {activeSection === 'parables' && (
+              <div className="space-y-6">
+                
+                {/* Search and Filter */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search parables..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="All Difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">All Difficulty</SelectItem>
+                        <SelectItem value="1">Beginner</SelectItem>
+                        <SelectItem value="2">Intermediate</SelectItem>
+                        <SelectItem value="3">Advanced</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Parables Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {filteredParables.map((parable) => (
+                    <Card key={parable.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg font-bold text-gray-900">{parable.title}</CardTitle>
+                            <p className="text-sm text-orange-600 font-medium mt-1">{parable.theme}</p>
+                            <p className="text-sm text-gray-600 font-medium mt-1">{parable.reference}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg">{parable.stars}</div>
+                            <Badge variant="outline" className="text-xs mt-1">
+                              Level {parable.difficulty}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Summary</p>
+                          <p className="text-sm text-gray-700 leading-relaxed">{parable.summary}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Modern Application</p>
+                          <p className="text-sm text-gray-700 leading-relaxed">{parable.modernApplication}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Key Lessons</p>
+                          <div className="space-y-1">
+                            {parable.keyLessons.map((lesson, index) => (
+                              <div key={index} className="text-xs text-gray-600 flex items-start gap-1">
+                                <span className="text-orange-500 mt-0.5">•</span>
+                                {lesson}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 mb-2">Historical Context</p>
+                          <p className="text-xs text-gray-600 leading-relaxed">{parable.historicalContext}</p>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4 border-t">
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleStudyNow(parable)}
+                              className="bg-orange-500 hover:bg-orange-600"
+                            >
+                              <BookOpen className="h-3 w-3 mr-2" />
+                              Study
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAddToJournal(parable)}
+                            >
+                              <Plus className="h-3 w-3 mr-2" />
+                              Journal
+                            </Button>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Share className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Permanent Right Sidebar - Journal & AI Chat */}
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg">
+          <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex-1 flex flex-col">
+            <div className="p-4 border-b">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="journal" className="flex items-center gap-2">
+                  <PenTool className="h-4 w-4" />
+                  Journal
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  AI Chat
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="journal" className="flex-1 flex flex-col p-4 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+                <Input
+                  placeholder="Enter study title..."
+                  value={journalTitle}
+                  onChange={(e) => setJournalTitle(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
+                <Select value={journalCategory} onValueChange={setJournalCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="study">Bible Study</SelectItem>
+                    <SelectItem value="reflection">Personal Reflection</SelectItem>
+                    <SelectItem value="prayer">Prayer Points</SelectItem>
+                    <SelectItem value="insight">Divine Insight</SelectItem>
+                    <SelectItem value="question">Questions</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex-1 flex flex-col">
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
+                <Textarea
+                  placeholder="Write your study notes, insights, and reflections..."
+                  value={journalNotes}
+                  onChange={(e) => setJournalNotes(e.target.value)}
+                  className="flex-1 min-h-[300px] resize-none"
+                />
+              </div>
+
+              <Button
+                onClick={handleSaveJournal}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save to Journal
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="ai" className="flex-1 flex flex-col p-4">
+              <div className="flex-1 overflow-y-auto space-y-3 mb-4 min-h-[300px]">
+                {aiConversation.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Brain className="h-12 w-12 text-purple-300 mx-auto mb-4" />
+                    <p className="text-gray-600 text-sm">Ask me anything about Bible studies!</p>
+                    <div className="mt-4 space-y-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-left justify-start"
+                        onClick={() => setAiMessage("Explain this study topic in simple terms")}
+                      >
+                        Explain this study topic
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-left justify-start"
+                        onClick={() => setAiMessage("What are the practical applications?")}
+                      >
+                        Show practical applications
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  aiConversation.map((message, index) => (
+                    <div key={index} className={`p-3 rounded-lg ${
+                      message.role === 'user' 
+                        ? 'bg-orange-50 text-orange-800 ml-4' 
+                        : 'bg-purple-50 text-purple-800 mr-4'
+                    }`}>
+                      <span className="font-medium text-xs">
+                        {message.role === 'user' ? 'You: ' : 'AI Assistant: '}
+                      </span>
+                      <p className="text-sm mt-1">{message.content}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Ask AI about studies..."
+                  value={aiMessage}
+                  onChange={(e) => setAiMessage(e.target.value)}
+                  className="text-sm"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAIAssistant()}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleAIAssistant}
+                  disabled={!aiMessage.trim()}
+                  className="bg-purple-500 hover:bg-purple-600"
+                >
+                  <Send className="h-3 w-3" />
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
 
       </div>
     </ModernLayout>
