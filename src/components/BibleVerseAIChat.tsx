@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
@@ -347,17 +347,18 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-[90vw] sm:w-[500px] h-full flex flex-col p-0">
+        <SheetHeader className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-orange-500">
+              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                ✦
               </div>
               <div>
-                <DialogTitle className="text-xl font-bold text-gray-900">
+                <SheetTitle className="text-xl font-bold text-gray-900">
                   Bible Aura AI Assistant
-                </DialogTitle>
+                </SheetTitle>
                 <p className="text-sm text-gray-600 mt-1">
                   Analyzing: <span className="font-semibold">{verseRef}</span>
                 </p>
@@ -372,7 +373,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               <X className="h-4 w-4" />
             </Button>
           </div>
-        </DialogHeader>
+        </SheetHeader>
 
         {/* AI Mode Selection */}
         <div className="px-6 py-3 border-b bg-gray-50">
@@ -467,7 +468,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 } 

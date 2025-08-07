@@ -1331,7 +1331,7 @@ How can I apply this to my life?
                           isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                         } transition-opacity`}>
                           
-                          {/* Ask AI - Plain Orange Circle */}
+                          {/* Ask AI - Plain Orange Circle with ✦ */}
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -1343,7 +1343,8 @@ How can I apply this to my life?
                                     isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                                   } p-0 hover:bg-orange-50`}
                                 >
-                                  <div className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} rounded-full bg-orange-500 hover:bg-orange-600`}>
+                                  <div className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center text-white font-bold`}>
+                                    ✦
                                   </div>
                                 </Button>
                               </TooltipTrigger>
