@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSEO } from '@/hooks/useSEO';
 import { ModernLayout } from '@/components/ModernLayout';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Search, BookOpen, Users, Crown, TreePine, Library, 
   Heart, Star, Share, Languages, Grid, Filter,
@@ -53,28 +54,16 @@ const StudyHub = () => {
   
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [savingJournal, setSavingJournal] = useState(false);
   
-  // Journal State with multiple tabs
-  const [journalTab, setJournalTab] = useState('notes');
-  
-  // Notes tab state
+  // Simplified Journal State
   const [notesTitle, setNotesTitle] = useState('');
   const [notesContent, setNotesContent] = useState('');
   const [notesCategory, setNotesCategory] = useState('study');
   const [notesTags, setNotesTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
-  
-  // Research tab state  
-  const [researchTopic, setResearchTopic] = useState('');
-  const [researchNotes, setResearchNotes] = useState('');
-  const [researchReferences, setResearchReferences] = useState('');
-  const [researchQuestions, setResearchQuestions] = useState('');
-  
-  // Create tab state
-  const [createType, setCreateType] = useState('outline');
-  const [createTitle, setCreateTitle] = useState('');
-  const [createContent, setCreateContent] = useState('');
-  const [createPurpose, setCreatePurpose] = useState('');
+  const [createPurpose, setCreatePurpose] = useState(''); // Used for description
+  const [researchReferences, setResearchReferences] = useState(''); // Used for verse reference
 
   // Enhanced Topical Study Data with more depth
   const topicalStudies = [
@@ -354,14 +343,10 @@ const StudyHub = () => {
 
     setCurrentStudy({ type: studyType, id: studyId });
     
-    // Auto-populate appropriate journal tab with study info
-    if (journalTab === 'notes') {
-      setNotesTitle(`Study Notes: ${item.title || item.name}`);
-      setNotesContent(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
-    } else if (journalTab === 'research') {
-      setResearchTopic(item.title || item.name);
-      setResearchNotes(`Research notes for: ${item.title || item.name}\n\n`);
-    }
+    // Auto-populate journal with study info
+    setNotesTitle(`Study: ${item.title || item.name}`);
+    setCreatePurpose(`Study session for ${item.title || item.name}`);
+    setNotesContent(`• Key insights from this study\n• Main takeaways\n• Personal reflections`);
 
     // Auto-open sidebar when starting a study
     setIsSidebarOpen(true);
@@ -373,8 +358,8 @@ const StudyHub = () => {
 
   const handleAddToJournal = (item: any) => {
     setNotesTitle(`Study Notes: ${item.title || item.name}`);
-    setNotesContent(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
-    setJournalTab('notes');
+    setCreatePurpose(`Study session for ${item.title || item.name}`);
+    setNotesContent(`Study started for: ${item.title || item.name}\n\n• Key insights:\n• Main takeaways:\n• Personal reflections:`);
     setIsSidebarOpen(true); // Open sidebar when adding to journal
   };
 
@@ -382,8 +367,17 @@ const StudyHub = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Journal saving functions
+  // Journal saving functions - FIXED to actually save to database
   const handleSaveNotes = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save journal entries.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!notesTitle || !notesContent) {
       toast({
         title: "Missing Information",
@@ -393,59 +387,78 @@ const StudyHub = () => {
       return;
     }
 
-    toast({
-      title: "Notes Saved",
-      description: "Your study notes have been saved successfully!"
-    });
+    setSavingJournal(true);
     
-    // Reset form
-    setNotesTitle('');
-    setNotesContent('');
-    setNotesTags([]);
-  };
+    try {
+      const dataToSave = {
+        user_id: user.id,
+        title: notesTitle.trim(),
+        content: notesContent.trim(),
+        verse_reference: researchReferences.trim() || null,
+        verse_text: null,
+        verse_references: researchReferences.trim() ? [researchReferences.trim()] : [],
+        category: notesCategory,
+        tags: notesTags,
+        mood: null,
+        spiritual_state: null,
+        is_private: true,
+        metadata: {
+          description: createPurpose.trim() || null,
+          study_type: 'study_hub',
+          reflection_type: 'study'
+        },
+        language: 'english',
+        entry_date: new Date().toISOString().split('T')[0],
+        word_count: notesContent.trim().split(/\s+/).length,
+        reading_time: Math.max(1, Math.ceil(notesContent.trim().split(/\s+/).length / 200)),
+        is_pinned: false,
+        template_used: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-  const handleSaveResearch = async () => {
-    if (!researchTopic || !researchNotes) {
+      const { error } = await supabase
+        .from('journal_entries')
+        .insert([dataToSave]);
+
+      if (error) {
+        console.error('Error saving journal entry:', error);
+        if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          throw new Error('You do not have permission to create journal entries. Please sign out and sign back in.');
+        }
+        if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+          throw new Error('Database schema issue. Please refresh the page and try again.');
+        }
+        if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+          throw new Error('Database table is missing. Please contact support.');
+        }
+        throw new Error(error.message || 'Failed to create journal entry');
+      }
+
       toast({
-        title: "Missing Information", 
-        description: "Please add both a topic and research notes before saving.",
+        title: "Journal Entry Saved",
+        description: "Your study notes have been saved to your journal successfully!"
+      });
+      
+      // Reset form
+      setNotesTitle('');
+      setNotesContent('');
+      setCreatePurpose('');
+      setResearchReferences('');
+      setNotesTags([]);
+    } catch (error: any) {
+      console.error('Error saving journal entry:', error);
+      toast({
+        title: "Error Saving Entry",
+        description: error.message || "Failed to save your journal entry. Please try again.",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setSavingJournal(false);
     }
-
-    toast({
-      title: "Research Saved",
-      description: "Your research notes have been saved successfully!"
-    });
-    
-    // Reset form
-    setResearchTopic('');
-    setResearchNotes('');
-    setResearchReferences('');
-    setResearchQuestions('');
   };
 
-  const handleSaveCreate = async () => {
-    if (!createTitle || !createContent) {
-      toast({
-        title: "Missing Information",
-        description: "Please add both a title and content before saving.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Creation Saved", 
-      description: `Your ${createType} has been saved successfully!`
-    });
-    
-    // Reset form
-    setCreateTitle('');
-    setCreateContent('');
-    setCreatePurpose('');
-  };
+  // Functions removed since we now have a single simplified journal form
 
   // Tag management
   const addTag = () => {
@@ -514,9 +527,9 @@ const StudyHub = () => {
     );
   };
 
-  // Render Journal Sidebar
+  // Render Simplified Journal Sidebar
   const renderJournalSidebar = () => (
-    <div className={`${isSidebarOpen ? 'w-96' : 'w-0'} bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen transition-all duration-300 overflow-hidden`}>
+    <div className={`${isSidebarOpen ? 'w-80 md:w-96' : 'w-0'} bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen transition-all duration-300 overflow-hidden`}>
       <div className="flex-shrink-0 p-4 border-b bg-gray-50 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <PenTool className="h-5 w-5 text-orange-500" />
@@ -533,200 +546,112 @@ const StudyHub = () => {
       </div>
 
       {isSidebarOpen && (
-        <Tabs value={journalTab} onValueChange={setJournalTab} className="flex-1 flex flex-col">
-          <div className="flex-shrink-0 p-4 border-b">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="notes" className="flex items-center gap-1 text-xs">
-                <StickyNote className="h-3 w-3" />
-                Notes
-              </TabsTrigger>
-              <TabsTrigger value="research" className="flex items-center gap-1 text-xs">
-                <Beaker className="h-3 w-3" />
-                Research
-              </TabsTrigger>
-              <TabsTrigger value="create" className="flex items-center gap-1 text-xs">
-                <BookCheck className="h-3 w-3" />
-                Create
-              </TabsTrigger>
-            </TabsList>
+        <div className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+          {/* Title */}
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+            <Input
+              placeholder="Enter study title..."
+              value={notesTitle}
+              onChange={(e) => setNotesTitle(e.target.value)}
+              className="text-sm"
+            />
           </div>
 
-          {/* Notes Tab */}
-          <TabsContent value="notes" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+          {/* Description */}
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Description</label>
+            <Textarea
+              placeholder="Brief description of your study..."
+              value={createPurpose}
+              onChange={(e) => setCreatePurpose(e.target.value)}
+              className="min-h-[80px] resize-none text-sm"
+            />
+          </div>
+
+          {/* Verse Reference */}
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Verse Reference</label>
+            <Input
+              placeholder="e.g. John 3:16, Matthew 5:1-12"
+              value={researchReferences}
+              onChange={(e) => setResearchReferences(e.target.value)}
+              className="text-sm"
+            />
+          </div>
+
+          {/* Study Points */}
+          <div className="flex-1 flex flex-col">
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Key Points & Insights</label>
+            <Textarea
+              placeholder="• Key point 1&#10;• Key point 2&#10;• Key point 3&#10;&#10;Add your insights, reflections, and main takeaways here..."
+              value={notesContent}
+              onChange={(e) => setNotesContent(e.target.value)}
+              className="flex-1 min-h-[300px] resize-none text-sm"
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
+            <Select value={notesCategory} onValueChange={setNotesCategory}>
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="study">Bible Study</SelectItem>
+                <SelectItem value="reflection">Personal Reflection</SelectItem>
+                <SelectItem value="prayer">Prayer Points</SelectItem>
+                <SelectItem value="insight">Divine Insight</SelectItem>
+                <SelectItem value="question">Questions</SelectItem>
+                <SelectItem value="sermon">Sermon Notes</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
+            <div className="flex gap-2 mb-2">
               <Input
-                placeholder="Enter note title..."
-                value={notesTitle}
-                onChange={(e) => setNotesTitle(e.target.value)}
+                placeholder="Add tag..."
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                className="text-xs"
               />
+              <Button size="sm" onClick={addTag}>
+                <Plus className="h-3 w-3" />
+              </Button>
             </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
-              <Select value={notesCategory} onValueChange={setNotesCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="study">Bible Study</SelectItem>
-                  <SelectItem value="reflection">Personal Reflection</SelectItem>
-                  <SelectItem value="prayer">Prayer Points</SelectItem>
-                  <SelectItem value="insight">Divine Insight</SelectItem>
-                  <SelectItem value="question">Questions</SelectItem>
-                  <SelectItem value="sermon">Sermon Notes</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap gap-1">
+              {notesTags.map((tag, index) => (
+                <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
+                  {tag} <X className="h-2 w-2 ml-1" />
+                </Badge>
+              ))}
             </div>
+          </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  placeholder="Add tag..."
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                  className="text-xs"
-                />
-                <Button size="sm" onClick={addTag}>
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {notesTags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
-                    {tag} <X className="h-2 w-2 ml-1" />
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex-1 flex flex-col">
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
-              <Textarea
-                placeholder="Write your study notes, insights, and reflections..."
-                value={notesContent}
-                onChange={(e) => setNotesContent(e.target.value)}
-                className="flex-1 min-h-[200px] resize-none text-sm"
-              />
-            </div>
-
-            <Button
-              onClick={handleSaveNotes}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Notes
-            </Button>
-          </TabsContent>
-
-          {/* Research Tab */}
-          <TabsContent value="research" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Research Topic</label>
-              <Input
-                placeholder="Enter research topic..."
-                value={researchTopic}
-                onChange={(e) => setResearchTopic(e.target.value)}
-              />
-            </div>
-
-            <div className="flex-1 flex flex-col">
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Research Notes</label>
-              <Textarea
-                placeholder="Record your research findings, cross-references, and biblical connections..."
-                value={researchNotes}
-                onChange={(e) => setResearchNotes(e.target.value)}
-                className="flex-1 min-h-[150px] resize-none text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">References & Sources</label>
-              <Textarea
-                placeholder="List Bible verses, commentaries, books, or other sources..."
-                value={researchReferences}
-                onChange={(e) => setResearchReferences(e.target.value)}
-                className="min-h-[80px] resize-none text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Questions for Further Study</label>
-              <Textarea
-                placeholder="Note questions that arise from your research..."
-                value={researchQuestions}
-                onChange={(e) => setResearchQuestions(e.target.value)}
-                className="min-h-[80px] resize-none text-sm"
-              />
-            </div>
-
-            <Button
-              onClick={handleSaveResearch}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Research
-            </Button>
-          </TabsContent>
-
-          {/* Create Tab */}
-          <TabsContent value="create" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Creation Type</label>
-              <Select value={createType} onValueChange={setCreateType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="outline">Study Outline</SelectItem>
-                  <SelectItem value="sermon">Sermon Draft</SelectItem>
-                  <SelectItem value="lesson">Bible Lesson</SelectItem>
-                  <SelectItem value="devotional">Devotional</SelectItem>
-                  <SelectItem value="summary">Study Summary</SelectItem>
-                  <SelectItem value="presentation">Presentation</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
-              <Input
-                placeholder={`Enter ${createType} title...`}
-                value={createTitle}
-                onChange={(e) => setCreateTitle(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Purpose/Objective</label>
-              <Input
-                placeholder="What is the main purpose or learning objective?"
-                value={createPurpose}
-                onChange={(e) => setCreatePurpose(e.target.value)}
-              />
-            </div>
-
-            <div className="flex-1 flex flex-col">
-              <label className="text-sm font-medium text-gray-900 mb-2 block">Content</label>
-              <Textarea
-                placeholder={`Create your ${createType} content here. Use bullet points, outline format, or full text...`}
-                value={createContent}
-                onChange={(e) => setCreateContent(e.target.value)}
-                className="flex-1 min-h-[250px] resize-none text-sm"
-              />
-            </div>
-
-            <Button
-              onClick={handleSaveCreate}
-              className="bg-green-500 hover:bg-green-600"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save {createType}
-            </Button>
-          </TabsContent>
-        </Tabs>
+          {/* Save Button */}
+          <Button
+            onClick={handleSaveNotes}
+            disabled={savingJournal}
+            className="bg-orange-500 hover:bg-orange-600 w-full disabled:opacity-50"
+          >
+            {savingJournal ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Journal Entry
+              </>
+            )}
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -766,10 +691,10 @@ const StudyHub = () => {
       <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white relative">
         
         {/* Main Content Area - Responsive width based on sidebar */}
-        <div className={`flex-1 overflow-y-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-6xl mx-auto px-8' : ''}`}>
+        <div className={`flex-1 overflow-y-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8' : 'px-4 sm:px-6'}`}>
           {/* Top Navigation Bar - Sticky */}
-          <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-            <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${!isSidebarOpen ? 'max-w-full' : 'max-w-5xl'}`}>
+                      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
+            <div className="mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-16">
                 
                 {/* Left - Study Hub Title */}
@@ -784,7 +709,7 @@ const StudyHub = () => {
                 </div>
 
                 {/* Center - Navigation Tabs */}
-                <div className="hidden md:flex">
+                <div className="hidden lg:flex">
                   <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
                     <TabsList className="bg-gray-100">
                       {navigationTabs.map((tab) => {
@@ -834,8 +759,17 @@ const StudyHub = () => {
                 </div>
               </div>
 
-              {/* Mobile Navigation */}
-              <div className="md:hidden pb-4">
+              {/* Mobile Navigation & Search */}
+              <div className="lg:hidden pb-4 space-y-3">
+                <div className="relative sm:hidden">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search studies..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full bg-gray-50 border-0 focus:bg-white"
+                  />
+                </div>
                 <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
                   <TabsList className="w-full bg-gray-100">
                     {navigationTabs.map((tab) => {
@@ -893,8 +827,8 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Studies Grid - Responsive columns */}
-                <div className={`grid grid-cols-1 gap-6 ${!isSidebarOpen ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'md:grid-cols-2'}`}>
+                {/* Studies Grid - Responsive 2 per row for laptop */}
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!isSidebarOpen ? 'xl:grid-cols-3' : ''}`}>
                   {topicalStudies
                     .filter(study => 
                       study.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1045,8 +979,8 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Characters Grid - Responsive */}
-                <div className={`grid grid-cols-1 gap-6 ${!isSidebarOpen ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'}`}>
+                {/* Characters Grid - Responsive 2 per row for laptop */}
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!isSidebarOpen ? 'xl:grid-cols-3' : ''}`}>
                   {bibleCharacters.map((character) => (
                     <Card key={character.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                       <CardHeader className="pb-4">
@@ -1166,8 +1100,8 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Parables Grid - Responsive */}
-                <div className={`grid grid-cols-1 gap-6 ${!isSidebarOpen ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-2'}`}>
+                {/* Parables Grid - Responsive 2 per row for laptop */}
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!isSidebarOpen ? 'xl:grid-cols-3' : ''}`}>
                   {filteredParables.map((parable) => (
                     <Card key={parable.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                       <CardHeader className="pb-4">

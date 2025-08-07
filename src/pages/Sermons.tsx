@@ -381,13 +381,40 @@ const Sermons = () => {
         
         if (error) {
           console.error('Error updating sermon:', error);
-          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
-            throw new Error('You do not have permission to update this sermon.');
-          }
+          
+          // Handle specific database column issues
           if (error.message?.includes('column') && error.message?.includes('does not exist')) {
-            throw new Error('Database schema issue. Please refresh the page and try again.');
+            const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
+            console.log(`Missing column detected: ${missingColumn}`);
+            
+            // Retry with basic data only
+            const basicData = {
+              title: title || 'Untitled Sermon',
+              content: content || '',
+              scripture_reference: scriptureRefs || null,
+              updated_at: new Date().toISOString()
+            };
+            
+            const { data: retryData, error: retryError } = await supabase
+              .from('sermons')
+              .update(basicData)
+              .eq('id', selectedSermon.id)
+              .eq('user_id', user.id)
+              .select()
+              .single();
+              
+            if (retryError) {
+              throw new Error(retryError.message || 'Failed to update sermon even with basic data');
+            }
+            
+            savedSermon = retryData;
+          } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            throw new Error('You do not have permission to update this sermon.');
+          } else {
+            throw new Error(error.message || 'Failed to update sermon');
           }
-          throw new Error(error.message || 'Failed to update sermon');
+        } else {
+          savedSermon = data;
         }
         
         savedSermon = data;
@@ -407,16 +434,42 @@ const Sermons = () => {
         
         if (error) {
           console.error('Error creating sermon:', error);
-          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
-            throw new Error('You do not have permission to create sermons. Please sign out and sign back in.');
-          }
+          
+          // Handle specific database column issues
           if (error.message?.includes('column') && error.message?.includes('does not exist')) {
-            throw new Error('Database schema issue. Please refresh the page and try again.');
-          }
-          if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+            const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
+            console.log(`Missing column detected: ${missingColumn}`);
+            
+            // Retry with basic data only
+            const basicData = {
+              user_id: user.id,
+              title: title || 'Untitled Sermon',
+              content: content || '',
+              scripture_reference: scriptureRefs || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            
+            const { data: retryData, error: retryError } = await supabase
+              .from('sermons')
+              .insert([basicData])
+              .select()
+              .single();
+              
+            if (retryError) {
+              throw new Error(retryError.message || 'Failed to create sermon even with basic data');
+            }
+            
+            savedSermon = retryData;
+          } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            throw new Error('You do not have permission to create sermons. Please sign out and sign back in.');
+          } else if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
             throw new Error('Database table is missing. Please contact support.');
+          } else {
+            throw new Error(error.message || 'Failed to create sermon');
           }
-          throw new Error(error.message || 'Failed to create sermon');
+        } else {
+          savedSermon = data;
         }
         
         savedSermon = data;

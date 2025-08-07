@@ -283,7 +283,32 @@ const SermonWriter = () => {
 
         if (error) {
           console.error('Error updating sermon:', error);
-          throw error;
+          
+          // Handle specific database column issues
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
+            console.log(`Missing column detected: ${missingColumn}`);
+            
+            // Retry with basic data only
+            const basicData = {
+              title: editingSermon.title?.trim() || 'Untitled Sermon',
+              content: editingSermon.content?.trim() || '',
+              scripture_reference: editingSermon.scripture_reference || null,
+              updated_at: new Date().toISOString()
+            };
+            
+            const { error: retryError } = await supabase
+              .from('sermons')
+              .update(basicData)
+              .eq('id', editingSermon.id)
+              .eq('user_id', user.id);
+              
+            if (retryError) {
+              throw new Error(retryError.message || 'Failed to update sermon even with basic data');
+            }
+          } else {
+            throw error;
+          }
         }
         
         if (!isAutoSave) {
@@ -304,7 +329,38 @@ const SermonWriter = () => {
 
         if (error) {
           console.error('Error creating sermon:', error);
-          throw error;
+          
+          // Handle specific database column issues
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
+            console.log(`Missing column detected: ${missingColumn}`);
+            
+            // Retry with basic data only
+            const basicData = {
+              user_id: user.id,
+              title: editingSermon.title?.trim() || 'Untitled Sermon',
+              content: editingSermon.content?.trim() || '',
+              scripture_reference: editingSermon.scripture_reference || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            
+            const { data: retryData, error: retryError } = await supabase
+              .from('sermons')
+              .insert([basicData])
+              .select()
+              .single();
+              
+            if (retryError) {
+              throw new Error(retryError.message || 'Failed to create sermon even with basic data');
+            }
+            
+            setEditingSermon(prev => ({ ...prev, id: retryData.id }));
+          } else {
+            throw error;
+          }
+        } else {
+          setEditingSermon(prev => ({ ...prev, id: data.id }));
         }
         
         setEditingSermon(prev => ({ ...prev, id: data.id }));

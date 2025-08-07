@@ -3,6 +3,99 @@
 -- This migration ensures all backend functionality works properly
 
 -- ============================================================================
+-- JOURNAL ENTRIES TABLE - COMPREHENSIVE FIX
+-- ============================================================================
+
+-- Ensure journal_entries table exists with core structure
+CREATE TABLE IF NOT EXISTS journal_entries (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT,
+    content TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add all required columns for journal_entries if they don't exist
+DO $$
+BEGIN
+    -- Add mood column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'mood') THEN
+        ALTER TABLE journal_entries ADD COLUMN mood TEXT;
+    END IF;
+    
+    -- Add spiritual_state column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'spiritual_state') THEN
+        ALTER TABLE journal_entries ADD COLUMN spiritual_state TEXT;
+    END IF;
+    
+    -- Add verse_reference column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'verse_reference') THEN
+        ALTER TABLE journal_entries ADD COLUMN verse_reference TEXT;
+    END IF;
+    
+    -- Add verse_text column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'verse_text') THEN
+        ALTER TABLE journal_entries ADD COLUMN verse_text TEXT;
+    END IF;
+    
+    -- Add verse_references column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'verse_references') THEN
+        ALTER TABLE journal_entries ADD COLUMN verse_references TEXT[] DEFAULT '{}';
+    END IF;
+    
+    -- Add tags column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'tags') THEN
+        ALTER TABLE journal_entries ADD COLUMN tags TEXT[] DEFAULT '{}';
+    END IF;
+    
+    -- Add is_private column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'is_private') THEN
+        ALTER TABLE journal_entries ADD COLUMN is_private BOOLEAN DEFAULT true;
+    END IF;
+    
+    -- Add language column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'language') THEN
+        ALTER TABLE journal_entries ADD COLUMN language TEXT DEFAULT 'english' CHECK (language IN ('english', 'tamil', 'sinhala'));
+    END IF;
+    
+    -- Add category column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'category') THEN
+        ALTER TABLE journal_entries ADD COLUMN category TEXT DEFAULT 'personal';
+    END IF;
+    
+    -- Add word_count column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'word_count') THEN
+        ALTER TABLE journal_entries ADD COLUMN word_count INTEGER DEFAULT 0;
+    END IF;
+    
+    -- Add reading_time column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'reading_time') THEN
+        ALTER TABLE journal_entries ADD COLUMN reading_time INTEGER DEFAULT 1;
+    END IF;
+    
+    -- Add metadata column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'metadata') THEN
+        ALTER TABLE journal_entries ADD COLUMN metadata JSONB DEFAULT '{}';
+    END IF;
+    
+    -- Add is_pinned column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'is_pinned') THEN
+        ALTER TABLE journal_entries ADD COLUMN is_pinned BOOLEAN DEFAULT false;
+    END IF;
+    
+    -- Add template_used column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'template_used') THEN
+        ALTER TABLE journal_entries ADD COLUMN template_used TEXT;
+    END IF;
+    
+    -- Add entry_date column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'entry_date') THEN
+        ALTER TABLE journal_entries ADD COLUMN entry_date DATE DEFAULT CURRENT_DATE;
+    END IF;
+END $$;
+
+-- ============================================================================
 -- SERMONS TABLE - COMPREHENSIVE FIX
 -- ============================================================================
 
@@ -19,189 +112,114 @@ CREATE TABLE IF NOT EXISTS sermons (
 -- Add all required columns for sermons if they don't exist
 DO $$
 BEGIN
-    -- Scripture fields
+    -- Add scripture_reference column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'scripture_reference') THEN
         ALTER TABLE sermons ADD COLUMN scripture_reference TEXT;
     END IF;
     
+    -- Add scripture_references column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'scripture_references') THEN
         ALTER TABLE sermons ADD COLUMN scripture_references TEXT[] DEFAULT '{}';
     END IF;
     
-    -- Content organization
+    -- Add main_points column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'main_points') THEN
         ALTER TABLE sermons ADD COLUMN main_points TEXT[] DEFAULT '{}';
     END IF;
     
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'outline') THEN
-        ALTER TABLE sermons ADD COLUMN outline JSONB;
-    END IF;
-    
-    -- Sermon details
+    -- Add congregation column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'congregation') THEN
         ALTER TABLE sermons ADD COLUMN congregation TEXT;
     END IF;
     
+    -- Add sermon_date column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'sermon_date') THEN
         ALTER TABLE sermons ADD COLUMN sermon_date DATE DEFAULT CURRENT_DATE;
     END IF;
     
+    -- Add duration column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'duration') THEN
         ALTER TABLE sermons ADD COLUMN duration INTEGER;
     END IF;
     
-    -- Notes and metadata
+    -- Add notes column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'notes') THEN
         ALTER TABLE sermons ADD COLUMN notes TEXT;
     END IF;
     
+    -- Add private_notes column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'private_notes') THEN
         ALTER TABLE sermons ADD COLUMN private_notes TEXT;
     END IF;
     
-    -- Organization
+    -- Add tags column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'tags') THEN
         ALTER TABLE sermons ADD COLUMN tags TEXT[] DEFAULT '{}';
     END IF;
     
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'series_name') THEN
-        ALTER TABLE sermons ADD COLUMN series_name TEXT;
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'category') THEN
-        ALTER TABLE sermons ADD COLUMN category TEXT DEFAULT 'general';
-    END IF;
-    
-    -- Status and workflow
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'is_draft') THEN
-        ALTER TABLE sermons ADD COLUMN is_draft BOOLEAN DEFAULT true;
-    END IF;
-    
+    -- Add status column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'status') THEN
         ALTER TABLE sermons ADD COLUMN status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'ready', 'delivered', 'archived'));
     END IF;
     
-    -- Analytics
+    -- Add is_draft column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'is_draft') THEN
+        ALTER TABLE sermons ADD COLUMN is_draft BOOLEAN DEFAULT true;
+    END IF;
+    
+    -- Add word_count column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'word_count') THEN
         ALTER TABLE sermons ADD COLUMN word_count INTEGER DEFAULT 0;
     END IF;
     
+    -- Add estimated_time column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'estimated_time') THEN
         ALTER TABLE sermons ADD COLUMN estimated_time INTEGER DEFAULT 0;
     END IF;
     
+    -- Add estimated_duration column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'estimated_duration') THEN
         ALTER TABLE sermons ADD COLUMN estimated_duration INTEGER DEFAULT 0;
     END IF;
     
-    -- Localization
+    -- Add language column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'language') THEN
         ALTER TABLE sermons ADD COLUMN language TEXT DEFAULT 'english' CHECK (language IN ('english', 'tamil', 'sinhala'));
     END IF;
     
-    -- AI and templates
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'ai_generated') THEN
-        ALTER TABLE sermons ADD COLUMN ai_generated BOOLEAN DEFAULT false;
+    -- Add category column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'category') THEN
+        ALTER TABLE sermons ADD COLUMN category TEXT DEFAULT 'general';
     END IF;
     
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'template_type') THEN
-        ALTER TABLE sermons ADD COLUMN template_type TEXT;
+    -- Add outline column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'outline') THEN
+        ALTER TABLE sermons ADD COLUMN outline TEXT;
     END IF;
     
-    -- Content enhancement
+    -- Add illustrations column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'illustrations') THEN
         ALTER TABLE sermons ADD COLUMN illustrations TEXT[] DEFAULT '{}';
     END IF;
     
+    -- Add applications column
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'applications') THEN
         ALTER TABLE sermons ADD COLUMN applications TEXT[] DEFAULT '{}';
     END IF;
-END $$;
-
--- ============================================================================
--- JOURNAL ENTRIES TABLE - COMPREHENSIVE FIX
--- ============================================================================
-
--- Ensure journal_entries table exists with core structure
-CREATE TABLE IF NOT EXISTS journal_entries (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT,
-    content TEXT NOT NULL DEFAULT '',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Add all required columns for journal entries if they don't exist
-DO $$
-BEGIN
-    -- Personal reflection fields
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'mood') THEN
-        ALTER TABLE journal_entries ADD COLUMN mood TEXT;
+    
+    -- Add series_name column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'series_name') THEN
+        ALTER TABLE sermons ADD COLUMN series_name TEXT;
     END IF;
     
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'spiritual_state') THEN
-        ALTER TABLE journal_entries ADD COLUMN spiritual_state TEXT;
+    -- Add ai_generated column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'ai_generated') THEN
+        ALTER TABLE sermons ADD COLUMN ai_generated BOOLEAN DEFAULT false;
     END IF;
     
-    -- Scripture integration
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'verse_reference') THEN
-        ALTER TABLE journal_entries ADD COLUMN verse_reference TEXT;
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'verse_text') THEN
-        ALTER TABLE journal_entries ADD COLUMN verse_text TEXT;
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'verse_references') THEN
-        ALTER TABLE journal_entries ADD COLUMN verse_references TEXT[] DEFAULT '{}';
-    END IF;
-    
-    -- Organization
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'tags') THEN
-        ALTER TABLE journal_entries ADD COLUMN tags TEXT[] DEFAULT '{}';
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'category') THEN
-        ALTER TABLE journal_entries ADD COLUMN category TEXT DEFAULT 'personal';
-    END IF;
-    
-    -- Privacy and sharing
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'is_private') THEN
-        ALTER TABLE journal_entries ADD COLUMN is_private BOOLEAN DEFAULT true;
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'is_pinned') THEN
-        ALTER TABLE journal_entries ADD COLUMN is_pinned BOOLEAN DEFAULT false;
-    END IF;
-    
-    -- Temporal
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'entry_date') THEN
-        ALTER TABLE journal_entries ADD COLUMN entry_date DATE DEFAULT CURRENT_DATE;
-    END IF;
-    
-    -- Analytics
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'word_count') THEN
-        ALTER TABLE journal_entries ADD COLUMN word_count INTEGER DEFAULT 0;
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'reading_time') THEN
-        ALTER TABLE journal_entries ADD COLUMN reading_time INTEGER DEFAULT 0;
-    END IF;
-    
-    -- Localization
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'language') THEN
-        ALTER TABLE journal_entries ADD COLUMN language TEXT DEFAULT 'english' CHECK (language IN ('english', 'tamil', 'sinhala'));
-    END IF;
-    
-    -- Enhanced metadata for daily devotion features
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'metadata') THEN
-        ALTER TABLE journal_entries ADD COLUMN metadata JSONB DEFAULT '{}';
-    END IF;
-    
-    -- Templates
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'journal_entries' AND column_name = 'template_used') THEN
-        ALTER TABLE journal_entries ADD COLUMN template_used TEXT;
+    -- Add template_type column
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sermons' AND column_name = 'template_type') THEN
+        ALTER TABLE sermons ADD COLUMN template_type TEXT;
     END IF;
 END $$;
 
@@ -333,49 +351,58 @@ CREATE INDEX IF NOT EXISTS idx_journal_entries_tags ON journal_entries USING GIN
 CREATE INDEX IF NOT EXISTS idx_journal_entries_metadata ON journal_entries USING GIN(metadata);
 
 -- ============================================================================
--- ROW LEVEL SECURITY (RLS)
+-- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 
 -- Enable RLS
-ALTER TABLE sermons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sermons ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies
-DROP POLICY IF EXISTS "Users can view their own sermons" ON sermons;
-DROP POLICY IF EXISTS "Users can insert their own sermons" ON sermons;
-DROP POLICY IF EXISTS "Users can update their own sermons" ON sermons;
-DROP POLICY IF EXISTS "Users can delete their own sermons" ON sermons;
+-- Journal entries policies
+DO $$
+BEGIN
+    -- Drop existing policies if they exist
+    DROP POLICY IF EXISTS "Users can view their own journal entries" ON journal_entries;
+    DROP POLICY IF EXISTS "Users can insert their own journal entries" ON journal_entries;
+    DROP POLICY IF EXISTS "Users can update their own journal entries" ON journal_entries;
+    DROP POLICY IF EXISTS "Users can delete their own journal entries" ON journal_entries;
+    
+    -- Create new policies
+    CREATE POLICY "Users can view their own journal entries" ON journal_entries
+        FOR SELECT USING (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can insert their own journal entries" ON journal_entries
+        FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can update their own journal entries" ON journal_entries
+        FOR UPDATE USING (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can delete their own journal entries" ON journal_entries
+        FOR DELETE USING (auth.uid() = user_id);
+END $$;
 
-DROP POLICY IF EXISTS "Users can view their own journal entries" ON journal_entries;
-DROP POLICY IF EXISTS "Users can insert their own journal entries" ON journal_entries;
-DROP POLICY IF EXISTS "Users can update their own journal entries" ON journal_entries;
-DROP POLICY IF EXISTS "Users can delete their own journal entries" ON journal_entries;
-
--- Create comprehensive RLS policies for sermons
-CREATE POLICY "Users can view their own sermons" ON sermons
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own sermons" ON sermons
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own sermons" ON sermons
-    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own sermons" ON sermons
-    FOR DELETE USING (auth.uid() = user_id);
-
--- Create comprehensive RLS policies for journal entries
-CREATE POLICY "Users can view their own journal entries" ON journal_entries
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own journal entries" ON journal_entries
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own journal entries" ON journal_entries
-    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own journal entries" ON journal_entries
-    FOR DELETE USING (auth.uid() = user_id);
+-- Sermon policies  
+DO $$
+BEGIN
+    -- Drop existing policies if they exist
+    DROP POLICY IF EXISTS "Users can view their own sermons" ON sermons;
+    DROP POLICY IF EXISTS "Users can insert their own sermons" ON sermons;
+    DROP POLICY IF EXISTS "Users can update their own sermons" ON sermons;
+    DROP POLICY IF EXISTS "Users can delete their own sermons" ON sermons;
+    
+    -- Create new policies
+    CREATE POLICY "Users can view their own sermons" ON sermons
+        FOR SELECT USING (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can insert their own sermons" ON sermons
+        FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can update their own sermons" ON sermons
+        FOR UPDATE USING (auth.uid() = user_id);
+    
+    CREATE POLICY "Users can delete their own sermons" ON sermons
+        FOR DELETE USING (auth.uid() = user_id);
+END $$;
 
 -- ============================================================================
 -- CLEANUP AND OPTIMIZATION

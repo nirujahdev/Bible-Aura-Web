@@ -206,6 +206,8 @@ const Journal = () => {
         is_private: entryData.is_private !== undefined ? entryData.is_private : true,
         language: entryData.language || 'english',
         category: entryData.category || 'personal',
+        word_count: entryData.word_count || (entryData.content ? entryData.content.trim().split(/\s+/).length : 0),
+        reading_time: entryData.reading_time || Math.max(1, Math.ceil((entryData.content ? entryData.content.trim().split(/\s+/).length : 0) / 200)),
         metadata: {
           ...entryData.metadata,
           gratitude_items: entryData.gratitude_items || [],
