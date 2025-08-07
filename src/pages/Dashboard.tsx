@@ -15,6 +15,93 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
+// AI Chat Mode templates
+import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
+
+// DeepSeek API integration function
+const callBiblicalAI = async (
+  messages: Array<{role: string, content: string}>,
+  mode: string = 'aichat',
+  language: string = 'english',
+  translation: string = 'KJV',
+  cleanMode: boolean = false,
+  abortController?: AbortController
+): Promise<string> => {
+  try {
+    // Check for API key
+    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
+    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here' || apiKey === 'your_actual_deepseek_api_key_here') {
+      throw new Error('🔑 DeepSeek API key not configured! Please:\n1. Go to https://platform.deepseek.com/\n2. Create an API key\n3. Add it to your .env.local file\n4. Restart the dev server');
+    }
+
+    const controller = abortController || new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    // Get the appropriate system prompt from template
+    const systemPrompt = generateSystemPrompt(mode as keyof typeof AI_RESPONSE_TEMPLATES) + `
+
+LANGUAGE: Respond in ${language === 'tamil' ? 'Tamil using Tamil script' : 'English'}.
+TRANSLATION: Reference ${translation} Bible translation when citing verses.
+CLEAN MODE: ${cleanMode ? 'Keep responses concise and focused.' : 'Provide detailed explanations when helpful.'}`;
+
+    const requestBody = {
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      max_tokens: mode === 'verse' || mode === 'characters' || mode === 'parables' ? 1500 : 800,
+      temperature: 0.3,
+      top_p: 0.9,
+      frequency_penalty: 0.1,
+      presence_penalty: 0.1,
+      stream: false
+    };
+
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      
+      if (response.status === 401) {
+        throw new Error('AI service authentication failed. Please check your API key.');
+      } else if (response.status === 429) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      } else if (response.status >= 500) {
+        throw new Error('AI service is temporarily unavailable. Please try again later.');
+      } else {
+        throw new Error(`AI service error (${response.status}). Please try again.`);
+      }
+    }
+
+    const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid API Response:', data);
+      throw new Error('Invalid response from AI service. Please try again.');
+    }
+
+    return data.choices[0].message.content;
+  } catch (error: any) {
+    console.error('AI Call Error:', error);
+    if (error.name === 'AbortError') {
+      throw new Error('Request was cancelled.');
+    }
+    throw error;
+  }
+};
+
 // SEO Configuration
 const SEO_CONFIG = {
   DASHBOARD: {
@@ -283,12 +370,25 @@ export default function Dashboard() {
       setConversations(updatedConversations);
     }
 
-    // Simulate AI response (replace with actual AI integration)
-    setTimeout(async () => {
+    // Get AI response using DeepSeek API
+    try {
+      const conversationMessages = updatedConversations
+        .find(conv => conv.id === currentActiveConversation)
+        ?.messages
+        .map(msg => ({ role: msg.role, content: msg.content })) || [];
+
+      const aiResponse = await callBiblicalAI(
+        conversationMessages,
+        chatMode,
+        language.toLowerCase(),
+        translation,
+        cleanMode
+      );
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Thank you for your question. As your Biblical Study Assistant, I\'m here to help you explore the depths of Scripture and provide insights for your spiritual journey. Please feel free to ask me anything about the Bible, theology, or Christian faith.',
+        content: aiResponse,
         timestamp: new Date().toLocaleString()
       };
 
@@ -306,7 +406,15 @@ export default function Dashboard() {
 
       setConversations(finalUpdatedConversations);
       setIsLoading(false);
-    }, 1000);
+    } catch (error: any) {
+      console.error('AI Response Error:', error);
+      toast({
+        title: "AI Error",
+        description: error.message || "Failed to get AI response. Please try again.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+    }
   };
 
   const deleteConversation = async (id: string) => {

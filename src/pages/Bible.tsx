@@ -34,7 +34,17 @@ import {
 } from '@/lib/local-bible';
 import { NoteTaking } from '@/components/NoteTaking';
 import { BibleAIChat } from '@/components/BibleAIChat';
+import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+
+// New bookmarks and favorites service
+import { 
+  BibleVerseService, 
+  FavoritesService, 
+  BookmarksService,
+  generateVerseId,
+  generateVerseReference
+} from '@/lib/bookmarks-favorites-service';
 
 const LANGUAGES = [
   { value: 'english', label: 'English' },
@@ -91,6 +101,10 @@ export default function Bible() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
+  
+  // Enhanced AI Chat state
+  const [enhancedAiChatOpen, setEnhancedAiChatOpen] = useState(false);
+  const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
@@ -225,8 +239,8 @@ export default function Bible() {
     if (!user) return;
     
     try {
-      const userBookmarks = await getUserBookmarks(user.id);
-      const bookmarkSet = new Set(userBookmarks.map(b => b.id));
+      const userBookmarks = await BookmarksService.getUserBookmarks(user.id);
+      const bookmarkSet = new Set(userBookmarks.map(b => b.verse_id));
       setBookmarks(bookmarkSet);
     } catch (error) {
       console.error('Error loading bookmarks:', error);
@@ -237,15 +251,8 @@ export default function Bible() {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('verse_highlights')
-        .select('verse_id')
-        .eq('user_id', user.id)
-        .eq('is_favorite', true);
-      
-      if (error) throw error;
-      
-      const favoriteSet = new Set<string>(data?.map(item => item.verse_id) || []);
+      const userFavorites = await FavoritesService.getUserFavorites(user.id);
+      const favoriteSet = new Set<string>(userFavorites.map(f => f.verse_id));
       setFavorites(favoriteSet);
     } catch (error) {
       console.error('Error loading favorites:', error);
@@ -381,12 +388,8 @@ export default function Bible() {
   };
 
   const openAiChat = (verse: BibleVerse) => {
-    setSelectedVerse({
-      id: verse.id,
-      text: verse.text,
-      reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
-    });
-    setAiChatOpen(true);
+    setSelectedVerseForAI(verse);
+    setEnhancedAiChatOpen(true);
   };
 
   const addToJournal = async (verse: BibleVerse) => {
@@ -449,20 +452,35 @@ How can I apply this to my life?
       return;
     }
 
-    const success = await saveBookmark(verse, user.id);
-    if (success) {
+    try {
+      const result = await BibleVerseService.toggleBookmark(
+        user.id, 
+        verse, 
+        'study', 
+        'yellow', 
+        selectedTranslation
+      );
+      
+      const verseId = generateVerseId(verse);
       const newBookmarks = new Set(bookmarks);
-      newBookmarks.add(verse.id);
+      
+      if (result.isBookmarked) {
+        newBookmarks.add(verseId);
+      } else {
+        newBookmarks.delete(verseId);
+      }
+      
       setBookmarks(newBookmarks);
       
       toast({
-        title: "Bookmarked",
-        description: `${verse.book_name} ${verse.chapter}:${verse.verse} added to bookmarks`,
+        title: result.action === 'added' ? "Bookmarked" : "Bookmark Removed",
+        description: `${verse.book_name} ${verse.chapter}:${verse.verse} ${result.action === 'added' ? 'added to' : 'removed from'} bookmarks`,
       });
-    } else {
+    } catch (error) {
+      console.error('Error updating bookmark:', error);
       toast({
         title: "Error",
-        description: "Failed to bookmark verse",
+        description: "Failed to update bookmark",
         variant: "destructive"
       });
     }
@@ -478,57 +496,33 @@ How can I apply this to my life?
       return;
     }
 
-    const verseId = verse.id;
-    const isFavorite = favorites.has(verseId);
-
     try {
-      if (isFavorite) {
-        const { error } = await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('verse_id', verseId);
-        
-        if (error) throw error;
-        
-        const newFavorites = new Set(favorites);
-        newFavorites.delete(verseId);
-        setFavorites(newFavorites);
-      } else {
-        const { error } = await supabase
-          .from('bookmarks')
-          .upsert({
-            user_id: user.id,
-            verse_id: verseId,
-            book_name: verse.book_name,
-            chapter: verse.chapter,
-            verse: verse.verse,
-            verse_text: verse.text,
-            verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
-            notes: null,
-            tags: [],
-            color: 'yellow',
-            is_favorite: true,
-            category: 'favorite',
-            highlight_color: 'yellow'
-          });
-        
-        if (error) throw error;
-        
-        const newFavorites = new Set(favorites);
+      const result = await BibleVerseService.toggleFavorite(
+        user.id, 
+        verse, 
+        selectedTranslation
+      );
+      
+      const verseId = generateVerseId(verse);
+      const newFavorites = new Set(favorites);
+      
+      if (result.isFavorited) {
         newFavorites.add(verseId);
-        setFavorites(newFavorites);
+      } else {
+        newFavorites.delete(verseId);
       }
+      
+      setFavorites(newFavorites);
 
       toast({
-        title: isFavorite ? "Removed from Favorites" : "Added to Favorites",
+        title: result.action === 'added' ? "Added to Favorites" : "Removed from Favorites",
         description: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
       });
     } catch (error) {
       console.error('Error toggling favorite:', error);
       toast({
         title: "Error",
-        description: "Failed to update favorite",
+        description: "Failed to save to favorites",
         variant: "destructive"
       });
     }
@@ -1294,7 +1288,7 @@ How can I apply this to my life?
                 {/* Verses with Mobile-Optimized Layout */}
                 <div className="space-y-6">
                   {verses.map((verse) => {
-                    const verseId = verse.id;
+                    const verseId = generateVerseId(verse);
                     const isBookmarked = bookmarks.has(verseId);
                     const isFavorited = favorites.has(verseId);
                     const highlightColor = highlights.get(verseId);
@@ -1474,6 +1468,19 @@ How can I apply this to my life?
           verseReference={selectedVerse?.reference}
           isOpen={aiChatOpen}
           onClose={() => setAiChatOpen(false)}
+        />
+      )}
+
+      {/* Enhanced AI Chat Modal with Multiple Modes */}
+      {enhancedAiChatOpen && selectedVerseForAI && (
+        <BibleVerseAIChat
+          verse={selectedVerseForAI}
+          isOpen={enhancedAiChatOpen}
+          onClose={() => {
+            setEnhancedAiChatOpen(false);
+            setSelectedVerseForAI(null);
+          }}
+          verseReference={generateVerseReference(selectedVerseForAI)}
         />
       )}
     </div>
