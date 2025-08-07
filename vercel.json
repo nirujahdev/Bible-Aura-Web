@@ -8,7 +8,9 @@
     "VITE_SUPABASE_URL": "https://foleepziqgrdgkljedux.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbGVlcHppcWdyZGdrbGplZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNzkxNTgsImV4cCI6MjA2NzY1NTE1OH0.XyTKj6ayTYWnoJRUrkKyuNlQSfE6PMGeBHDdafqMs9g",
     "VITE_APP_URL": "https://bibleaura.xyz",
-    "VITE_APP_NAME": "Bible Aura"
+    "VITE_APP_NAME": "Bible Aura",
+    "VITE_DEEPSEEK_API_KEY": "sk-c253b7693e9f49f5830d936b9c92d446",
+    "VITE_AI_API_KEY": "sk-c253b7693e9f49f5830d936b9c92d446"
   },
   "rewrites": [
     {
