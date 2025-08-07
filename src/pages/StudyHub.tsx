@@ -16,9 +16,10 @@ import {
   Heart, Star, Share, Languages, Grid, Filter,
   ChevronDown, Plus, Eye, ExternalLink, 
   PenTool, Lightbulb, Globe, Clock, Settings,
-  ChevronLeft, ChevronRight, BookmarkPlus, Brain,
+  ChevronLeft, ChevronRight, BookmarkPlus,
   MessageSquare, Sparkles, Send, Save, X,
-  FileText, Tag, Calendar, TrendingUp, ArrowLeft
+  FileText, Tag, Calendar, TrendingUp, ArrowLeft,
+  StickyNote, Bookmark, Beaker, BookCheck
 } from 'lucide-react';
 
 // Import individual study components
@@ -50,13 +51,27 @@ const StudyHub = () => {
   // Current study state
   const [currentStudy, setCurrentStudy] = useState<{type: string, id: string} | null>(null);
   
-  // Journal/AI Chat State
-  const [sidebarTab, setSidebarTab] = useState('journal');
-  const [journalNotes, setJournalNotes] = useState('');
-  const [journalTitle, setJournalTitle] = useState('');
-  const [journalCategory, setJournalCategory] = useState('study');
-  const [aiMessage, setAiMessage] = useState('');
-  const [aiConversation, setAiConversation] = useState<Array<{role: string, content: string}>>([]);
+  // Journal State with multiple tabs
+  const [journalTab, setJournalTab] = useState('notes');
+  
+  // Notes tab state
+  const [notesTitle, setNotesTitle] = useState('');
+  const [notesContent, setNotesContent] = useState('');
+  const [notesCategory, setNotesCategory] = useState('study');
+  const [notesTags, setNotesTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState('');
+  
+  // Research tab state  
+  const [researchTopic, setResearchTopic] = useState('');
+  const [researchNotes, setResearchNotes] = useState('');
+  const [researchReferences, setResearchReferences] = useState('');
+  const [researchQuestions, setResearchQuestions] = useState('');
+  
+  // Create tab state
+  const [createType, setCreateType] = useState('outline');
+  const [createTitle, setCreateTitle] = useState('');
+  const [createContent, setCreateContent] = useState('');
+  const [createPurpose, setCreatePurpose] = useState('');
 
   // Enhanced Topical Study Data with more depth
   const topicalStudies = [
@@ -336,9 +351,14 @@ const StudyHub = () => {
 
     setCurrentStudy({ type: studyType, id: studyId });
     
-    // Auto-populate journal with study info
-    setJournalTitle(`Study Notes: ${item.title || item.name}`);
-    setJournalNotes(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
+    // Auto-populate appropriate journal tab with study info
+    if (journalTab === 'notes') {
+      setNotesTitle(`Study Notes: ${item.title || item.name}`);
+      setNotesContent(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
+    } else if (journalTab === 'research') {
+      setResearchTopic(item.title || item.name);
+      setResearchNotes(`Research notes for: ${item.title || item.name}\n\n`);
+    }
   };
 
   const handleBackToOverview = () => {
@@ -346,13 +366,14 @@ const StudyHub = () => {
   };
 
   const handleAddToJournal = (item: any) => {
-    setJournalTitle(`Study Notes: ${item.title || item.name}`);
-    setJournalNotes(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
-    setSidebarTab('journal');
+    setNotesTitle(`Study Notes: ${item.title || item.name}`);
+    setNotesContent(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
+    setJournalTab('notes');
   };
 
-  const handleSaveJournal = async () => {
-    if (!journalTitle || !journalNotes) {
+  // Journal saving functions
+  const handleSaveNotes = async () => {
+    if (!notesTitle || !notesContent) {
       toast({
         title: "Missing Information",
         description: "Please add both a title and notes before saving.",
@@ -361,34 +382,70 @@ const StudyHub = () => {
       return;
     }
 
-    // Here you would typically save to database
-    // For now, we'll just show success message
     toast({
-      title: "Journal Saved",
+      title: "Notes Saved",
       description: "Your study notes have been saved successfully!"
     });
     
     // Reset form
-    setJournalTitle('');
-    setJournalNotes('');
+    setNotesTitle('');
+    setNotesContent('');
+    setNotesTags([]);
   };
 
-  const handleAIAssistant = async () => {
-    if (!aiMessage.trim()) return;
+  const handleSaveResearch = async () => {
+    if (!researchTopic || !researchNotes) {
+      toast({
+        title: "Missing Information", 
+        description: "Please add both a topic and research notes before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Research Saved",
+      description: "Your research notes have been saved successfully!"
+    });
     
-    const newMessage = { role: 'user', content: aiMessage };
-    setAiConversation(prev => [...prev, newMessage]);
+    // Reset form
+    setResearchTopic('');
+    setResearchNotes('');
+    setResearchReferences('');
+    setResearchQuestions('');
+  };
+
+  const handleSaveCreate = async () => {
+    if (!createTitle || !createContent) {
+      toast({
+        title: "Missing Information",
+        description: "Please add both a title and content before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Creation Saved", 
+      description: `Your ${createType} has been saved successfully!`
+    });
     
-    // Simulate AI response (replace with actual AI integration)
-    setTimeout(() => {
-      const aiResponse = {
-        role: 'assistant',
-        content: `I'd be happy to help you study this topic! Based on your question about "${aiMessage}", here are some key biblical insights and practical applications...`
-      };
-      setAiConversation(prev => [...prev, aiResponse]);
-    }, 1000);
-    
-    setAiMessage('');
+    // Reset form
+    setCreateTitle('');
+    setCreateContent('');
+    setCreatePurpose('');
+  };
+
+  // Tag management
+  const addTag = () => {
+    if (newTag.trim() && !notesTags.includes(newTag.trim())) {
+      setNotesTags([...notesTags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setNotesTags(notesTags.filter(tag => tag !== tagToRemove));
   };
 
   const filteredParables = parables.filter(parable => {
@@ -446,45 +503,57 @@ const StudyHub = () => {
     );
   };
 
-  // If viewing individual study, render it
+  // If viewing individual study, render it with journal sidebar
   if (currentStudy) {
     return (
       <ModernLayout>
         <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white">
-          {/* Main Study Content */}
+          {/* Main Study Content - Scrollable */}
           <div className="flex-1 overflow-y-auto">
             {renderStudyComponent()}
           </div>
 
-          {/* Permanent Right Sidebar */}
-          <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg">
-            <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex-1 flex flex-col">
-              <div className="p-4 border-b">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="journal" className="flex items-center gap-2">
-                    <PenTool className="h-4 w-4" />
-                    Journal
+          {/* Permanent Right Sidebar - Fixed/Sticky Journal */}
+          <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen">
+            <div className="flex-shrink-0 p-4 border-b bg-gray-50">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <PenTool className="h-5 w-5 text-orange-500" />
+                Study Journal
+              </h2>
+            </div>
+
+            <Tabs value={journalTab} onValueChange={setJournalTab} className="flex-1 flex flex-col">
+              <div className="flex-shrink-0 p-4 border-b">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="notes" className="flex items-center gap-1 text-xs">
+                    <StickyNote className="h-3 w-3" />
+                    Notes
                   </TabsTrigger>
-                  <TabsTrigger value="ai" className="flex items-center gap-2">
-                    <Brain className="h-4 w-4" />
-                    AI Chat
+                  <TabsTrigger value="research" className="flex items-center gap-1 text-xs">
+                    <Beaker className="h-3 w-3" />
+                    Research
+                  </TabsTrigger>
+                  <TabsTrigger value="create" className="flex items-center gap-1 text-xs">
+                    <BookCheck className="h-3 w-3" />
+                    Create
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value="journal" className="flex-1 flex flex-col p-4 space-y-4">
+              {/* Notes Tab */}
+              <TabsContent value="notes" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
                 <div>
                   <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
                   <Input
-                    placeholder="Enter study title..."
-                    value={journalTitle}
-                    onChange={(e) => setJournalTitle(e.target.value)}
+                    placeholder="Enter note title..."
+                    value={notesTitle}
+                    onChange={(e) => setNotesTitle(e.target.value)}
                   />
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
-                  <Select value={journalCategory} onValueChange={setJournalCategory}>
+                  <Select value={notesCategory} onValueChange={setNotesCategory}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -494,69 +563,157 @@ const StudyHub = () => {
                       <SelectItem value="prayer">Prayer Points</SelectItem>
                       <SelectItem value="insight">Divine Insight</SelectItem>
                       <SelectItem value="question">Questions</SelectItem>
+                      <SelectItem value="sermon">Sermon Notes</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      placeholder="Add tag..."
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                      className="text-xs"
+                    />
+                    <Button size="sm" onClick={addTag}>
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {notesTags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
+                        {tag} <X className="h-2 w-2 ml-1" />
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex-1 flex flex-col">
                   <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
                   <Textarea
                     placeholder="Write your study notes, insights, and reflections..."
-                    value={journalNotes}
-                    onChange={(e) => setJournalNotes(e.target.value)}
-                    className="flex-1 min-h-[200px] resize-none"
+                    value={notesContent}
+                    onChange={(e) => setNotesContent(e.target.value)}
+                    className="flex-1 min-h-[200px] resize-none text-sm"
                   />
                 </div>
 
                 <Button
-                  onClick={handleSaveJournal}
+                  onClick={handleSaveNotes}
                   className="bg-orange-500 hover:bg-orange-600"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Save to Journal
+                  Save Notes
                 </Button>
               </TabsContent>
 
-              <TabsContent value="ai" className="flex-1 flex flex-col p-4">
-                <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-                  {aiConversation.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Brain className="h-12 w-12 text-purple-300 mx-auto mb-4" />
-                      <p className="text-gray-600 text-sm">Ask me anything about this study!</p>
-                    </div>
-                  ) : (
-                    aiConversation.map((message, index) => (
-                      <div key={index} className={`p-3 rounded-lg ${
-                        message.role === 'user' 
-                          ? 'bg-orange-50 text-orange-800 ml-4' 
-                          : 'bg-purple-50 text-purple-800 mr-4'
-                      }`}>
-                        <span className="font-medium text-xs">
-                          {message.role === 'user' ? 'You: ' : 'AI Assistant: '}
-                        </span>
-                        <p className="text-sm mt-1">{message.content}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-                
-                <div className="flex gap-2">
+              {/* Research Tab */}
+              <TabsContent value="research" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Research Topic</label>
                   <Input
-                    placeholder="Ask AI about this study..."
-                    value={aiMessage}
-                    onChange={(e) => setAiMessage(e.target.value)}
-                    className="text-sm"
-                    onKeyPress={(e) => e.key === 'Enter' && handleAIAssistant()}
+                    placeholder="Enter research topic..."
+                    value={researchTopic}
+                    onChange={(e) => setResearchTopic(e.target.value)}
                   />
-                  <Button
-                    size="sm"
-                    onClick={handleAIAssistant}
-                    disabled={!aiMessage.trim()}
-                    className="bg-purple-500 hover:bg-purple-600"
-                  >
-                    <Send className="h-3 w-3" />
-                  </Button>
                 </div>
+
+                <div className="flex-1 flex flex-col">
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Research Notes</label>
+                  <Textarea
+                    placeholder="Record your research findings, cross-references, and biblical connections..."
+                    value={researchNotes}
+                    onChange={(e) => setResearchNotes(e.target.value)}
+                    className="flex-1 min-h-[150px] resize-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">References & Sources</label>
+                  <Textarea
+                    placeholder="List Bible verses, commentaries, books, or other sources..."
+                    value={researchReferences}
+                    onChange={(e) => setResearchReferences(e.target.value)}
+                    className="min-h-[80px] resize-none text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Questions for Further Study</label>
+                  <Textarea
+                    placeholder="Note questions that arise from your research..."
+                    value={researchQuestions}
+                    onChange={(e) => setResearchQuestions(e.target.value)}
+                    className="min-h-[80px] resize-none text-sm"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSaveResearch}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Research
+                </Button>
+              </TabsContent>
+
+              {/* Create Tab */}
+              <TabsContent value="create" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Creation Type</label>
+                  <Select value={createType} onValueChange={setCreateType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="outline">Study Outline</SelectItem>
+                      <SelectItem value="sermon">Sermon Draft</SelectItem>
+                      <SelectItem value="lesson">Bible Lesson</SelectItem>
+                      <SelectItem value="devotional">Devotional</SelectItem>
+                      <SelectItem value="summary">Study Summary</SelectItem>
+                      <SelectItem value="presentation">Presentation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+                  <Input
+                    placeholder={`Enter ${createType} title...`}
+                    value={createTitle}
+                    onChange={(e) => setCreateTitle(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Purpose/Objective</label>
+                  <Input
+                    placeholder="What is the main purpose or learning objective?"
+                    value={createPurpose}
+                    onChange={(e) => setCreatePurpose(e.target.value)}
+                  />
+                </div>
+
+                <div className="flex-1 flex flex-col">
+                  <label className="text-sm font-medium text-gray-900 mb-2 block">Content</label>
+                  <Textarea
+                    placeholder={`Create your ${createType} content here. Use bullet points, outline format, or full text...`}
+                    value={createContent}
+                    onChange={(e) => setCreateContent(e.target.value)}
+                    className="flex-1 min-h-[250px] resize-none text-sm"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSaveCreate}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save {createType}
+                </Button>
               </TabsContent>
             </Tabs>
           </div>
@@ -570,9 +727,9 @@ const StudyHub = () => {
     <ModernLayout>
       <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white">
         
-        {/* Main Content Area */}
+        {/* Main Content Area - Scrollable */}
         <div className="flex-1 overflow-y-auto">
-          {/* Top Navigation Bar */}
+          {/* Top Navigation Bar - Sticky */}
           <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-16">
@@ -647,7 +804,7 @@ const StudyHub = () => {
             </div>
           </div>
 
-          {/* Study Content */}
+          {/* Study Content - Scrollable */}
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             
             {/* TOPICAL STUDIES */}
@@ -1033,35 +1190,47 @@ const StudyHub = () => {
           </div>
         </div>
 
-        {/* Permanent Right Sidebar - Journal & AI Chat */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg">
-          <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex-1 flex flex-col">
-            <div className="p-4 border-b">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="journal" className="flex items-center gap-2">
-                  <PenTool className="h-4 w-4" />
-                  Journal
+        {/* Permanent Right Sidebar - Enhanced Journal */}
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen">
+          <div className="flex-shrink-0 p-4 border-b bg-gray-50">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <PenTool className="h-5 w-5 text-orange-500" />
+              Study Journal
+            </h2>
+          </div>
+
+          <Tabs value={journalTab} onValueChange={setJournalTab} className="flex-1 flex flex-col">
+            <div className="flex-shrink-0 p-4 border-b">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="notes" className="flex items-center gap-1 text-xs">
+                  <StickyNote className="h-3 w-3" />
+                  Notes
                 </TabsTrigger>
-                <TabsTrigger value="ai" className="flex items-center gap-2">
-                  <Brain className="h-4 w-4" />
-                  AI Chat
+                <TabsTrigger value="research" className="flex items-center gap-1 text-xs">
+                  <Beaker className="h-3 w-3" />
+                  Research
+                </TabsTrigger>
+                <TabsTrigger value="create" className="flex items-center gap-1 text-xs">
+                  <BookCheck className="h-3 w-3" />
+                  Create
                 </TabsTrigger>
               </TabsList>
             </div>
 
-            <TabsContent value="journal" className="flex-1 flex flex-col p-4 space-y-4">
+            {/* Notes Tab */}
+            <TabsContent value="notes" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
               <div>
                 <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
                 <Input
-                  placeholder="Enter study title..."
-                  value={journalTitle}
-                  onChange={(e) => setJournalTitle(e.target.value)}
+                  placeholder="Enter note title..."
+                  value={notesTitle}
+                  onChange={(e) => setNotesTitle(e.target.value)}
                 />
               </div>
 
               <div>
                 <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
-                <Select value={journalCategory} onValueChange={setJournalCategory}>
+                <Select value={notesCategory} onValueChange={setNotesCategory}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -1071,87 +1240,157 @@ const StudyHub = () => {
                     <SelectItem value="prayer">Prayer Points</SelectItem>
                     <SelectItem value="insight">Divine Insight</SelectItem>
                     <SelectItem value="question">Questions</SelectItem>
+                    <SelectItem value="sermon">Sermon Notes</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
+                <div className="flex gap-2 mb-2">
+                  <Input
+                    placeholder="Add tag..."
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                    className="text-xs"
+                  />
+                  <Button size="sm" onClick={addTag}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {notesTags.map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
+                      {tag} <X className="h-2 w-2 ml-1" />
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
               <div className="flex-1 flex flex-col">
                 <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
                 <Textarea
                   placeholder="Write your study notes, insights, and reflections..."
-                  value={journalNotes}
-                  onChange={(e) => setJournalNotes(e.target.value)}
-                  className="flex-1 min-h-[300px] resize-none"
+                  value={notesContent}
+                  onChange={(e) => setNotesContent(e.target.value)}
+                  className="flex-1 min-h-[200px] resize-none text-sm"
                 />
               </div>
 
               <Button
-                onClick={handleSaveJournal}
+                onClick={handleSaveNotes}
                 className="bg-orange-500 hover:bg-orange-600"
               >
                 <Save className="h-4 w-4 mr-2" />
-                Save to Journal
+                Save Notes
               </Button>
             </TabsContent>
 
-            <TabsContent value="ai" className="flex-1 flex flex-col p-4">
-              <div className="flex-1 overflow-y-auto space-y-3 mb-4 min-h-[300px]">
-                {aiConversation.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Brain className="h-12 w-12 text-purple-300 mx-auto mb-4" />
-                    <p className="text-gray-600 text-sm">Ask me anything about Bible studies!</p>
-                    <div className="mt-4 space-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-left justify-start"
-                        onClick={() => setAiMessage("Explain this study topic in simple terms")}
-                      >
-                        Explain this study topic
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-left justify-start"
-                        onClick={() => setAiMessage("What are the practical applications?")}
-                      >
-                        Show practical applications
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  aiConversation.map((message, index) => (
-                    <div key={index} className={`p-3 rounded-lg ${
-                      message.role === 'user' 
-                        ? 'bg-orange-50 text-orange-800 ml-4' 
-                        : 'bg-purple-50 text-purple-800 mr-4'
-                    }`}>
-                      <span className="font-medium text-xs">
-                        {message.role === 'user' ? 'You: ' : 'AI Assistant: '}
-                      </span>
-                      <p className="text-sm mt-1">{message.content}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-              
-              <div className="flex gap-2">
+            {/* Research Tab */}
+            <TabsContent value="research" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Research Topic</label>
                 <Input
-                  placeholder="Ask AI about studies..."
-                  value={aiMessage}
-                  onChange={(e) => setAiMessage(e.target.value)}
-                  className="text-sm"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAIAssistant()}
+                  placeholder="Enter research topic..."
+                  value={researchTopic}
+                  onChange={(e) => setResearchTopic(e.target.value)}
                 />
-                <Button
-                  size="sm"
-                  onClick={handleAIAssistant}
-                  disabled={!aiMessage.trim()}
-                  className="bg-purple-500 hover:bg-purple-600"
-                >
-                  <Send className="h-3 w-3" />
-                </Button>
               </div>
+
+              <div className="flex-1 flex flex-col">
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Research Notes</label>
+                <Textarea
+                  placeholder="Record your research findings, cross-references, and biblical connections..."
+                  value={researchNotes}
+                  onChange={(e) => setResearchNotes(e.target.value)}
+                  className="flex-1 min-h-[150px] resize-none text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">References & Sources</label>
+                <Textarea
+                  placeholder="List Bible verses, commentaries, books, or other sources..."
+                  value={researchReferences}
+                  onChange={(e) => setResearchReferences(e.target.value)}
+                  className="min-h-[80px] resize-none text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Questions for Further Study</label>
+                <Textarea
+                  placeholder="Note questions that arise from your research..."
+                  value={researchQuestions}
+                  onChange={(e) => setResearchQuestions(e.target.value)}
+                  className="min-h-[80px] resize-none text-sm"
+                />
+              </div>
+
+              <Button
+                onClick={handleSaveResearch}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Research
+              </Button>
+            </TabsContent>
+
+            {/* Create Tab */}
+            <TabsContent value="create" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Creation Type</label>
+                <Select value={createType} onValueChange={setCreateType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="outline">Study Outline</SelectItem>
+                    <SelectItem value="sermon">Sermon Draft</SelectItem>
+                    <SelectItem value="lesson">Bible Lesson</SelectItem>
+                    <SelectItem value="devotional">Devotional</SelectItem>
+                    <SelectItem value="summary">Study Summary</SelectItem>
+                    <SelectItem value="presentation">Presentation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+                <Input
+                  placeholder={`Enter ${createType} title...`}
+                  value={createTitle}
+                  onChange={(e) => setCreateTitle(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Purpose/Objective</label>
+                <Input
+                  placeholder="What is the main purpose or learning objective?"
+                  value={createPurpose}
+                  onChange={(e) => setCreatePurpose(e.target.value)}
+                />
+              </div>
+
+              <div className="flex-1 flex flex-col">
+                <label className="text-sm font-medium text-gray-900 mb-2 block">Content</label>
+                <Textarea
+                  placeholder={`Create your ${createType} content here. Use bullet points, outline format, or full text...`}
+                  value={createContent}
+                  onChange={(e) => setCreateContent(e.target.value)}
+                  className="flex-1 min-h-[250px] resize-none text-sm"
+                />
+              </div>
+
+              <Button
+                onClick={handleSaveCreate}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save {createType}
+              </Button>
             </TabsContent>
           </Tabs>
         </div>
