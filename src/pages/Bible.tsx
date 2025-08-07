@@ -1337,10 +1337,9 @@ How can I apply this to my life?
                             onClick={() => openAiChat(verse)}
                             className={`touch-optimized ${
                               isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
-                            } p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50`}
+                            } p-0 hover:bg-orange-50`}
                           >
-                            <div className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} rounded-full bg-orange-500 flex items-center justify-center`}>
-                              <span className="text-white font-bold text-xs">✦</span>
+                            <div className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} rounded-full bg-orange-500 hover:bg-orange-600`}>
                             </div>
                           </Button>
 
