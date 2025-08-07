@@ -19,7 +19,7 @@ import {
   ChevronLeft, ChevronRight, BookmarkPlus,
   MessageSquare, Sparkles, Send, Save, X,
   FileText, Tag, Calendar, TrendingUp, ArrowLeft,
-  StickyNote, Bookmark, Beaker, BookCheck
+  StickyNote, Bookmark, Beaker, BookCheck, PanelRightClose, PanelRightOpen
 } from 'lucide-react';
 
 // Import individual study components
@@ -50,6 +50,9 @@ const StudyHub = () => {
   
   // Current study state
   const [currentStudy, setCurrentStudy] = useState<{type: string, id: string} | null>(null);
+  
+  // Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // Journal State with multiple tabs
   const [journalTab, setJournalTab] = useState('notes');
@@ -359,6 +362,9 @@ const StudyHub = () => {
       setResearchTopic(item.title || item.name);
       setResearchNotes(`Research notes for: ${item.title || item.name}\n\n`);
     }
+
+    // Auto-open sidebar when starting a study
+    setIsSidebarOpen(true);
   };
 
   const handleBackToOverview = () => {
@@ -369,6 +375,11 @@ const StudyHub = () => {
     setNotesTitle(`Study Notes: ${item.title || item.name}`);
     setNotesContent(`Study started for: ${item.title || item.name}\n\nKey insights:\n- `);
     setJournalTab('notes');
+    setIsSidebarOpen(true); // Open sidebar when adding to journal
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   // Journal saving functions
@@ -503,220 +514,247 @@ const StudyHub = () => {
     );
   };
 
+  // Render Journal Sidebar
+  const renderJournalSidebar = () => (
+    <div className={`${isSidebarOpen ? 'w-96' : 'w-0'} bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen transition-all duration-300 overflow-hidden`}>
+      <div className="flex-shrink-0 p-4 border-b bg-gray-50 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <PenTool className="h-5 w-5 text-orange-500" />
+          Study Journal
+        </h2>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={toggleSidebar}
+          className="h-8 w-8 p-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {isSidebarOpen && (
+        <Tabs value={journalTab} onValueChange={setJournalTab} className="flex-1 flex flex-col">
+          <div className="flex-shrink-0 p-4 border-b">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="notes" className="flex items-center gap-1 text-xs">
+                <StickyNote className="h-3 w-3" />
+                Notes
+              </TabsTrigger>
+              <TabsTrigger value="research" className="flex items-center gap-1 text-xs">
+                <Beaker className="h-3 w-3" />
+                Research
+              </TabsTrigger>
+              <TabsTrigger value="create" className="flex items-center gap-1 text-xs">
+                <BookCheck className="h-3 w-3" />
+                Create
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Notes Tab */}
+          <TabsContent value="notes" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+              <Input
+                placeholder="Enter note title..."
+                value={notesTitle}
+                onChange={(e) => setNotesTitle(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
+              <Select value={notesCategory} onValueChange={setNotesCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="study">Bible Study</SelectItem>
+                  <SelectItem value="reflection">Personal Reflection</SelectItem>
+                  <SelectItem value="prayer">Prayer Points</SelectItem>
+                  <SelectItem value="insight">Divine Insight</SelectItem>
+                  <SelectItem value="question">Questions</SelectItem>
+                  <SelectItem value="sermon">Sermon Notes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  placeholder="Add tag..."
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                  className="text-xs"
+                />
+                <Button size="sm" onClick={addTag}>
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {notesTags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
+                    {tag} <X className="h-2 w-2 ml-1" />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col">
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
+              <Textarea
+                placeholder="Write your study notes, insights, and reflections..."
+                value={notesContent}
+                onChange={(e) => setNotesContent(e.target.value)}
+                className="flex-1 min-h-[200px] resize-none text-sm"
+              />
+            </div>
+
+            <Button
+              onClick={handleSaveNotes}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Notes
+            </Button>
+          </TabsContent>
+
+          {/* Research Tab */}
+          <TabsContent value="research" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Research Topic</label>
+              <Input
+                placeholder="Enter research topic..."
+                value={researchTopic}
+                onChange={(e) => setResearchTopic(e.target.value)}
+              />
+            </div>
+
+            <div className="flex-1 flex flex-col">
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Research Notes</label>
+              <Textarea
+                placeholder="Record your research findings, cross-references, and biblical connections..."
+                value={researchNotes}
+                onChange={(e) => setResearchNotes(e.target.value)}
+                className="flex-1 min-h-[150px] resize-none text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">References & Sources</label>
+              <Textarea
+                placeholder="List Bible verses, commentaries, books, or other sources..."
+                value={researchReferences}
+                onChange={(e) => setResearchReferences(e.target.value)}
+                className="min-h-[80px] resize-none text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Questions for Further Study</label>
+              <Textarea
+                placeholder="Note questions that arise from your research..."
+                value={researchQuestions}
+                onChange={(e) => setResearchQuestions(e.target.value)}
+                className="min-h-[80px] resize-none text-sm"
+              />
+            </div>
+
+            <Button
+              onClick={handleSaveResearch}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Research
+            </Button>
+          </TabsContent>
+
+          {/* Create Tab */}
+          <TabsContent value="create" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Creation Type</label>
+              <Select value={createType} onValueChange={setCreateType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="outline">Study Outline</SelectItem>
+                  <SelectItem value="sermon">Sermon Draft</SelectItem>
+                  <SelectItem value="lesson">Bible Lesson</SelectItem>
+                  <SelectItem value="devotional">Devotional</SelectItem>
+                  <SelectItem value="summary">Study Summary</SelectItem>
+                  <SelectItem value="presentation">Presentation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
+              <Input
+                placeholder={`Enter ${createType} title...`}
+                value={createTitle}
+                onChange={(e) => setCreateTitle(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Purpose/Objective</label>
+              <Input
+                placeholder="What is the main purpose or learning objective?"
+                value={createPurpose}
+                onChange={(e) => setCreatePurpose(e.target.value)}
+              />
+            </div>
+
+            <div className="flex-1 flex flex-col">
+              <label className="text-sm font-medium text-gray-900 mb-2 block">Content</label>
+              <Textarea
+                placeholder={`Create your ${createType} content here. Use bullet points, outline format, or full text...`}
+                value={createContent}
+                onChange={(e) => setCreateContent(e.target.value)}
+                className="flex-1 min-h-[250px] resize-none text-sm"
+              />
+            </div>
+
+            <Button
+              onClick={handleSaveCreate}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save {createType}
+            </Button>
+          </TabsContent>
+        </Tabs>
+      )}
+    </div>
+  );
+
   // If viewing individual study, render it with journal sidebar
   if (currentStudy) {
     return (
       <ModernLayout>
-        <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white">
-          {/* Main Study Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto">
+        <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white relative">
+          {/* Main Study Content - Responsive width based on sidebar */}
+          <div className={`flex-1 overflow-y-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-6xl mx-auto px-8' : ''}`}>
             {renderStudyComponent()}
           </div>
 
-          {/* Permanent Right Sidebar - Fixed/Sticky Journal */}
-          <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen">
-            <div className="flex-shrink-0 p-4 border-b bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <PenTool className="h-5 w-5 text-orange-500" />
-                Study Journal
-              </h2>
-            </div>
+          {/* Journal Sidebar Toggle Button (when closed) */}
+          {!isSidebarOpen && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleSidebar}
+              className="fixed top-20 right-4 z-50 bg-white shadow-lg"
+            >
+              <PanelRightOpen className="h-4 w-4" />
+            </Button>
+          )}
 
-            <Tabs value={journalTab} onValueChange={setJournalTab} className="flex-1 flex flex-col">
-              <div className="flex-shrink-0 p-4 border-b">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="notes" className="flex items-center gap-1 text-xs">
-                    <StickyNote className="h-3 w-3" />
-                    Notes
-                  </TabsTrigger>
-                  <TabsTrigger value="research" className="flex items-center gap-1 text-xs">
-                    <Beaker className="h-3 w-3" />
-                    Research
-                  </TabsTrigger>
-                  <TabsTrigger value="create" className="flex items-center gap-1 text-xs">
-                    <BookCheck className="h-3 w-3" />
-                    Create
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              {/* Notes Tab */}
-              <TabsContent value="notes" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
-                  <Input
-                    placeholder="Enter note title..."
-                    value={notesTitle}
-                    onChange={(e) => setNotesTitle(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
-                  <Select value={notesCategory} onValueChange={setNotesCategory}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="study">Bible Study</SelectItem>
-                      <SelectItem value="reflection">Personal Reflection</SelectItem>
-                      <SelectItem value="prayer">Prayer Points</SelectItem>
-                      <SelectItem value="insight">Divine Insight</SelectItem>
-                      <SelectItem value="question">Questions</SelectItem>
-                      <SelectItem value="sermon">Sermon Notes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="Add tag..."
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                      className="text-xs"
-                    />
-                    <Button size="sm" onClick={addTag}>
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {notesTags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
-                        {tag} <X className="h-2 w-2 ml-1" />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
-                  <Textarea
-                    placeholder="Write your study notes, insights, and reflections..."
-                    value={notesContent}
-                    onChange={(e) => setNotesContent(e.target.value)}
-                    className="flex-1 min-h-[200px] resize-none text-sm"
-                  />
-                </div>
-
-                <Button
-                  onClick={handleSaveNotes}
-                  className="bg-orange-500 hover:bg-orange-600"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Notes
-                </Button>
-              </TabsContent>
-
-              {/* Research Tab */}
-              <TabsContent value="research" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Research Topic</label>
-                  <Input
-                    placeholder="Enter research topic..."
-                    value={researchTopic}
-                    onChange={(e) => setResearchTopic(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Research Notes</label>
-                  <Textarea
-                    placeholder="Record your research findings, cross-references, and biblical connections..."
-                    value={researchNotes}
-                    onChange={(e) => setResearchNotes(e.target.value)}
-                    className="flex-1 min-h-[150px] resize-none text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">References & Sources</label>
-                  <Textarea
-                    placeholder="List Bible verses, commentaries, books, or other sources..."
-                    value={researchReferences}
-                    onChange={(e) => setResearchReferences(e.target.value)}
-                    className="min-h-[80px] resize-none text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Questions for Further Study</label>
-                  <Textarea
-                    placeholder="Note questions that arise from your research..."
-                    value={researchQuestions}
-                    onChange={(e) => setResearchQuestions(e.target.value)}
-                    className="min-h-[80px] resize-none text-sm"
-                  />
-                </div>
-
-                <Button
-                  onClick={handleSaveResearch}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Research
-                </Button>
-              </TabsContent>
-
-              {/* Create Tab */}
-              <TabsContent value="create" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Creation Type</label>
-                  <Select value={createType} onValueChange={setCreateType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="outline">Study Outline</SelectItem>
-                      <SelectItem value="sermon">Sermon Draft</SelectItem>
-                      <SelectItem value="lesson">Bible Lesson</SelectItem>
-                      <SelectItem value="devotional">Devotional</SelectItem>
-                      <SelectItem value="summary">Study Summary</SelectItem>
-                      <SelectItem value="presentation">Presentation</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
-                  <Input
-                    placeholder={`Enter ${createType} title...`}
-                    value={createTitle}
-                    onChange={(e) => setCreateTitle(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Purpose/Objective</label>
-                  <Input
-                    placeholder="What is the main purpose or learning objective?"
-                    value={createPurpose}
-                    onChange={(e) => setCreatePurpose(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                  <label className="text-sm font-medium text-gray-900 mb-2 block">Content</label>
-                  <Textarea
-                    placeholder={`Create your ${createType} content here. Use bullet points, outline format, or full text...`}
-                    value={createContent}
-                    onChange={(e) => setCreateContent(e.target.value)}
-                    className="flex-1 min-h-[250px] resize-none text-sm"
-                  />
-                </div>
-
-                <Button
-                  onClick={handleSaveCreate}
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save {createType}
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </div>
+          {/* Permanent Right Sidebar - Collapsible Journal */}
+          {renderJournalSidebar()}
         </div>
       </ModernLayout>
     );
@@ -725,13 +763,13 @@ const StudyHub = () => {
   // Main overview interface
   return (
     <ModernLayout>
-      <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white">
+      <div className="flex min-h-screen bg-gradient-to-br from-orange-50 to-white relative">
         
-        {/* Main Content Area - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Main Content Area - Responsive width based on sidebar */}
+        <div className={`flex-1 overflow-y-auto transition-all duration-300 ${!isSidebarOpen ? 'max-w-6xl mx-auto px-8' : ''}`}>
           {/* Top Navigation Bar - Sticky */}
           <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${!isSidebarOpen ? 'max-w-full' : 'max-w-5xl'}`}>
               <div className="flex items-center justify-between h-16">
                 
                 {/* Left - Study Hub Title */}
@@ -769,11 +807,29 @@ const StudyHub = () => {
                   </Tabs>
                 </div>
 
-                {/* Right - Search */}
+                {/* Right - Search & Journal Toggle */}
                 <div className="flex items-center gap-3">
                   <Button variant="outline" size="sm" className="hidden sm:flex">
                     <Search className="h-4 w-4 mr-2" />
                     Search
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleSidebar}
+                    className="flex items-center gap-2"
+                  >
+                    {isSidebarOpen ? (
+                      <>
+                        <PanelRightClose className="h-4 w-4" />
+                        <span className="hidden sm:inline">Close</span>
+                      </>
+                    ) : (
+                      <>
+                        <PanelRightOpen className="h-4 w-4" />
+                        <span className="hidden sm:inline">Journal</span>
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -805,7 +861,7 @@ const StudyHub = () => {
           </div>
 
           {/* Study Content - Scrollable */}
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${!isSidebarOpen ? 'max-w-full' : 'max-w-5xl'}`}>
             
             {/* TOPICAL STUDIES */}
             {activeSection === 'topical' && (
@@ -837,8 +893,8 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Studies Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                {/* Studies Grid - Responsive columns */}
+                <div className={`grid grid-cols-1 gap-6 ${!isSidebarOpen ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'md:grid-cols-2'}`}>
                   {topicalStudies
                     .filter(study => 
                       study.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -989,8 +1045,8 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Characters Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Characters Grid - Responsive */}
+                <div className={`grid grid-cols-1 gap-6 ${!isSidebarOpen ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2'}`}>
                   {bibleCharacters.map((character) => (
                     <Card key={character.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                       <CardHeader className="pb-4">
@@ -1110,8 +1166,8 @@ const StudyHub = () => {
                   </div>
                 </div>
 
-                {/* Parables Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Parables Grid - Responsive */}
+                <div className={`grid grid-cols-1 gap-6 ${!isSidebarOpen ? 'lg:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-2'}`}>
                   {filteredParables.map((parable) => (
                     <Card key={parable.id} className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-white/80 backdrop-blur-sm">
                       <CardHeader className="pb-4">
@@ -1190,211 +1246,20 @@ const StudyHub = () => {
           </div>
         </div>
 
-        {/* Permanent Right Sidebar - Enhanced Journal */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col shadow-lg sticky top-0 h-screen">
-          <div className="flex-shrink-0 p-4 border-b bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <PenTool className="h-5 w-5 text-orange-500" />
-              Study Journal
-            </h2>
-          </div>
-
-          <Tabs value={journalTab} onValueChange={setJournalTab} className="flex-1 flex flex-col">
-            <div className="flex-shrink-0 p-4 border-b">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="notes" className="flex items-center gap-1 text-xs">
-                  <StickyNote className="h-3 w-3" />
-                  Notes
-                </TabsTrigger>
-                <TabsTrigger value="research" className="flex items-center gap-1 text-xs">
-                  <Beaker className="h-3 w-3" />
-                  Research
-                </TabsTrigger>
-                <TabsTrigger value="create" className="flex items-center gap-1 text-xs">
-                  <BookCheck className="h-3 w-3" />
-                  Create
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            {/* Notes Tab */}
-            <TabsContent value="notes" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
-                <Input
-                  placeholder="Enter note title..."
-                  value={notesTitle}
-                  onChange={(e) => setNotesTitle(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Category</label>
-                <Select value={notesCategory} onValueChange={setNotesCategory}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="study">Bible Study</SelectItem>
-                    <SelectItem value="reflection">Personal Reflection</SelectItem>
-                    <SelectItem value="prayer">Prayer Points</SelectItem>
-                    <SelectItem value="insight">Divine Insight</SelectItem>
-                    <SelectItem value="question">Questions</SelectItem>
-                    <SelectItem value="sermon">Sermon Notes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Tags</label>
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Add tag..."
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                    className="text-xs"
-                  />
-                  <Button size="sm" onClick={addTag}>
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {notesTags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs cursor-pointer" onClick={() => removeTag(tag)}>
-                      {tag} <X className="h-2 w-2 ml-1" />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex-1 flex flex-col">
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Notes</label>
-                <Textarea
-                  placeholder="Write your study notes, insights, and reflections..."
-                  value={notesContent}
-                  onChange={(e) => setNotesContent(e.target.value)}
-                  className="flex-1 min-h-[200px] resize-none text-sm"
-                />
-              </div>
-
-              <Button
-                onClick={handleSaveNotes}
-                className="bg-orange-500 hover:bg-orange-600"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Notes
-              </Button>
-            </TabsContent>
-
-            {/* Research Tab */}
-            <TabsContent value="research" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Research Topic</label>
-                <Input
-                  placeholder="Enter research topic..."
-                  value={researchTopic}
-                  onChange={(e) => setResearchTopic(e.target.value)}
-                />
-              </div>
-
-              <div className="flex-1 flex flex-col">
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Research Notes</label>
-                <Textarea
-                  placeholder="Record your research findings, cross-references, and biblical connections..."
-                  value={researchNotes}
-                  onChange={(e) => setResearchNotes(e.target.value)}
-                  className="flex-1 min-h-[150px] resize-none text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">References & Sources</label>
-                <Textarea
-                  placeholder="List Bible verses, commentaries, books, or other sources..."
-                  value={researchReferences}
-                  onChange={(e) => setResearchReferences(e.target.value)}
-                  className="min-h-[80px] resize-none text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Questions for Further Study</label>
-                <Textarea
-                  placeholder="Note questions that arise from your research..."
-                  value={researchQuestions}
-                  onChange={(e) => setResearchQuestions(e.target.value)}
-                  className="min-h-[80px] resize-none text-sm"
-                />
-              </div>
-
-              <Button
-                onClick={handleSaveResearch}
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Research
-              </Button>
-            </TabsContent>
-
-            {/* Create Tab */}
-            <TabsContent value="create" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Creation Type</label>
-                <Select value={createType} onValueChange={setCreateType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="outline">Study Outline</SelectItem>
-                    <SelectItem value="sermon">Sermon Draft</SelectItem>
-                    <SelectItem value="lesson">Bible Lesson</SelectItem>
-                    <SelectItem value="devotional">Devotional</SelectItem>
-                    <SelectItem value="summary">Study Summary</SelectItem>
-                    <SelectItem value="presentation">Presentation</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Title</label>
-                <Input
-                  placeholder={`Enter ${createType} title...`}
-                  value={createTitle}
-                  onChange={(e) => setCreateTitle(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Purpose/Objective</label>
-                <Input
-                  placeholder="What is the main purpose or learning objective?"
-                  value={createPurpose}
-                  onChange={(e) => setCreatePurpose(e.target.value)}
-                />
-              </div>
-
-              <div className="flex-1 flex flex-col">
-                <label className="text-sm font-medium text-gray-900 mb-2 block">Content</label>
-                <Textarea
-                  placeholder={`Create your ${createType} content here. Use bullet points, outline format, or full text...`}
-                  value={createContent}
-                  onChange={(e) => setCreateContent(e.target.value)}
-                  className="flex-1 min-h-[250px] resize-none text-sm"
-                />
-              </div>
-
-              <Button
-                onClick={handleSaveCreate}
-                className="bg-green-500 hover:bg-green-600"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save {createType}
-              </Button>
-            </TabsContent>
-          </Tabs>
-        </div>
-
+        {/* Permanent Right Sidebar - Collapsible Journal */}
+        {renderJournalSidebar()}
+        
+        {/* Journal Sidebar Toggle Button (when closed) */}
+        {!isSidebarOpen && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleSidebar}
+            className="fixed top-20 right-4 z-50 bg-white shadow-lg"
+          >
+            <PanelRightOpen className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </ModernLayout>
   );
