@@ -6,195 +6,100 @@ interface StructuredAIResponseProps {
   verseReference?: string;
 }
 
-interface ResponseSection {
-  title: string;
-  content: string;
-  icon?: string;
-}
-
 export const StructuredAIResponse = React.memo(function StructuredAIResponse({ content, verseReference }: StructuredAIResponseProps) {
 
-  // Parse the AI response into structured sections
-  const parseResponse = (text: string): ResponseSection[] => {
-    const sections: ResponseSection[] = [];
+  // Parse and format the content for display
+  const formatContent = (text: string): string => {
+    let formattedText = text;
     
-    // Check if it's a structured response with sections
-    if (text.includes('➤') || text.includes('⤷') || text.includes('↗')) {
-      const lines = text.split('\n').filter(line => line.trim());
-      let currentSection: ResponseSection | null = null;
-      
-      for (const line of lines) {
-        if (line.includes('➤')) {
-          // Verse section
-          if (currentSection) sections.push(currentSection);
-          currentSection = {
-            title: 'Verse',
-            content: line.replace('➤', '').trim(),
-            icon: '•'
-          };
-        } else if (line.includes('⤷') || line.includes('↗')) {
-          // Other sections
-          if (currentSection) sections.push(currentSection);
-          const sectionContent = line.replace(/[⤷↗]/g, '').trim();
-          
-          if (sectionContent.toLowerCase().includes('historical')) {
-            currentSection = {
-              title: 'Historical Context',
-              content: '',
-              icon: '•'
-            };
-          } else if (sectionContent.toLowerCase().includes('theology') || sectionContent.toLowerCase().includes('theological') || sectionContent.toLowerCase().includes('doctrine')) {
-            currentSection = {
-              title: 'Theological Doctrine',
-              content: '',
-              icon: '•'
-            };
-          } else if (sectionContent.toLowerCase().includes('simple') || sectionContent.toLowerCase().includes('explanation')) {
-            currentSection = {
-              title: 'Simple Explanation',
-              content: '',
-              icon: '•'
-            };
-          } else if (sectionContent.toLowerCase().includes('application') || sectionContent.toLowerCase().includes('practical')) {
-            currentSection = {
-              title: 'Practical Application',
-              content: '',
-              icon: '•'
-            };
-          } else if (sectionContent.toLowerCase().includes('cross') || sectionContent.toLowerCase().includes('reference')) {
-            currentSection = {
-              title: 'Cross Reference',
-              content: '',
-              icon: '•'
-            };
-          } else if (sectionContent.toLowerCase().includes('summary')) {
-            currentSection = {
-              title: 'Summary',
-              content: '',
-              icon: '•'
-            };
-          } else if (sectionContent.toLowerCase().includes('verse')) {
-            currentSection = {
-              title: 'Verse',
-              content: '',
-              icon: '•'
-            };
-          } else {
-            currentSection = {
-              title: sectionContent || 'Additional Context',
-              content: '',
-              icon: '•'
-            };
-          }
-        } else if (currentSection && line.trim()) {
-          // Add content to current section, keeping bullet points for proper display
-          const cleanLine = line.trim();
-          if (cleanLine.startsWith('•') || cleanLine.startsWith('-')) {
-            // Keep bullet points
-            currentSection.content += (currentSection.content ? '\n' : '') + cleanLine;
-          } else {
-            // Add bullet point if line doesn't have one
-            const bulletLine = cleanLine.startsWith('➤') || cleanLine.startsWith('⤷') || cleanLine.startsWith('↗') 
-              ? cleanLine 
-              : '• ' + cleanLine;
-            currentSection.content += (currentSection.content ? '\n' : '') + bulletLine;
-          }
-        }
-      }
-      
-      if (currentSection) sections.push(currentSection);
-    } else {
-      // Fallback for unstructured responses - try to create sections based on content
-      const paragraphs = text.split('\n\n').filter(p => p.trim());
-      
-      if (verseReference && paragraphs.length > 0) {
-        sections.push({
-          title: 'Verse',
-          content: paragraphs[0],
-          icon: '•'
-        });
-        
-        if (paragraphs.length > 1) {
-          sections.push({
-            title: 'Analysis',
-            content: paragraphs.slice(1).join('\n\n'),
-            icon: '•'
-          });
-        }
-      } else {
-        sections.push({
-          title: 'Response',
-          content: text,
-          icon: '•'
-        });
-      }
-    }
+    // Format section headers with proper styling
+    formattedText = formattedText.replace(/➤\s*/g, '\n\n**');
+    formattedText = formattedText.replace(/⤷\s*/g, '\n\n**');
+    formattedText = formattedText.replace(/↗\s*/g, '\n\n**');
     
-    return sections;
+    // Add closing ** for headers and ensure proper line breaks
+    const lines = formattedText.split('\n');
+    const processedLines = lines.map((line, index) => {
+      if (line.trim().startsWith('**') && !line.includes('**', 2)) {
+        return line + '**';
+      }
+      return line;
+    });
+    
+    return processedLines.join('\n').trim();
   };
 
-  const sections = parseResponse(content);
+  const renderFormattedContent = (text: string) => {
+    const lines = text.split('\n');
+    
+    return lines.map((line, index) => {
+      const trimmedLine = line.trim();
+      
+      if (!trimmedLine) {
+        return <div key={index} className="h-2"></div>;
+      }
+      
+      // Handle section headers (bold text between **)
+      if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
+        const headerText = trimmedLine.replace(/\*\*/g, '');
+        return (
+          <div key={index} className="mt-6 mb-3 first:mt-0">
+            <h3 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2">
+              {headerText}
+            </h3>
+          </div>
+        );
+      }
+      
+      // Handle bullet points
+      if (trimmedLine.startsWith('•')) {
+        return (
+          <div key={index} className="flex items-start gap-3 mb-2 ml-4">
+            <span className="text-orange-500 font-bold mt-1 flex-shrink-0">•</span>
+            <span className="text-gray-700 leading-relaxed">
+              {trimmedLine.replace('•', '').trim()}
+            </span>
+          </div>
+        );
+      }
+      
+      // Handle regular content
+      if (trimmedLine) {
+        return (
+          <div key={index} className="text-gray-700 leading-relaxed mb-2">
+            {trimmedLine}
+          </div>
+        );
+      }
+      
+      return null;
+    });
+  };
+
+  const formattedContent = formatContent(content);
 
   return (
-    <div className="space-y-4">
-      {/* Header with verse reference if available */}
-      {verseReference && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-lg text-center font-semibold"
-        >
-          <span className="text-orange-200">✦</span> {verseReference.toUpperCase()}
-        </motion.div>
-      )}
-
-      {/* Response sections - Simple clean boxes */}
-      {sections.map((section, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-        >
-          {/* Simple Clean Box */}
-          <div className="bg-orange-50 rounded-lg border border-orange-100">
-            {/* Simple Header */}
-            <div className="bg-orange-100 px-4 py-3 rounded-t-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-orange-600 font-bold">{section.icon}</span>
-                <h3 className="font-semibold text-orange-800">{section.title}</h3>
-              </div>
-            </div>
-            
-            {/* Simple Content */}
-            <div className="p-4 bg-white rounded-b-lg">
-              <div className="space-y-2">
-                {section.content.split('\n').map((line, lineIndex) => {
-                  const trimmedLine = line.trim();
-                  
-                  if (trimmedLine.startsWith('•')) {
-                    return (
-                      <div key={lineIndex} className="flex items-start gap-2">
-                        <span className="text-orange-500 font-bold mt-0.5">•</span>
-                        <span className="text-gray-700 leading-relaxed">
-                          {trimmedLine.replace('•', '').trim()}
-                        </span>
-                      </div>
-                    );
-                  } else if (trimmedLine) {
-                    return (
-                      <div key={lineIndex} className="text-gray-700 leading-relaxed">
-                        {trimmedLine}
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Single unified response box */}
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        {/* Header with verse reference if available */}
+        {verseReference && (
+          <div className="bg-orange-500 text-white px-4 py-3 text-center font-semibold">
+            <span className="text-orange-200">✦</span> {verseReference.toUpperCase()}
           </div>
-        </motion.div>
-      ))}
-    </div>
+        )}
+        
+        {/* Main content area */}
+        <div className="p-6">
+          <div className="prose prose-gray max-w-none">
+            {renderFormattedContent(formattedContent)}
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }); 
