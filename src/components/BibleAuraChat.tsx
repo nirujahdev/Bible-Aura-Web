@@ -154,10 +154,21 @@ export function BibleAuraChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Manual save when user changes conversation settings
+  // Auto-save conversation when messages change
+  useEffect(() => {
+    if (user && messages.length > 0) {
+      // Auto-save after a short delay to allow UI to update
+      const saveTimer = setTimeout(() => {
+        saveCurrentConversation();
+      }, 500);
+      
+      return () => clearTimeout(saveTimer);
+    }
+  }, [messages.length, user]);
+
+  // Save when conversation settings change
   useEffect(() => {
     if (user && currentConversationId && messages.length > 0) {
-      // Save when mode, language, or translation changes
       saveCurrentConversation();
     }
   }, [currentMode, currentLanguage, currentTranslation]);
@@ -166,7 +177,6 @@ export function BibleAuraChat() {
     if (!user) return;
     
     try {
-      console.log('Loading conversations for user:', user.id);
       const { data, error } = await supabase
         .from('ai_conversations')
         .select('*')
@@ -174,11 +184,10 @@ export function BibleAuraChat() {
         .order('updated_at', { ascending: false });
       
       if (error) {
-        console.error('Supabase error loading conversations:', error);
+        console.error('Error loading conversations:', error);
         throw error;
       }
       
-      console.log('Loaded conversations:', data?.length || 0);
       setConversations(data || []);
     } catch (error) {
       console.error('Error loading conversations:', error);
@@ -194,7 +203,6 @@ export function BibleAuraChat() {
     if (!user || messages.length === 0) return;
     
     try {
-      console.log('Saving conversation with', messages.length, 'messages');
       const title = messages[0]?.content.slice(0, 50) + '...' || 'New Conversation';
       
       const conversationData = {
@@ -209,7 +217,6 @@ export function BibleAuraChat() {
 
       if (currentConversationId) {
         // Update existing conversation
-        console.log('Updating existing conversation:', currentConversationId);
         const { error } = await supabase
           .from('ai_conversations')
           .update(conversationData)
@@ -219,10 +226,8 @@ export function BibleAuraChat() {
           console.error('Error updating conversation:', error);
           throw error;
         }
-        console.log('Successfully updated conversation');
       } else {
         // Create new conversation
-        console.log('Creating new conversation');
         const { data, error } = await supabase
           .from('ai_conversations')
           .insert({
@@ -237,7 +242,6 @@ export function BibleAuraChat() {
           throw error;
         }
         
-        console.log('Successfully created conversation:', data.id);
         setCurrentConversationId(data.id);
       }
       
@@ -245,11 +249,7 @@ export function BibleAuraChat() {
       await loadConversations();
     } catch (error) {
       console.error('Error saving conversation:', error);
-      toast({
-        title: "Error saving conversation",
-        description: "Failed to save your chat. Please try again.",
-        variant: "destructive",
-      });
+      // Don't show toast for auto-save errors to avoid spam
     }
   };
 
@@ -336,16 +336,6 @@ export function BibleAuraChat() {
 
       const finalMessages = [...newMessages, aiMessage];
       setMessages(finalMessages);
-      
-      // Save conversation immediately after AI response
-      setTimeout(async () => {
-        try {
-          await saveCurrentConversation();
-          console.log('Conversation saved immediately after AI response');
-        } catch (error) {
-          console.error('Failed to save conversation after AI response:', error);
-        }
-      }, 100);
       
     } catch (error: any) {
       console.error('AI Response Error:', error);
@@ -563,29 +553,14 @@ export function BibleAuraChat() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              {/* Manual Save Button */}
-              {messages.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={saveCurrentConversation}
-                  className="text-gray-600 hover:text-gray-800 hidden lg:flex"
-                  title="Save conversation"
-                >
-                  💾
-                </Button>
-              )}
-              
-              <Button
-                onClick={createNewConversation}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-                size="sm"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Chat
-              </Button>
-            </div>
+            <Button
+              onClick={createNewConversation}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Chat
+            </Button>
           </div>
         </div>
 

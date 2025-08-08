@@ -33,7 +33,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
           currentSection = {
             title: 'Verse',
             content: line.replace('➤', '').trim(),
-            icon: '📖'
+            icon: '➤'
           };
         } else if (line.includes('⤷') || line.includes('↗')) {
           // Other sections
@@ -44,49 +44,49 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             currentSection = {
               title: 'Historical Context',
               content: '',
-              icon: '🏛️'
+              icon: '⤷'
             };
           } else if (sectionContent.toLowerCase().includes('theology') || sectionContent.toLowerCase().includes('theological') || sectionContent.toLowerCase().includes('doctrine')) {
             currentSection = {
               title: 'Theological Significance',
               content: '',
-              icon: '✨'
+              icon: '⤷'
             };
           } else if (sectionContent.toLowerCase().includes('simple') || sectionContent.toLowerCase().includes('explanation')) {
             currentSection = {
               title: 'Simple Explanation',
               content: '',
-              icon: '💡'
+              icon: '⤷'
             };
           } else if (sectionContent.toLowerCase().includes('application') || sectionContent.toLowerCase().includes('practical')) {
             currentSection = {
               title: 'Practical Application',
               content: '',
-              icon: '🌟'
+              icon: '⤷'
             };
           } else if (sectionContent.toLowerCase().includes('cross') || sectionContent.toLowerCase().includes('reference')) {
             currentSection = {
               title: 'Cross References',
               content: '',
-              icon: '📚'
+              icon: '⤷'
             };
           } else if (sectionContent.toLowerCase().includes('summary')) {
             currentSection = {
               title: 'Summary',
               content: '',
-              icon: '📝'
+              icon: '⤷'
             };
           } else if (sectionContent.toLowerCase().includes('verse')) {
             currentSection = {
               title: 'Verse',
               content: '',
-              icon: '📖'
+              icon: '➤'
             };
           } else {
             currentSection = {
               title: sectionContent || 'Additional Context',
               content: '',
-              icon: '📚'
+              icon: '⤷'
             };
           }
         } else if (currentSection && line.trim()) {
@@ -105,21 +105,21 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
         sections.push({
           title: 'Verse',
           content: paragraphs[0],
-          icon: '📖'
+          icon: '➤'
         });
         
         if (paragraphs.length > 1) {
           sections.push({
             title: 'Analysis',
             content: paragraphs.slice(1).join('\n\n'),
-            icon: '💡'
+            icon: '⤷'
           });
         }
       } else {
         sections.push({
           title: 'Response',
           content: text,
-          icon: '💬'
+          icon: '⤷'
         });
       }
     }
@@ -170,7 +170,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-orange-500">{section.icon}</span>
+                  <span className="text-orange-500 font-medium">{section.icon}</span>
                   <h3 className="font-medium text-gray-800">{section.title}</h3>
                 </div>
                 <motion.div
