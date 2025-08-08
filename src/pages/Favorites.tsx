@@ -27,28 +27,26 @@ import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 interface FavoriteVerse {
   id: string;
   verse_id: string;
-  book?: string;
-  chapter?: number;
-  verse?: number;
-  text?: string;
+  book_name: string;
+  chapter: number;
+  verse_number: number;
+  verse_text: string;
+  verse_reference: string;
+  translation: string;
   created_at: string;
 }
 
-interface FavoriteNote {
-  id: string;
-  title?: string;
-  content: string;
-  category: string;
-  verse_id: string;
-  tags: string[];
-  created_at: string;
-}
-
-interface FavoriteHighlight {
+interface BookmarkedVerse {
   id: string;
   verse_id: string;
-  color: string;
+  book_name: string;
+  chapter: number;
+  verse_number: number;
+  verse_text: string;
+  verse_reference: string;
+  translation: string;
   category: string;
+  highlight_color: string;
   created_at: string;
 }
 
@@ -59,8 +57,7 @@ export default function Favorites() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('verses');
   const [favoriteVerses, setFavoriteVerses] = useState<FavoriteVerse[]>([]);
-  const [favoriteNotes, setFavoriteNotes] = useState<FavoriteNote[]>([]);
-  const [favoriteHighlights, setFavoriteHighlights] = useState<FavoriteHighlight[]>([]);
+  const [bookmarkedVerses, setBookmarkedVerses] = useState<BookmarkedVerse[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -74,28 +71,31 @@ export default function Favorites() {
     
     setLoading(true);
     try {
-      // Load bookmarked verses
-      const { data: bookmarksData, error: bookmarksError } = await supabase
-        .from('bookmarks')
+      // Load favorite verses
+      const { data: favoritesData, error: favoritesError } = await supabase
+        .from('user_favorites')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_favorite', true)
+        .order('created_at', { ascending: false });
+
+      if (favoritesError) throw favoritesError;
+      setFavoriteVerses(favoritesData || []);
+
+      // Load bookmarked verses
+      const { data: bookmarksData, error: bookmarksError } = await supabase
+        .from('user_bookmarks')
+        .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (bookmarksError) throw bookmarksError;
-      setFavoriteVerses((bookmarksData as unknown as FavoriteVerse[]) || []);
-
-      // Mock favorite notes (would need notes table)
-      setFavoriteNotes([]);
-      
-      // Mock favorite highlights (would need highlights table)
-      setFavoriteHighlights([]);
+      setBookmarkedVerses(bookmarksData || []);
 
     } catch (error) {
-      console.error('Error loading favorites:', error);
+      console.error('Error loading favorites and bookmarks:', error);
       toast({
         title: "Error",
-        description: "Failed to load favorites",
+        description: "Failed to load favorites and bookmarks",
         variant: "destructive",
       });
     } finally {
@@ -108,7 +108,7 @@ export default function Favorites() {
 
     try {
       const { error } = await supabase
-        .from('bookmarks')
+        .from('user_favorites')
         .delete()
         .eq('id', verseId)
         .eq('user_id', user.id);
@@ -130,8 +130,40 @@ export default function Favorites() {
     }
   };
 
+  const removeBookmark = async (bookmarkId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_bookmarks')
+        .delete()
+        .eq('id', bookmarkId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setBookmarkedVerses(prev => prev.filter(b => b.id !== bookmarkId));
+      toast({
+        title: "Removed from bookmarks",
+        description: "Verse removed from bookmarks",
+      });
+    } catch (error) {
+      console.error('Error removing bookmark:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove bookmark",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredVerses = favoriteVerses.filter(verse => 
-    verse.book?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    verse.book_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    verse.verse_id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredBookmarks = bookmarkedVerses.filter(verse => 
+    verse.book_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     verse.verse_id.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -184,18 +216,14 @@ export default function Favorites() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="verses" className="flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Favorites ({favoriteVerses.length})
+              </TabsTrigger>
+              <TabsTrigger value="bookmarks" className="flex items-center gap-2">
                 <Bookmark className="h-4 w-4" />
-                Verses ({favoriteVerses.length})
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="flex items-center gap-2">
-                <StickyNote className="h-4 w-4" />
-                Notes ({favoriteNotes.length})
-              </TabsTrigger>
-              <TabsTrigger value="highlights" className="flex items-center gap-2">
-                <Palette className="h-4 w-4" />
-                Highlights ({favoriteHighlights.length})
+                Bookmarks ({bookmarkedVerses.length})
               </TabsTrigger>
             </TabsList>
 
@@ -216,13 +244,13 @@ export default function Favorites() {
                             <div className="flex items-center gap-2 mb-2">
                               <BookOpen className="h-4 w-4 text-primary" />
                               <h3 className="font-semibold text-lg">
-                                {verse.book} {verse.chapter}:{verse.verse}
+                                {verse.book_name} {verse.chapter}:{verse.verse_number}
                               </h3>
-                              <Badge variant="secondary">Bookmarked</Badge>
+                              <Badge variant="secondary">Favorite</Badge>
                             </div>
-                            {verse.text && (
+                            {verse.verse_text && (
                               <p className="text-muted-foreground mb-3 leading-relaxed">
-                                {verse.text}
+                                {verse.verse_text}
                               </p>
                             )}
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -264,36 +292,71 @@ export default function Favorites() {
               )}
             </TabsContent>
 
-            {/* Favorite Notes */}
-            <TabsContent value="notes">
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <StickyNote className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">No Favorite Notes Yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Take notes on verses and mark them as favorites to see them here
-                  </p>
-                  <Button asChild>
-                    <Link to="/bible">Start Taking Notes</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Favorite Highlights */}
-            <TabsContent value="highlights">
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <Palette className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">No Favorite Highlights Yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Highlight verses and mark them as favorites to see them here
-                  </p>
-                  <Button asChild>
-                    <Link to="/bible">Start Highlighting</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+            {/* Bookmarked Verses */}
+            <TabsContent value="bookmarks">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p>Loading bookmarks...</p>
+                </div>
+              ) : filteredBookmarks.length > 0 ? (
+                <div className="grid gap-4">
+                  {filteredBookmarks.map((bookmark) => (
+                    <Card key={bookmark.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Bookmark className="h-4 w-4 text-primary" />
+                              <h3 className="font-semibold text-lg">
+                                {bookmark.book_name} {bookmark.chapter}:{bookmark.verse_number}
+                              </h3>
+                              <Badge variant="secondary" className={`bg-${bookmark.highlight_color}-100 text-${bookmark.highlight_color}-800`}>
+                                {bookmark.category}
+                              </Badge>
+                            </div>
+                            {bookmark.verse_text && (
+                              <p className="text-muted-foreground mb-3 leading-relaxed">
+                                {bookmark.verse_text}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              Added {new Date(bookmark.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 ml-4">
+                            <Button variant="ghost" size="sm">
+                              <Share className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeBookmark(bookmark.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Bookmark className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-xl font-semibold mb-2">No Bookmarked Verses Yet</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Start bookmarking verses while reading the Bible to see them here
+                    </p>
+                    <Button asChild>
+                      <Link to="/bible">Browse Bible</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </div>
