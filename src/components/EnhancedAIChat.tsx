@@ -26,7 +26,9 @@ import {
   Volume2,
   ChevronDown,
   ChevronUp,
-  Mic
+  Mic,
+  History,
+  X
 } from 'lucide-react';
 import {
   Select,
@@ -70,22 +72,21 @@ interface Conversation {
   updated_at: string;
 }
 
-type ChatMode = 'chat' | 'verse' | 'parable' | 'character' | 'topical' | 'qa' | 'enhanced-chat';
+type ChatMode = 'chat-clean' | 'verse-clean' | 'parable-clean' | 'character-clean' | 'topical-clean' | 'qa-clean';
 type Language = 'english' | 'tamil';
 type TranslationCode = 'KJV' | 'NIV' | 'ESV' | 'NLT' | 'NASB' | 'NKJV';
 
 // AI thinking states
 type AIState = 'idle' | 'thinking' | 'generating' | 'analyzing' | 'responding';
 
-// Chat modes configuration
+// Chat modes configuration - Updated with clean formats
 const CHAT_MODES = {
-  'chat': { name: 'AI Chat', icon: MessageCircle, color: 'bg-orange-500', description: 'General Bible chat and guidance' },
-  'verse': { name: 'Verse Analysis', icon: BookOpen, color: 'bg-blue-500', description: 'Deep verse analysis and interpretation' },
-  'parable': { name: 'Parable Study', icon: Heart, color: 'bg-green-500', description: 'Understanding parables and stories' },
-  'character': { name: 'Character Study', icon: Search, color: 'bg-purple-500', description: 'Biblical character profiles' },
-  'topical': { name: 'Topical Study', icon: Sparkles, color: 'bg-pink-500', description: 'Topic-based Bible study' },
-  'qa': { name: 'Quick Q&A', icon: Brain, color: 'bg-indigo-500', description: 'Fast answers with scripture' },
-  'enhanced-chat': { name: 'Enhanced Chat', icon: Sparkles, color: 'bg-amber-500', description: 'Advanced conversational AI' }
+  'chat-clean': { name: 'AI Chat', icon: MessageCircle, color: 'bg-orange-500', description: 'General Bible chat and guidance' },
+  'verse-clean': { name: 'Verse Analysis', icon: BookOpen, color: 'bg-blue-500', description: 'Deep verse analysis and interpretation' },
+  'parable-clean': { name: 'Parable Study', icon: Heart, color: 'bg-green-500', description: 'Understanding parables and stories' },
+  'character-clean': { name: 'Character Study', icon: Search, color: 'bg-purple-500', description: 'Biblical character profiles' },
+  'topical-clean': { name: 'Topical Study', icon: Sparkles, color: 'bg-pink-500', description: 'Topic-based Bible study' },
+  'qa-clean': { name: 'Quick Q&A', icon: Brain, color: 'bg-indigo-500', description: 'Fast answers with scripture' }
 };
 
 const TRANSLATIONS = [
@@ -98,228 +99,89 @@ const TRANSLATIONS = [
 ];
 
 // DeepSeek AI integration with enhanced speed optimization
-const callBiblicalAI = async (
-  messages: Array<{role: string, content: string}>,
-  mode: ChatMode = 'chat',
-  language: Language = 'english',
-  translation: TranslationCode = 'KJV',
-  cleanMode: boolean = false,
-  abortController?: AbortController
-): Promise<string> => {
+const callDeepSeekAPI = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
+  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || 'sk-c253b7693e9f49f5830d936b9c92d446';
+  
+  const systemPrompt = generateSystemPrompt(mode);
+  
   try {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || 'sk-c253b7693e9f49f5830d936b9c92d446';
-    if (!apiKey || apiKey === 'demo-key') {
-      throw new Error('🔑 DeepSeek API key not configured! Please:\n1. Go to https://platform.deepseek.com/\n2. Create an API key\n3. Add it to your .env.local file\n4. Restart the dev server');
-    }
-
-    const controller = abortController || new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // Reduced to 15 seconds for faster responses
-
-    // Get system prompt from templates - optimized for speed
-    const systemPrompt = generateSystemPrompt(mode as keyof typeof AI_RESPONSE_TEMPLATES) + `
-
-LANGUAGE: Respond in ${language === 'tamil' ? 'Tamil using Tamil script' : 'English'}.
-TRANSLATION: Reference ${translation} Bible translation when citing verses.
-CLEAN MODE: ${cleanMode ? 'Keep responses concise and focused.' : 'Provide detailed explanations when helpful.'}
-BIBLE FOCUS: Always maintain biblical accuracy and provide scripture references when relevant.
-
-SPEED OPTIMIZATION:
-- Prioritize fast, direct answers
-- Use concise language and structure
-- Avoid unnecessary elaboration
-- Focus on essential biblical truth
-
-CRITICAL FORMATTING RULES:
-- Start responses with the orange ✦ icon (no background shapes)
-- Use clear section headers with ↗ for structure
-- Use • for bullet points
-- Maintain spiritual tone appropriate for Bible study
-- End with encouragement or reflection question when appropriate`;
-
-    // Optimized token limits for faster responses
-    const getMaxTokens = (mode: ChatMode): number => {
-      switch (mode) {
-        case 'chat': return 400; // Reduced from 800
-        case 'qa': return 500; // Reduced from 800
-        case 'verse': return 800; // Reduced from 1500
-        case 'parable': return 600; // Reduced from 1500
-        case 'character': return 700; // Reduced from 1500
-        case 'topical': return 800; // Reduced from 1500
-        default: return 400;
-      }
-    };
-
-    const requestBody = {
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
-      max_tokens: getMaxTokens(mode),
-      temperature: 0.2, // Lower temperature for faster, more focused responses
-      top_p: 0.8, // Reduced for more focused responses
-      frequency_penalty: 0.1,
-      presence_penalty: 0.1,
-      stream: false
-    };
-
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        ],
+        max_tokens: 1000,
+        temperature: 0.7,
+        stream: false
+      })
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('DeepSeek API Error:', errorText);
-      
-      if (response.status === 401) {
-        throw new Error('🔐 AI service authentication failed. Please check your API key.');
-      } else if (response.status === 429) {
-        throw new Error('⏳ Too many requests. Please wait a moment and try again.');
-      } else if (response.status >= 500) {
-        throw new Error('🔧 AI service is temporarily unavailable. Please try again later.');
-      } else {
-        throw new Error(`❌ AI service error (${response.status}). Please try again.`);
-      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('❌ Invalid response from AI service. Please try again.');
-    }
-
-    return data.choices[0].message.content;
-  } catch (error: any) {
-    console.error('AI Call Error:', error);
-    if (error.name === 'AbortError') {
-      throw new Error('⏰ Request timed out. Please try again.');
-    }
-    throw error;
+    return data.choices[0]?.message?.content || 'I apologize, but I could not generate a response. Please try again.';
+  } catch (error) {
+    console.error('DeepSeek API Error:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to connect to AI service');
   }
 };
 
-// AI Thinking Animation Component
-const AIThinkingAnimation: React.FC<{ state: AIState }> = ({ state }) => {
-  const states = {
-    thinking: { icon: Brain, text: 'AI is thinking...', color: 'text-orange-500' },
-    generating: { icon: Sparkles, text: 'Generating response...', color: 'text-blue-500' },
-    analyzing: { icon: Search, text: 'Analyzing scripture...', color: 'text-green-500' },
-    responding: { icon: MessageCircle, text: 'Crafting response...', color: 'text-purple-500' }
-  };
-
-  if (state === 'idle') return null;
-
-  const currentState = states[state];
-  const Icon = currentState.icon;
-
-  return (
-    <motion.div 
-      className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-200"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-    >
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-      >
-        <Icon className={`h-5 w-5 ${currentState.color}`} />
-      </motion.div>
-      <span className="text-sm font-medium text-gray-700">{currentState.text}</span>
-      <div className="flex gap-1">
-        {[0, 1, 2].map((i) => (
-          <motion.div
-            key={i}
-            className="w-1.5 h-1.5 bg-orange-400 rounded-full"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-          />
-        ))}
-      </div>
-    </motion.div>
-  );
-};
-
-// Message Component with enhanced styling
-const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
-  const isUser = message.role === 'user';
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}
-    >
-      <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
-        {!isUser && (
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-orange-400 to-amber-500 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">✦</span>
-            </div>
-            <span className="text-xs text-gray-500 font-medium">Bible Aura AI</span>
-          </div>
-        )}
-        <div
-          className={`rounded-xl px-4 py-3 ${
-            isUser
-              ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white ml-auto'
-              : 'bg-white border border-gray-200 text-gray-800 shadow-sm'
-          }`}
-        >
-          <div className="prose prose-sm max-w-none">
-            {message.content.split('\n').map((line, i) => (
-              <div key={i} className={isUser ? 'text-white' : ''}>
-                {line}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className={`text-xs text-gray-400 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
-          {new Date(message.timestamp).toLocaleTimeString()}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-const EnhancedAIChat: React.FC = () => {
+export function EnhancedAIChat() {
   const { user } = useAuth();
   const { toast } = useToast();
   
   // Core state
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [aiState, setAiState] = useState<AIState>('idle');
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   
   // Settings state
-  const [currentMode, setCurrentMode] = useState<ChatMode>('chat');
+  const [currentMode, setCurrentMode] = useState<ChatMode>('chat-clean');
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
   const [currentTranslation, setCurrentTranslation] = useState<TranslationCode>('KJV');
-  const [cleanMode, setCleanMode] = useState(false);
+  
+  // Chat history state
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   
   // UI state
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [showConversations, setShowConversations] = useState(true);
-  
-  // Refs
+  const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load conversations on mount
+  useEffect(() => {
+    if (user) {
+      loadConversations();
+    }
+  }, [user]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-save conversation when messages change
+  useEffect(() => {
+    if (user && messages.length > 0) {
+      saveCurrentConversation();
+    }
+  }, [messages, user]);
 
   const loadConversations = async () => {
     if (!user) return;
@@ -330,84 +192,49 @@ const EnhancedAIChat: React.FC = () => {
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
-
+      
       if (error) throw error;
+      
       setConversations(data || []);
     } catch (error) {
       console.error('Error loading conversations:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load conversations",
-        variant: "destructive",
-      });
     }
   };
 
-  // Load conversations on mount
-  useEffect(() => {
-    if (user) {
-      loadConversations();
-    }
-  }, [user]);
-
-  // Initialize welcome message
-  useEffect(() => {
-    if (messages.length === 0 && !currentConversationId) {
-      const welcomeMessage: Message = {
-        id: 'welcome',
-        role: 'assistant',
-        content: `✦ **Welcome to Bible Aura AI**
-
-I'm here to help you explore God's Word with deep insights, thoughtful analysis, and spiritual guidance. 
-
-**Choose a mode to get started:**
-• **AI Chat** - General Bible questions and spiritual guidance
-• **Verse Analysis** - Deep examination of specific verses  
-• **Parable Study** - Understanding Jesus' parables
-• **Character Study** - Biblical character profiles
-• **Topical Study** - Theme-based Bible exploration
-• **Quick Q&A** - Fast answers with scripture support
-
-Ask me anything about the Bible, and I'll provide thoughtful, scripture-based responses! 🙏`,
-        timestamp: new Date().toISOString()
-      };
-      setMessages([welcomeMessage]);
-    }
-  }, [currentConversationId, messages.length]);
-
-  const saveConversation = async (messages: Message[]) => {
+  const saveCurrentConversation = async () => {
     if (!user || messages.length === 0) return;
+    
+    const title = messages[0]?.content.substring(0, 50) + (messages[0]?.content.length > 50 ? '...' : '');
+    
+    const conversationData = {
+      user_id: user.id,
+      title,
+      messages,
+      mode: currentMode,
+      language: currentLanguage,
+      translation: currentTranslation,
+      updated_at: new Date().toISOString()
+    };
 
     try {
-      const title = messages.find(m => m.role === 'user')?.content.slice(0, 50) + '...' || 'New Chat';
-      
       if (currentConversationId) {
-        await supabase
+        // Update existing conversation
+        const { error } = await supabase
           .from('ai_conversations')
-          .update({
-            title,
-            messages,
-            mode: currentMode,
-            language: currentLanguage,
-            translation: currentTranslation,
-            updated_at: new Date().toISOString()
-          })
+          .update(conversationData)
           .eq('id', currentConversationId);
+        
+        if (error) throw error;
       } else {
+        // Create new conversation
         const { data, error } = await supabase
           .from('ai_conversations')
-          .insert({
-            user_id: user.id,
-            title,
-            messages,
-            mode: currentMode,
-            language: currentLanguage,
-            translation: currentTranslation,
-          })
+          .insert([conversationData])
           .select()
           .single();
-
+        
         if (error) throw error;
+        
         setCurrentConversationId(data.id);
       }
       
@@ -417,156 +244,114 @@ Ask me anything about the Bible, and I'll provide thoughtful, scripture-based re
     }
   };
 
+  const loadConversation = (conversation: Conversation) => {
+    setMessages(conversation.messages);
+    setCurrentConversationId(conversation.id);
+    setCurrentMode(conversation.mode as ChatMode);
+    setCurrentLanguage(conversation.language as Language);
+    setCurrentTranslation(conversation.translation as TranslationCode);
+    setShowHistory(false);
+  };
+
   const deleteConversation = async (conversationId: string) => {
     try {
       const { error } = await supabase
         .from('ai_conversations')
         .delete()
-        .eq('id', conversationId)
-        .eq('user_id', user?.id);
-
+        .eq('id', conversationId);
+      
       if (error) throw error;
-
+      
       if (currentConversationId === conversationId) {
-        setCurrentConversationId(null);
         setMessages([]);
+        setCurrentConversationId(null);
       }
-
+      
       await loadConversations();
-      toast({
-        title: "Conversation deleted",
-        description: "The conversation has been removed",
-      });
+      toast({ title: 'Conversation deleted successfully' });
     } catch (error) {
       console.error('Error deleting conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete conversation",
-        variant: "destructive",
-      });
+      toast({ title: 'Failed to delete conversation', variant: 'destructive' });
     }
   };
 
-  const loadConversation = (conversation: Conversation) => {
-    setCurrentConversationId(conversation.id);
-    setMessages(conversation.messages);
-    setCurrentMode(conversation.mode as ChatMode);
-    setCurrentLanguage(conversation.language as Language);
-    setCurrentTranslation(conversation.translation as TranslationCode);
-  };
-
   const createNewConversation = () => {
-    setCurrentConversationId(null);
     setMessages([]);
-    setCurrentMode('chat');
-    setCurrentLanguage('english');
-    setCurrentTranslation('KJV');
+    setCurrentConversationId(null);
+    setShowHistory(false);
+    textareaRef.current?.focus();
   };
 
-  const handleSendMessage = async (messageText?: string) => {
-    const textToSend = messageText || input.trim();
-    if (!textToSend || !user || aiState !== 'idle') return;
-
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+    
     // Check subscription limits
-    try {
-      const canUseResult = await subscriptionService.canUseFeature(user.id, 'ai_chat');
-      if (!canUseResult.canUse) {
-        toast({
-          title: "Usage Limit Reached",
-          description: canUseResult.message,
-          variant: "destructive"
-        });
-        return;
-      }
-    } catch (error) {
-      console.error('Subscription check failed:', error);
+    if (!user) return;
+    
+    const usageInfo = await subscriptionService.canUseFeature(user.id, 'ai_chat');
+    if (!usageInfo.canUse) {
       toast({
-        title: "Error",
-        description: "Unable to verify usage limits. Please try again.",
-        variant: "destructive"
+        title: 'Upgrade Required',
+        description: 'You have reached your AI chat limit. Please upgrade your plan.',
+        variant: 'destructive'
       });
       return;
     }
 
-    // Abort previous request if any
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    abortControllerRef.current = new AbortController();
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: textToSend,
-      timestamp: new Date().toISOString()
+      content: input.trim(),
+      timestamp: new Date().toISOString(),
+      mode: currentMode
     };
 
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
-
-    // Faster AI state progression for quicker responses
-    setAiState('thinking');
-    await new Promise(resolve => setTimeout(resolve, 300)); // Reduced from 800ms
-    setAiState('analyzing');
-    await new Promise(resolve => setTimeout(resolve, 200)); // Reduced from 600ms
-    setAiState('generating');
+    setIsLoading(true);
+    
+    // AI thinking states
+    const states: AIState[] = ['thinking', 'analyzing', 'generating', 'responding'];
+    let stateIndex = 0;
+    
+    const stateInterval = setInterval(() => {
+      setAiState(states[stateIndex]);
+      stateIndex = (stateIndex + 1) % states.length;
+    }, 800);
 
     try {
-      const conversationMessages = updatedMessages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
+      const response = await callDeepSeekAPI([...messages, userMessage], currentMode);
+      
+      clearInterval(stateInterval);
+      setAiState('idle');
 
-      const aiResponse = await callBiblicalAI(
-        conversationMessages,
-        currentMode,
-        currentLanguage,
-        currentTranslation,
-        cleanMode,
-        abortControllerRef.current
-      );
-
-      setAiState('responding');
-      await new Promise(resolve => setTimeout(resolve, 200)); // Reduced from 500ms
-
-      const aiMessage: Message = {
+      const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse,
+        content: response,
         timestamp: new Date().toISOString(),
         mode: currentMode
       };
 
-      const finalMessages = [...updatedMessages, aiMessage];
-      setMessages(finalMessages);
-      await saveConversation(finalMessages);
-
-      // Track usage for successful AI chat
-      try {
-        await subscriptionService.incrementUsage(user.id, 'ai_chat');
-      } catch (usageError) {
-        console.error('Failed to track usage:', usageError);
-        // Don't show error to user, just log it
-      }
-    } catch (error: any) {
-      console.error('AI Response Error:', error);
+      setMessages(prev => [...prev, assistantMessage]);
       
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `❌ **I apologize, but I encountered an error:** 
-
-${error.message}
-
-Please try again, and if the problem persists, check your internet connection or try a different question.`,
-        timestamp: new Date().toISOString()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
+      // Increment usage after successful response
+      await subscriptionService.incrementUsage(user.id, 'ai_chat');
+      
+    } catch (error) {
+      clearInterval(stateInterval);
       setAiState('idle');
-      abortControllerRef.current = null;
+      
+      toast({
+        title: 'AI Error',
+        description: error instanceof Error ? error.message : 'Failed to get AI response',
+        variant: 'destructive'
+      });
+      
+      // Remove the user message if AI failed
+      setMessages(prev => prev.slice(0, -1));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -577,102 +362,87 @@ Please try again, and if the problem persists, check your internet connection or
     }
   };
 
-  if (!user) {
-  return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <span className="text-4xl">✦</span>
-          <p className="mt-2 text-gray-600">Please sign in to use AI Chat</p>
-          </div>
-        </div>
-    );
-  }
+  const getAIStateText = () => {
+    const states = {
+      idle: '',
+      thinking: '✦ Thinking...',
+      analyzing: '✦ Analyzing...',
+      generating: '✦ Generating...',
+      responding: '✦ Responding...'
+    };
+    return states[aiState];
+  };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      {/* Conversations Sidebar */}
+    <div className="flex h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      {/* Chat History Sidebar */}
       <AnimatePresence>
-        {showConversations && (
+        {showHistory && (
           <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className="bg-white border-r border-gray-200 flex flex-col shadow-lg"
+            initial={{ x: -300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            className="w-80 bg-white border-r border-orange-200 shadow-lg"
           >
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-amber-500">
+            <div className="p-4 border-b border-orange-100">
               <div className="flex items-center justify-between">
-                <h2 className="font-bold text-white flex items-center gap-2">
-                  <span className="text-xl">✦</span>
-                  AI Conversations
-                </h2>
-          <Button 
-            size="sm" 
+                <h3 className="font-semibold text-gray-800">Chat History</h3>
+                <Button
                   variant="ghost"
-                  onClick={createNewConversation}
-                  className="text-white hover:bg-white/20"
-          >
-                  <Plus className="h-4 w-4" />
-          </Button>
+                  size="sm"
+                  onClick={() => setShowHistory(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
+              <Button
+                onClick={createNewConversation}
+                className="w-full mt-3 bg-orange-500 hover:bg-orange-600 text-white"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
             </div>
-          
-            {/* Conversations List */}
-            <ScrollArea className="flex-1 p-2">
-              <div className="space-y-2">
+            
+            <ScrollArea className="h-[calc(100vh-120px)]">
+              <div className="p-2">
                 {conversations.map((conversation) => (
-                  <motion.div
+                  <div
                     key={conversation.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className={`p-3 mb-2 rounded-lg cursor-pointer transition-colors ${
+                      currentConversationId === conversation.id
+                        ? 'bg-orange-100 border border-orange-200'
+                        : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                    onClick={() => loadConversation(conversation)}
                   >
-                    <Card 
-                      className={`cursor-pointer transition-all ${
-                        currentConversationId === conversation.id 
-                          ? 'ring-2 ring-orange-500 bg-orange-50' 
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => loadConversation(conversation)}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-gray-900 truncate">
-                              {conversation.title}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline" className="text-xs">
-                                {CHAT_MODES[conversation.mode as ChatMode]?.name || conversation.mode}
-                              </Badge>
-                              <span className="text-xs text-gray-500">
-                                {new Date(conversation.updated_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                <span className="sr-only">Options</span>
-                                <span className="text-gray-400">⋯</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteConversation(conversation.id);
-                                }}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {conversation.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(conversation.updated_at).toLocaleDateString()}
+                        </p>
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {CHAT_MODES[conversation.mode as ChatMode]?.name || conversation.mode}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conversation.id);
+                        }}
+                        className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </ScrollArea>
@@ -682,332 +452,228 @@ Please try again, and if the problem persists, check your internet connection or
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
-        <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowConversations(!showConversations)}
-                className="lg:hidden"
-              >
-                {showConversations ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-                <div>
-                <h1 className="font-bold text-gray-900 flex items-center gap-2">
-                  <span className="text-orange-500 text-xl">✦</span>
-                  Bible Aura AI Chat
-                </h1>
-                <p className="text-sm text-gray-500">
-                  Current mode: <Badge variant="outline">{CHAT_MODES[currentMode].name}</Badge>
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {/* Mode Selector */}
-              <Select value={currentMode} onValueChange={(value: ChatMode) => setCurrentMode(value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(CHAT_MODES).map(([mode, config]) => {
-                    const Icon = config.icon;
-                        return (
-                      <SelectItem key={mode} value={mode}>
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4" />
-                          {config.name}
-                        </div>
-                      </SelectItem>
-                        );
-                      })}
-                </SelectContent>
-              </Select>
-
-              {/* Settings */}
-              <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <span className="text-orange-500">✦</span>
-                      AI Chat Settings
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Language</label>
-                      <Select value={currentLanguage} onValueChange={(value: Language) => setCurrentLanguage(value)}>
-                        <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="english">English</SelectItem>
-                          <SelectItem value="tamil">Tamil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Bible Translation</label>
-                    <Select value={currentTranslation} onValueChange={(value: TranslationCode) => setCurrentTranslation(value)}>
-                        <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {TRANSLATIONS.map(translation => (
-                          <SelectItem key={translation.code} value={translation.code}>
-                            {translation.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="cleanMode"
-                        checked={cleanMode}
-                        onChange={(e) => setCleanMode(e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="cleanMode" className="text-sm">Clean Mode (concise responses)</label>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+        {/* Header */}
+        <div className="bg-white border-b border-orange-200 shadow-sm">
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="text-orange-600 hover:text-orange-700"
+                >
+                  <History className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-orange-500">✦</span>
+                  <h1 className="text-xl font-bold text-gray-800">Bible Aura AI Chat</h1>
                 </div>
+              </div>
+              
+              <Button
+                onClick={createNewConversation}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
 
         {/* Messages Area */}
         <ScrollArea className="flex-1 p-4">
           <div className="max-w-4xl mx-auto space-y-4">
-            {messages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
-            ))}
-                  
-            <AnimatePresence>
-              {aiState !== 'idle' && (
-                <AIThinkingAnimation state={aiState} />
+            {messages.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-orange-500 mb-4">
+                  <BookOpen className="h-16 w-16 mx-auto" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                  Welcome to Bible Aura AI
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Your Biblical Study Assistant
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl mx-auto">
+                  {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                    <Button
+                      key={key}
+                      variant="outline"
+                      className="p-4 h-auto flex flex-col items-center gap-2 hover:bg-orange-50"
+                      onClick={() => setCurrentMode(key as ChatMode)}
+                    >
+                      {React.createElement(mode.icon, { className: "h-6 w-6 text-orange-500" })}
+                      <span className="text-sm font-medium">{mode.name}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-3xl p-4 rounded-lg ${
+                      message.role === 'user'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-white border border-orange-200 shadow-sm'
+                    }`}
+                  >
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-orange-500">✦</span>
+                        <span className="text-sm font-medium text-gray-600">Bible Aura AI</span>
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    <div className="text-xs opacity-70 mt-2">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                </motion.div>
+              ))
             )}
-            </AnimatePresence>
-            
             <div ref={messagesEndRef} />
-            </div>
+          </div>
         </ScrollArea>
 
-        {/* Enhanced Input Area with All Controls */}
-        <div className="bg-white border-t border-gray-200 p-4 shadow-lg">
-          <div className="max-w-4xl mx-auto space-y-3">
-            
-            {/* Top Controls Bar */}
-            <div className="flex items-center justify-between gap-3 pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* Mode Selector */}
-                <Select value={currentMode} onValueChange={(value: ChatMode) => setCurrentMode(value)}>
-                  <SelectTrigger className="w-40 h-8 text-sm">
-                                         <SelectValue>
-                       <div className="flex items-center gap-1">
-                         {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-4 w-4" })}
-                         <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
-                       </div>
-                     </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                                         {Object.entries(CHAT_MODES).map(([key, mode]) => (
-                       <SelectItem key={key} value={key}>
-                         <div className="flex items-center gap-2">
-                           {React.createElement(mode.icon, { className: "h-4 w-4" })}
-                           <span>{mode.name}</span>
-                         </div>
-                       </SelectItem>
-                     ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Language Selector */}
-                <Select value={currentLanguage} onValueChange={(value: Language) => setCurrentLanguage(value)}>
-                  <SelectTrigger className="w-28 h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="english">🇺🇸 EN</SelectItem>
-                    <SelectItem value="tamil">🇱🇰 TA</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                                 {/* Translation Selector */}
-                 <Select value={currentTranslation} onValueChange={(value: TranslationCode) => setCurrentTranslation(value)}>
-                   <SelectTrigger className="w-20 h-8 text-sm">
-                     <SelectValue />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="KJV">KJV</SelectItem>
-                     <SelectItem value="NIV">NIV</SelectItem>
-                     <SelectItem value="ESV">ESV</SelectItem>
-                     <SelectItem value="NLT">NLT</SelectItem>
-                     <SelectItem value="NASB">NASB</SelectItem>
-                   </SelectContent>
-                 </Select>
-              </div>
-
-              <div className="flex items-center gap-1">
-                {/* New Conversation */}
-                <Button
-                  onClick={createNewConversation}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-2"
-                  title="New Conversation"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-
-                                 {/* Clear Chat */}
-                 <Button
-                   onClick={() => setMessages([])}
-                   variant="outline"
-                   size="sm"
-                   className="h-8 px-2"
-                   title="Clear Chat"
-                 >
-                   <Trash2 className="h-3 w-3" />
-                 </Button>
-
-                {/* Settings */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 px-2" title="Settings">
-                      <Settings className="h-3 w-3" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>AI Chat Settings</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Response Style</label>
-                        <Select value="detailed" onValueChange={() => {}}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="detailed">📚 Detailed</SelectItem>
-                            <SelectItem value="concise">⚡ Concise</SelectItem>
-                            <SelectItem value="academic">🎓 Academic</SelectItem>
-                          </SelectContent>
-                        </Select>
+        {/* Input Area */}
+        <div className="bg-white border-t border-orange-200 shadow-sm">
+          <div className="p-4 max-w-4xl mx-auto">
+            {/* Controls Bar - All in one line */}
+            <div className="flex items-center gap-2 mb-3 text-sm">
+              {/* Mode Selector */}
+              <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
+                <SelectTrigger className="w-40 h-8 text-xs">
+                  <div className="flex items-center gap-2">
+                    {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
+                    <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                    <SelectItem key={key} value={key}>
+                      <div className="flex items-center gap-2">
+                        {React.createElement(mode.icon, { className: "h-3 w-3" })}
+                        {mode.name}
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Include Scripture References</label>
-                        <Select value="always" onValueChange={() => {}}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="always">Always</SelectItem>
-                            <SelectItem value="relevant">When Relevant</SelectItem>
-                            <SelectItem value="never">Never</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Language Selector */}
+              <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
+                <SelectTrigger className="w-24 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="english">EN</SelectItem>
+                  <SelectItem value="tamil">TA</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Translation Selector */}
+              <Select value={currentTranslation} onValueChange={(value) => setCurrentTranslation(value as TranslationCode)}>
+                <SelectTrigger className="w-20 h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRANSLATIONS.map((translation) => (
+                    <SelectItem key={translation.code} value={translation.code}>
+                      {translation.code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="h-4 w-px bg-gray-300" />
+
+              {/* Action Buttons */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={createNewConversation}
+                className="h-8 px-2 text-xs"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMessages([])}
+                className="h-8 px-2 text-xs"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs"
+              >
+                <Settings className="h-3 w-3" />
+              </Button>
             </div>
 
             {/* Message Input */}
-            <div className="flex items-end gap-3">
-              <div className="flex-1 relative">
-                <Textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={`Ask me anything about the Bible... (${CHAT_MODES[currentMode]?.name})`}
-                  className="resize-none border-2 border-gray-200 focus:border-orange-500 rounded-xl pr-12 min-h-[60px]"
-                  rows={2}
-                  disabled={aiState !== 'idle'}
-                />
-                <div className="absolute right-3 bottom-3 flex items-center gap-1">
-                  {/* Voice Input */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-gray-400 hover:text-orange-500"
-                    disabled={aiState !== 'idle'}
-                    title="Voice Input"
-                  >
-                    <Mic className="h-3 w-3" />
-                  </Button>
-                  {/* Quick Send */}
-                  {input.trim() && (
-                    <Button
-                      onClick={() => handleSendMessage()}
-                      disabled={aiState !== 'idle'}
-                      size="sm"
-                      className="h-6 w-6 p-0 bg-orange-500 hover:bg-orange-600 rounded-full"
-                      title="Send Message"
-                    >
-                      <Send className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={`Ask me anything about the Bible... (${CHAT_MODES[currentMode]?.name})`}
+                className="pr-32 min-h-[60px] max-h-32 resize-none border-orange-200 focus:border-orange-400"
+                disabled={isLoading}
+              />
               
-              {/* Main Send Button */}
+              {/* Voice Input Button */}
               <Button
-                onClick={() => handleSendMessage()}
-                disabled={!input.trim() || aiState !== 'idle'}
-                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl px-6 py-3 h-auto min-h-[60px]"
+                variant="ghost"
+                size="sm"
+                className="absolute bottom-2 right-20 h-8 w-8 p-0"
+                disabled={isLoading}
               >
-                {aiState !== 'idle' ? (
-                  <div className="flex flex-col items-center gap-1">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-xs">
-                      {aiState === 'thinking' && 'Thinking...'}
-                      {aiState === 'analyzing' && 'Analyzing...'}
-                      {aiState === 'responding' && 'Responding...'}
-                    </span>
+                <Mic className="h-4 w-4 text-gray-500" />
+              </Button>
+
+              {/* Send Button */}
+              <Button
+                onClick={handleSendMessage}
+                disabled={isLoading || !input.trim()}
+                className="absolute bottom-2 right-2 h-8 bg-orange-500 hover:bg-orange-600 text-white px-4"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="text-xs">{getAIStateText()}</span>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-1">
-                    <Send className="h-4 w-4" />
-                    <span className="text-xs">Send</span>
-                  </div>
+                  <Send className="h-3 w-3" />
                 )}
               </Button>
             </div>
 
             {/* Status Bar */}
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <div className="flex items-center gap-4">
-                <span>Press Enter to send • Shift+Enter for new line</span>
-                {aiState !== 'idle' && (
-                  <div className="flex items-center gap-1 text-orange-500">
-                    <div className="w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
-                    <span>AI is {aiState}...</span>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-orange-500">✦</span>
-                <span>Powered by Bible Aura AI</span>
-              </div>
+            <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+              <span>Press Enter to send • Shift+Enter for new line</span>
+              {aiState !== 'idle' && (
+                <span className="text-orange-500">{getAIStateText()}</span>
+              )}
+              <span className="text-orange-500">✦ Powered by Bible Aura AI</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default EnhancedAIChat; 
+} 

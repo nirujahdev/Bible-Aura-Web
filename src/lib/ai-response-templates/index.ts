@@ -19,6 +19,14 @@ import sermonGeneratorTemplate from './sermon-generator.json';
 import chatModeTamilTemplate from './chat-mode-tamil.json';
 import verseAnalysisTamilTemplate from './verse-analysis-tamil.json';
 
+// Import clean format templates
+import verseAnalysisClean from './verse-analysis-clean.json';
+import aiChatClean from './ai-chat-clean.json';
+import parablesClean from './parables-clean.json';
+import charactersClean from './characters-clean.json';
+import topicalStudyClean from './topical-study-clean.json';
+import qaClean from './qa-clean.json';
+
 /**
  * ✦ THE 6 MAIN AI CHAT MODES:
  * 1. 💬 chat - AI Chat Mode (120 words) - General Bible guidance
@@ -83,6 +91,14 @@ export const AI_RESPONSE_TEMPLATES: Record<string, ResponseTemplate> = {
   // Tamil Templates
   'chat-tamil': chatModeTamilTemplate as ResponseTemplate,
   'verse-tamil': verseAnalysisTamilTemplate as ResponseTemplate,
+  
+  // Clean formats with strict symbol rules
+  'verse-clean': verseAnalysisClean as any,
+  'chat-clean': aiChatClean as any,
+  'parable-clean': parablesClean as any,
+  'character-clean': charactersClean as any,
+  'topical-clean': topicalStudyClean as any,
+  'qa-clean': qaClean as any,
 };
 
 // Helper function to get system prompt based on template
@@ -92,6 +108,12 @@ export const generateSystemPrompt = (mode: keyof typeof AI_RESPONSE_TEMPLATES): 
   if (!template) {
     console.warn(`Template not found for mode: ${mode}. Using default chat mode.`);
     return generateSystemPrompt('chat');
+  }
+
+  // Check if this is a clean format template
+  if (mode.includes('-clean')) {
+    const cleanTemplate = template as any;
+    return cleanTemplate.system_prompt || 'You are a biblical assistant providing clean, formatted responses.';
   }
 
   let systemPrompt = `You are Bible Aura AI, a ${template.purpose}
