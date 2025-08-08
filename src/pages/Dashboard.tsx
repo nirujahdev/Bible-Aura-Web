@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
 import { ModernLayout } from '@/components/ModernLayout';
-import EnhancedAIChat from '@/components/EnhancedAIChat';
+import { EnhancedAIChat } from '@/components/EnhancedAIChat';
 
 export default function Dashboard() {
   const { user } = useAuth();

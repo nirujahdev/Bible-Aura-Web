@@ -20,7 +20,7 @@ import {
 import EnhancedReadingPlans from '@/components/EnhancedReadingPlans';
 import CalendarChapterSelector from '@/components/CalendarChapterSelector';
 import EnhancedBibleSidebar from '@/components/EnhancedBibleSidebar';
-import EnhancedAIChat from '@/components/EnhancedAIChat';
+import { EnhancedAIChat } from '@/components/EnhancedAIChat';
 import { QuickAIChatTrigger } from '@/components/QuickAIChatWidget';
 
 // Import existing utilities

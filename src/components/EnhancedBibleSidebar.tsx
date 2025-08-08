@@ -11,7 +11,7 @@ import {
   Calendar, Target, History, Star, MessageCircle,
   Filter, Grid, List, X, Sparkles
 } from 'lucide-react';
-import EnhancedAIChat from './EnhancedAIChat';
+import { EnhancedAIChat } from './EnhancedAIChat';
 import EnhancedReadingPlans from './EnhancedReadingPlans';
 
 interface BibleBook {
