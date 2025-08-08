@@ -395,7 +395,7 @@ export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClos
       const welcomeMessage: ChatMessage = {
         id: `welcome-${Date.now()}`,
         type: 'ai',
-        content: `✦ Welcome! I'm here to help you explore **${verseReference}**: "${verseText}"\n\nChoose a mode below and ask me anything about this verse!`,
+        content: `<span className="text-orange-500">✦</span> Welcome! I'm here to help you explore **${verseReference}**: "${verseText}"\n\nChoose a mode below and ask me anything about this verse!`,
         timestamp: new Date().toISOString(),
         mode: activeMode
       };

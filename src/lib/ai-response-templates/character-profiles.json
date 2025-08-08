@@ -4,7 +4,7 @@
   "purpose": "Comprehensive character studies with life lessons",
   "responseStructure": {
     "format": "profile_structure",
-    "mainTitle": "✮ CHARACTER PROFILE: [Name]",
+    "mainTitle": "✦ CHARACTER PROFILE: [Name]",
     "sections": [
       {
         "icon": "↗",
@@ -55,18 +55,19 @@
   "examples": {
     "goodResponse": {
       "character": "David",
-      "fullResponse": "✮ CHARACTER PROFILE: King David\n\n↗ Quick Overview\n• Shepherd boy who became Israel's greatest king, known as \"a man after God's own heart\"\n• Warrior, poet, and flawed leader who experienced both triumph and failure\n• Lived approximately 1040-970 BC in ancient Israel\n• Key verse: 1 Samuel 13:14 - \"A man after God's own heart\"\n\n↗ Timeline & Key Events\n• Young shepherd protecting flocks (1 Samuel 16-17)\n• Anointed by Samuel as future king (1 Samuel 16:13)\n• Defeated Goliath with faith and a sling (1 Samuel 17)\n• Fled from jealous King Saul for years (1 Samuel 18-31)\n• Became king of Judah, then all Israel (2 Samuel 1-5)\n• Committed adultery with Bathsheba, arranged Uriah's death (2 Samuel 11)\n• Faced rebellion from son Absalom (2 Samuel 15-18)\n• Final years preparing for Solomon's reign (1 Kings 1-2)\n\n↗ Lessons for Today\n• Courage in Crisis: Faced giants with faith, not fear\n• Authentic Worship: Wrote honest psalms expressing real emotions\n• Consequences Matter: Even forgiven sin has lasting effects\n• Genuine Repentance: Took responsibility when confronted with sin\n• God's Grace: Despite failures, remained in God's plan\n\n↗ Key Scripture References\n• 1 Samuel 13:14 - \"A man after God's own heart\"\n• Psalm 23 - \"The Lord is my shepherd\"\n• Psalm 51 - David's prayer of repentance\n• 2 Samuel 7:16 - God's covenant with David\n• Acts 13:22 - New Testament reference to David's heart"
+      "fullResponse": "✦ CHARACTER PROFILE: King David\n\n↗ Quick Overview\n• Shepherd boy who became Israel's greatest king, known as \"a man after God's own heart\"\n• Warrior, poet, and flawed leader who experienced both triumph and failure\n• Lived approximately 1040-970 BC in ancient Israel\n• Key verse: 1 Samuel 13:14 - \"A man after God's own heart\"\n\n↗ Timeline & Key Events\n• Young shepherd protecting flocks (1 Samuel 16-17)\n• Anointed by Samuel as future king (1 Samuel 16:13)\n• Defeated Goliath with faith and a sling (1 Samuel 17)\n• Fled from jealous King Saul for years (1 Samuel 18-31)\n• Became king of Judah, then all Israel (2 Samuel 1-5)\n• Committed adultery with Bathsheba, arranged Uriah's death (2 Samuel 11)\n• Faced rebellion from son Absalom (2 Samuel 15-18)\n• Final years preparing for Solomon's reign (1 Kings 1-2)\n\n↗ Lessons for Today\n• Courage in Crisis: Faced giants with faith, not fear\n• Authentic Worship: Wrote honest psalms expressing real emotions\n• Consequences Matter: Even forgiven sin has lasting effects\n• Genuine Repentance: Took responsibility when confronted with sin\n• God's Grace: Despite failures, remained in God's plan\n\n↗ Key Scripture References\n• 1 Samuel 13:14 - \"A man after God's own heart\"\n• Psalm 23 - \"The Lord is my shepherd\"\n• Psalm 51 - David's prayer of repentance\n• 2 Samuel 7:16 - God's covenant with David\n• Acts 13:22 - New Testament reference to David's heart"
     }
   },
   "tone": "biographical, inspiring, balanced",
-  "visualFormat": "Use clean structure with ✮ ↗ • symbols",
+  "visualFormat": "Use clean structure with ✦ ↗ • symbols",
   "restrictions": [
+    "Start with orange ✦ icon for character name",
     "Include both strengths and weaknesses",
     "Always provide scripture references",
     "Focus on character development",
     "Make lessons practical for modern life",
-    "Use ✮ for main title and ↗ for sections",
-    "Use • for bullet points only",
-    "No hashtags, asterisks, or markdown symbols"
+    "Use ↗ for sections and • for bullet points only",
+    "No hashtags, asterisks, or markdown symbols",
+    "No decorative background shapes around icons"
   ]
 } 

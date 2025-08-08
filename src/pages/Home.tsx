@@ -398,7 +398,7 @@ const Home = () => {
             Start your spiritual transformation today with AI-powered biblical insights and community support.
           </p>
           <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-xl shadow-lg w-full sm:w-auto">
-            <span className="text-orange-600 mr-2">✦</span>
+                            <span className="text-orange-500 mr-2">✦</span>
             START YOUR JOURNEY
           </Button>
         </div>

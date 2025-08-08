@@ -83,7 +83,7 @@ const AI_CHAT_MODES = [
   }
 ];
 
-// DeepSeek API integration
+// DeepSeek AI integration - SPEED OPTIMIZED
 const callBiblicalAI = async (
   messages: Array<{role: string, content: string}>,
   mode: string = 'verse',
@@ -97,7 +97,7 @@ const callBiblicalAI = async (
     }
 
     const controller = abortController || new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // Reduced to 10 seconds for verse-specific queries
 
     const systemPrompt = generateSystemPrompt(mode as keyof typeof AI_RESPONSE_TEMPLATES) + `
 
@@ -105,17 +105,19 @@ VERSE CONTEXT: ${verseContext}
 
 LANGUAGE: Respond in English.
 TRANSLATION: Use KJV Bible translation when citing verses.
-FOCUS: Center your analysis specifically on the provided verse while connecting to broader biblical themes.`;
+FOCUS: Center your analysis specifically on the provided verse while connecting to broader biblical themes.
+SPEED PRIORITY: Generate fast, accurate verse-specific responses.`;
 
+    // Speed-optimized settings for verse analysis
     const requestBody = {
       model: 'deepseek-chat',
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages
       ],
-      max_tokens: mode === 'verse' || mode === 'character' || mode === 'parable' || mode === 'topical' ? 1500 : 800,
-      temperature: 0.3,
-      top_p: 0.9,
+      max_tokens: mode === 'verse' || mode === 'character' || mode === 'parable' || mode === 'topical' ? 800 : 500, // Reduced for speed
+      temperature: 0.2, // Lower for faster, more focused responses
+      top_p: 0.8, // Reduced for focus
       frequency_penalty: 0.1,
       presence_penalty: 0.1,
       stream: false
@@ -135,31 +137,30 @@ FOCUS: Center your analysis specifically on the provided verse while connecting 
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error Response:', errorText);
+      console.error('DeepSeek API Error:', errorText);
       
       if (response.status === 401) {
-        throw new Error('AI service authentication failed. Please check your API key.');
+        throw new Error('🔐 AI service authentication failed. Please check your API key.');
       } else if (response.status === 429) {
-        throw new Error('Too many requests. Please wait a moment and try again.');
+        throw new Error('⏳ Too many requests. Please wait a moment and try again.');
       } else if (response.status >= 500) {
-        throw new Error('AI service is temporarily unavailable. Please try again later.');
+        throw new Error('🔧 AI service is temporarily unavailable. Please try again later.');
       } else {
-        throw new Error(`AI service error (${response.status}). Please try again.`);
+        throw new Error(`❌ AI service error (${response.status}). Please try again.`);
       }
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid API Response:', data);
-      throw new Error('Invalid response from AI service. Please try again.');
+      throw new Error('❌ Invalid response from AI service. Please try again.');
     }
 
     return data.choices[0].message.content;
   } catch (error: any) {
     console.error('AI Call Error:', error);
     if (error.name === 'AbortError') {
-      throw new Error('Request was cancelled.');
+      throw new Error('⏰ Request timed out. Please try again.');
     }
     throw error;
   }
@@ -195,7 +196,7 @@ export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReferenc
     const welcomeMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `✦ **Welcome to Bible Aura AI**
+      content: `<span className="text-orange-500">✦</span> **Welcome to Bible Aura AI**
 
 I'm ready to help you explore **${verseRef}**:
 
@@ -325,7 +326,7 @@ Choose an analysis mode above and ask me anything about this verse! I can provid
     const modeChangeMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `✦ **Mode switched to ${AI_CHAT_MODES.find(m => m.id === mode)?.name}**
+      content: `<span className="text-orange-500">✦</span> **Mode switched to ${AI_CHAT_MODES.find(m => m.id === mode)?.name}**
 
 ${AI_CHAT_MODES.find(m => m.id === mode)?.description}
 

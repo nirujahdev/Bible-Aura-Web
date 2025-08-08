@@ -459,7 +459,7 @@ function MobileNavigationHeader() {
 
           {/* Center: Logo and Title */}
           <div className="flex items-center space-x-2">
-            <span className="text-orange-600 font-bold text-xl">✦</span>
+                          <span className="text-orange-500 font-bold text-xl">✦</span>
                             <h1 className="text-lg font-bold text-orange-500">Bible Aura</h1>
           </div>
 

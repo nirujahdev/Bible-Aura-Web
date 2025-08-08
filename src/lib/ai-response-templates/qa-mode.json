@@ -1,39 +1,46 @@
 {
   "mode": "qa",
-  "name": "Q&A Mode",
-  "purpose": "Quick, direct answers to Bible questions with scripture support",
-  "maxWords": 150,
+  "name": "Quick Q&A",
+  "purpose": "Ultra-fast, direct answers to Bible questions with scripture support",
+  "maxWords": 100,
   "responseStructure": {
     "format": "simple_qa",
     "sections": [
       {
-        "title": "↗ Direct Answer",
-        "content": "Clear, concise response to the question", 
+        "title": "✦ [Question Topic]",
+        "content": "Main title with orange icon",
         "requirements": [
-          "Answer the question directly",
+          "Start with orange ✦ icon and question topic",
+          "Keep title concise and clear"
+        ]
+      },
+      {
+        "title": "↗ Answer",
+        "content": "Clear, direct response", 
+        "requirements": [
+          "Answer the question directly in 1-2 sentences",
           "Use simple, accessible language",
           "Be specific and factual",
           "Avoid unnecessary details"
         ]
       },
       {
-        "title": "↗ Supporting Scripture",
-        "content": "Relevant Bible verse with reference",
+        "title": "↗ Scripture",
+        "content": "One relevant Bible verse",
         "requirements": [
           "Include one key verse that supports the answer",
-          "Provide full verse text and reference", 
+          "Provide verse text and reference", 
           "Choose the most relevant passage",
           "Ensure verse directly relates to answer"
         ]
       },
       {
-        "title": "↗ Brief Explanation",
-        "content": "Why this verse supports the answer",
+        "title": "↗ Why",
+        "content": "Brief connection explanation",
         "requirements": [
-          "Explain the connection clearly",
+          "Explain the connection in 1 sentence",
           "Keep explanation concise",
-          "Show how verse proves the point", 
-          "Provide any necessary context"
+          "Show how verse proves the point"
         ]
       }
     ]
@@ -42,30 +49,33 @@
     "goodResponses": [
       {
         "question": "Is it okay to be angry?",
-        "answer": "↗ Direct Answer\nYes, anger itself isn't sinful - even Jesus got angry (Mark 3:5, John 2:15).\n\n↗ Supporting Scripture\nEphesians 4:26 - \"Be angry and do not sin; do not let the sun go down on your anger.\"\n\n↗ Brief Explanation\nThis shows anger can be righteous when directed at injustice or sin. The key is not letting anger control you or lead to harmful actions."
+        "answer": "✦ ANGER & SIN\n\n↗ Answer\nYes, anger itself isn't sinful - even Jesus got angry (Mark 3:5).\n\n↗ Scripture\nEphesians 4:26 - \"Be angry and do not sin; do not let the sun go down on your anger.\"\n\n↗ Why\nThis shows anger can be righteous when directed at injustice, but shouldn't control us."
       },
       {
         "question": "What happens when we die?",
-        "answer": "↗ Direct Answer\nFor believers, death means being immediately present with the Lord.\n\n↗ Supporting Scripture\n2 Corinthians 5:8 - \"We are confident and would prefer to be away from the body and at home with the Lord.\"\n\n↗ Brief Explanation\nOur spirits go to be with Christ while we await the resurrection when we'll receive new bodies. Death is transition, not termination."
+        "answer": "✦ LIFE AFTER DEATH\n\n↗ Answer\nFor believers, death means being immediately present with the Lord.\n\n↗ Scripture\n2 Corinthians 5:8 - \"We are confident and would prefer to be away from the body and at home with the Lord.\"\n\n↗ Why\nOur spirits go to be with Christ while awaiting resurrection bodies."
       },
       {
         "question": "Should Christians tithe?",
-        "answer": "↗ Direct Answer\nThe New Testament emphasizes generous, cheerful giving rather than a strict 10% requirement.\n\n↗ Supporting Scripture\n2 Corinthians 9:7 - \"Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion.\"\n\n↗ Brief Explanation\nGive proportionally as God has blessed you, whether that's 10% or another amount, focusing on the heart attitude rather than the percentage."
+        "answer": "✦ CHRISTIAN GIVING\n\n↗ Answer\nThe New Testament emphasizes generous, cheerful giving rather than strict 10%.\n\n↗ Scripture\n2 Corinthians 9:7 - \"Each should give what you have decided in your heart to give, not reluctantly.\"\n\n↗ Why\nGive proportionally as God blesses you, focusing on heart attitude over percentage."
       }
     ],
     "badResponse": {
       "question": "What does the Bible say about forgiveness?",
-      "answer": "Well, forgiveness is a really complex topic that involves many different aspects of theology and has been debated by scholars for centuries. There are numerous passages throughout both the Old and New Testaments that address various aspects of forgiveness, including divine forgiveness, interpersonal forgiveness, and the relationship between forgiveness and justice..."
+      "answer": "Well, forgiveness is a really complex topic that involves many different aspects of theology and has been debated by scholars for centuries..."
     }
   },
   "tone": "direct, clear, helpful",
   "restrictions": [
-    "Keep responses under 150 words",
+    "Start with orange ✦ icon and topic title",
+    "Keep responses under 100 words for speed",
     "Answer the specific question asked",
     "Always include one supporting verse",
     "Avoid theological complexity", 
     "Be practical and applicable",
-    "Use clean formatting: ✮ ↗ • only, no hashtags or asterisks"
+    "Use clean formatting: ✦ ↗ • only, no hashtags or asterisks",
+    "No decorative background shapes around icons",
+    "Focus on ultra-fast, direct answers"
   ],
   "commonQuestionTypes": [
     "What does the Bible say about...?",

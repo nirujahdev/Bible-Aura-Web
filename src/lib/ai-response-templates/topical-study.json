@@ -4,7 +4,7 @@
   "purpose": "Comprehensive biblical teaching on specific topics",
   "responseStructure": {
     "format": "comprehensive_study",
-    "mainTitle": "✮ TOPIC: [Subject]",
+    "mainTitle": "✦ TOPIC: [Subject]",
     "sections": [
       {
         "icon": "↗",
@@ -66,18 +66,19 @@
   "examples": {
     "goodResponse": {
       "topic": "Grace",
-      "fullResponse": "✮ TOPIC: Grace\n\n↗ Definition & Overview\n• Grace is God's unmerited favor and undeserved kindness toward humanity\n• It's receiving blessing instead of punishment, love instead of judgment\n• Grace means God gives us what we don't deserve (salvation) and doesn't give us what we do deserve (condemnation)\n• Central theme throughout Scripture showing God's character\n\n↗ Key Scripture Passages\n• Ephesians 2:8-9 - \"By grace you have been saved through faith\"\n• Romans 3:23-24 - \"All have sinned... justified freely by his grace\"\n• 2 Corinthians 12:9 - \"My grace is sufficient for you\"\n• Titus 2:11 - \"Grace of God has appeared, bringing salvation\"\n• Romans 5:20 - \"Where sin increased, grace abounded all the more\"\n\n↗ Biblical Commentary\n• Grace is the foundation of Christianity - we cannot earn salvation through good works or religious performance\n• It's entirely God's gift, motivated by His love and mercy\n• Grace covers our past sins, empowers our present living, and secures our future hope\n• It transforms us from the inside out, not through fear but through gratitude\n• Grace doesn't eliminate consequences but provides hope and restoration\n\n↗ Real-Life Application\n• In Relationships: Extend forgiveness to those who hurt you\n• In Self-Worth: Find identity in God's love, not performance\n• In Ministry: Serve others from gratitude, not obligation\n• In Failure: Return to God knowing His grace covers mistakes\n• In Success: Remember achievements come from God's enablement\n• In Daily Living: Show grace to others as God has shown to you\n\n↗ Additional Study Resources\n• Cross-references: John 1:14-17, 1 Peter 5:10, Hebrews 4:16\n• Related topics: Mercy, Forgiveness, Salvation, Faith, Love\n• Study questions: How has grace changed your life? How can you show grace to others?\n• Recommended books: Romans, Ephesians, Titus"
+      "fullResponse": "✦ TOPIC: Grace\n\n↗ Definition & Overview\n• Grace is God's unmerited favor and undeserved kindness toward humanity\n• It's receiving blessing instead of punishment, love instead of judgment\n• Grace means God gives us what we don't deserve (salvation) and doesn't give us what we do deserve (condemnation)\n• Central theme throughout Scripture showing God's character\n\n↗ Key Scripture Passages\n• Ephesians 2:8-9 - \"By grace you have been saved through faith\"\n• Romans 3:23-24 - \"All have sinned... justified freely by his grace\"\n• 2 Corinthians 12:9 - \"My grace is sufficient for you\"\n• Titus 2:11 - \"Grace of God has appeared, bringing salvation\"\n• Romans 5:20 - \"Where sin increased, grace abounded all the more\"\n\n↗ Biblical Commentary\n• Grace is the foundation of Christianity - we cannot earn salvation through good works or religious performance\n• It's entirely God's gift, motivated by His love and mercy\n• Grace covers our past sins, empowers our present living, and secures our future hope\n• It transforms us from the inside out, not through fear but through gratitude\n• Grace doesn't eliminate consequences but provides hope and restoration\n\n↗ Real-Life Application\n• In Relationships: Extend forgiveness to those who hurt you\n• In Self-Worth: Find identity in God's love, not performance\n• In Ministry: Serve others from gratitude, not obligation\n• In Failure: Return to God knowing His grace covers mistakes\n• In Success: Remember achievements come from God's enablement\n• In Daily Living: Show grace to others as God has shown to you\n\n↗ Additional Study Resources\n• Cross-references: John 1:14-17, 1 Peter 5:10, Hebrews 4:16\n• Related topics: Mercy, Forgiveness, Salvation, Faith, Love\n• Study questions: How has grace changed your life? How can you show grace to others?\n• Recommended books: Romans, Ephesians, Titus"
     }
   },
   "tone": "scholarly, practical, comprehensive",
-  "visualFormat": "Use clean structure with ✮ ↗ • symbols",
+  "visualFormat": "Use clean structure with ✦ ↗ • symbols",
   "restrictions": [
+    "Start with orange ✦ icon for topic title",
     "Maintain biblical accuracy throughout",
     "Include both theological depth and practical application",
     "Use clear, accessible language",
     "Provide actionable insights",
-    "Use ✮ for main title and ↗ for sections",
-    "Use • for bullet points only",
-    "No hashtags, asterisks, or markdown symbols"
+    "Use ↗ for sections and • for bullet points only",
+    "No hashtags, asterisks, or markdown symbols",
+    "No decorative background shapes around icons"
   ]
 } 
