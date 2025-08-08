@@ -423,8 +423,20 @@ How can I apply this to my life?
           user_id: user.id,
           title: `${verse.book_name} ${verse.chapter}:${verse.verse} Reflection`,
           content: journalEntry,
-          entry_date: new Date().toISOString(),
-          verse_references: [`${verse.book_name} ${verse.chapter}:${verse.verse}`]
+          verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+          verse_text: verse.text,
+          verse_references: [`${verse.book_name} ${verse.chapter}:${verse.verse}`],
+          category: 'study',
+          word_count: journalEntry.trim().split(/\s+/).length,
+          reading_time: Math.max(1, Math.ceil(journalEntry.trim().split(/\s+/).length / 200)),
+          entry_date: new Date().toISOString().split('T')[0],
+          is_private: true,
+          language: 'english',
+          tags: ['bible-study', 'verse-reflection'],
+          metadata: {
+            verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+            source: 'bible_reader'
+          }
         });
 
       if (error) throw error;

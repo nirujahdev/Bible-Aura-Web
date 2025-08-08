@@ -30,14 +30,17 @@ export interface UserBookmark {
   verse_id: string;
   book_name: string;
   chapter: number;
-  verse_number: number;
+  verse: number;
   verse_text: string;
   verse_reference: string;
   translation: string;
-  category: 'study' | 'prayer' | 'inspiration' | 'memorization';
+  category: 'bookmark' | 'study' | 'prayer' | 'inspiration' | 'memorization' | 'favorite';
   highlight_color: 'yellow' | 'green' | 'blue' | 'purple' | 'red' | 'orange';
   notes?: string;
   tags: string[];
+  color: string;
+  is_favorite: boolean;
+  is_bookmark: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -152,9 +155,10 @@ export class BookmarksService {
   static async getUserBookmarks(userId: string): Promise<UserBookmark[]> {
     try {
       const { data, error } = await supabase
-        .from('user_bookmarks')
+        .from('bookmarks')
         .select('*')
         .eq('user_id', userId)
+        .eq('is_bookmark', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -182,18 +186,21 @@ export class BookmarksService {
         verse_id: verseId,
         book_name: verse.book_name,
         chapter: verse.chapter,
-        verse_number: verse.verse,
+        verse: verse.verse,
         verse_text: verse.text,
         verse_reference: verseReference,
         translation: translation,
         category: category,
         highlight_color: highlightColor,
+        color: highlightColor,
         notes: notes || null,
-        tags: []
+        tags: [],
+        is_bookmark: true,
+        is_favorite: false
       };
 
       const { data, error } = await supabase
-        .from('user_bookmarks')
+        .from('bookmarks')
         .upsert(bookmarkData, {
           onConflict: 'user_id,verse_id'
         })
@@ -213,7 +220,7 @@ export class BookmarksService {
       const verseId = generateVerseId(verse);
       
       const { error } = await supabase
-        .from('user_bookmarks')
+        .from('bookmarks')
         .delete()
         .eq('user_id', userId)
         .eq('verse_id', verseId);
@@ -231,7 +238,7 @@ export class BookmarksService {
       const verseId = generateVerseId(verse);
       
       const { data, error } = await supabase
-        .from('user_bookmarks')
+        .from('bookmarks')
         .select('id')
         .eq('user_id', userId)
         .eq('verse_id', verseId)
@@ -254,7 +261,7 @@ export class BookmarksService {
       const verseId = generateVerseId(verse);
       
       const { error } = await supabase
-        .from('user_bookmarks')
+        .from('bookmarks')
         .update({ 
           notes: notes,
           updated_at: new Date().toISOString()

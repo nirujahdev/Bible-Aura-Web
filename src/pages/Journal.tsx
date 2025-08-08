@@ -5,6 +5,23 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +31,7 @@ import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
 import { 
   PenTool, Plus, Calendar as CalendarIcon, Search, Filter, Heart, Star, BookOpen,
   Lock, Share, Tag, Clock, Smile, Frown, Meh, Sun, Cloud, CloudRain, 
-  Edit, Eye, Copy, ChevronDown, ChevronRight, FileText, X, MoreVertical
+  Edit, Eye, Copy, ChevronDown, ChevronRight, FileText, X, MoreVertical, Trash2
 } from 'lucide-react';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from 'date-fns';
 
@@ -543,14 +560,63 @@ const Journal = () => {
                           selectedDateEntries.map((entry) => (
                             <div
                               key={entry.id}
-                              className="p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100"
-                              onClick={() => handleEditEntry(entry)}
+                              className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 group"
                             >
-                              <div className="font-medium text-sm text-gray-900 truncate">
-                                {entry.title || 'Untitled'}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {entry.word_count} words • {entry.reading_time} min read
+                              <div className="flex items-center justify-between">
+                                <div 
+                                  className="flex-1 cursor-pointer"
+                                  onClick={() => handleEditEntry(entry)}
+                                >
+                                  <div className="font-medium text-sm text-gray-900 truncate">
+                                    {entry.title || 'Untitled'}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {entry.word_count} words • {entry.reading_time} min read
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditEntry(entry);
+                                    }}
+                                    className="h-7 w-7 p-0"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Are you sure you want to delete "{entry.title || 'Untitled'}"? 
+                                          This action cannot be undone.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDeleteEntry(entry.id)}
+                                          className="bg-red-500 hover:bg-red-600"
+                                        >
+                                          Delete
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
                               </div>
                             </div>
                           ))
@@ -595,21 +661,72 @@ const Journal = () => {
                       filteredEntries.map((entry) => (
                         <Card
                           key={entry.id}
-                          className="cursor-pointer hover:shadow-md transition-shadow"
-                          onClick={() => handleEditEntry(entry)}
+                          className="hover:shadow-md transition-shadow group"
                         >
                           <CardHeader className="pb-2">
                             <div className="flex items-center justify-between">
-                              <CardTitle className="text-sm font-medium truncate">
-                                {entry.title || 'Untitled'}
-                              </CardTitle>
-                              <div className="flex items-center gap-1">
-                                {getMoodIcon(entry.mood)}
-                                {entry.is_pinned && <Star className="h-3 w-3 text-yellow-500" />}
+                              <div 
+                                className="flex items-center gap-2 flex-1 cursor-pointer"
+                                onClick={() => handleEditEntry(entry)}
+                              >
+                                <CardTitle className="text-sm font-medium truncate">
+                                  {entry.title || 'Untitled'}
+                                </CardTitle>
+                                <div className="flex items-center gap-1">
+                                  {getMoodIcon(entry.mood)}
+                                  {entry.is_pinned && <Star className="h-3 w-3 text-yellow-500" />}
+                                </div>
+                              </div>
+                              <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditEntry(entry)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem
+                                          onSelect={(e) => e.preventDefault()}
+                                          className="text-red-600 focus:text-red-600"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete "{entry.title || 'Untitled'}"? 
+                                            This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => handleDeleteEntry(entry.id)}
+                                            className="bg-red-500 hover:bg-red-600"
+                                          >
+                                            Delete
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           </CardHeader>
-                          <CardContent className="pt-0">
+                          <CardContent 
+                            className="pt-0 cursor-pointer"
+                            onClick={() => handleEditEntry(entry)}
+                          >
                             <p className="text-xs text-gray-600 line-clamp-2 mb-2">
                               {entry.content}
                             </p>
