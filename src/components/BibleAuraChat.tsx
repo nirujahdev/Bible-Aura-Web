@@ -22,7 +22,6 @@ import {
   Heart,
   Volume2,
   User,
-  Bot,
   History,
   Trash2,
   X
@@ -155,32 +154,39 @@ export function BibleAuraChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Auto-save conversation when messages change (with debouncing)
+  // Manual save when user changes conversation settings
   useEffect(() => {
-    if (user && messages.length > 0) {
-      const debounceTimer = setTimeout(() => {
-        saveCurrentConversation();
-      }, 1000); // Debounce for 1 second
-
-      return () => clearTimeout(debounceTimer);
+    if (user && currentConversationId && messages.length > 0) {
+      // Save when mode, language, or translation changes
+      saveCurrentConversation();
     }
-  }, [messages, user]);
+  }, [currentMode, currentLanguage, currentTranslation]);
 
   const loadConversations = async () => {
     if (!user) return;
     
     try {
+      console.log('Loading conversations for user:', user.id);
       const { data, error } = await supabase
         .from('ai_conversations')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error loading conversations:', error);
+        throw error;
+      }
       
+      console.log('Loaded conversations:', data?.length || 0);
       setConversations(data || []);
     } catch (error) {
       console.error('Error loading conversations:', error);
+      toast({
+        title: "Error loading chat history",
+        description: "Failed to load your previous conversations.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -188,6 +194,7 @@ export function BibleAuraChat() {
     if (!user || messages.length === 0) return;
     
     try {
+      console.log('Saving conversation with', messages.length, 'messages');
       const title = messages[0]?.content.slice(0, 50) + '...' || 'New Conversation';
       
       const conversationData = {
@@ -202,14 +209,20 @@ export function BibleAuraChat() {
 
       if (currentConversationId) {
         // Update existing conversation
+        console.log('Updating existing conversation:', currentConversationId);
         const { error } = await supabase
           .from('ai_conversations')
           .update(conversationData)
           .eq('id', currentConversationId);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating conversation:', error);
+          throw error;
+        }
+        console.log('Successfully updated conversation');
       } else {
         // Create new conversation
+        console.log('Creating new conversation');
         const { data, error } = await supabase
           .from('ai_conversations')
           .insert({
@@ -219,8 +232,12 @@ export function BibleAuraChat() {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating conversation:', error);
+          throw error;
+        }
         
+        console.log('Successfully created conversation:', data.id);
         setCurrentConversationId(data.id);
       }
       
@@ -228,6 +245,11 @@ export function BibleAuraChat() {
       await loadConversations();
     } catch (error) {
       console.error('Error saving conversation:', error);
+      toast({
+        title: "Error saving conversation",
+        description: "Failed to save your chat. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -315,6 +337,16 @@ export function BibleAuraChat() {
       const finalMessages = [...newMessages, aiMessage];
       setMessages(finalMessages);
       
+      // Save conversation immediately after AI response
+      setTimeout(async () => {
+        try {
+          await saveCurrentConversation();
+          console.log('Conversation saved immediately after AI response');
+        } catch (error) {
+          console.error('Failed to save conversation after AI response:', error);
+        }
+      }, 100);
+      
     } catch (error: any) {
       console.error('AI Response Error:', error);
       toast({
@@ -337,19 +369,19 @@ export function BibleAuraChat() {
   const getSuggestedQuestions = () => {
     const suggestions = {
       'verse-clean': [
-        "What does Romans 8:28 mean for my daily life?",
-        "Explain the parable of the Good Samaritan",
+        "What does Romans 8:28 mean?",
+        "Explain the Good Samaritan parable",
         "What are the fruits of the Spirit?",
-        "How can I strengthen my faith during difficult times?"
+        "How to strengthen faith in trials?"
       ],
       'chat-clean': [
-        "How do I pray more effectively?", 
+        "How do I pray effectively?", 
         "What does the Bible say about forgiveness?",
         "How can I grow spiritually?",
         "What is God's will for my life?"
       ],
       'character-clean': [
-        "Tell me about King David's character",
+        "Tell me about King David",
         "What can we learn from Moses?",
         "How did Paul change after conversion?",
         "What made Daniel so faithful?"
@@ -531,14 +563,29 @@ export function BibleAuraChat() {
               </div>
             </div>
             
-            <Button
-              onClick={createNewConversation}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Chat
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Manual Save Button */}
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={saveCurrentConversation}
+                  className="text-gray-600 hover:text-gray-800 hidden lg:flex"
+                  title="Save conversation"
+                >
+                  💾
+                </Button>
+              )}
+              
+              <Button
+                onClick={createNewConversation}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -558,12 +605,12 @@ export function BibleAuraChat() {
                 </p>
                 
                 {/* Suggested Questions */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-3xl mx-auto">
                   {getSuggestedQuestions().map((question, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="text-left h-auto p-3 lg:p-4 hover:bg-orange-50 border-orange-200"
+                      className="text-left h-auto p-4 hover:bg-orange-50 border-orange-200 whitespace-normal break-words min-h-[60px] flex items-center justify-start"
                       onClick={() => {
                         // Directly send the suggested question
                         if (!isLoading && question.trim()) {
@@ -574,7 +621,7 @@ export function BibleAuraChat() {
                         }
                       }}
                     >
-                      <span className="text-sm lg:text-base">{question}</span>
+                      <span className="text-sm leading-relaxed">{question}</span>
                     </Button>
                   ))}
                 </div>
@@ -590,7 +637,7 @@ export function BibleAuraChat() {
                   {message.role === 'assistant' && (
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                        <Bot className="h-5 w-5 text-white" />
+                        <span className="text-white text-xl font-bold">✦</span>
                       </div>
                     </div>
                   )}
@@ -631,7 +678,7 @@ export function BibleAuraChat() {
               >
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-white" />
+                    <span className="text-white text-xl font-bold">✦</span>
                   </div>
                 </div>
                 <div className="bg-white border border-orange-200 p-4 rounded-lg shadow-sm">
