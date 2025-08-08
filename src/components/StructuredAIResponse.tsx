@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 interface StructuredAIResponseProps {
   content: string;
@@ -31,7 +30,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
           currentSection = {
             title: 'Verse',
             content: line.replace('➤', '').trim(),
-            icon: '➤'
+            icon: '⤷'
           };
         } else if (line.includes('⤷') || line.includes('↗')) {
           // Other sections
@@ -46,7 +45,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             };
           } else if (sectionContent.toLowerCase().includes('theology') || sectionContent.toLowerCase().includes('theological') || sectionContent.toLowerCase().includes('doctrine')) {
             currentSection = {
-              title: 'Theological Significance',
+              title: 'Theological Doctrine',
               content: '',
               icon: '⤷'
             };
@@ -64,7 +63,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             };
           } else if (sectionContent.toLowerCase().includes('cross') || sectionContent.toLowerCase().includes('reference')) {
             currentSection = {
-              title: 'Cross References',
+              title: 'Cross Reference',
               content: '',
               icon: '⤷'
             };
@@ -78,7 +77,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             currentSection = {
               title: 'Verse',
               content: '',
-              icon: '➤'
+              icon: '⤷'
             };
           } else {
             currentSection = {
@@ -112,7 +111,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
         sections.push({
           title: 'Verse',
           content: paragraphs[0],
-          icon: '➤'
+          icon: '⤷'
         });
         
         if (paragraphs.length > 1) {
@@ -137,15 +136,15 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
   const sections = parseResponse(content);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Header with verse reference if available */}
       {verseReference && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-lg text-center font-medium"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-lg text-center font-semibold"
         >
-          {verseReference.toUpperCase()}
+          <span className="text-orange-200">✦</span> {verseReference.toUpperCase()}
         </motion.div>
       )}
 
@@ -156,21 +155,36 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
+          className="bg-orange-50 rounded-lg border border-orange-200 overflow-hidden"
         >
-          <div className="bg-orange-50 rounded-lg border border-orange-100 overflow-hidden">
-            {/* Section Header */}
-            <div className="bg-orange-100 px-4 py-3 border-b border-orange-200">
-              <div className="flex items-center gap-2">
-                <span className="text-orange-600 font-medium">{section.icon}</span>
-                <h3 className="font-medium text-orange-800">{section.title}</h3>
-              </div>
+          {/* Section Header */}
+          <div className="bg-gradient-to-r from-orange-100 to-orange-200 px-4 py-3 border-b border-orange-300">
+            <div className="flex items-center gap-2">
+              <span className="text-orange-600 font-bold text-lg">{section.icon}</span>
+              <h3 className="font-semibold text-orange-800 text-lg">{section.title}</h3>
             </div>
-            
-            {/* Section Content */}
-            <div className="p-4">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {section.content}
-              </div>
+          </div>
+          
+          {/* Section Content */}
+          <div className="p-6 bg-white">
+            <div className="text-gray-800 leading-relaxed">
+              {section.content.split('\n').map((line, lineIndex) => {
+                if (line.trim().startsWith('•')) {
+                  return (
+                    <div key={lineIndex} className="flex items-start gap-3 mb-3">
+                      <span className="text-orange-500 font-bold mt-1">•</span>
+                      <span className="flex-1">{line.replace('•', '').trim()}</span>
+                    </div>
+                  );
+                } else if (line.trim()) {
+                  return (
+                    <div key={lineIndex} className="mb-3">
+                      <span>{line.trim()}</span>
+                    </div>
+                  );
+                }
+                return null;
+              })}
             </div>
           </div>
         </motion.div>
