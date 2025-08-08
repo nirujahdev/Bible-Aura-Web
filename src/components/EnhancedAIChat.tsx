@@ -107,8 +107,8 @@ const callBiblicalAI = async (
   abortController?: AbortController
 ): Promise<string> => {
   try {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-    if (!apiKey || apiKey === 'demo-key' || apiKey.includes('your_')) {
+    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || 'sk-c253b7693e9f49f5830d936b9c92d446';
+    if (!apiKey || apiKey === 'demo-key') {
       throw new Error('🔑 DeepSeek API key not configured! Please:\n1. Go to https://platform.deepseek.com/\n2. Create an API key\n3. Add it to your .env.local file\n4. Restart the dev server');
     }
 
@@ -802,39 +802,209 @@ Please try again, and if the problem persists, check your internet connection or
             </div>
         </ScrollArea>
 
-        {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 p-4">
-          <div className="max-w-4xl mx-auto">
+        {/* Enhanced Input Area with All Controls */}
+        <div className="bg-white border-t border-gray-200 p-4 shadow-lg">
+          <div className="max-w-4xl mx-auto space-y-3">
+            
+            {/* Top Controls Bar */}
+            <div className="flex items-center justify-between gap-3 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Mode Selector */}
+                <Select value={currentMode} onValueChange={(value: ChatMode) => setCurrentMode(value)}>
+                  <SelectTrigger className="w-40 h-8 text-sm">
+                                         <SelectValue>
+                       <div className="flex items-center gap-1">
+                         {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-4 w-4" })}
+                         <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
+                       </div>
+                     </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                                         {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                       <SelectItem key={key} value={key}>
+                         <div className="flex items-center gap-2">
+                           {React.createElement(mode.icon, { className: "h-4 w-4" })}
+                           <span>{mode.name}</span>
+                         </div>
+                       </SelectItem>
+                     ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Language Selector */}
+                <Select value={currentLanguage} onValueChange={(value: Language) => setCurrentLanguage(value)}>
+                  <SelectTrigger className="w-28 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">🇺🇸 EN</SelectItem>
+                    <SelectItem value="tamil">🇱🇰 TA</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                                 {/* Translation Selector */}
+                 <Select value={currentTranslation} onValueChange={(value: TranslationCode) => setCurrentTranslation(value)}>
+                   <SelectTrigger className="w-20 h-8 text-sm">
+                     <SelectValue />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="KJV">KJV</SelectItem>
+                     <SelectItem value="NIV">NIV</SelectItem>
+                     <SelectItem value="ESV">ESV</SelectItem>
+                     <SelectItem value="NLT">NLT</SelectItem>
+                     <SelectItem value="NASB">NASB</SelectItem>
+                   </SelectContent>
+                 </Select>
+              </div>
+
+              <div className="flex items-center gap-1">
+                {/* New Conversation */}
+                <Button
+                  onClick={createNewConversation}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2"
+                  title="New Conversation"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+
+                                 {/* Clear Chat */}
+                 <Button
+                   onClick={() => setMessages([])}
+                   variant="outline"
+                   size="sm"
+                   className="h-8 px-2"
+                   title="Clear Chat"
+                 >
+                   <Trash2 className="h-3 w-3" />
+                 </Button>
+
+                {/* Settings */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 px-2" title="Settings">
+                      <Settings className="h-3 w-3" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>AI Chat Settings</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Response Style</label>
+                        <Select value="detailed" onValueChange={() => {}}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="detailed">📚 Detailed</SelectItem>
+                            <SelectItem value="concise">⚡ Concise</SelectItem>
+                            <SelectItem value="academic">🎓 Academic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Include Scripture References</label>
+                        <Select value="always" onValueChange={() => {}}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="always">Always</SelectItem>
+                            <SelectItem value="relevant">When Relevant</SelectItem>
+                            <SelectItem value="never">Never</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
+            {/* Message Input */}
             <div className="flex items-end gap-3">
-          <div className="flex-1">
-              <Textarea
+              <div className="flex-1 relative">
+                <Textarea
                   ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask me anything about the Bible..."
-                  className="resize-none border-2 border-gray-200 focus:border-orange-500 rounded-xl"
-                  rows={3}
+                  placeholder={`Ask me anything about the Bible... (${CHAT_MODES[currentMode]?.name})`}
+                  className="resize-none border-2 border-gray-200 focus:border-orange-500 rounded-xl pr-12 min-h-[60px]"
+                  rows={2}
                   disabled={aiState !== 'idle'}
                 />
-            </div>
-          <Button
-            onClick={() => handleSendMessage()}
+                <div className="absolute right-3 bottom-3 flex items-center gap-1">
+                  {/* Voice Input */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-gray-400 hover:text-orange-500"
+                    disabled={aiState !== 'idle'}
+                    title="Voice Input"
+                  >
+                    <Mic className="h-3 w-3" />
+                  </Button>
+                  {/* Quick Send */}
+                  {input.trim() && (
+                    <Button
+                      onClick={() => handleSendMessage()}
+                      disabled={aiState !== 'idle'}
+                      size="sm"
+                      className="h-6 w-6 p-0 bg-orange-500 hover:bg-orange-600 rounded-full"
+                      title="Send Message"
+                    >
+                      <Send className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              {/* Main Send Button */}
+              <Button
+                onClick={() => handleSendMessage()}
                 disabled={!input.trim() || aiState !== 'idle'}
-                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl px-6 py-3 h-auto"
-          >
+                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl px-6 py-3 h-auto min-h-[60px]"
+              >
                 {aiState !== 'idle' ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-                  <Send className="h-5 w-5" />
-            )}
-          </Button>
+                  <div className="flex flex-col items-center gap-1">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-xs">
+                      {aiState === 'thinking' && 'Thinking...'}
+                      {aiState === 'analyzing' && 'Analyzing...'}
+                      {aiState === 'responding' && 'Responding...'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <Send className="h-4 w-4" />
+                    <span className="text-xs">Send</span>
+                  </div>
+                )}
+              </Button>
+            </div>
+
+            {/* Status Bar */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center gap-4">
+                <span>Press Enter to send • Shift+Enter for new line</span>
+                {aiState !== 'idle' && (
+                  <div className="flex items-center gap-1 text-orange-500">
+                    <div className="w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
+                    <span>AI is {aiState}...</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-orange-500">✦</span>
+                <span>Powered by Bible Aura AI</span>
+              </div>
+            </div>
+          </div>
         </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Press Enter to send • Shift+Enter for new line • <span className="text-orange-500">✦</span> Powered by Bible Aura AI
-            </p>
-            </div>
-            </div>
       </div>
     </div>
   );
