@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 interface StructuredAIResponseProps {
@@ -15,7 +14,6 @@ interface ResponseSection {
 }
 
 export const StructuredAIResponse = React.memo(function StructuredAIResponse({ content, verseReference }: StructuredAIResponseProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['verse', 'simple_explanation']));
 
   // Parse the AI response into structured sections
   const parseResponse = (text: string): ResponseSection[] => {
@@ -129,19 +127,6 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
 
   const sections = parseResponse(content);
 
-  const toggleSection = (sectionTitle: string) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(sectionTitle.toLowerCase().replace(/\s+/g, '_'))) {
-      newExpanded.delete(sectionTitle.toLowerCase().replace(/\s+/g, '_'));
-    } else {
-      newExpanded.add(sectionTitle.toLowerCase().replace(/\s+/g, '_'));
-    }
-    setExpandedSections(newExpanded);
-  };
-
-  const isExpanded = (sectionTitle: string) => 
-    expandedSections.has(sectionTitle.toLowerCase().replace(/\s+/g, '_'));
-
   return (
     <div className="space-y-3">
       {/* Header with verse reference if available */}
@@ -155,7 +140,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
         </motion.div>
       )}
 
-      {/* Response sections */}
+      {/* Response sections as individual boxes */}
       {sections.map((section, index) => (
         <motion.div
           key={index}
@@ -163,45 +148,24 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
         >
-          <Card className="border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader 
-              className="py-3 px-4 cursor-pointer hover:bg-orange-50 transition-colors"
-              onClick={() => toggleSection(section.title)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-orange-500 font-medium">{section.icon}</span>
-                  <h3 className="font-medium text-gray-800">{section.title}</h3>
-                </div>
-                <motion.div
-                  animate={{ rotate: isExpanded(section.title) ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                </motion.div>
+          <div className="bg-orange-50 rounded-lg border border-orange-100 overflow-hidden">
+            {/* Section Header */}
+            <div className="bg-orange-100 px-4 py-3 border-b border-orange-200">
+              <div className="flex items-center gap-2">
+                <span className="text-orange-600 font-medium">{section.icon}</span>
+                <h3 className="font-medium text-orange-800">{section.title}</h3>
               </div>
-            </CardHeader>
+            </div>
             
-            <AnimatePresence>
-              {isExpanded(section.title) && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <CardContent className="pt-0 px-4 pb-4">
-                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {section.content}
-                    </div>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
+            {/* Section Content */}
+            <div className="p-4">
+              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {section.content}
+              </div>
+            </div>
+          </div>
         </motion.div>
       ))}
-         </div>
-   );
+    </div>
+  );
 }); 
