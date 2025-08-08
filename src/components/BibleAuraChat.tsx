@@ -24,7 +24,8 @@ import {
   User,
   Bot,
   History,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import {
   Select,
@@ -136,6 +137,7 @@ export function BibleAuraChat() {
   // Chat history state
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
   
   // UI refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -358,9 +360,9 @@ export function BibleAuraChat() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-full bg-gray-50">
       {/* Sidebar - Chat History */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div className="hidden lg:flex w-80 bg-white border-r border-gray-200 flex-col">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -422,12 +424,106 @@ export function BibleAuraChat() {
         </ScrollArea>
       </div>
 
+      {/* Mobile Chat History Overlay */}
+      {showMobileHistory && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setShowMobileHistory(false)}>
+          <div className="w-80 h-full bg-white border-r border-gray-200 flex flex-col" onClick={(e) => e.stopPropagation()}>
+            {/* Mobile Sidebar Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <History className="h-5 w-5 text-gray-600" />
+                  <h2 className="font-medium text-gray-800">Chat History</h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMobileHistory(false)}
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Mobile Conversations List */}
+            <ScrollArea className="flex-1">
+              <div className="p-3 space-y-2">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                      currentConversationId === conversation.id
+                        ? 'bg-orange-100 border border-orange-200'
+                        : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                    onClick={() => {
+                      loadConversation(conversation);
+                      setShowMobileHistory(false);
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {conversation.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(conversation.updated_at).toLocaleDateString()}
+                        </p>
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {CHAT_MODES[conversation.mode as ChatMode]?.name || conversation.mode}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conversation.id);
+                        }}
+                        className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            {/* Mobile New Chat Button */}
+            <div className="p-4 border-t border-gray-200">
+              <Button
+                onClick={() => {
+                  createNewConversation();
+                  setShowMobileHistory(false);
+                }}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              {/* Mobile Chat History Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileHistory(!showMobileHistory)}
+                className="lg:hidden text-gray-600 hover:text-gray-800"
+              >
+                <History className="h-5 w-5" />
+              </Button>
+              
               <span className="text-orange-500 text-xl">✦</span>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">Bible Aura AI</h1>
@@ -447,27 +543,27 @@ export function BibleAuraChat() {
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 px-6 py-4">
+        <ScrollArea className="flex-1 px-4 lg:px-6 py-4">
           <div className="max-w-4xl mx-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-8 lg:py-12">
                 <div className="text-orange-500 mb-4">
-                  <Sparkles className="h-16 w-16 mx-auto" />
+                  <Sparkles className="h-12 lg:h-16 w-12 lg:w-16 mx-auto" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">
                   Hello Benaiah!
                 </h2>
-                <p className="text-gray-600 mb-8">
+                <p className="text-gray-600 mb-6 lg:mb-8">
                   How can I assist you with your biblical studies today?
                 </p>
                 
                 {/* Suggested Questions */}
-                <div className="grid grid-cols-2 gap-3 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-2xl mx-auto">
                   {getSuggestedQuestions().map((question, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="text-left h-auto p-4 hover:bg-orange-50 border-orange-200"
+                      className="text-left h-auto p-3 lg:p-4 hover:bg-orange-50 border-orange-200"
                       onClick={() => {
                         // Directly send the suggested question
                         if (!isLoading && question.trim()) {
@@ -478,7 +574,7 @@ export function BibleAuraChat() {
                         }
                       }}
                     >
-                      {question}
+                      <span className="text-sm lg:text-base">{question}</span>
                     </Button>
                   ))}
                 </div>
@@ -552,12 +648,12 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 px-6 py-4">
+        <div className="bg-white border-t border-gray-200 px-4 lg:px-6 py-4">
           <div className="max-w-4xl mx-auto">
             {/* Controls */}
-            <div className="flex items-center gap-2 mb-3 text-sm">
+            <div className="flex items-center gap-2 mb-3 text-sm overflow-x-auto">
               <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                <SelectTrigger className="w-40 h-8 text-xs">
+                <SelectTrigger className="w-32 lg:w-40 h-8 text-xs flex-shrink-0">
                   <div className="flex items-center gap-2">
                     {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
                     <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
@@ -576,7 +672,7 @@ export function BibleAuraChat() {
               </Select>
 
               <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                <SelectTrigger className="w-24 h-8 text-xs">
+                <SelectTrigger className="w-20 lg:w-24 h-8 text-xs flex-shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -586,7 +682,7 @@ export function BibleAuraChat() {
               </Select>
 
               <Select value={currentTranslation} onValueChange={(value) => setCurrentTranslation(value as TranslationCode)}>
-                <SelectTrigger className="w-20 h-8 text-xs">
+                <SelectTrigger className="w-16 lg:w-20 h-8 text-xs flex-shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
+import { ModernLayout } from '@/components/ModernLayout';
 import { BibleAuraChat } from '@/components/BibleAuraChat';
 
 export default function Dashboard() {
@@ -18,8 +19,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-screen">
-      <BibleAuraChat />
-    </div>
+    <ModernLayout>
+      <div className="h-screen">
+        <BibleAuraChat />
+      </div>
+    </ModernLayout>
   );
 } 
