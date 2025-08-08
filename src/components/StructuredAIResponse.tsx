@@ -1,243 +1,207 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { BookOpen, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 interface StructuredAIResponseProps {
   content: string;
-  timestamp?: string;
+  verseReference?: string;
 }
 
-interface ParsedSection {
+interface ResponseSection {
   title: string;
-  content: string[];
+  content: string;
+  icon?: string;
 }
 
-interface ParsedResponse {
-  mainTitle: string;
-  sections: ParsedSection[];
-}
+export const StructuredAIResponse = React.memo(function StructuredAIResponse({ content, verseReference }: StructuredAIResponseProps) {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['verse', 'simple_explanation']));
 
-const parseAIResponse = (content: string): ParsedResponse => {
-  const lines = content.split('\n').filter(line => line.trim());
-  
-  let mainTitle = '';
-  const sections: ParsedSection[] = [];
-  let currentSection: ParsedSection | null = null;
-  
-  for (const line of lines) {
-    const trimmedLine = line.trim();
+  // Parse the AI response into structured sections
+  const parseResponse = (text: string): ResponseSection[] => {
+    const sections: ResponseSection[] = [];
     
-    // Main title (starts with ✮)
-    if (trimmedLine.startsWith('✮')) {
-      mainTitle = trimmedLine.replace('✮', '').trim();
-    }
-    // Section header (starts with ↗)
-    else if (trimmedLine.startsWith('↗')) {
-      // Save previous section if exists
-      if (currentSection) {
-        sections.push(currentSection);
-      }
-      // Start new section
-      currentSection = {
-        title: trimmedLine.replace('↗', '').trim(),
-        content: []
-      };
-    }
-    // Bullet point (starts with •)
-    else if (trimmedLine.startsWith('•')) {
-      if (currentSection) {
-        currentSection.content.push(trimmedLine.replace('•', '').trim());
-      }
-    }
-    // Regular content line
-    else if (trimmedLine && currentSection) {
-      currentSection.content.push(trimmedLine);
-    }
-  }
-  
-  // Add the last section
-  if (currentSection) {
-    sections.push(currentSection);
-  }
-  
-  return { mainTitle, sections };
-};
-
-const StructuredAIResponse: React.FC<StructuredAIResponseProps> = ({ content, timestamp }) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const parsed = parseAIResponse(content);
-  
-  const addToJournal = async () => {
-    if (!user) {
-      toast({
-        title: "Sign In Required",
-        description: "Please sign in to save to journal",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const journalEntry = `AI Bible Study Insight - ${new Date().toLocaleDateString()}
-
-${content}
-
-Personal Reflection:
-[Add your thoughts and insights about this AI response here]
-
-How does this help my understanding?
-[Personal reflection space]
-
-Action Steps:
-[How will I apply this insight to my life?]`;
-
-      const { error } = await supabase
-        .from('journal_entries')
-        .insert({
-          user_id: user.id,
-          title: `AI Bible Study - ${parsed.mainTitle || 'Bible Insight'}`,
-          content: journalEntry,
-          entry_date: new Date().toISOString(),
-          category: 'ai_study',
-          tags: ['ai_study', 'bible_study'],
-          metadata: {
-            ai_response: content,
-            timestamp: timestamp
+    // Check if it's a structured response with sections
+    if (text.includes('➤') || text.includes('⤷') || text.includes('↗')) {
+      const lines = text.split('\n').filter(line => line.trim());
+      let currentSection: ResponseSection | null = null;
+      
+      for (const line of lines) {
+        if (line.includes('➤')) {
+          // Verse section
+          if (currentSection) sections.push(currentSection);
+          currentSection = {
+            title: 'Verse',
+            content: line.replace('➤', '').trim(),
+            icon: '📖'
+          };
+        } else if (line.includes('⤷') || line.includes('↗')) {
+          // Other sections
+          if (currentSection) sections.push(currentSection);
+          const sectionContent = line.replace(/[⤷↗]/g, '').trim();
+          
+          if (sectionContent.toLowerCase().includes('historical')) {
+            currentSection = {
+              title: 'Historical Context',
+              content: '',
+              icon: '🏛️'
+            };
+          } else if (sectionContent.toLowerCase().includes('theology') || sectionContent.toLowerCase().includes('theological') || sectionContent.toLowerCase().includes('doctrine')) {
+            currentSection = {
+              title: 'Theological Significance',
+              content: '',
+              icon: '✨'
+            };
+          } else if (sectionContent.toLowerCase().includes('simple') || sectionContent.toLowerCase().includes('explanation')) {
+            currentSection = {
+              title: 'Simple Explanation',
+              content: '',
+              icon: '💡'
+            };
+          } else if (sectionContent.toLowerCase().includes('application') || sectionContent.toLowerCase().includes('practical')) {
+            currentSection = {
+              title: 'Practical Application',
+              content: '',
+              icon: '🌟'
+            };
+          } else if (sectionContent.toLowerCase().includes('cross') || sectionContent.toLowerCase().includes('reference')) {
+            currentSection = {
+              title: 'Cross References',
+              content: '',
+              icon: '📚'
+            };
+          } else if (sectionContent.toLowerCase().includes('summary')) {
+            currentSection = {
+              title: 'Summary',
+              content: '',
+              icon: '📝'
+            };
+          } else if (sectionContent.toLowerCase().includes('verse')) {
+            currentSection = {
+              title: 'Verse',
+              content: '',
+              icon: '📖'
+            };
+          } else {
+            currentSection = {
+              title: sectionContent || 'Additional Context',
+              content: '',
+              icon: '📚'
+            };
           }
+        } else if (currentSection && line.trim()) {
+          // Add content to current section, removing bullet points for cleaner display
+          const cleanLine = line.replace(/^[•·]/g, '').trim();
+          currentSection.content += (currentSection.content ? '\n' : '') + cleanLine;
+        }
+      }
+      
+      if (currentSection) sections.push(currentSection);
+    } else {
+      // Fallback for unstructured responses - try to create sections based on content
+      const paragraphs = text.split('\n\n').filter(p => p.trim());
+      
+      if (verseReference && paragraphs.length > 0) {
+        sections.push({
+          title: 'Verse',
+          content: paragraphs[0],
+          icon: '📖'
         });
-
-      if (error) throw error;
-
-      toast({
-        title: "Added to Journal",
-        description: "AI response saved to your journal for further reflection",
-      });
-    } catch (error) {
-      console.error('Error adding to journal:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save to journal",
-        variant: "destructive"
-      });
+        
+        if (paragraphs.length > 1) {
+          sections.push({
+            title: 'Analysis',
+            content: paragraphs.slice(1).join('\n\n'),
+            icon: '💡'
+          });
+        }
+      } else {
+        sections.push({
+          title: 'Response',
+          content: text,
+          icon: '💬'
+        });
+      }
     }
+    
+    return sections;
   };
-  
-  // If parsing fails, show original content
-  if (!parsed.mainTitle && parsed.sections.length === 0) {
-    return (
-      <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-2xl border border-orange-100 shadow-sm">
-        <p className="whitespace-pre-wrap leading-relaxed text-gray-800" style={{
-          fontFamily: 'Montserrat, sans-serif',
-          fontWeight: '500'
-        }}>
-          {content}
-        </p>
-        
-        {/* Add to Journal Button */}
-        <div className="flex justify-end mt-4">
-          <Button
-            onClick={addToJournal}
-            size="sm"
-            variant="outline"
-            className="bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:text-orange-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add to Journal
-          </Button>
-        </div>
-        
-        {timestamp && (
-          <div className="flex items-center gap-1 mt-3 text-xs text-orange-600/70">
-            <span className="w-1 h-1 bg-orange-400 rounded-full"></span>
-            {new Date(timestamp).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-          </div>
-        )}
-      </div>
-    );
-  }
+
+  const sections = parseResponse(content);
+
+  const toggleSection = (sectionTitle: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionTitle.toLowerCase().replace(/\s+/g, '_'))) {
+      newExpanded.delete(sectionTitle.toLowerCase().replace(/\s+/g, '_'));
+    } else {
+      newExpanded.add(sectionTitle.toLowerCase().replace(/\s+/g, '_'));
+    }
+    setExpandedSections(newExpanded);
+  };
+
+  const isExpanded = (sectionTitle: string) => 
+    expandedSections.has(sectionTitle.toLowerCase().replace(/\s+/g, '_'));
 
   return (
-    <div className="space-y-4">
-      {/* Main Title */}
-      {parsed.mainTitle && (
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-4 rounded-2xl shadow-sm">
-          <h3 className="text-white font-semibold text-lg text-center" style={{
-            fontFamily: 'Montserrat, sans-serif',
-            fontWeight: '600'
-          }}>
-            {parsed.mainTitle}
-          </h3>
-        </div>
-      )}
-      
-      {/* Sections */}
-      <div className="space-y-3">
-        {parsed.sections.map((section, index) => (
-          <Card key={index} className="overflow-hidden border-orange-100 shadow-sm hover:shadow-md transition-all duration-200">
-            <div className="bg-gradient-to-r from-orange-100 to-amber-100 px-4 py-3 border-b border-orange-200">
-              <h4 className="font-semibold text-orange-800 flex items-center gap-2" style={{
-                fontFamily: 'Montserrat, sans-serif',
-                fontWeight: '600'
-              }}>
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                {section.title}
-              </h4>
-            </div>
-            <CardContent className="p-4 bg-gradient-to-br from-white to-orange-50/30">
-              <div className="space-y-2">
-                {section.content.map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-gray-700 leading-relaxed" style={{
-                      fontFamily: 'Montserrat, sans-serif',
-                      fontWeight: '500'
-                    }}>
-                      {item}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      
-      {/* Add to Journal Button */}
-      <div className="flex justify-end">
-        <Button
-          onClick={addToJournal}
-          size="sm"
-          variant="outline"
-          className="bg-white hover:bg-orange-50 border-orange-200 text-orange-700 hover:text-orange-800"
+    <div className="space-y-3">
+      {/* Header with verse reference if available */}
+      {verseReference && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-lg text-center font-medium"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Add to Journal
-        </Button>
-      </div>
-      
-      {/* Timestamp */}
-      {timestamp && (
-        <div className="flex items-center justify-center gap-2 mt-4 text-xs text-orange-600/70">
-          <div className="w-1 h-1 bg-orange-400 rounded-full"></div>
-          <span style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '500' }}>
-            {new Date(timestamp).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-          </span>
-          <div className="w-1 h-1 bg-orange-400 rounded-full"></div>
-        </div>
+          {verseReference.toUpperCase()}
+        </motion.div>
       )}
-    </div>
-  );
-};
 
-export default StructuredAIResponse; 
+      {/* Response sections */}
+      {sections.map((section, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+        >
+          <Card className="border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader 
+              className="py-3 px-4 cursor-pointer hover:bg-orange-50 transition-colors"
+              onClick={() => toggleSection(section.title)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-orange-500">{section.icon}</span>
+                  <h3 className="font-medium text-gray-800">{section.title}</h3>
+                </div>
+                <motion.div
+                  animate={{ rotate: isExpanded(section.title) ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                </motion.div>
+              </div>
+            </CardHeader>
+            
+            <AnimatePresence>
+              {isExpanded(section.title) && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <CardContent className="pt-0 px-4 pb-4">
+                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {section.content}
+                    </div>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+        </motion.div>
+      ))}
+         </div>
+   );
+}); 

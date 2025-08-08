@@ -2,8 +2,7 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
-import { ModernLayout } from '@/components/ModernLayout';
-import { EnhancedAIChat } from '@/components/EnhancedAIChat';
+import { BibleAuraChat } from '@/components/BibleAuraChat';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -19,10 +18,8 @@ export default function Dashboard() {
   }
 
   return (
-    <ModernLayout>
-      <div className="h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-        <EnhancedAIChat />
-      </div>
-    </ModernLayout>
+    <div className="h-screen">
+      <BibleAuraChat />
+    </div>
   );
 } 
