@@ -88,9 +88,18 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             };
           }
         } else if (currentSection && line.trim()) {
-          // Add content to current section, removing bullet points for cleaner display
-          const cleanLine = line.replace(/^[•·]/g, '').trim();
-          currentSection.content += (currentSection.content ? '\n' : '') + cleanLine;
+          // Add content to current section, keeping bullet points for proper display
+          const cleanLine = line.trim();
+          if (cleanLine.startsWith('•') || cleanLine.startsWith('-')) {
+            // Keep bullet points
+            currentSection.content += (currentSection.content ? '\n' : '') + cleanLine;
+          } else {
+            // Add bullet point if line doesn't have one
+            const bulletLine = cleanLine.startsWith('➤') || cleanLine.startsWith('⤷') || cleanLine.startsWith('↗') 
+              ? cleanLine 
+              : '• ' + cleanLine;
+            currentSection.content += (currentSection.content ? '\n' : '') + bulletLine;
+          }
         }
       }
       

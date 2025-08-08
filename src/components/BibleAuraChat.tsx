@@ -157,26 +157,42 @@ export function BibleAuraChat() {
   // Auto-save conversation when messages change
   useEffect(() => {
     if (user && messages.length > 0) {
+      console.log('Auto-save triggered:', { 
+        messagesCount: messages.length, 
+        userId: user.id, 
+        conversationId: currentConversationId 
+      });
+      
       // Auto-save after a short delay to allow UI to update
-      const saveTimer = setTimeout(() => {
-        saveCurrentConversation();
-      }, 500);
+      const saveTimer = setTimeout(async () => {
+        try {
+          await saveCurrentConversation();
+          console.log('Auto-save completed successfully');
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+        }
+      }, 1000);
       
       return () => clearTimeout(saveTimer);
     }
-  }, [messages.length, user]);
+  }, [messages, user]); // Changed from messages.length to messages to trigger on every change
 
   // Save when conversation settings change
   useEffect(() => {
     if (user && currentConversationId && messages.length > 0) {
+      console.log('Settings changed, saving conversation');
       saveCurrentConversation();
     }
   }, [currentMode, currentLanguage, currentTranslation]);
 
   const loadConversations = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('Load conversations skipped: no user');
+      return;
+    }
     
     try {
+      console.log('Loading conversations for user:', user.id);
       const { data, error } = await supabase
         .from('ai_conversations')
         .select('*')
@@ -184,25 +200,30 @@ export function BibleAuraChat() {
         .order('updated_at', { ascending: false });
       
       if (error) {
-        console.error('Error loading conversations:', error);
+        console.error('Supabase load error:', error);
         throw error;
       }
       
+      console.log('Conversations loaded successfully:', data?.length || 0, 'conversations');
       setConversations(data || []);
-    } catch (error) {
-      console.error('Error loading conversations:', error);
+    } catch (error: any) {
+      console.error('Load conversations error:', error);
       toast({
-        title: "Error loading chat history",
-        description: "Failed to load your previous conversations.",
+        title: "Load Error (Debug)",
+        description: `Failed to load conversations: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       });
     }
   };
 
   const saveCurrentConversation = async () => {
-    if (!user || messages.length === 0) return;
+    if (!user || messages.length === 0) {
+      console.log('Save skipped:', { user: !!user, messagesLength: messages.length });
+      return;
+    }
     
     try {
+      console.log('Starting save process...');
       const title = messages[0]?.content.slice(0, 50) + '...' || 'New Conversation';
       
       const conversationData = {
@@ -215,19 +236,30 @@ export function BibleAuraChat() {
         updated_at: new Date().toISOString()
       };
 
+      console.log('Conversation data prepared:', {
+        userId: conversationData.user_id,
+        title: conversationData.title,
+        mode: conversationData.mode,
+        messagesCount: messages.length,
+        conversationId: currentConversationId
+      });
+
       if (currentConversationId) {
         // Update existing conversation
+        console.log('Updating existing conversation:', currentConversationId);
         const { error } = await supabase
           .from('ai_conversations')
           .update(conversationData)
           .eq('id', currentConversationId);
         
         if (error) {
-          console.error('Error updating conversation:', error);
+          console.error('Supabase update error:', error);
           throw error;
         }
+        console.log('Conversation updated successfully');
       } else {
         // Create new conversation
+        console.log('Creating new conversation...');
         const { data, error } = await supabase
           .from('ai_conversations')
           .insert({
@@ -238,18 +270,26 @@ export function BibleAuraChat() {
           .single();
         
         if (error) {
-          console.error('Error creating conversation:', error);
+          console.error('Supabase insert error:', error);
           throw error;
         }
         
+        console.log('New conversation created:', data.id);
         setCurrentConversationId(data.id);
       }
       
       // Reload conversations to update the list
+      console.log('Reloading conversations list...');
       await loadConversations();
-    } catch (error) {
-      console.error('Error saving conversation:', error);
-      // Don't show toast for auto-save errors to avoid spam
+      console.log('Save process completed successfully');
+    } catch (error: any) {
+      console.error('Full save error details:', error);
+      // Show error for debugging
+      toast({
+        title: "Save Error (Debug)",
+        description: `Failed to save: ${error.message || 'Unknown error'}`,
+        variant: "destructive",
+      });
     }
   };
 
