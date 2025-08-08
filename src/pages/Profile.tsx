@@ -12,11 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { subscriptionService, SubscriptionInfo, UsageInfo, ResourceType } from "@/lib/subscription-service";
 import { 
   User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
   Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
   Shield, Mail, Lock, Eye, EyeOff, Settings, Type, 
-  Languages, Bot, Bell, Palette, Moon, Sun
+  Languages, Bot, Bell, Palette, Moon, Sun, Crown, CreditCard
 } from "lucide-react";
 import { ModernLayout } from "@/components/ModernLayout";
 
@@ -54,6 +55,11 @@ const Profile = () => {
     totalBookmarks: 0,
     totalConversations: 0
   });
+
+  // Subscription states
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
+  const [usageStats, setUsageStats] = useState<Record<ResourceType, UsageInfo> | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   // Profile editing states
   const [editing, setEditing] = useState(false);
@@ -104,6 +110,7 @@ const Profile = () => {
     if (user) {
       loadProfile();
       loadStats();
+      loadSubscriptionInfo();
     }
   }, [user]);
 
@@ -160,6 +167,25 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Failed to load stats:", error);
+    }
+  };
+
+  const loadSubscriptionInfo = async () => {
+    if (!user) return;
+
+    setSubscriptionLoading(true);
+    try {
+      const [subscription, usage] = await Promise.all([
+        subscriptionService.getSubscriptionInfo(user.id),
+        subscriptionService.getAllUsageStats(user.id)
+      ]);
+
+      setSubscriptionInfo(subscription);
+      setUsageStats(usage);
+    } catch (error) {
+      console.error("Failed to load subscription info:", error);
+    } finally {
+      setSubscriptionLoading(false);
     }
   };
 
@@ -258,6 +284,36 @@ const Profile = () => {
   const prayerAnswerRate = stats.totalPrayers > 0 
     ? Math.round((stats.answeredPrayers / stats.totalPrayers) * 100) 
     : 0;
+
+  const getPlanDisplayName = (plan: string) => {
+    switch (plan) {
+      case 'free': return 'Free';
+      case 'pro': return 'Pro';
+      case 'supporter': return 'Supporter';
+      case 'partner': return 'Partner';
+      default: return 'Free';
+    }
+  };
+
+  const getPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'free': return 'text-gray-600';
+      case 'pro': return 'text-blue-600';
+      case 'supporter': return 'text-purple-600';
+      case 'partner': return 'text-gold-600';
+      default: return 'text-gray-600';
+    }
+  };
+
+  const getPlanBadgeColor = (plan: string) => {
+    switch (plan) {
+      case 'free': return 'bg-gray-100 text-gray-800';
+      case 'pro': return 'bg-blue-100 text-blue-800';
+      case 'supporter': return 'bg-purple-100 text-purple-800';
+      case 'partner': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   if (!user) {
     return (
@@ -419,6 +475,128 @@ const Profile = () => {
               </div>
             </div>
           </CardHeader>
+        </Card>
+
+        {/* Subscription Information */}
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              Subscription
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {subscriptionLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              </div>
+            ) : subscriptionInfo ? (
+              <div className="space-y-4">
+                {/* Current Plan */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gradient-to-r from-orange-50 to-blue-50 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${subscriptionInfo.plan !== 'free' ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                      <Crown className={`h-5 w-5 ${subscriptionInfo.plan !== 'free' ? 'text-orange-600' : 'text-gray-600'}`} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-base sm:text-lg">
+                        {getPlanDisplayName(subscriptionInfo.plan)} Plan
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Status: <span className={`font-medium ${subscriptionInfo.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
+                          {subscriptionInfo.status === 'active' ? 'Active' : 'Inactive'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className={`${getPlanBadgeColor(subscriptionInfo.plan)} px-3 py-1`}>
+                    {getPlanDisplayName(subscriptionInfo.plan)}
+                  </Badge>
+                </div>
+
+                {/* Plan Details */}
+                {subscriptionInfo.currentPeriodEnd && (
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="h-4 w-4" />
+                      {subscriptionInfo.cancelAtPeriodEnd 
+                        ? `Subscription ends on ${new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString()}`
+                        : `Next billing on ${new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString()}`
+                      }
+                    </div>
+                  </div>
+                )}
+
+                {/* Usage Overview */}
+                {usageStats && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900">This Month's Usage</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* AI Features */}
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <h5 className="font-medium text-blue-800 text-sm mb-2">AI Features</h5>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>AI Chat</span>
+                            <span>{usageStats.ai_chat.currentUsage}/{subscriptionService.formatLimit(usageStats.ai_chat.limitAmount)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Verse Analysis</span>
+                            <span>{usageStats.verse_analysis.currentUsage}/{subscriptionService.formatLimit(usageStats.verse_analysis.limitAmount)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Content Features */}
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <h5 className="font-medium text-green-800 text-sm mb-2">Content</h5>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>Journal Entries</span>
+                            <span>{usageStats.journal_entries.currentUsage}/{subscriptionService.formatLimit(usageStats.journal_entries.limitAmount)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Bookmarks</span>
+                            <span>{usageStats.bookmarks.currentUsage}/{subscriptionService.formatLimit(usageStats.bookmarks.limitAmount)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Reset Date */}
+                    <div className="text-xs text-gray-500 text-center pt-2 border-t">
+                      Usage resets on {new Date(usageStats.ai_chat.resetDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upgrade Button for Free Users */}
+                {subscriptionInfo.plan === 'free' && (
+                  <div className="p-4 bg-gradient-to-r from-orange-100 to-blue-100 rounded-lg border-2 border-dashed border-orange-200">
+                    <div className="text-center">
+                      <Sparkles className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                      <h4 className="font-semibold text-gray-900 mb-1">Unlock More Features</h4>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Upgrade to Pro for unlimited AI conversations, advanced study tools, and more!
+                      </p>
+                      <Button variant="default" size="sm" onClick={() => window.location.href = '/pricing'}>
+                        <Crown className="h-4 w-4 mr-2" />
+                        View Pricing
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <CreditCard className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-gray-600">Unable to load subscription information</p>
+                <Button variant="outline" size="sm" onClick={loadSubscriptionInfo} className="mt-2">
+                  Retry
+                </Button>
+              </div>
+            )}
+          </CardContent>
         </Card>
 
         {/* Account Security Section */}

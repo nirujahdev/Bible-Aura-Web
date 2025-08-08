@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
+import { subscriptionService } from '@/lib/subscription-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -466,6 +467,27 @@ Ask me anything about the Bible, and I'll provide thoughtful, scripture-based re
     const textToSend = messageText || input.trim();
     if (!textToSend || !user || aiState !== 'idle') return;
 
+    // Check subscription limits
+    try {
+      const canUseResult = await subscriptionService.canUseFeature(user.id, 'ai_chat');
+      if (!canUseResult.canUse) {
+        toast({
+          title: "Usage Limit Reached",
+          description: canUseResult.message,
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Subscription check failed:', error);
+      toast({
+        title: "Error",
+        description: "Unable to verify usage limits. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Abort previous request if any
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -519,6 +541,14 @@ Ask me anything about the Bible, and I'll provide thoughtful, scripture-based re
       const finalMessages = [...updatedMessages, aiMessage];
       setMessages(finalMessages);
       await saveConversation(finalMessages);
+
+      // Track usage for successful AI chat
+      try {
+        await subscriptionService.incrementUsage(user.id, 'ai_chat');
+      } catch (usageError) {
+        console.error('Failed to track usage:', usageError);
+        // Don't show error to user, just log it
+      }
     } catch (error: any) {
       console.error('AI Response Error:', error);
       
