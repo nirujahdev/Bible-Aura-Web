@@ -30,7 +30,7 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
           currentSection = {
             title: 'Verse',
             content: line.replace('➤', '').trim(),
-            icon: '⤷'
+            icon: '•'
           };
         } else if (line.includes('⤷') || line.includes('↗')) {
           // Other sections
@@ -41,49 +41,49 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
             currentSection = {
               title: 'Historical Context',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else if (sectionContent.toLowerCase().includes('theology') || sectionContent.toLowerCase().includes('theological') || sectionContent.toLowerCase().includes('doctrine')) {
             currentSection = {
               title: 'Theological Doctrine',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else if (sectionContent.toLowerCase().includes('simple') || sectionContent.toLowerCase().includes('explanation')) {
             currentSection = {
               title: 'Simple Explanation',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else if (sectionContent.toLowerCase().includes('application') || sectionContent.toLowerCase().includes('practical')) {
             currentSection = {
               title: 'Practical Application',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else if (sectionContent.toLowerCase().includes('cross') || sectionContent.toLowerCase().includes('reference')) {
             currentSection = {
               title: 'Cross Reference',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else if (sectionContent.toLowerCase().includes('summary')) {
             currentSection = {
               title: 'Summary',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else if (sectionContent.toLowerCase().includes('verse')) {
             currentSection = {
               title: 'Verse',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           } else {
             currentSection = {
               title: sectionContent || 'Additional Context',
               content: '',
-              icon: '⤷'
+              icon: '•'
             };
           }
         } else if (currentSection && line.trim()) {
@@ -111,21 +111,21 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
         sections.push({
           title: 'Verse',
           content: paragraphs[0],
-          icon: '⤷'
+          icon: '•'
         });
         
         if (paragraphs.length > 1) {
           sections.push({
             title: 'Analysis',
             content: paragraphs.slice(1).join('\n\n'),
-            icon: '⤷'
+            icon: '•'
           });
         }
       } else {
         sections.push({
           title: 'Response',
           content: text,
-          icon: '⤷'
+          icon: '•'
         });
       }
     }
@@ -136,96 +136,62 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
   const sections = parseResponse(content);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Header with verse reference if available */}
       {verseReference && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white shadow-lg"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-lg text-center font-semibold"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-          <div className="relative px-6 py-4 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-orange-200 text-2xl font-bold drop-shadow-lg">✦</span>
-              <h2 className="text-xl font-bold tracking-wide uppercase drop-shadow-md">
-                {verseReference}
-              </h2>
-            </div>
-          </div>
+          <span className="text-orange-200">✦</span> {verseReference.toUpperCase()}
         </motion.div>
       )}
 
-      {/* Response sections as individual premium boxes */}
+      {/* Response sections - Simple clean boxes */}
       {sections.map((section, index) => (
         <motion.div
           key={index}
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.15, duration: 0.6, ease: "easeOut" }}
-          className="group relative"
+          transition={{ delay: index * 0.1 }}
         >
-          {/* Premium Box Container */}
-          <div className="relative overflow-hidden rounded-2xl bg-white shadow-xl border border-orange-100 hover:shadow-2xl transition-all duration-500">
-            {/* Decorative Top Border */}
-            <div className="h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600"></div>
-            
-            {/* Section Header */}
-            <div className="relative bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 px-6 py-4 border-b border-orange-200">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-              <div className="relative flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg">
-                  <span className="text-white font-bold text-lg drop-shadow-sm">{section.icon}</span>
-                </div>
-                <h3 className="text-xl font-bold text-orange-900 tracking-wide">
-                  {section.title}
-                </h3>
+          {/* Simple Clean Box */}
+          <div className="bg-orange-50 rounded-lg border border-orange-100">
+            {/* Simple Header */}
+            <div className="bg-orange-100 px-4 py-3 rounded-t-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-orange-600 font-bold">{section.icon}</span>
+                <h3 className="font-semibold text-orange-800">{section.title}</h3>
               </div>
             </div>
             
-            {/* Section Content */}
-            <div className="p-8 bg-gradient-to-b from-white to-gray-50/30">
-              <div className="text-gray-800 leading-relaxed space-y-4">
+            {/* Simple Content */}
+            <div className="p-4 bg-white rounded-b-lg">
+              <div className="space-y-2">
                 {section.content.split('\n').map((line, lineIndex) => {
                   const trimmedLine = line.trim();
                   
                   if (trimmedLine.startsWith('•')) {
                     return (
-                      <motion.div 
-                        key={lineIndex} 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: (index * 0.15) + (lineIndex * 0.05) }}
-                        className="flex items-start gap-4 group/item"
-                      >
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 shadow-sm mt-1 flex-shrink-0">
-                          <span className="text-white font-bold text-sm">•</span>
-                        </div>
-                        <span className="flex-1 text-gray-700 leading-relaxed text-lg group-hover/item:text-gray-900 transition-colors duration-300">
+                      <div key={lineIndex} className="flex items-start gap-2">
+                        <span className="text-orange-500 font-bold mt-0.5">•</span>
+                        <span className="text-gray-700 leading-relaxed">
                           {trimmedLine.replace('•', '').trim()}
                         </span>
-                      </motion.div>
+                      </div>
                     );
                   } else if (trimmedLine) {
                     return (
-                      <motion.div 
-                        key={lineIndex}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: (index * 0.15) + (lineIndex * 0.05) }}
-                        className="text-gray-800 text-lg leading-relaxed font-medium"
-                      >
+                      <div key={lineIndex} className="text-gray-700 leading-relaxed">
                         {trimmedLine}
-                      </motion.div>
+                      </div>
                     );
                   }
                   return null;
                 })}
               </div>
             </div>
-            
-            {/* Subtle Shadow Effect */}
-            <div className="absolute inset-0 rounded-2xl shadow-inner pointer-events-none"></div>
           </div>
         </motion.div>
       ))}
