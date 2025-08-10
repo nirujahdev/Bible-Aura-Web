@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { Badge } from '../components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { 
   MessageSquare, 
   Users, 
@@ -15,85 +15,64 @@ import {
   TrendingUp,
   BookOpen
 } from 'lucide-react'
-import CommunityDiscussions from '../components/community/CommunityDiscussions'
-import CommunityPrayerRequests from '../components/community/CommunityPrayerRequests'
-import CommunityGroups from '../components/community/CommunityGroups'
-import CommunityEvents from '../components/community/CommunityEvents'
-import CommunityProfile from '../components/community/CommunityProfile'
+import { ModernLayout } from '@/components/ModernLayout'
+import { useAuth } from '@/hooks/useAuth'
+import CommunityDiscussions from '@/components/community/CommunityDiscussions'
+import CommunityPrayerRequests from '@/components/community/CommunityPrayerRequests'
+import CommunityGroups from '@/components/community/CommunityGroups'
+import CommunityEvents from '@/components/community/CommunityEvents'
+import CommunityProfile from '@/components/community/CommunityProfile'
 
 const Community: React.FC = () => {
   const [activeTab, setActiveTab] = useState('discussions')
+  const { user } = useAuth()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-4">
-            Bible Aura Community
-          </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Connect with fellow believers, share insights, pray together, and grow in faith through 
-            meaningful discussions and fellowship.
-          </p>
-        </div>
+    <ModernLayout>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6">
 
-        {/* Community Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <MessageSquare className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">1,247</div>
-              <div className="text-sm text-slate-600">Discussions</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Heart className="h-8 w-8 text-red-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">892</div>
-              <div className="text-sm text-slate-600">Prayers</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Users className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">156</div>
-              <div className="text-sm text-slate-600">Groups</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Calendar className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">43</div>
-              <div className="text-sm text-slate-600">Events</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Tabs */}
+        {/* Top Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="discussions" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Discussions
-            </TabsTrigger>
-            <TabsTrigger value="prayer" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Prayer Requests
-            </TabsTrigger>
-            <TabsTrigger value="groups" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Groups
-            </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Events
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Profile
-            </TabsTrigger>
-          </TabsList>
+          <div className="border-b border-gray-200 mb-6">
+            <TabsList className="grid w-full grid-cols-5 h-auto bg-transparent">
+              <TabsTrigger 
+                value="discussions" 
+                className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-700 px-6 py-3 rounded-none"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Discussions
+              </TabsTrigger>
+              <TabsTrigger 
+                value="prayer" 
+                className="data-[state=active]:bg-red-50 data-[state=active]:text-red-700 data-[state=active]:border-b-2 data-[state=active]:border-red-700 px-6 py-3 rounded-none"
+              >
+                <Heart className="h-4 w-4 mr-2" />
+                Prayer Requests
+              </TabsTrigger>
+              <TabsTrigger 
+                value="groups" 
+                className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700 data-[state=active]:border-b-2 data-[state=active]:border-green-700 px-6 py-3 rounded-none"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Groups
+              </TabsTrigger>
+              <TabsTrigger 
+                value="events" 
+                className="data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:border-b-2 data-[state=active]:border-purple-700 px-6 py-3 rounded-none"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Events
+              </TabsTrigger>
+              <TabsTrigger 
+                value="profile" 
+                className="data-[state=active]:bg-gray-50 data-[state=active]:text-gray-700 data-[state=active]:border-b-2 data-[state=active]:border-gray-700 px-6 py-3 rounded-none"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="discussions" className="space-y-6">
             <CommunityDiscussions />
@@ -115,8 +94,9 @@ const Community: React.FC = () => {
             <CommunityProfile />
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
+    </ModernLayout>
   )
 }
 

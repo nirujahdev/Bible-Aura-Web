@@ -20,6 +20,9 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { useCommunity } from '@/hooks/useCommunity'
+import { useAuth } from '@/hooks/useAuth'
+import { toast } from '@/hooks/use-toast'
 
 interface Discussion {
   id: string
@@ -40,59 +43,88 @@ interface Discussion {
 }
 
 const CommunityDiscussions: React.FC = () => {
-  const [discussions, setDiscussions] = useState<Discussion[]>([
-    {
-      id: '1',
-      title: 'Understanding Faith vs Works in James 2:14-26',
-      content: 'I\'ve been studying James 2 and would love to hear different perspectives on how faith and works relate to salvation. How do we reconcile this with Paul\'s teachings in Ephesians 2:8-9?',
-      author: {
-        name: 'Sarah M.',
-        avatar: '/placeholder.svg'
-      },
-      verse: {
-        reference: 'James 2:14-26',
-        text: 'What good is it, my brothers and sisters, if someone claims to have faith but has no deeds?'
-      },
-      likes: 23,
-      comments: 12,
-      timeAgo: '2 hours ago',
-      tags: ['Faith', 'Salvation', 'James']
-    },
-    {
-      id: '2',
-      title: 'Testimony: God\'s Provision During Job Loss',
-      content: 'I wanted to share how God provided for my family when I lost my job last month. Philippians 4:19 became so real to us...',
-      author: {
-        name: 'David K.',
-        avatar: '/placeholder.svg'
-      },
-      verse: {
-        reference: 'Philippians 4:19',
-        text: 'And my God will meet all your needs according to the riches of his glory in Christ Jesus.'
-      },
-      likes: 45,
-      comments: 8,
-      timeAgo: '5 hours ago',
-      tags: ['Testimony', 'Provision', 'Trust']
-    }
-  ])
-
-  const [filter, setFilter] = useState('latest')
+  const [filter, setFilter] = useState<'latest' | 'popular' | 'verse-based' | 'my-groups'>('latest')
   const [searchTerm, setSearchTerm] = useState('')
   const [showNewDiscussion, setShowNewDiscussion] = useState(false)
+  const [newDiscussion, setNewDiscussion] = useState({
+    title: '',
+    content: '',
+    verse_reference: '',
+    tags: ''
+  })
 
-  const trendingVerses = [
-    { reference: 'John 3:16', engagement: 156 },
-    { reference: 'Romans 8:28', engagement: 134 },
-    { reference: 'Philippians 4:13', engagement: 122 },
-    { reference: 'Jeremiah 29:11', engagement: 98 }
-  ]
+  const { user } = useAuth()
+  const { 
+    useDiscussions, 
+    useCreateDiscussion, 
+    useLikeDiscussion,
+    useTrendingVerses,
+    useTopContributors 
+  } = useCommunity()
 
-  const topContributors = [
-    { name: 'Pastor John', contributions: 89, avatar: '/placeholder.svg' },
-    { name: 'Mary S.', contributions: 67, avatar: '/placeholder.svg' },
-    { name: 'David L.', contributions: 45, avatar: '/placeholder.svg' }
-  ]
+  const { data: discussions = [], isLoading: discussionsLoading } = useDiscussions(filter)
+  const { data: trendingVerses = [] } = useTrendingVerses()
+  const { data: topContributors = [] } = useTopContributors()
+  const createDiscussionMutation = useCreateDiscussion()
+  const likeDiscussionMutation = useLikeDiscussion()
+
+  const handleCreateDiscussion = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create a discussion.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!newDiscussion.title.trim() || !newDiscussion.content.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide both a title and content for your discussion.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const discussionData = {
+      user_id: user.id,
+      title: newDiscussion.title.trim(),
+      content: newDiscussion.content.trim(),
+      verse_reference: newDiscussion.verse_reference.trim() || undefined,
+      tags: newDiscussion.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+    }
+
+    try {
+      await createDiscussionMutation.mutateAsync(discussionData)
+      setNewDiscussion({ title: '', content: '', verse_reference: '', tags: '' })
+      setShowNewDiscussion(false)
+    } catch (error) {
+      console.error('Error creating discussion:', error)
+    }
+  }
+
+  const handleLikeDiscussion = async (discussionId: string, isCurrentlyLiked: boolean) => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to like discussions.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      await likeDiscussionMutation.mutateAsync({
+        discussionId,
+        isLiking: !isCurrentlyLiked
+      })
+    } catch (error) {
+      console.error('Error liking discussion:', error)
+    }
+  }
+
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -108,7 +140,7 @@ const CommunityDiscussions: React.FC = () => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="filter-select">Sort by</Label>
-              <Select value={filter} onValueChange={setFilter}>
+              <Select value={filter} onValueChange={(value) => setFilter(value as 'latest' | 'popular' | 'verse-based' | 'my-groups')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -168,11 +200,21 @@ const CommunityDiscussions: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="title">Title</Label>
-                  <Input id="title" placeholder="What would you like to discuss?" />
+                  <Input 
+                    id="title" 
+                    placeholder="What would you like to discuss?" 
+                    value={newDiscussion.title}
+                    onChange={(e) => setNewDiscussion(prev => ({ ...prev, title: e.target.value }))}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="verse">Related Verse (optional)</Label>
-                  <Input id="verse" placeholder="e.g., John 3:16" />
+                  <Input 
+                    id="verse" 
+                    placeholder="e.g., John 3:16" 
+                    value={newDiscussion.verse_reference}
+                    onChange={(e) => setNewDiscussion(prev => ({ ...prev, verse_reference: e.target.value }))}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="content">Content</Label>
@@ -180,18 +222,28 @@ const CommunityDiscussions: React.FC = () => {
                     id="content" 
                     placeholder="Share your thoughts, questions, or testimony..." 
                     rows={6}
+                    value={newDiscussion.content}
+                    onChange={(e) => setNewDiscussion(prev => ({ ...prev, content: e.target.value }))}
                   />
                 </div>
                 <div>
                   <Label htmlFor="tags">Tags</Label>
-                  <Input id="tags" placeholder="faith, prayer, testimony (comma separated)" />
+                  <Input 
+                    id="tags" 
+                    placeholder="faith, prayer, testimony (comma separated)" 
+                    value={newDiscussion.tags}
+                    onChange={(e) => setNewDiscussion(prev => ({ ...prev, tags: e.target.value }))}
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setShowNewDiscussion(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={() => setShowNewDiscussion(false)}>
-                    Post Discussion
+                  <Button 
+                    onClick={handleCreateDiscussion}
+                    disabled={createDiscussionMutation.isPending}
+                  >
+                    {createDiscussionMutation.isPending ? 'Posting...' : 'Post Discussion'}
                   </Button>
                 </div>
               </div>
@@ -201,82 +253,119 @@ const CommunityDiscussions: React.FC = () => {
 
         {/* Discussions Feed */}
         <div className="space-y-4">
-          {discussions.map((discussion) => (
-            <Card key={discussion.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                {/* Author and Time */}
-                <div className="flex items-center gap-3 mb-4">
-                  <Avatar>
-                    <AvatarImage src={discussion.author.avatar} />
-                    <AvatarFallback>{discussion.author.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">{discussion.author.name}</div>
-                    <div className="text-sm text-gray-500">{discussion.timeAgo}</div>
-                  </div>
-                </div>
-
-                {/* Title */}
-                <h3 className="text-xl font-semibold mb-3 hover:text-blue-600 cursor-pointer">
-                  {discussion.title}
-                </h3>
-
-                {/* Content */}
-                <p className="text-gray-700 mb-4 line-clamp-3">
-                  {discussion.content}
+          {discussionsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-20 bg-gray-200 rounded mb-4"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : discussions.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No discussions yet</h3>
+                <p className="text-gray-600 mb-4">
+                  Be the first to start a meaningful conversation!
                 </p>
-
-                {/* Verse */}
-                {discussion.verse && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4 border-l-4 border-blue-500">
-                    <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-blue-800 dark:text-blue-300">
-                        {discussion.verse.reference}
-                      </span>
-                      <Button size="sm" variant="ghost" className="ml-auto">
-                        AI Context
-                      </Button>
-                    </div>
-                    <p className="text-blue-700 dark:text-blue-300 italic">
-                      "{discussion.verse.text}"
-                    </p>
-                  </div>
-                )}
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {discussion.tags.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <ThumbsUp className="h-4 w-4" />
-                      {discussion.likes}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4" />
-                      {discussion.comments}
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <BookmarkPlus className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Star className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                <Button onClick={() => setShowNewDiscussion(true)}>
+                  Start Discussion
+                </Button>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            discussions.map((discussion) => (
+              <Card key={discussion.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  {/* Author and Time */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <Avatar>
+                      <AvatarImage src={discussion.author?.avatar} />
+                      <AvatarFallback>{discussion.author?.name?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium">{discussion.author?.name || 'Anonymous'}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(discussion.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-xl font-semibold mb-3 hover:text-blue-600 cursor-pointer">
+                    {discussion.title}
+                  </h3>
+
+                  {/* Content */}
+                  <p className="text-gray-700 mb-4 line-clamp-3">
+                    {discussion.content}
+                  </p>
+
+                  {/* Verse */}
+                  {discussion.verse_reference && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4 border-l-4 border-blue-500">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BookOpen className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-blue-800 dark:text-blue-300">
+                          {discussion.verse_reference}
+                        </span>
+                        <Button size="sm" variant="ghost" className="ml-auto">
+                          AI Context
+                        </Button>
+                      </div>
+                      {discussion.verse_text && (
+                        <p className="text-blue-700 dark:text-blue-300 italic">
+                          "{discussion.verse_text}"
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {discussion.tags?.map(tag => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    )) || []}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex items-center gap-2"
+                        onClick={() => handleLikeDiscussion(discussion.id, false)}
+                        disabled={likeDiscussionMutation.isPending}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        {discussion.likes_count || 0}
+                      </Button>
+                      <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <MessageCircle className="h-4 w-4" />
+                        {discussion.comments_count || 0}
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm">
+                        <BookmarkPlus className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Star className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
 
