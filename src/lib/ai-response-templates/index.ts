@@ -121,95 +121,52 @@ export const generateSystemPrompt = (mode: keyof typeof AI_RESPONSE_TEMPLATES): 
 MODE: ${template.name}
 TONE: ${template.tone}
 
-SPEED PRIORITY: Generate fast, accurate, biblically sound responses.
-
 CRITICAL FORMATTING REQUIREMENTS:
-- Start ALL responses with the orange ✦ icon (no background shapes)
-- Use ↗ for section headers exactly as specified
-- Use • for bullet points within sections
-- NO hashtags, asterisks, or markdown symbols
-- NO decorative background shapes around icons
+- Use ONLY these symbols: ➤ ⤷ ↗
+- Start ALL responses with ➤ followed by the main title
+- Use ⤷ for section headers exactly as specified
+- NO hashtags, asterisks, decorative symbols, or markdown formatting
+- NO word limits - provide comprehensive, detailed responses
 - Always maintain biblical accuracy and orthodox interpretation
 - Include specific scripture references with chapter:verse format
-- Prioritize concise, direct answers
-- Focus on essential biblical truth
+- Focus on thorough biblical truth and practical application
+- Provide substantial, informative content
 
 `;
 
   // Add mode-specific formatting based on responseStructure
-  if (template.responseStructure.format === 'conversational') {
-    systemPrompt += `
-RESPONSE FORMAT (Conversational - FAST):
-${template.responseStructure.requirements?.join('\n') || ''}
-
-TEMPLATE STRUCTURE:
-${template.responseStructure.template?.join('\n') || ''}
-`;
-  } else if (template.responseStructure.format === 'structured_sections') {
-    systemPrompt += `
-RESPONSE FORMAT (Structured Sections - EFFICIENT):
-${template.responseStructure.sections?.map(section => 
-  `${section.title}\n${section.requirements.join('\n')}`
-).join('\n\n') || ''}
-`;
-  } else if (template.responseStructure.format === 'tree_structure') {
-    systemPrompt += `
-RESPONSE FORMAT (Tree Structure - CONCISE):
-${template.responseStructure.mainTitle}
-
-${template.responseStructure.branches?.map(branch => 
-  `${branch.icon} ${branch.title}\n${branch.requirements.join('\n')}`
-).join('\n\n') || ''}
-`;
-  } else if (template.responseStructure.format === 'profile_structure') {
-    systemPrompt += `
-RESPONSE FORMAT (Character Profile - FOCUSED):
-${template.responseStructure.mainTitle}
-
-${template.responseStructure.sections?.map(section => 
-  `${section.icon} ${section.title}\n${section.requirements.join('\n')}`
-).join('\n\n') || ''}
-`;
-  } else if (template.responseStructure.format === 'comprehensive_study') {
-    systemPrompt += `
-RESPONSE FORMAT (Comprehensive Study - STREAMLINED):
-${template.responseStructure.mainTitle}
-
-${template.responseStructure.sections?.map(section => 
-  `${section.icon} ${section.title}\n${section.requirements.join('\n')}`
-).join('\n\n') || ''}
-`;
-  } else if (template.responseStructure.format === 'simple_qa') {
-    systemPrompt += `
-RESPONSE FORMAT (Q&A - ULTRA-FAST):
-${template.responseStructure.sections?.map(section => 
-  `${section.title}\n${section.requirements?.join('\n') || ''}`
-).join('\n\n') || ''}
-`;
+  if (template.responseStructure?.format) {
+    systemPrompt += `RESPONSE FORMAT:\n${template.responseStructure.format}\n\n`;
   }
 
-  // Add word limits with speed emphasis
-  if (template.maxWords) {
-    systemPrompt += `\nWORD LIMIT: Maximum ${template.maxWords} words for FAST responses.`;
+  // Add sections if available
+  if (template.responseStructure?.sections) {
+    systemPrompt += `SECTIONS TO INCLUDE:\n`;
+    template.responseStructure.sections.forEach((section, index) => {
+      systemPrompt += `${index + 1}. ${section.title}: ${section.content}\n`;
+    });
+    systemPrompt += '\n';
   }
 
-  // Add scripture usage guidelines
-  if (template.scriptureUsage) {
-    systemPrompt += `\nSCRIPTURE USAGE: ${template.scriptureUsage}`;
+  // Add branches if available  
+  if (template.responseStructure?.branches) {
+    systemPrompt += `STRUCTURE BRANCHES:\n`;
+    template.responseStructure.branches.forEach((branch, index) => {
+      systemPrompt += `${index + 1}. ${branch.title}: ${branch.content}\n`;
+    });
+    systemPrompt += '\n';
   }
 
-  // Add restrictions with speed focus
-  systemPrompt += `\nRESTRICTIONS (SPEED OPTIMIZED):
-${template.restrictions.join('\n')}
-- Generate responses quickly and efficiently
-- Avoid unnecessary elaboration
-- Focus on core biblical truth
-- Maintain accuracy while prioritizing speed
+  // Add restrictions
+  systemPrompt += `RESTRICTIONS:\n`;
+  template.restrictions.forEach((restriction, index) => {
+    systemPrompt += `${index + 1}. ${restriction}\n`;
+  });
 
-EXAMPLE OUTPUT FORMAT:
-${template.examples.goodResponse?.fullResponse || template.examples.goodResponse?.answer || 'See template for examples'}
-
-Remember: Always start with the orange ✦ icon, maintain exact formatting, and prioritize FAST, accurate biblical responses.`;
+  // Add example if available
+  if (template.examples?.goodResponse) {
+    systemPrompt += `\nEXAMPLE RESPONSE:\n${JSON.stringify(template.examples.goodResponse, null, 2)}\n`;
+  }
 
   return systemPrompt;
 };

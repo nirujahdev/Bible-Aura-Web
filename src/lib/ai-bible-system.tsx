@@ -235,36 +235,37 @@ export function createVerseExplanationPrompt(
                              language === 'tamil' ? 'Tamil' :
                              'Sinhala';
 
-  return `You are a Bible study assistant and theological scholar.
+  return `You are a Bible study assistant and theological scholar providing comprehensive verse explanations.
 
 Your task is to explain the Bible verse: ${verse.book} ${verse.chapter}:${verse.verse}
 
 Verse Text: "${verse.text}"
 
-Please provide a structured explanation following this exact format:
+Please provide a detailed, structured explanation following this exact format:
 
-Verse:
-${verse.book} ${verse.chapter}:${verse.verse} - "${verse.text}"
+➤ ${verse.book} ${verse.chapter}:${verse.verse} - "${verse.text}"
 
-Historical Background:
-[Provide 2-3 sentences about the historical context, time period, and circumstances when this verse was written]
+⤷ Historical background
+Provide comprehensive details about the historical context, time period, circumstances when this verse was written, cultural setting, and audience. Include information about the author, purpose, and historical significance.
 
-Theology:
-[Explain the key theological concepts, doctrines, and spiritual meaning in 2-3 sentences]
+⤷ Theology
+Explain the key theological concepts, doctrines, and spiritual meaning in detail. Discuss how this verse relates to broader biblical themes and God's character. Include theological implications and connections to other Scripture.
 
-Explanation:
-[Give a clear, practical explanation of what this verse means for believers today in 3-4 sentences]
+⤷ Simple explanation
+Give a clear, practical explanation of what this verse means for believers today. Include specific applications, life principles, and how this truth should impact Christian living.
 
 Important guidelines:
 - Write in ${languageInstruction} language
-- Keep the total response under 300 words
-- Use simple, clear language that anyone can understand
-- Do not use special formatting symbols like *, #, or markdown
-- Focus on practical application and spiritual insight
-- Be respectful of all Christian denominations
+- Provide comprehensive, detailed responses - do NOT limit word count
+- Use clear, accessible language while being thorough and informative
+- Do not use decorative formatting symbols, asterisks, hashes, or markdown
+- Use ONLY ➤ and ⤷ symbols for formatting
+- Focus on practical application and spiritual insight with extensive detail
+- Be respectful of all Christian denominations and maintain orthodox interpretation
 - If the verse has multiple interpretations, mention the most widely accepted one
+- Provide substantial content that thoroughly explains the verse and its significance
 
-Respond with the structured explanation now.`;
+Respond with the comprehensive structured explanation now.`;
 }
 
 // =============================================================================
@@ -335,30 +336,30 @@ export function parseAIResponse(response: string, language: SupportedLanguage): 
   let currentContent: string[] = [];
 
   for (const line of lines) {
-    if (line.startsWith('Verse:')) {
+    if (line.startsWith('➤')) {
       if (currentSection && currentContent.length > 0) {
         sections[currentSection as keyof typeof sections] = currentContent.join(' ');
       }
       currentSection = 'verse';
-      currentContent = [line.substring(6).trim()];
-    } else if (line.startsWith('Historical Background:')) {
+      currentContent = [line.substring(3).trim()];
+    } else if (line.startsWith('⤷ Historical background')) {
       if (currentSection && currentContent.length > 0) {
         sections[currentSection as keyof typeof sections] = currentContent.join(' ');
       }
       currentSection = 'historicalBackground';
-      currentContent = [line.substring(22).trim()];
-    } else if (line.startsWith('Theology:')) {
+      currentContent = [line.substring(24).trim()];
+    } else if (line.startsWith('⤷ Theology')) {
       if (currentSection && currentContent.length > 0) {
         sections[currentSection as keyof typeof sections] = currentContent.join(' ');
       }
       currentSection = 'theology';
-      currentContent = [line.substring(9).trim()];
-    } else if (line.startsWith('Explanation:')) {
+      currentContent = [line.substring(12).trim()];
+    } else if (line.startsWith('⤷ Simple explanation')) {
       if (currentSection && currentContent.length > 0) {
         sections[currentSection as keyof typeof sections] = currentContent.join(' ');
       }
       currentSection = 'explanation';
-      currentContent = [line.substring(12).trim()];
+      currentContent = [line.substring(21).trim()];
     } else if (currentSection && line) {
       currentContent.push(line);
     }
