@@ -59,6 +59,61 @@ export const useCommunity = () => {
     })
   }
 
+  // Comments
+  const useDiscussionComments = (discussionId: string) => {
+    return useQuery({
+      queryKey: ['discussion-comments', discussionId],
+      queryFn: () => communityService.getDiscussionComments(discussionId),
+      staleTime: 2 * 60 * 1000, // 2 minutes
+    })
+  }
+
+  const useCreateComment = () => {
+    return useMutation({
+      mutationFn: (comment: { discussion_id: string; user_id: string; content: string; parent_comment_id?: string }) =>
+        communityService.createComment(comment),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['discussion-comments'] })
+        queryClient.invalidateQueries({ queryKey: ['discussions'] })
+        toast({
+          title: "Comment Added",
+          description: "Your comment has been posted successfully.",
+        })
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create comment.",
+          variant: "destructive",
+        })
+      },
+    })
+  }
+
+  const useBookmarkDiscussion = () => {
+    return useMutation({
+      mutationFn: ({ discussionId, isBookmarking }: { discussionId: string; isBookmarking: boolean }) => {
+        if (!user?.id) throw new Error('User not authenticated')
+        return isBookmarking 
+          ? communityService.bookmarkDiscussion(discussionId, user.id)
+          : communityService.unbookmarkDiscussion(discussionId, user.id)
+      },
+      onSuccess: () => {
+        toast({
+          title: "Bookmark Updated",
+          description: "Discussion bookmark has been updated.",
+        })
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update bookmark.",
+          variant: "destructive",
+        })
+      },
+    })
+  }
+
   // Prayer Requests
   const usePrayerRequests = (filter: 'latest' | 'urgent' | 'most-prayed' | 'answered' = 'latest') => {
     return useQuery({
@@ -344,6 +399,9 @@ export const useCommunity = () => {
     useDiscussions,
     useCreateDiscussion,
     useLikeDiscussion,
+    useDiscussionComments,
+    useCreateComment,
+    useBookmarkDiscussion,
     
     // Prayer Requests
     usePrayerRequests,

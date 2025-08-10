@@ -188,6 +188,82 @@ class CommunityService {
     if (error) throw error
   }
 
+  // Comments and Replies
+  async getDiscussionComments(discussionId: string) {
+    const { data, error } = await supabase
+      .from('discussion_comments')
+      .select(`
+        *,
+        community_profiles!discussion_comments_user_id_fkey (
+          display_name,
+          user_id
+        )
+      `)
+      .eq('discussion_id', discussionId)
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+    return data || []
+  }
+
+  async createComment(comment: {
+    discussion_id: string
+    user_id: string
+    content: string
+    parent_comment_id?: string
+  }) {
+    const { data, error } = await supabase
+      .from('discussion_comments')
+      .insert([comment])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  async likeComment(commentId: string, userId: string) {
+    const { error } = await supabase
+      .from('comment_likes')
+      .insert([{ comment_id: commentId, user_id: userId }])
+
+    if (error) throw error
+  }
+
+  async unlikeComment(commentId: string, userId: string) {
+    const { error } = await supabase
+      .from('comment_likes')
+      .delete()
+      .eq('comment_id', commentId)
+      .eq('user_id', userId)
+
+    if (error) throw error
+  }
+
+  // Bookmarks
+  async bookmarkDiscussion(discussionId: string, userId: string) {
+    const { error } = await supabase
+      .from('user_bookmarks')
+      .insert([{ 
+        user_id: userId, 
+        item_id: discussionId, 
+        item_type: 'discussion' 
+      }])
+
+    if (error) throw error
+  }
+
+  async unbookmarkDiscussion(discussionId: string, userId: string) {
+    const { error } = await supabase
+      .from('user_bookmarks')
+      .delete()
+      .eq('item_id', discussionId)
+      .eq('user_id', userId)
+      .eq('item_type', 'discussion')
+
+    if (error) throw error
+  }
+
   // Prayer Requests
   async getPrayerRequests(filter: 'latest' | 'urgent' | 'most-prayed' | 'answered' = 'latest', limit = 20) {
     let query = supabase
