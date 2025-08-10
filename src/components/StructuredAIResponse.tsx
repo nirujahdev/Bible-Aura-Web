@@ -6,27 +6,18 @@ interface StructuredAIResponseProps {
   verseReference?: string;
 }
 
-export const StructuredAIResponse = React.memo(function StructuredAIResponse({ content, verseReference }: StructuredAIResponseProps) {
+export const StructuredAIResponse = React.memo(function StructuredAIResponse({ content }: StructuredAIResponseProps) {
 
-  // Parse and format the content for display
-  const formatContent = (text: string): string => {
+  // Format content using the specific Bible Aura symbols
+  const formatContent = (text: string) => {
     let formattedText = text;
     
-    // Format section headers with proper styling
-    formattedText = formattedText.replace(/➤\s*/g, '\n\n**');
-    formattedText = formattedText.replace(/⤷\s*/g, '\n\n**');
-    formattedText = formattedText.replace(/↗\s*/g, '\n\n**');
+    // Ensure proper spacing and formatting for the special symbols
+    formattedText = formattedText.replace(/➤\s*/g, '➤ ');
+    formattedText = formattedText.replace(/⤷\s*/g, '⤷ ');
+    formattedText = formattedText.replace(/↗\s*/g, '↗ ');
     
-    // Add closing ** for headers and ensure proper line breaks
-    const lines = formattedText.split('\n');
-    const processedLines = lines.map((line, index) => {
-      if (line.trim().startsWith('**') && !line.includes('**', 2)) {
-        return line + '**';
-      }
-      return line;
-    });
-    
-    return processedLines.join('\n').trim();
+    return formattedText.trim();
   };
 
   const renderFormattedContent = (text: string) => {
@@ -36,43 +27,48 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
       const trimmedLine = line.trim();
       
       if (!trimmedLine) {
-        return <div key={index} className="h-2"></div>;
+        return <br key={index} />;
       }
       
-      // Handle section headers (bold text between **)
-      if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
-        const headerText = trimmedLine.replace(/\*\*/g, '');
+      // Main title with ➤ symbol
+      if (trimmedLine.startsWith('➤ ')) {
+        const titleText = trimmedLine.substring(2);
         return (
-          <div key={index} className="mt-6 mb-3 first:mt-0">
-            <h3 className="text-lg font-bold text-orange-800 border-b border-orange-200 pb-2">
-              {headerText}
-            </h3>
+          <div key={index} className="font-bold text-gray-900 text-lg mt-4 first:mt-0 mb-2">
+            <span className="text-orange-500 mr-2">➤</span>
+            {titleText}
           </div>
         );
       }
       
-      // Handle bullet points
-      if (trimmedLine.startsWith('•')) {
+      // Sub-sections with ⤷ symbol
+      if (trimmedLine.startsWith('⤷ ')) {
+        const sectionText = trimmedLine.substring(2);
         return (
-          <div key={index} className="flex items-start gap-3 mb-2 ml-4">
-            <span className="text-orange-500 font-bold mt-1 flex-shrink-0">•</span>
-            <span className="text-gray-700 leading-relaxed">
-              {trimmedLine.replace('•', '').trim()}
-            </span>
+          <div key={index} className="text-gray-700 ml-6 mb-2 leading-relaxed">
+            <span className="text-orange-400 mr-2">⤷</span>
+            {sectionText}
           </div>
         );
       }
       
-      // Handle regular content
-      if (trimmedLine) {
+      // Additional sections with ↗ symbol
+      if (trimmedLine.startsWith('↗ ')) {
+        const additionalText = trimmedLine.substring(2);
         return (
-          <div key={index} className="text-gray-700 leading-relaxed mb-2">
-            {trimmedLine}
+          <div key={index} className="text-gray-700 ml-6 mb-2 leading-relaxed">
+            <span className="text-orange-400 mr-2">↗</span>
+            {additionalText}
           </div>
         );
       }
       
-      return null;
+      // Regular text
+      return (
+        <div key={index} className="text-gray-700 mb-1 leading-relaxed ml-6">
+          {trimmedLine}
+        </div>
+      );
     });
   };
 
@@ -83,22 +79,10 @@ export const StructuredAIResponse = React.memo(function StructuredAIResponse({ c
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="bg-white rounded-lg p-4"
     >
-      {/* Single unified response box */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        {/* Header with verse reference if available */}
-        {verseReference && (
-          <div className="bg-orange-500 text-white px-4 py-3 text-center font-semibold">
-            <span className="text-orange-200">✦</span> {verseReference.toUpperCase()}
-          </div>
-        )}
-        
-        {/* Main content area */}
-        <div className="p-6">
-          <div className="prose prose-gray max-w-none">
-            {renderFormattedContent(formattedContent)}
-          </div>
-        </div>
+      <div className="prose prose-gray max-w-none">
+        {renderFormattedContent(formattedContent)}
       </div>
     </motion.div>
   );
