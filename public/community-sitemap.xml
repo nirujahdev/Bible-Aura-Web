@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+
+<!-- Main Community Page -->
+<url>
+    <loc>https://bibleaura.xyz/community</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Community Discussions -->
+<url>
+    <loc>https://bibleaura.xyz/community/discussions</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/discussions/bible-study</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/discussions/testimonies</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/discussions/questions</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/discussions/theology</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/discussions/general</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Prayer Requests -->
+<url>
+    <loc>https://bibleaura.xyz/community/prayer-requests</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/prayer-requests/healing</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/prayer-requests/guidance</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/prayer-requests/family</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/prayer-requests/ministry</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/prayer-requests/thanksgiving</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Community Groups -->
+<url>
+    <loc>https://bibleaura.xyz/community/groups</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/bible-study</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/youth</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/women</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/men</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/seniors</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/theology</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/missions</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/groups/prayer</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Community Events -->
+<url>
+    <loc>https://bibleaura.xyz/community/events</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/events/bible-study</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/events/prayer</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/events/worship</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/events/conference</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/events/fellowship</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/events/outreach</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- User Profiles -->
+<url>
+    <loc>https://bibleaura.xyz/community/profiles</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/leaderboard</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/badges</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Community Rules and Guidelines -->
+<url>
+    <loc>https://bibleaura.xyz/community/guidelines</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/rules</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/moderators</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Activity Feeds -->
+<url>
+    <loc>https://bibleaura.xyz/community/activity</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/recent</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/trending</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Search and Discovery -->
+<url>
+    <loc>https://bibleaura.xyz/community/search</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/discover</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Daily Verses and Community Features -->
+<url>
+    <loc>https://bibleaura.xyz/community/daily-verse</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/community/verse-of-the-day</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+</urlset> 

@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+
+<!-- Bible Translation Landing Pages -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/nasb</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/nlt</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/nkjv</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/web</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/asv</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/net</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/tamil</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Old Testament Books - Major Translations -->
+<!-- Genesis -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/genesis</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/genesis</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/genesis</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Exodus -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/exodus</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/exodus</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/exodus</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Psalms -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/psalms</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/psalms</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/psalms</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Proverbs -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/proverbs</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/proverbs</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/proverbs</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Isaiah -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/isaiah</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/isaiah</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/isaiah</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- New Testament Books - Major Translations -->
+<!-- Matthew -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/matthew</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/matthew</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/matthew</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Mark -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/mark</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/mark</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/mark</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Luke -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/luke</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/luke</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/luke</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- John -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/john</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/john</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/john</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Acts -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/acts</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/acts</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/acts</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Romans -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/romans</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/romans</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/romans</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Revelation -->
+<url>
+    <loc>https://bibleaura.xyz/bible/kjv/revelation</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/niv/revelation</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/esv/revelation</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Tamil Bible Books (Popular) -->
+<url>
+    <loc>https://bibleaura.xyz/bible/tamil/genesis</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/tamil/matthew</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/tamil/john</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/tamil/psalms</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<!-- Bible Study Landing Pages -->
+<url>
+    <loc>https://bibleaura.xyz/bible/study/old-testament</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/study/new-testament</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/study/gospels</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/study/epistles</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+<url>
+    <loc>https://bibleaura.xyz/bible/study/wisdom-literature</loc>
+    <lastmod>2025-02-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <mobile:mobile/>
+</url>
+
+</urlset> 

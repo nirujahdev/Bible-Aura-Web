@@ -343,9 +343,10 @@ class CommunityService {
       `)
       .limit(limit)
 
-    if (category !== 'all') {
-      query = query.eq('category', category)
-    }
+    // Temporarily disabled until database migration is complete
+    // if (category !== 'all') {
+    //   query = query.eq('category', category)
+    // }
 
     query = query.order('member_count', { ascending: false })
 

@@ -1,28 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
-  <!-- Main site pages sitemap -->
+  <!-- 1. Main site pages sitemap -->
   <sitemap>
-    <loc>https://bibleaura.xyz/sitemap.xml</loc>
-    <lastmod>2024-12-31T12:00:00+00:00</lastmod>
+    <loc>https://bibleaura.xyz/main-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- Blog content sitemap -->
+  <!-- 2. Bible books and translations sitemap -->
   <sitemap>
-    <loc>https://bibleaura.xyz/blog-sitemap.xml</loc>
-    <lastmod>2024-12-31T12:00:00+00:00</lastmod>
+    <loc>https://bibleaura.xyz/bible-books-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- Feature category pages sitemap -->
+  <!-- 3. Feature category pages sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/features-sitemap.xml</loc>
-    <lastmod>2024-12-31T12:00:00+00:00</lastmod>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- SEO landing pages sitemap -->
+  <!-- 4. Blog content sitemap -->
   <sitemap>
-    <loc>https://bibleaura.xyz/seo-sitemap.xml</loc>
-    <lastmod>2024-12-31T12:00:00+00:00</lastmod>
+    <loc>https://bibleaura.xyz/blog-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 5. Study resources sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/study-resources-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 6. Community features sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/community-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 7. Tools and dashboard sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/tools-dashboard-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 8. Spiritual content and prayer sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/spiritual-content-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 9. Sermons and content creation sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/sermons-content-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 10. Educational and learning resources sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/educational-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
 
 </sitemapindex> 
