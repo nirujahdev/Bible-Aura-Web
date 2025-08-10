@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   MessageCircle, BookOpen, BarChart3, 
   Heart, FileText, User, Settings,
-  Headphones, Home, PenTool
+  Headphones, Home, PenTool, Users
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -28,6 +28,7 @@ const sidebarItems: SidebarItem[] = [
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Analytics', href: '/study-hub', icon: BarChart3, tooltip: 'Study Hub' },
   { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermons' },
+  { name: 'Community', href: '/community', icon: Users, tooltip: 'Community' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
   { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
 ];

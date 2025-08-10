@@ -29,6 +29,7 @@ import Favorites from '@/pages/Favorites';
 import TopicalStudy from '@/pages/TopicalStudy';
 import ParablesStudy from '@/pages/ParablesStudy';
 import Profile from '@/pages/Profile';
+import Community from '@/pages/Community';
 import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
 import SubscriptionCancelled from '@/pages/SubscriptionCancelled';
 
@@ -196,6 +197,12 @@ function App() {
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/community" element={
+                  <ProtectedRoute>
+                    <Community />
                   </ProtectedRoute>
                 } />
                 

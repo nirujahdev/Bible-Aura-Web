@@ -59,7 +59,11 @@ const gridMenuItems: GridMenuItem[] = [
     icon: PenTool,
     path: "/sermons"
   },
-
+  {
+    label: "Community",
+    icon: Users,
+    path: "/community"
+  },
   {
     label: "AI Chat",
     icon: MessageCircle,
@@ -101,7 +105,11 @@ const allNavigationItems: NavigationItem[] = [
     url: "/sermons",
     icon: PenTool,
   },
-
+  {
+    title: "Community",
+    url: "/community",
+    icon: Users,
+  },
   {
     title: "AI Chat",
     url: "/dashboard",
@@ -339,6 +347,7 @@ function MobileNavigationHeader() {
     { icon: BookOpen, path: "/bible", label: "Bible", description: "Read & study scripture" },
     { icon: Library, path: "/study-hub", label: "Study Hub", description: "Deep biblical study" },
     { icon: PenTool, path: "/journal", label: "Journal", description: "Personal reflections" },
+    { icon: Users, path: "/community", label: "Community", description: "Connect with believers" },
     { icon: Heart, path: "/favorites", label: "Favorites", description: "Saved content" },
   ]
 
