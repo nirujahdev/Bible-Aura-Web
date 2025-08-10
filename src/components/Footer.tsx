@@ -106,6 +106,9 @@ const Footer = () => {
               <Link to="/contact" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Contact
               </Link>
+              <Link to="/help-center" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Help Center
+              </Link>
               <Link to="/auth" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Sign in
               </Link>

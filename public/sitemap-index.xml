@@ -25,37 +25,43 @@
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- 5. Study resources sitemap -->
+  <!-- 5. Help Center & FAQ sitemap -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/help-center-sitemap.xml</loc>
+    <lastmod>2025-02-05T12:00:00+00:00</lastmod>
+  </sitemap>
+  
+  <!-- 6. Study resources sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/study-resources-sitemap.xml</loc>
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- 6. Community features sitemap -->
+  <!-- 7. Community features sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/community-sitemap.xml</loc>
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- 7. Tools and dashboard sitemap -->
+  <!-- 8. Tools and dashboard sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/tools-dashboard-sitemap.xml</loc>
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- 8. Spiritual content and prayer sitemap -->
+  <!-- 9. Spiritual content and prayer sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/spiritual-content-sitemap.xml</loc>
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- 9. Sermons and content creation sitemap -->
+  <!-- 10. Sermons and content creation sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/sermons-content-sitemap.xml</loc>
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>
   </sitemap>
   
-  <!-- 10. Educational and learning resources sitemap -->
+  <!-- 11. Educational and learning resources sitemap -->
   <sitemap>
     <loc>https://bibleaura.xyz/educational-sitemap.xml</loc>
     <lastmod>2025-02-05T12:00:00+00:00</lastmod>

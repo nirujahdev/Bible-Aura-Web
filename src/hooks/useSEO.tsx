@@ -6,6 +6,7 @@ interface SEOConfig {
   keywords?: string;
   ogTitle?: string;
   ogDescription?: string;
+  ogImage?: string;
   twitterTitle?: string;
   twitterDescription?: string;
   canonicalUrl?: string;
@@ -18,6 +19,7 @@ export const useSEO = ({
   keywords,
   ogTitle,
   ogDescription,
+  ogImage,
   twitterTitle,
   twitterDescription,
   canonicalUrl,
@@ -54,9 +56,9 @@ export const useSEO = ({
     }
 
     // Update OpenGraph image
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage) {
-      ogImage.setAttribute('content', 'https://bibleaura.xyz/✦Bible%20Aura%20(2).png');
+    const ogImageMeta = document.querySelector('meta[property="og:image"]');
+    if (ogImageMeta) {
+      ogImageMeta.setAttribute('content', ogImage || 'https://bibleaura.xyz/✦Bible%20Aura%20(2).png');
     }
 
     // Update OpenGraph URL
@@ -80,7 +82,7 @@ export const useSEO = ({
     // Update Twitter Card image
     const twitterImage = document.querySelector('meta[name="twitter:image"]');
     if (twitterImage) {
-      twitterImage.setAttribute('content', 'https://bibleaura.xyz/✦Bible%20Aura%20(2).png');
+      twitterImage.setAttribute('content', ogImage || 'https://bibleaura.xyz/✦Bible%20Aura%20(2).png');
     }
 
     // Update canonical URL

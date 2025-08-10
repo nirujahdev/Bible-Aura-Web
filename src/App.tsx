@@ -15,6 +15,8 @@ import Pricing from '@/pages/Pricing';
 import Dashboard from '@/pages/Dashboard';
 import NotFound from '@/pages/NotFound';
 import Features from '@/pages/Features';
+import HelpCenter from '@/pages/HelpCenter';
+import Contact from '@/pages/Contact';
 
 // Import main application pages
 import Bible from '@/pages/Bible';
@@ -49,6 +51,18 @@ import HowAITransformsBibleStudy from '@/pages/blog/HowAITransformsBibleStudy';
 import AIBibleInsightsAccuracy from '@/pages/blog/AIBibleInsightsAccuracy';
 import BibleStudyAIBenefits from '@/pages/blog/BibleStudyAIBenefits';
 import BibleAIVsTraditionalStudy from '@/pages/blog/BibleAIVsTraditionalStudy';
+import Top7ReasonsWhyBibleAura from '@/pages/blog/Top7ReasonsWhyBibleAura';
+import BibleAuraVsOtherApps from '@/pages/blog/BibleAuraVsOtherApps';
+import BestBibleAI2025 from '@/pages/blog/BestBibleAI2025';
+import SmartBibleSearchTechniques from '@/pages/blog/SmartBibleSearchTechniques';
+import FromVersesToSermons from '@/pages/blog/FromVersesToSermons';
+import HowBenaiahBuiltBibleAura from '@/pages/blog/HowBenaiahBuiltBibleAura';
+import ChristianAITechnologyFuture from '@/pages/blog/ChristianAITechnologyFuture';
+import BibleAuraSuccessStories from '@/pages/blog/BibleAuraSuccessStories';
+import FiveWaysAIDeepens from '@/pages/blog/FiveWaysAIDeepens';
+import GettingStartedGuide from '@/pages/blog/GettingStartedGuide';
+import BibleAuraVsTraditionalStudy from '@/pages/blog/BibleAuraVsTraditionalStudy';
+import HowAIChatTransforms from '@/pages/blog/HowAIChatTransforms';
 
 // Protected Route wrapper
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -114,6 +128,8 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/features" element={<Features />} />
+                <Route path="/help-center" element={<HelpCenter />} />
+                <Route path="/contact" element={<Contact />} />
                 
                 {/* Public feature pages - SEO optimized */}
                 <Route path="/features/bible-study" element={<BibleStudy />} />
@@ -128,6 +144,18 @@ function App() {
                 <Route path="/blog/ai-bible-insights-accuracy" element={<AIBibleInsightsAccuracy />} />
                 <Route path="/blog/bible-study-ai-benefits" element={<BibleStudyAIBenefits />} />
                 <Route path="/blog/bible-ai-vs-traditional-study" element={<BibleAIVsTraditionalStudy />} />
+                <Route path="/blog/top-7-reasons-bible-aura-best-ai-bible-study-tool-today" element={<Top7ReasonsWhyBibleAura />} />
+                <Route path="/blog/bible-aura-vs-other-bible-apps-clear-winner-ai-powered-insights" element={<BibleAuraVsOtherApps />} />
+                <Route path="/blog/best-bible-ai-2025-why-bible-aura-outshines-every-other-tool" element={<BestBibleAI2025 />} />
+                <Route path="/blog/smart-bible-search-techniques" element={<SmartBibleSearchTechniques />} />
+                <Route path="/blog/from-verses-to-sermons-how-bible-auras-ai-transforms-your-study-time" element={<FromVersesToSermons />} />
+                <Route path="/blog/how-benaiah-nicholas-nimal-built-bible-aura-future-of-bible-study-ai" element={<HowBenaiahBuiltBibleAura />} />
+                <Route path="/blog/christian-ai-technology-future" element={<ChristianAITechnologyFuture />} />
+                <Route path="/blog/bible-aura-success-stories-real-christians-ai-bible-study-experience" element={<BibleAuraSuccessStories />} />
+                <Route path="/blog/5-ways-bible-aura-ai-assistant-deepens-faith-journey" element={<FiveWaysAIDeepens />} />
+                <Route path="/blog/getting-started-bible-aura-complete-guide-ai-bible-chat" element={<GettingStartedGuide />} />
+                <Route path="/blog/bible-aura-vs-traditional-bible-study-ai-difference" element={<BibleAuraVsTraditionalStudy />} />
+                <Route path="/blog/how-bible-aura-ai-chat-transforms-daily-scripture-study" element={<HowAIChatTransforms />} />
                 <Route path="/blog/:slug" element={<PlaceholderPage title="Blog Article" description="This blog article is being prepared. Check back soon!" />} />
                 
                 {/* Public study pages for SEO */}

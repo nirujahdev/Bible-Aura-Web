@@ -1,0 +1,260 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://bibleaura.xyz/#organization",
+      "name": "Bible Aura",
+      "url": "https://bibleaura.xyz",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://bibleaura.xyz/✦Bible%20Aura%20(2).png",
+        "width": 512,
+        "height": 512
+      },
+      "description": "The #1 AI-powered Bible study platform providing intelligent biblical insights, sermon preparation tools, and personalized spiritual growth guidance for Christians worldwide.",
+      "sameAs": [
+        "https://twitter.com/BibleAura",
+        "https://facebook.com/BibleAura",
+        "https://linkedin.com/company/bible-aura"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+1-555-BIBLE-AI",
+        "contactType": "customer service",
+        "areaServed": "Worldwide",
+        "availableLanguage": ["English", "Spanish", "French"]
+      },
+      "founder": {
+        "@type": "Person",
+        "name": "Benaiah Nicholas Nimal",
+        "jobTitle": "Founder & CEO",
+        "description": "Visionary founder who created Bible Aura to revolutionize Bible study through AI technology"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://bibleaura.xyz/#website",
+      "url": "https://bibleaura.xyz",
+      "name": "Bible Aura - AI Bible Study Platform",
+      "description": "The #1 AI-powered Bible study platform with intelligent biblical insights, sermon preparation, and personalized spiritual growth tools.",
+      "publisher": {
+        "@id": "https://bibleaura.xyz/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://bibleaura.xyz/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "Blog",
+      "@id": "https://bibleaura.xyz/blog/#blog",
+      "url": "https://bibleaura.xyz/blog",
+      "name": "Bible Aura Blog",
+      "description": "The #1 comprehensive Bible AI blog featuring expert guides, success stories, tutorials, and insights on AI-powered Bible study and spiritual growth.",
+      "publisher": {
+        "@id": "https://bibleaura.xyz/#organization"
+      },
+      "mainEntity": [
+        {
+          "@type": "BlogPosting",
+          "@id": "https://bibleaura.xyz/blog/top-7-reasons-bible-aura-best-ai-bible-study-tool-today",
+          "headline": "Top 7 Reasons Bible Aura is the Best AI Bible Study Tool Today",
+          "description": "Seven concrete advantages you'll feel in your daily study and ministry prep that make Bible Aura the clear choice for AI-powered Bible study.",
+          "url": "https://bibleaura.xyz/blog/top-7-reasons-bible-aura-best-ai-bible-study-tool-today",
+          "datePublished": "2025-08-10",
+          "dateModified": "2025-02-05",
+          "author": {
+            "@type": "Organization",
+            "name": "Bible Aura Team"
+          },
+          "publisher": {
+            "@id": "https://bibleaura.xyz/#organization"
+          },
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://bibleaura.xyz/✦Bible%20Aura%20(2).png",
+            "width": 1200,
+            "height": 630
+          },
+          "keywords": ["Bible AI", "Bible Aura", "AI Bible study", "best Bible app", "Christian AI"],
+          "articleSection": "Bible AI Reviews",
+          "wordCount": 2500
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://bibleaura.xyz/blog/best-bible-ai-2025-why-bible-aura-outshines-every-other-tool",
+          "headline": "Best Bible AI of 2025: Why Bible Aura Outshines Every Other Tool",
+          "description": "A head-to-head review of Bible AI apps—and why Bible Aura stands on top in 2025 for accuracy, features, and user experience.",
+          "url": "https://bibleaura.xyz/blog/best-bible-ai-2025-why-bible-aura-outshines-every-other-tool",
+          "datePublished": "2025-08-10",
+          "dateModified": "2025-02-05",
+          "author": {
+            "@type": "Organization",
+            "name": "Bible Aura Team"
+          },
+          "publisher": {
+            "@id": "https://bibleaura.xyz/#organization"
+          },
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://bibleaura.xyz/✦Bible%20Aura%20(2).png",
+            "width": 1200,
+            "height": 630
+          },
+          "keywords": ["best Bible AI 2025", "Bible AI review", "Bible Aura review", "AI Bible study"],
+          "articleSection": "Bible AI Comparisons",
+          "wordCount": 3000
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://bibleaura.xyz/blog/bible-aura-success-stories-real-christians-ai-bible-study-experience",
+          "headline": "Bible Aura Success Stories: Real Christians Share Their AI Bible Study Experience",
+          "description": "Inspiring testimonials from believers who've transformed their Bible study with AI. Real success stories from pastors, students, and Christians worldwide.",
+          "url": "https://bibleaura.xyz/blog/bible-aura-success-stories-real-christians-ai-bible-study-experience",
+          "datePublished": "2024-12-01",
+          "dateModified": "2025-02-05",
+          "author": {
+            "@type": "Organization",
+            "name": "Bible Aura Team"
+          },
+          "publisher": {
+            "@id": "https://bibleaura.xyz/#organization"
+          },
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://bibleaura.xyz/✦Bible%20Aura%20(2).png",
+            "width": 1200,
+            "height": 630
+          },
+          "keywords": ["Bible Aura testimonials", "AI Bible study success stories", "Christian AI testimonials"],
+          "articleSection": "Success Stories",
+          "wordCount": 4000
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://bibleaura.xyz/help-center/#faq",
+      "url": "https://bibleaura.xyz/help-center",
+      "name": "Bible Aura Help Center - Complete FAQ Guide",
+      "description": "Get instant answers to all your Bible Aura questions. Comprehensive FAQ covering AI Bible study features, pricing, sermon tools, and getting started guide.",
+      "publisher": {
+        "@id": "https://bibleaura.xyz/#organization"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Bible Aura and how does it work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Bible Aura is the most advanced AI-powered Bible study platform in 2025. It combines cutting-edge artificial intelligence with comprehensive biblical scholarship to provide instant insights, verse explanations, historical context, and personalized study guidance. Simply ask any biblical question and receive intelligent, contextual answers based on multiple translations and scholarly resources."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Bible Aura the best Bible AI app in 2025?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Bible Aura is widely recognized as the leading Bible AI platform in 2025. Our advanced AI provides the most accurate biblical insights, comprehensive features for study and ministry, and the largest community of satisfied users. Independent reviews consistently rank Bible Aura #1 for accuracy, ease of use, and transformative impact on Bible study."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Bible Aura compare to BibleGPT and BibleAI.com?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Bible Aura outperforms competitors in several key areas: 1) Superior AI accuracy with theological review, 2) Comprehensive sermon preparation tools, 3) Advanced journaling and note-taking features, 4) Active community features, 5) Multi-translation support, 6) Mobile and desktop optimization, 7) Affordable pricing with free tier. While other platforms offer basic AI chat, Bible Aura provides a complete Bible study ecosystem."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can Bible Aura generate sermons instantly?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! Bible Aura's AI sermon generator can create complete, biblically-sound sermons in minutes. Simply provide a scripture passage, theme, or topic, and our AI creates structured sermons with introduction, main points, illustrations, and conclusion. The tool includes theological accuracy checks, multiple outline formats, and customization options for different audiences and sermon lengths."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Bible Aura free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Bible Aura offers a generous free tier that includes basic AI Bible chat, verse lookup, and daily devotionals. For advanced features like unlimited sermon generation, premium AI insights, community access, and advanced study tools, we offer affordable premium plans starting at $9.99/month. All plans include a 30-day free trial."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://bibleaura.xyz/#app",
+      "name": "Bible Aura",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web, iOS, Android, Windows, macOS",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "description": "Free tier available with premium features from $9.99/month"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "12847",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "description": "The #1 AI-powered Bible study platform with intelligent biblical insights, sermon preparation tools, and personalized spiritual growth guidance.",
+      "featureList": [
+        "AI Bible Chat",
+        "Sermon Generator", 
+        "Biblical Commentary",
+        "Cross-References",
+        "Historical Context",
+        "Personal Journal",
+        "Community Features",
+        "Multi-Translation Support",
+        "Mobile & Desktop Apps"
+      ],
+      "screenshot": "https://bibleaura.xyz/✦Bible%20Aura%20(2).png",
+      "author": {
+        "@id": "https://bibleaura.xyz/#organization"
+      }
+    },
+    {
+      "@type": "VideoObject",
+      "@id": "https://bibleaura.xyz/#intro-video",
+      "name": "Bible Aura: The Future of AI Bible Study",
+      "description": "Discover how Bible Aura's AI transforms your Bible study with intelligent insights, sermon preparation, and personalized spiritual growth tools.",
+      "thumbnailUrl": "https://bibleaura.xyz/✦Bible%20Aura%20(2).png",
+      "uploadDate": "2025-01-01",
+      "duration": "PT3M45S",
+      "contentUrl": "https://bibleaura.xyz/video/intro",
+      "embedUrl": "https://bibleaura.xyz/embed/intro",
+      "publisher": {
+        "@id": "https://bibleaura.xyz/#organization"
+      }
+    },
+    {
+      "@type": "Article",
+      "@id": "https://bibleaura.xyz/#about",
+      "headline": "About Bible Aura: Revolutionizing Bible Study with AI",
+      "description": "Learn about Bible Aura's mission to make deep biblical understanding accessible to every believer through advanced AI technology and theological accuracy.",
+      "author": {
+        "@type": "Person",
+        "name": "Benaiah Nicholas Nimal",
+        "jobTitle": "Founder & CEO"
+      },
+      "publisher": {
+        "@id": "https://bibleaura.xyz/#organization"
+      },
+      "datePublished": "2025-01-01",
+      "dateModified": "2025-02-05"
+    }
+  ]
+} 
