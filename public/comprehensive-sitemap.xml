@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Main Website Pages -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/main-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Bible AI Blog - Highest Priority -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/blog-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Bible Books and Verses -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/bible-books-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Features and Tools -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/features-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Study Resources -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/study-resources-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Community and Social -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/community-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Sermons and Content -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/sermons-content-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Educational Content -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/educational-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Spiritual Growth -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/spiritual-content-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+  <!-- Tools and Dashboard -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/tools-dashboard-sitemap.xml</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+  </sitemap>
+
+</sitemapindex> 

@@ -1,141 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" 
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml" 
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
 
-  <!-- Bible AI Blog Articles -->
+  <!-- Blog Index Page - Highest Priority -->
   <url>
-    <loc>https://bibleaura.xyz/blog/how-ai-transforms-bible-study</loc>
-    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-02-03T10:00:00+00:00</news:publication_date>
-      <news:title>How AI Transforms Bible Study: A Complete Guide</news:title>
-    </news:news>
+    <loc>https://bibleaura.xyz/blog/</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Bible Aura Blog - AI Bible Study Articles</image:title>
+      <image:caption>The #1 Bible AI blog featuring expert guides and success stories</image:caption>
+    </image:image>
   </url>
 
+  <!-- Blog Hub Page - High Priority for Internal Linking -->
   <url>
-    <loc>https://bibleaura.xyz/blog/bible-ai-vs-traditional-study</loc>
-    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-02-03T10:00:00+00:00</news:publication_date>
-      <news:title>Bible AI vs Traditional Study: Which is Better?</news:title>
-    </news:news>
+    <loc>https://bibleaura.xyz/blog/blog-hub.html</loc>
+    <lastmod>2025-01-01T12:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Bible AI Study Hub - Resource Center</image:title>
+      <image:caption>Complete hub for all Bible Aura AI study resources and guides</image:caption>
+    </image:image>
   </url>
 
+  <!-- Featured/Popular Articles - High Priority -->
   <url>
-    <loc>https://bibleaura.xyz/blog/bible-study-ai-benefits</loc>
-    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://bibleaura.xyz/blog/top-7-reasons-bible-aura-best-ai-bible-study-tool-today.html</loc>
+    <lastmod>2025-08-10T10:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-02-03T10:00:00+00:00</news:publication_date>
-      <news:title>10 Benefits of Using AI for Bible Study</news:title>
-    </news:news>
-  </url>
-
-  <url>
-    <loc>https://bibleaura.xyz/blog/ai-bible-insights-accuracy</loc>
-    <lastmod>2025-02-03T10:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-02-03T10:00:00+00:00</news:publication_date>
-      <news:title>Are AI Bible Insights Accurate? Truth About Biblical AI</news:title>
-    </news:news>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Top 7 Reasons Bible Aura is the Best AI Bible Study Tool</image:title>
+    </image:image>
   </url>
 
   <url>
     <loc>https://bibleaura.xyz/blog/best-bible-ai-2025-why-bible-aura-outshines-every-other-tool.html</loc>
     <lastmod>2025-08-10T10:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-08-10T10:00:00+00:00</news:publication_date>
-      <news:title>Best Bible AI of 2025: Why Bible Aura Outshines Every Other Tool</news:title>
-    </news:news>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Best Bible AI of 2025 - Bible Aura Comparison</image:title>
+    </image:image>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/blog/how-benaiah-nicholas-nimal-built-bible-aura-future-of-bible-study-ai.html</loc>
-    <lastmod>2025-08-10T10:00:00+00:00</lastmod>
+    <loc>https://bibleaura.xyz/blog/bible-aura-success-stories-real-christians-ai-bible-study-experience.html</loc>
+    <lastmod>2023-12-15T10:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-08-10T10:00:00+00:00</news:publication_date>
-      <news:title>How Benaiah Nicholas Nimal Built Bible Aura — The Future of Bible Study with AI</news:title>
-    </news:news>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Bible Aura Success Stories - Real Christian Testimonials</image:title>
+    </image:image>
+  </url>
+
+  <!-- Getting Started & Tutorial Articles - High Priority -->
+  <url>
+    <loc>https://bibleaura.xyz/blog/getting-started-bible-aura-complete-guide-ai-bible-chat.html</loc>
+    <lastmod>2024-01-15T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Getting Started with Bible Aura - Complete Guide</image:title>
+    </image:image>
   </url>
 
   <url>
-    <loc>https://bibleaura.xyz/blog/from-verses-to-sermons-how-bible-auras-ai-transforms-your-study-time.html</loc>
-    <lastmod>2025-08-10T10:00:00+00:00</lastmod>
+    <loc>https://bibleaura.xyz/blog/how-bible-aura-ai-chat-transforms-daily-scripture-study.html</loc>
+    <lastmod>2024-02-15T10:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-08-10T10:00:00+00:00</news:publication_date>
-      <news:title>From Verses to Sermons: How Bible Aura’s AI Transforms Your Study Time</news:title>
-    </news:news>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>How Bible Aura AI Transforms Daily Scripture Study</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://bibleaura.xyz/blog/5-ways-bible-aura-ai-assistant-deepens-faith-journey.html</loc>
+    <lastmod>2023-12-15T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>5 Ways Bible Aura Deepens Your Faith Journey</image:title>
+    </image:image>
+  </url>
+
+  <!-- Comparison Articles - High Priority -->
+  <url>
+    <loc>https://bibleaura.xyz/blog/bible-aura-vs-traditional-bible-study-ai-difference.html</loc>
+    <lastmod>2024-01-15T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Bible Aura vs Traditional Bible Study Comparison</image:title>
+    </image:image>
   </url>
 
   <url>
     <loc>https://bibleaura.xyz/blog/bible-aura-vs-other-bible-apps-clear-winner-ai-powered-insights.html</loc>
     <lastmod>2025-08-10T10:00:00+00:00</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-08-10T10:00:00+00:00</news:publication_date>
-      <news:title>Bible Aura vs. Other Bible Apps: The Clear Winner in AI-Powered Insights</news:title>
-    </news:news>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Bible Aura vs Other Bible Apps Comparison</image:title>
+    </image:image>
   </url>
 
+  <!-- Practical Applications -->
   <url>
-    <loc>https://bibleaura.xyz/blog/top-7-reasons-bible-aura-best-ai-bible-study-tool-today.html</loc>
+    <loc>https://bibleaura.xyz/blog/from-verses-to-sermons-how-bible-auras-ai-transforms-your-study-time.html</loc>
     <lastmod>2025-08-10T10:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <news:news>
-      <news:publication>
-        <news:name>Bible Aura Blog</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2025-08-10T10:00:00+00:00</news:publication_date>
-      <news:title>Top 7 Reasons Bible Aura is the Best AI Bible Study Tool Today</news:title>
-    </news:news>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>From Verses to Sermons with Bible Aura AI</image:title>
+    </image:image>
   </url>
+
+  <!-- Founder Story -->
+  <url>
+    <loc>https://bibleaura.xyz/blog/how-benaiah-nicholas-nimal-built-bible-aura-future-of-bible-study-ai.html</loc>
+    <lastmod>2025-08-10T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>How Benaiah Built Bible Aura - Founder Story</image:title>
+    </image:image>
+  </url>
+
 </urlset> 

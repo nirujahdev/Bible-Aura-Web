@@ -99,7 +99,6 @@ Crawl-delay: 0.5
 User-agent: Slurp
 Allow: /
 Crawl-delay: 1
-
 User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 0.5
@@ -134,3 +133,4 @@ Sitemap: https://bibleaura.xyz/educational-sitemap.xml
 
 # Host information
 Host: https://bibleaura.xyz
+
