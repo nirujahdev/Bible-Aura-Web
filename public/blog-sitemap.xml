@@ -146,4 +146,27 @@
     </image:image>
   </url>
 
+  <!-- New Articles -->
+  <url>
+    <loc>https://bibleaura.xyz/blog/smart-bible-search-techniques.html</loc>
+    <lastmod>2025-01-01T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Smart Bible Search Techniques - AI Scripture Discovery</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://bibleaura.xyz/blog/christian-ai-technology-future.html</loc>
+    <lastmod>2025-01-01T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Future of Christian AI Technology</image:title>
+    </image:image>
+  </url>
+
 </urlset> 
