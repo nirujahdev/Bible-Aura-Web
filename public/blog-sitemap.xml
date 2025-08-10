@@ -169,4 +169,48 @@
     </image:image>
   </url>
 
+  <url>
+    <loc>https://bibleaura.xyz/blog/how-ai-transforms-bible-study.html</loc>
+    <lastmod>2024-12-20T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>How AI Transforms Bible Study - Complete Guide</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://bibleaura.xyz/blog/bible-ai-vs-traditional-study.html</loc>
+    <lastmod>2024-12-19T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>Bible AI vs Traditional Study - Which is Better</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://bibleaura.xyz/blog/ai-bible-insights-accuracy.html</loc>
+    <lastmod>2025-01-01T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>AI Bible Insights Accuracy - Truth About Biblical AI</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://bibleaura.xyz/blog/bible-study-ai-benefits.html</loc>
+    <lastmod>2025-01-01T10:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://bibleaura.xyz/✦Bible%20Aura%20(2).png</image:loc>
+      <image:title>10 Benefits of Using AI for Bible Study</image:title>
+    </image:image>
+  </url>
+
 </urlset> 
