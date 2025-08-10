@@ -18,7 +18,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { generateSystemPrompt } from '@/lib/ai-response-templates';
-import StructuredAIResponse from './StructuredAIResponse';
+import { StructuredAIResponse } from './StructuredAIResponse';
 
 interface BibleAIChatProps {
   verseId: string;
@@ -89,30 +89,30 @@ const generateAIResponse = async (
         systemPrompt = `You are Bible Aura AI, providing theological analysis of Bible verses.
 
 CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ✮ followed by title
+- Start with ➤ followed by title
 - Put TWO line breaks after the title
-- Each section starts with ↗ followed by section name
+- Each section starts with ⤷ followed by section name
 - Put ONE line break after section header
-- Each bullet point starts with • followed by content
-- Put ONE line break after each bullet point
+- Each point starts with text content (no bullet symbols)
+- Put ONE line break after each point
 - Put TWO line breaks between sections
-- NO emojis like 📖 🎯 ✝️ etc.
-- NO hashtags or asterisks
+- NO emojis, asterisks, hashes, or decorative symbols
+- ONLY use ➤ and ⤷ symbols
 
 EXACT FORMAT (copy this structure):
-✮ THEOLOGICAL ANALYSIS
+➤ THEOLOGICAL ANALYSIS
 
-↗ Core Doctrine
-• First theological point about the verse
-• Second theological point about the verse
+⤷ Core Doctrine
+First theological point about the verse
+Second theological point about the verse
 
-↗ Biblical Context
-• How this connects to broader Scripture
-• The theological significance in biblical narrative
+⤷ Biblical Context
+How this connects to broader Scripture
+The theological significance in biblical narrative
 
-↗ Church Teaching
-• Historical church understanding
-• Modern application for believers
+⤷ Church Teaching
+Historical church understanding
+Modern application for believers
 
 Focus on ${verseReference}: "${verseText}"
 IMPORTANT: Follow the exact line break pattern shown above.`;
@@ -122,94 +122,98 @@ IMPORTANT: Follow the exact line break pattern shown above.`;
         systemPrompt = `You are Bible Aura AI, providing historical context for Bible verses.
 
 CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ✮ followed by title
+- Start with ➤ followed by title
 - Put TWO line breaks after the title
-- Each section starts with ↗ followed by section name
+- Each section starts with ⤷ followed by section name
 - Put ONE line break after section header
-- Each bullet point starts with • followed by content
-- Put ONE line break after each bullet point
+- Each point starts with text content (no bullet symbols)
+- Put ONE line break after each point
 - Put TWO line breaks between sections
+- NO emojis, asterisks, hashes, or decorative symbols
+- ONLY use ➤ and ⤷ symbols
 
 EXACT FORMAT (copy this structure):
-✮ HISTORICAL CONTEXT
+➤ HISTORICAL CONTEXT
 
-↗ Time & Place
-• When and where this was written
-• Historical setting and circumstances
+⤷ Time Period
+When this was written or occurred
+Historical setting and circumstances
 
-↗ Cultural Background
-• Original audience and their situation
-• Cultural practices and beliefs of the time
+⤷ Cultural Background
+Social customs and practices of the time
+How the original audience would understand this
 
-↗ Author Context
-• Writer's background and purpose
-• Why this message was needed then
+⤷ Author Context
+Who wrote this and to whom
+The author's purpose and message
 
 Focus on ${verseReference}: "${verseText}"
 IMPORTANT: Follow the exact line break pattern shown above.`;
         break;
         
       case 'cross-reference':
-        systemPrompt = `You are Bible Aura AI, finding cross-references and connections for Bible verses.
+        systemPrompt = `You are Bible Aura AI, providing cross-references for Bible verses.
 
 CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ✮ followed by title
+- Start with ➤ followed by title
 - Put TWO line breaks after the title
-- Each section starts with ↗ followed by section name
+- Each section starts with ⤷ followed by section name
 - Put ONE line break after section header
-- Each bullet point starts with • followed by content
-- Put ONE line break after each bullet point
+- Each point starts with text content (no bullet symbols)
+- Put ONE line break after each point
 - Put TWO line breaks between sections
+- NO emojis, asterisks, hashes, or decorative symbols
+- ONLY use ➤ and ⤷ symbols
 
 EXACT FORMAT (copy this structure):
-✮ CROSS REFERENCES
+➤ CROSS REFERENCES
 
-↗ Related Verses
-• Romans 5:8 - Shows God's love demonstrated through Christ
-• 1 John 4:9 - God's love shown by sending His Son
+⤷ Related Verses
+[Verse reference] - Connection to main theme
+[Verse reference] - Similar teaching or principle
 
-↗ Thematic Connections
-• Central theme of God's sacrificial love
-• Universal offer of salvation to all people
+⤷ Parallel Passages
+[Verse reference] - Same concept in different words
+[Verse reference] - Related story or example
 
-↗ Biblical Pattern
-• Fits God's consistent character throughout Scripture
-• Part of the larger redemption story
+⤷ Supporting Scriptures
+[Verse reference] - Additional biblical support
+[Verse reference] - Broader theological connection
 
 Focus on ${verseReference}: "${verseText}"
-Provide 3-4 relevant verses with clear connections.
 IMPORTANT: Follow the exact line break pattern shown above.`;
         break;
         
       case 'insights':
-        systemPrompt = `You are Bible Aura AI, providing practical insights and applications for Bible verses.
+        systemPrompt = `You are Bible Aura AI, providing practical insights from Bible verses.
 
 CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ✮ followed by title
+- Start with ➤ followed by title
 - Put TWO line breaks after the title
-- Each section starts with ↗ followed by section name
+- Each section starts with ⤷ followed by section name
 - Put ONE line break after section header
-- Each bullet point starts with • followed by content
-- Put ONE line break after each bullet point
+- Each point starts with text content (no bullet symbols)
+- Put ONE line break after each point
 - Put TWO line breaks between sections
+- NO emojis, asterisks, hashes, or decorative symbols
+- ONLY use ➤ and ⤷ symbols
 
 EXACT FORMAT (copy this structure):
-✮ PRACTICAL INSIGHTS
+➤ PRACTICAL INSIGHTS
 
-↗ Life Application
-• How to apply this truth in daily decisions
-• What this means for your relationships
+⤷ Key Message
+Main spiritual truth from this verse
+Central principle for Christian living
 
-↗ Spiritual Growth
-• How this verse builds your faith
-• Character development it encourages
+⤷ Personal Application
+How to apply this in daily life
+Practical steps for spiritual growth
 
-↗ Action Steps
-• Specific thing you can do this week
-• Way to live out this truth practically
+⤷ Prayer Focus
+Areas for personal reflection
+How this verse guides prayer life
 
 Focus on ${verseReference}: "${verseText}"
-Make it practical, encouraging, and actionable.
 IMPORTANT: Follow the exact line break pattern shown above.`;
         break;
     }
@@ -263,29 +267,28 @@ const cleanAIResponse = (response: string, mode: ChatMode): string => {
   let cleaned = response
     .replace(/[#*@$_]/g, '') // Remove banned symbols
     .replace(/📖|🎯|✝️|🔗|🏛️|📝|💭|🌟|🔍|⏰|💎|📚|👥|🌍/g, '') // Remove emojis
+    .replace(/\*\*[^*]+\*\*/g, '') // Remove ** decorative formatting
     .trim();
   
   // Fix spacing and line breaks for proper structure
   cleaned = cleaned
     // Ensure proper spacing around main title
-    .replace(/✮\s*/g, '✮ ')
+    .replace(/➤\s*/g, '➤ ')
     // Ensure section headers are on new lines with proper spacing
-    .replace(/\s*↗\s*/g, '\n\n↗ ')
-    // Ensure bullet points are properly formatted
-    .replace(/\s*•\s*/g, '\n• ')
+    .replace(/\s*⤷\s*/g, '\n\n⤷ ')
     // Clean up multiple consecutive newlines
     .replace(/\n{3,}/g, '\n\n')
     // Ensure sections are properly separated
-    .replace(/↗([^↗✮]*?)↗/g, '↗$1\n\n↗')
+    .replace(/⤷([^⤷➤]*?)⤷/g, '⤷$1\n\n⤷')
     .trim();
   
-  // Ensure it starts with ✮ if not already
-  if (!cleaned.startsWith('✮')) {
+  // Ensure it starts with ➤ if not already
+  if (!cleaned.startsWith('➤')) {
     const modeTitle = {
-      theological: '✮ THEOLOGICAL ANALYSIS',
-      historical: '✮ HISTORICAL CONTEXT',
-      'cross-reference': '✮ CROSS REFERENCES',
-      insights: '✮ PRACTICAL INSIGHTS'
+      theological: '➤ THEOLOGICAL ANALYSIS',
+      historical: '➤ HISTORICAL CONTEXT',
+      'cross-reference': '➤ CROSS REFERENCES',
+      insights: '➤ PRACTICAL INSIGHTS'
     };
     cleaned = `${modeTitle[mode]}\n\n${cleaned}`;
   }
@@ -296,75 +299,73 @@ const cleanAIResponse = (response: string, mode: ChatMode): string => {
     .map(line => line.trim())
     .filter(line => line.length > 0)
     .join('\n')
-    .replace(/✮([^\n]*)\n/g, '✮$1\n\n')
-    .replace(/↗([^\n]*)\n/g, '↗$1\n')
-    .replace(/•([^\n]*)\n/g, '• $1\n');
+    .replace(/➤([^\n]*)\n/g, '➤$1\n\n')
+    .replace(/⤷([^\n]*)\n/g, '⤷$1\n');
   
   return cleaned;
 };
 
 // Fallback responses with proper structure
 const getFallbackResponse = (mode: ChatMode, verseReference: string, verseText: string): string => {
-  const responses: Record<ChatMode, string> = {
-    theological: `✮ THEOLOGICAL ANALYSIS
+  const fallbacks = {
+    theological: `➤ THEOLOGICAL ANALYSIS
 
-↗ Core Doctrine
-• This verse reveals God's character and His relationship with humanity
-• Central to understanding biblical truth about faith and salvation
+⤷ Core Doctrine
+This verse reveals fundamental truths about God's character and His relationship with humanity
+Scripture teaches us about divine attributes and spiritual principles for believers
 
-↗ Biblical Context
-• Connects to the broader theme of God's redemptive plan
-• Shows consistency with Old and New Testament teachings
+⤷ Biblical Context
+This passage connects to the broader narrative of God's redemptive plan
+The theological significance emphasizes God's faithfulness and love
 
-↗ Church Teaching
-• Historically understood as foundational to Christian doctrine
-• Applied by believers throughout church history for spiritual growth`,
+⤷ Church Teaching
+Christian tradition has understood this verse as foundational to faith
+Modern believers can apply these truths in contemporary spiritual life`,
 
-    historical: `✮ HISTORICAL CONTEXT
+    historical: `➤ HISTORICAL CONTEXT
 
-↗ Time & Place
-• Written in the ancient Near Eastern context
-• Reflects the culture and customs of biblical times
+⤷ Time Period
+This verse was written during a significant period in biblical history
+The historical setting provides important background for understanding the message
 
-↗ Cultural Background
-• Original audience would have understood specific cultural references
-• Historical setting influences the meaning and application
+⤷ Cultural Background
+The original audience would have understood specific cultural references
+Social customs of the time illuminate the meaning of the text
 
-↗ Author Context
-• Written by the inspired biblical author for specific purposes
-• Addresses real situations and needs of the original readers`,
+⤷ Author Context
+The biblical author wrote with specific purposes and audiences in mind
+Understanding the writer's context enhances our interpretation`,
 
-    'cross-reference': `✮ CROSS REFERENCES
+    'cross-reference': `➤ CROSS REFERENCES
 
-↗ Related Verses
-• John 3:16: Shows God's love and salvation plan
-• Romans 8:28: Demonstrates God's sovereignty and goodness
-• Philippians 4:13: Reveals strength available through Christ
+⤷ Related Verses
+Similar themes appear throughout Scripture in various contexts
+Other biblical passages support and expand on this teaching
 
-↗ Thematic Connections
-• Connects to themes of faith, hope, and love throughout Scripture
-• Part of God's consistent character revealed in His Word
+⤷ Parallel Passages
+Comparable stories and teachings reinforce the main message
+Different biblical books contain related spiritual principles
 
-↗ Biblical Pattern
-• Fits into the larger narrative of God's redemptive story
-• Shows how God works consistently throughout biblical history`,
+⤷ Supporting Scriptures
+Additional verses provide theological foundation for this truth
+The broader biblical witness confirms these spiritual insights`,
 
-    insights: `✮ PRACTICAL INSIGHTS
+    insights: `➤ PRACTICAL INSIGHTS
 
-↗ Life Application
-• Apply this truth to your daily decisions and relationships
-• Let this verse guide your perspective on current challenges
+⤷ Key Message
+This verse contains timeless truth applicable to Christian living
+The spiritual principle guides believers in faith and practice
 
-↗ Spiritual Growth
-• Use this passage for prayer and meditation
-• Allow God's Word to transform your heart and mind
+⤷ Personal Application
+Christians can apply this teaching in daily life and relationships
+Practical steps help believers grow in spiritual maturity
 
-↗ Action Steps
-• Memorize this verse for encouragement in difficult times
-• Share this truth with others who need encouragement`
+⤷ Prayer Focus
+This verse provides direction for personal prayer and reflection
+Meditation on this truth deepens our relationship with God`
   };
 
-  return responses[mode];
+  return fallbacks[mode];
 };
 
 export function BibleAIChat({ verseId, verseText, verseReference, isOpen, onClose }: BibleAIChatProps) {
