@@ -417,9 +417,11 @@ const Sermons = () => {
           savedSermon = data;
         }
         
-        savedSermon = data;
-        setSelectedSermon(savedSermon);
-        setSermons(prev => prev.map(s => s.id === selectedSermon.id ? savedSermon : s));
+        // Update the sermons list
+        if (savedSermon) {
+          setSelectedSermon(savedSermon);
+          setSermons(prev => prev.map(s => s.id === selectedSermon.id ? savedSermon : s));
+        }
       } else {
         // Create new sermon
         const { data, error } = await supabase
@@ -472,12 +474,14 @@ const Sermons = () => {
           savedSermon = data;
         }
         
-        savedSermon = data;
-        setSelectedSermon(savedSermon);
-        setSermons(prev => [savedSermon, ...prev]);
+        // Update the sermons list
+        if (savedSermon) {
+          setSelectedSermon(savedSermon);
+          setSermons(prev => [savedSermon, ...prev]);
+        }
       }
 
-      if (!isAutoSave) {
+      if (!isAutoSave && savedSermon) {
         toast({
           title: "Success",
           description: `Sermon ${selectedSermon?.id ? 'updated' : 'saved'} successfully`,

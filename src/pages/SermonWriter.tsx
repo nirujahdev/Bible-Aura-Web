@@ -327,6 +327,8 @@ const SermonWriter = () => {
           .select()
           .single();
 
+        let sermonId = null;
+
         if (error) {
           console.error('Error creating sermon:', error);
           
@@ -355,16 +357,19 @@ const SermonWriter = () => {
               throw new Error(retryError.message || 'Failed to create sermon even with basic data');
             }
             
-            setEditingSermon(prev => ({ ...prev, id: retryData.id }));
+            sermonId = retryData?.id;
           } else {
             throw error;
           }
         } else {
-          setEditingSermon(prev => ({ ...prev, id: data.id }));
+          sermonId = data?.id;
         }
         
-        setEditingSermon(prev => ({ ...prev, id: data.id }));
-        setIsEditing(true);
+        // Update editing sermon with the new ID
+        if (sermonId) {
+          setEditingSermon(prev => ({ ...prev, id: sermonId }));
+          setIsEditing(true);
+        }
         
         if (!isAutoSave) {
           toast({
