@@ -127,8 +127,7 @@ const Sermons = () => {
   // Layout state
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [activeRightTab, setActiveRightTab] = useState('ai');
+
 
   // Bible state
   const [books, setBooks] = useState<BibleBook[]>([]);
@@ -1366,14 +1365,7 @@ const Sermons = () => {
               >
                 <PanelLeftOpen className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setRightPanelOpen(!rightPanelOpen)}
-                className={`hover:bg-purple-50 ${rightPanelOpen ? 'bg-purple-100' : ''}`}
-              >
-                <PanelRightOpen className="h-4 w-4" />
-              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -1665,131 +1657,7 @@ const Sermons = () => {
             </div>
           </div>
 
-          {/* Enhanced Right Panel with AI Assistant */}
-          {rightPanelOpen && (
-            <div className="w-96 border-l bg-white shadow-lg">
-              <Tabs value={activeRightTab} onValueChange={setActiveRightTab} className="h-full flex flex-col">
-                <TabsList className="grid grid-cols-2 m-2 bg-gray-100">
-                  <TabsTrigger value="ai" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-                    <span className="mr-2 text-orange-500 data-[state=active]:text-white">✦</span>
-                    AI Assistant
-                  </TabsTrigger>
-                  <TabsTrigger value="bible" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Quick Bible
-                  </TabsTrigger>
-                </TabsList>
 
-                <TabsContent value="ai" className="flex-1 m-0">
-                  <SermonAIAssistant
-                    currentContent={selectedSermon?.content || ''}
-                    onContentUpdate={(content) => setSelectedSermon(prev => prev ? { ...prev, content } : null)}
-                    onOutlineGenerated={(outline) => {
-                      // Handle generated outline
-                      console.log('Generated outline:', outline);
-                    }}
-                    sermonTitle={selectedSermon?.title || ''}
-                    scriptureReference={selectedSermon?.scripture_reference || ''}
-                  />
-                </TabsContent>
-
-                <TabsContent value="bible" className="flex-1 m-0 p-4">
-                  <div className="h-full flex flex-col space-y-4">
-                    <div className="flex items-center gap-2 pb-2 border-b">
-                      <BookOpen className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-semibold">Quick Bible Lookup</h3>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          placeholder="Search verses..."
-                          value={bibleSearchQuery}
-                          onChange={(e) => {
-                            setBibleSearchQuery(e.target.value);
-                            searchBible(e.target.value);
-                          }}
-                          className="pl-10"
-                        />
-                </div>
-                
-                      {selectedBook && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span className="font-medium">{selectedBook.name}</span>
-                          <span>Chapter {selectedChapter}</span>
-                      </div>
-                    )}
-                    </div>
-
-                    <ScrollArea className="flex-1">
-                      {bibleLoading ? (
-                        <div className="flex justify-center py-8">
-                          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-                        </div>
-                      ) : searchResults.length > 0 ? (
-                        <div className="space-y-2">
-                          {searchResults.slice(0, 5).map((verse) => (
-                            <div
-                              key={verse.id}
-                              className="p-3 rounded-lg border hover:border-blue-200 hover:bg-blue-50 cursor-pointer group transition-all"
-                              onClick={() => insertVerseIntoSermon(verse)}
-                            >
-                              <div className="text-xs text-blue-600 font-medium mb-1">
-                                {verse.book_name} {verse.chapter}:{verse.verse}
-                          </div>
-                              <p className="text-sm text-gray-700 leading-relaxed">
-                                {verse.text.length > 100 ? verse.text.substring(0, 100) + '...' : verse.text}
-                              </p>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 h-6 text-xs"
-                              >
-                                <Plus className="h-3 w-3 mr-1" />
-                                Add
-                              </Button>
-                          </div>
-                          ))}
-                          </div>
-                      ) : verses.length > 0 ? (
-                        <div className="space-y-2">
-                          {verses.slice(0, 10).map((verse) => (
-                            <div
-                              key={verse.id}
-                              className="p-3 rounded-lg border hover:border-blue-200 hover:bg-blue-50 cursor-pointer group transition-all"
-                              onClick={() => insertVerseIntoSermon(verse)}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-bold text-blue-600">{verse.verse}</span>
-                        </div>
-                              <p className="text-sm text-gray-700 leading-relaxed">
-                                {verse.text.length > 80 ? verse.text.substring(0, 80) + '...' : verse.text}
-                              </p>
-                      </div>
-                    ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500 text-sm">
-                          <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>Search for verses or use the full Bible dialog</p>
-                      </div>
-                    )}
-                </ScrollArea>
-                
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowBibleDialog(true)}
-                      className="w-full"
-                    >
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Open Full Bible
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
         </div>
       </div>
     );
