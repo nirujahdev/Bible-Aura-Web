@@ -1,0 +1,22 @@
+# PostgreSQL Connection Commands for Bible Aura Community Setup
+
+## 1. Connect to Supabase Database:
+psql -h db.foleepziqgrdgkljedux.supabase.co -p 5432 -d postgres -U postgres
+
+## 2. When prompted for password, enter:
+afHRHS@B!WR6LZL
+
+## 3. Once connected, run the safe migration:
+\i safe_community_migration.sql
+
+## 4. Or copy-paste the content from safe_community_migration.sql
+
+## 5. Exit psql:
+\q
+
+# Alternative: Use batch file
+# Run: connect_and_run_migration.bat
+# (This will handle everything automatically if psql is installed)
+
+# If you see "policy already exists" errors, those are normal and can be ignored.
+# The safe migration drops existing policies first to prevent conflicts. 
