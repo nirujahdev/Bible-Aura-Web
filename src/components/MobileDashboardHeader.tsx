@@ -52,37 +52,37 @@ export function MobileDashboardHeader({
       "sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30 lg:hidden",
       className
     )}>
-      <div className="px-4 py-3">
+      <div className="px-3 py-2">
         {/* Main Header Row */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           {/* Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-xl">
-              <span className="text-xl font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 bg-orange-500 rounded-lg">
+              <span className="text-sm font-bold text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
                 ✦
               </span>
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+              <h1 className="text-sm font-semibold text-gray-900">{title}</h1>
               {subtitle && (
-                <p className="text-sm text-gray-600">{subtitle}</p>
+                <p className="text-xs text-gray-600">{subtitle}</p>
               )}
             </div>
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 relative">
-              <Bell className="h-5 w-5 text-gray-600" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white" />
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 relative">
+              <Bell className="h-4 w-4 text-gray-600" />
+              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white" />
             </Button>
 
             {/* Profile */}
             <Link to="/profile">
-              <Avatar className="h-10 w-10 ring-2 ring-gray-200 hover:ring-orange-300 transition-all">
+              <Avatar className="h-8 w-8 ring-1 ring-gray-200 hover:ring-orange-300 transition-all">
                 <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="bg-orange-500 text-white font-semibold text-sm">
+                <AvatarFallback className="bg-orange-500 text-white font-semibold text-xs">
                   {getUserName().charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -93,10 +93,10 @@ export function MobileDashboardHeader({
         {/* Search Bar */}
         {showSearch && (
           <div className={cn(
-            "relative transition-all duration-200",
+            "relative transition-all duration-200 mb-2",
             isSearchFocused ? "scale-[1.02]" : ""
           )}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
             <Input
               type="text"
               placeholder={searchPlaceholder}
@@ -105,7 +105,7 @@ export function MobileDashboardHeader({
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               className={cn(
-                "pl-10 pr-4 h-11 rounded-xl border-gray-200 bg-gray-50/50 transition-all duration-200",
+                "pl-8 pr-3 h-9 rounded-lg border-gray-200 bg-gray-50/50 transition-all duration-200 text-sm",
                 isSearchFocused ? "bg-white border-orange-300 shadow-sm" : "hover:bg-gray-100"
               )}
             />
@@ -113,16 +113,16 @@ export function MobileDashboardHeader({
         )}
 
         {/* Quick Stats or Greeting */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-600">
             Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {getUserName()}!
           </div>
           
           {/* Quick Stats */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
-              <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-              <span>{profile?.reading_streak || 0} day streak</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+              <span className="text-xs">{profile?.reading_streak || 0} day streak</span>
             </div>
           </div>
         </div>

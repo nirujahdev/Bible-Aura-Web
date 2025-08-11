@@ -34,7 +34,7 @@ export function MobileOptimizedLayout({
       <div className="flex-1 overflow-auto">
         <div className={cn(
           "min-h-full",
-          showBottomNav ? "pb-20" : "pb-4" // Extra padding if bottom nav is shown
+          showBottomNav ? "pb-16" : "pb-4" // Updated to match smaller bottom nav height
         )}>
           {children}
         </div>
