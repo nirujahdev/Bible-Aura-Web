@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   User, 
   Heart, 
@@ -11,7 +11,12 @@ import {
   BookOpen,
   Calendar,
   Star,
-  X
+  X,
+  Plus,
+  MessageCircle,
+  Search,
+  Home,
+  MoreVertical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,18 +28,53 @@ interface MobileMoreMenuProps {
   onClose: () => void;
 }
 
-const moreMenuItems = [
+// Main navigation items
+const mainNavItems = [
+  { 
+    name: 'AI Chat', 
+    href: '/dashboard', 
+    icon: MessageCircle,
+    description: 'Bible AI Assistant',
+    quickAction: { name: 'New Chat', action: 'new-chat' }
+  },
+  { 
+    name: 'Bible', 
+    href: '/bible', 
+    icon: BookOpen,
+    description: 'Read Scripture',
+    quickAction: { name: 'Random Verse', action: 'random-verse' }
+  },
+  { 
+    name: 'Study Hub', 
+    href: '/study-hub', 
+    icon: Search,
+    description: 'Bible Study Tools',
+    quickAction: { name: 'New Study', action: 'new-study' }
+  },
+  { 
+    name: 'Journal', 
+    href: '/journal', 
+    icon: PenTool,
+    description: 'Personal reflections',
+    quickAction: { name: 'New Entry', action: 'new-journal' }
+  }
+];
+
+// Additional features
+const additionalItems = [
   { 
     name: 'Sermons', 
     href: '/sermons', 
     icon: PenTool,
-    description: 'Sermon library & writer'
+    description: 'Sermon library & writer',
+    quickAction: { name: 'Write Sermon', action: 'new-sermon' }
   },
   { 
     name: 'Community', 
     href: '/community', 
     icon: Users,
-    description: 'Connect with believers'
+    description: 'Connect with believers',
+    quickAction: { name: 'New Discussion', action: 'new-discussion' }
   },
   { 
     name: 'Favorites', 
@@ -73,6 +113,7 @@ const profileMenuItems = [
 
 export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
 
   const getUserName = () => {
@@ -86,7 +127,39 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
   };
 
   const isActive = (href: string) => {
+    if (href === '/dashboard') {
+      return location.pathname === '/' || location.pathname === '/dashboard';
+    }
     return location.pathname === href;
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'new-chat':
+        // Reset chat or start new conversation
+        navigate('/dashboard');
+        window.location.reload();
+        break;
+      case 'random-verse':
+        // Navigate to random verse
+        navigate('/bible?random=true');
+        break;
+      case 'new-study':
+        navigate('/study-hub?new=true');
+        break;
+      case 'new-journal':
+        navigate('/journal?new=true');
+        break;
+      case 'new-sermon':
+        navigate('/sermons?new=true');
+        break;
+      case 'new-discussion':
+        navigate('/community?new=true');
+        break;
+      default:
+        break;
+    }
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -99,81 +172,145 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
         onClick={onClose}
       />
       
-      {/* Menu Panel */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl max-h-[85vh] lg:hidden">
+      {/* Side Menu Panel */}
+      <div className="fixed right-0 top-0 bottom-0 z-50 bg-white shadow-2xl w-80 max-w-[85vw] lg:hidden transform transition-transform duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">More Options</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
+          <div className="flex items-center gap-2">
+            <MoreVertical className="h-5 w-5 text-orange-500" />
+            <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/50 rounded-lg transition-colors"
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(85vh-80px)]">
+        <div className="overflow-y-auto h-full pb-4">
           {/* User Profile Section */}
           {user && (
             <div className="p-4 border-b border-gray-100">
               <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100">
-                <Avatar className="h-12 w-12 ring-2 ring-orange-200">
+                <Avatar className="h-10 w-10 ring-2 ring-orange-200">
                   <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-orange-500 text-white font-semibold">
+                  <AvatarFallback className="bg-orange-500 text-white font-semibold text-sm">
                     {getUserName().charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-gray-900 text-sm">
                     {getUserName()}
                   </div>
-                  <div className="text-sm text-gray-600">{user?.email}</div>
+                  <div className="text-xs text-gray-600">{user?.email}</div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">
                     <Calendar className="h-3 w-3" />
-                    <span>{profile?.reading_streak || 0} days</span>
+                    <span>{profile?.reading_streak || 0}</span>
                   </div>
-                  <div className="text-xs text-gray-500">Reading streak</div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Quick Actions */}
+          {/* Main Navigation with Quick Actions */}
           <div className="p-4 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Access</h3>
-            <div className="space-y-2">
-              {moreMenuItems.map((item) => {
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Main Navigation</h3>
+            <div className="space-y-1">
+              {mainNavItems.map((item) => {
                 const active = isActive(item.href);
                 const IconComponent = item.icon;
                 
                 return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
-                      active 
-                        ? "bg-orange-50 border border-orange-200 text-orange-600" 
-                        : "hover:bg-gray-50 text-gray-700"
+                  <div key={item.name} className="space-y-1">
+                    <Link
+                      to={item.href}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200",
+                        active 
+                          ? "bg-orange-50 border border-orange-200 text-orange-600" 
+                          : "hover:bg-gray-50 text-gray-700"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-1.5 rounded-md",
+                        active 
+                          ? "bg-orange-100" 
+                          : "bg-gray-100"
+                      )}>
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{item.name}</div>
+                        <div className="text-xs text-gray-500">{item.description}</div>
+                      </div>
+                    </Link>
+                    
+                    {/* Quick Action */}
+                    {item.quickAction && (
+                      <button
+                        onClick={() => handleQuickAction(item.quickAction.action)}
+                        className="w-full flex items-center gap-2 p-2 ml-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-800"
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span className="text-xs font-medium">{item.quickAction.name}</span>
+                      </button>
                     )}
-                  >
-                    <div className={cn(
-                      "p-2 rounded-lg",
-                      active 
-                        ? "bg-orange-100" 
-                        : "bg-gray-100"
-                    )}>
-                      <IconComponent className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{item.name}</div>
-                      <div className="text-xs text-gray-500">{item.description}</div>
-                    </div>
-                  </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Additional Features */}
+          <div className="p-4 border-b border-gray-100">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">More Features</h3>
+            <div className="space-y-1">
+              {additionalItems.map((item) => {
+                const active = isActive(item.href);
+                const IconComponent = item.icon;
+                
+                return (
+                  <div key={item.name} className="space-y-1">
+                    <Link
+                      to={item.href}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200",
+                        active 
+                          ? "bg-orange-50 border border-orange-200 text-orange-600" 
+                          : "hover:bg-gray-50 text-gray-700"
+                      )}
+                    >
+                      <div className={cn(
+                        "p-1.5 rounded-md",
+                        active 
+                          ? "bg-orange-100" 
+                          : "bg-gray-100"
+                      )}>
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{item.name}</div>
+                        <div className="text-xs text-gray-500">{item.description}</div>
+                      </div>
+                    </Link>
+                    
+                    {/* Quick Action */}
+                    {item.quickAction && (
+                      <button
+                        onClick={() => handleQuickAction(item.quickAction.action)}
+                        className="w-full flex items-center gap-2 p-2 ml-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-800"
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span className="text-xs font-medium">{item.quickAction.name}</span>
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -182,7 +319,7 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
           {/* Profile & Settings */}
           <div className="p-4 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Account</h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {profileMenuItems.map((item) => {
                 const active = isActive(item.href);
                 const IconComponent = item.icon;
@@ -193,19 +330,19 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
                     to={item.href}
                     onClick={onClose}
                     className={cn(
-                      "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
+                      "flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200",
                       active 
                         ? "bg-orange-50 border border-orange-200 text-orange-600" 
                         : "hover:bg-gray-50 text-gray-700"
                     )}
                   >
                     <div className={cn(
-                      "p-2 rounded-lg",
+                      "p-1.5 rounded-md",
                       active 
                         ? "bg-orange-100" 
                         : "bg-gray-100"
                     )}>
-                      <IconComponent className="h-5 w-5" />
+                      <IconComponent className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-sm">{item.name}</div>
@@ -221,16 +358,16 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
           <div className="p-4">
             <Button
               variant="outline"
-              className="w-full justify-start gap-3 h-12 text-red-600 border-red-200 hover:bg-red-50"
+              className="w-full justify-start gap-3 h-10 text-red-600 border-red-200 hover:bg-red-50"
               onClick={() => {
                 signOut();
                 onClose();
               }}
             >
-              <div className="p-2 bg-red-100 rounded-lg">
-                <LogOut className="h-5 w-5" />
+              <div className="p-1 bg-red-100 rounded-md">
+                <LogOut className="h-4 w-4" />
               </div>
-              <span className="font-medium">Sign Out</span>
+              <span className="font-medium text-sm">Sign Out</span>
             </Button>
           </div>
         </div>

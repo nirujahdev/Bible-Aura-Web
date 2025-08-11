@@ -8,8 +8,7 @@ import {
   Users, 
   MessageCircle,
   Heart,
-  User,
-  Menu
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -44,19 +43,10 @@ const navItems: NavItem[] = [
     name: 'Journal', 
     href: '/journal', 
     icon: PenTool 
-  },
-  { 
-    name: 'More', 
-    href: '/profile', 
-    icon: Menu 
   }
 ];
 
-interface MobileBottomNavProps {
-  onMoreMenuOpen?: () => void;
-}
-
-export function MobileBottomNav({ onMoreMenuOpen }: MobileBottomNavProps) {
+export function MobileBottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -73,39 +63,12 @@ export function MobileBottomNav({ onMoreMenuOpen }: MobileBottomNavProps) {
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 lg:hidden">
         <div className="px-2 py-1">
           <div className="flex items-center justify-around">
             {navItems.map((item) => {
               const active = isActive(item.href);
               const IconComponent = item.icon;
-              
-              if (item.name === 'More') {
-                return (
-                  <button
-                    key={item.name}
-                    onClick={onMoreMenuOpen}
-                    className={cn(
-                      "flex flex-col items-center justify-center py-2 px-1 min-w-[60px] rounded-lg transition-all duration-200",
-                      active 
-                        ? "text-orange-500" 
-                        : "text-gray-500 hover:text-gray-700"
-                    )}
-                  >
-                    <div className={cn(
-                      "p-1.5 rounded-lg transition-all",
-                      active 
-                        ? "bg-orange-100" 
-                        : "hover:bg-gray-100"
-                    )}>
-                      <IconComponent className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs mt-1 font-medium">
-                      {item.name}
-                    </span>
-                  </button>
-                );
-              }
 
               return (
                 <Link

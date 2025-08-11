@@ -41,11 +41,7 @@ export function MobileOptimizedLayout({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      {showBottomNav && (
-        <MobileBottomNav 
-          onMoreMenuOpen={() => setMoreMenuOpen(true)}
-        />
-      )}
+      {showBottomNav && <MobileBottomNav />}
 
       {/* Mobile More Menu */}
       <MobileMoreMenu 
@@ -54,7 +50,9 @@ export function MobileOptimizedLayout({
       />
 
       {/* Mobile Floating Actions */}
-      <MobileFloatingActions />
+      <MobileFloatingActions 
+        onMoreMenuOpen={() => setMoreMenuOpen(true)}
+      />
     </div>
   );
 } 

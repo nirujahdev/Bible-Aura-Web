@@ -3,12 +3,12 @@
 /* React Quill Editor Styles */
 @import 'react-quill/dist/quill.snow.css';
 
+/* AdSense Components Styling */
+@import './components/ads/ads.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* AdSense Components Styling */
-@import './components/ads/ads.css';
 
 /* 
 ✦Bible Aura Design System
