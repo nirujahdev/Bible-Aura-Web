@@ -615,19 +615,19 @@ How can I apply this to my life?
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
         <div className="flex h-screen">
-        {/* Mobile Chapter Navigation - Improved positioning and size */}
+        {/* Mobile Chapter Navigation - Integrated with unified navigation */}
         {isMobile && selectedBook && (
-          <div className="fixed top-20 right-4 z-50 flex items-center gap-2 bg-white rounded-xl shadow-lg p-1">
+          <div className="fixed top-16 right-4 z-30 flex items-center gap-2 bg-white rounded-xl shadow-lg p-1">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigateChapter('prev')}
               disabled={selectedChapter <= 1}
-              className="h-9 w-9 p-0 bg-white shadow-none border-gray-300"
+              className="h-8 w-8 p-0 bg-white shadow-none border-gray-300"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3 w-3" />
             </Button>
-            <span className="text-sm font-medium px-2 min-w-[3rem] text-center">
+            <span className="text-xs font-medium px-2 min-w-[2.5rem] text-center">
               {selectedChapter}
             </span>
             <Button
@@ -635,15 +635,15 @@ How can I apply this to my life?
               size="sm"
               onClick={() => navigateChapter('next')}
               disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-9 w-9 p-0 bg-white shadow-none border-gray-300"
+              className="h-8 w-8 p-0 bg-white shadow-none border-gray-300"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3" />
             </Button>
           </div>
         )}
 
-        {/* Mobile Menu Button - Better positioning */}
-        {isMobile && (
+        {/* Mobile Quick Access Sheet - Hidden since we have unified navigation */}
+        {isMobile && false && (
           <div className="fixed top-20 left-4 z-50">
             <Sheet>
               <SheetTrigger asChild>

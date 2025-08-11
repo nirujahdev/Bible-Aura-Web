@@ -56,8 +56,9 @@ const getContextualActions = (page: string) => {
         { name: 'Book Selection', icon: BookOpen, action: 'book-selection', description: 'Choose Bible book' },
         { name: 'Translation', icon: Languages, action: 'translation', description: 'Change translation' },
         { name: 'Search Verses', icon: Search, action: 'search-verses', description: 'Find specific verses' },
+        { name: 'Reading Plan', icon: Calendar, action: 'reading-plan', description: 'Daily reading' },
         { name: 'Bookmarks', icon: Bookmark, action: 'bookmarks', description: 'Saved verses' },
-        { name: 'Reading Plan', icon: Calendar, action: 'reading-plan', description: 'Daily reading' }
+        { name: 'Random Verse', icon: RefreshCw, action: 'random-verse', description: 'Get random verse' }
       ];
     
     case '/journal':
@@ -174,8 +175,10 @@ export function MobileMoreMenu({ isOpen, onClose, currentPage }: MobileMoreMenuP
         navigate('/favorites');
         break;
       case 'reading-plan':
-        // Open reading plan
-        console.log('Open reading plan');
+        navigate('/bible?reading-plan=true');
+        break;
+      case 'random-verse':
+        navigate('/bible?random=true');
         break;
       case 'journal-list':
         navigate('/journal?view=list');

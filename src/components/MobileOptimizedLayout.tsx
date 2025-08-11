@@ -118,13 +118,13 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
         {/* Header */}
         <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-lg font-bold">✦</span>
+            <div className="flex items-center gap-2">
+              <span className="text-orange-500 text-2xl font-bold">✦</span>
+              <span className="text-orange-500 text-xl font-bold">Bible Aura</span>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Bible Aura</h2>
-              <p className="text-sm text-gray-600">Hi, {getUserName()}!</p>
-            </div>
+          </div>
+          <div className="mt-2">
+            <p className="text-sm text-gray-600">Hi, {getUserName()}!</p>
           </div>
         </div>
 
@@ -139,8 +139,7 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
               { name: 'Sermons', href: '/sermons', icon: '🎤', description: 'Sermon Library' },
               { name: 'Community', href: '/community', icon: '👥', description: 'Connect with Believers' },
               { name: 'Favorites', href: '/favorites', icon: '❤️', description: 'Saved Content' },
-              { name: 'Profile', href: '/profile', icon: '👤', description: 'Account Settings' },
-              { name: 'Subscription', href: '/pricing', icon: '👑', description: 'Manage Plan' }
+              { name: 'Profile', href: '/profile', icon: '👤', description: 'Account & Settings' }
             ].map((item) => {
               const active = isActive(item.href);
               
