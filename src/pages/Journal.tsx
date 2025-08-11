@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 import { ModernLayout } from "@/components/ModernLayout";
@@ -65,6 +66,7 @@ const Journal = () => {
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // State management
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -443,9 +445,9 @@ const Journal = () => {
 
   return (
     <ModernLayout>
-      <div className="h-screen flex bg-gray-50">
+      <div className={`h-screen flex bg-gray-50 ${isMobile ? 'mobile-safe-area flex-col' : ''}`}>
         {/* Calendar & Entries Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+        <div className={`bg-white border-r border-gray-200 flex flex-col ${isMobile ? 'w-full border-r-0 border-b h-auto' : 'w-80'}`}>
           {/* Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,7 +20,7 @@ import {
 const SEO_CONFIG = {
   title: "Enhanced Sermon Hub - AI-Powered Sermon Creation | Bible Aura",
   description: "Create comprehensive, theologically sound sermons with our advanced AI-powered sermon generator. Supports multiple languages, denominations, and audience types.",
-  keywords: ["AI sermon generator", "sermon writing", "biblical preaching", "theological sermons", "pastoral tools", "sermon creation", "bible study"],
+  keywords: "AI sermon generator, sermon writing, biblical preaching, theological sermons, pastoral tools, sermon creation, bible study",
   ogImage: "/✦Bible Aura.svg"
 };
 
@@ -50,6 +51,7 @@ const EnhancedSermonHub: React.FC = () => {
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [activeTab, setActiveTab] = useState<'generator' | 'templates' | 'analytics' | 'library'>('generator');
   const [stats, setStats] = useState<SermonStats>({

@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { subscriptionService, SubscriptionInfo, UsageInfo, ResourceType } from "@/lib/subscription-service";
 import { 
@@ -46,6 +47,7 @@ interface UserStats {
 const Profile = () => {
   const { user, profile: authProfile, resetPassword } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats>({
     totalPrayers: 0,
@@ -333,15 +335,15 @@ const Profile = () => {
 
   return (
     <ModernLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 w-full">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-orange-500 rounded-xl">
+      <div className={`min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 w-full ${isMobile ? 'mobile-safe-area' : ''}`}>
+        <div className={isMobile ? "p-3 sm:p-6" : "p-6"}>
+          <div className={`flex items-center gap-4 mb-6 ${isMobile ? 'flex-col text-center sm:flex-row sm:text-left' : ''}`}>
+            <div className={`p-3 bg-orange-500 rounded-xl ${isMobile ? 'mx-auto sm:mx-0' : ''}`}>
               <User className="h-8 w-8 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Profile & Settings</h1>
-              <p className="text-gray-600">Manage your account, preferences, and spiritual settings</p>
+            <div className={isMobile ? 'text-center sm:text-left' : ''}>
+              <h1 className={`font-bold text-gray-900 ${isMobile ? 'text-xl sm:text-2xl' : 'text-2xl'}`}>Profile & Settings</h1>
+              <p className={`text-gray-600 ${isMobile ? 'text-sm sm:text-base' : ''}`}>Manage your account, preferences, and spiritual settings</p>
             </div>
           </div>
         <div className="flex flex-wrap gap-3">
@@ -365,14 +367,14 @@ const Profile = () => {
         
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
+          <TabsList className={`grid w-full grid-cols-2 mb-6 ${isMobile ? 'h-auto' : ''}`}>
+            <TabsTrigger value="profile" className={`flex items-center gap-2 ${isMobile ? 'p-2 text-sm' : ''}`}>
               <User className="h-4 w-4" />
-              Profile
+              {isMobile ? 'Profile' : 'Profile'}
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            <TabsTrigger value="settings" className={`flex items-center gap-2 ${isMobile ? 'p-2 text-sm' : ''}`}>
               <Settings className="h-4 w-4" />
-              Settings
+              {isMobile ? 'Settings' : 'Settings'}
             </TabsTrigger>
           </TabsList>
 

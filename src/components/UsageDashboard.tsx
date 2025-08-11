@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { subscriptionService, UsageInfo, ResourceType, SubscriptionInfo } from '@/lib/subscription-service';
 import { 
   Crown, 
@@ -23,6 +24,7 @@ interface UsageDashboardProps {
 
 export const UsageDashboard: React.FC<UsageDashboardProps> = ({ className = '' }) => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [usageStats, setUsageStats] = useState<Record<ResourceType, UsageInfo> | null>(null);
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,15 +134,15 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ className = '' }
       {/* Subscription Status */}
       {subscriptionInfo && (
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className={isMobile ? "pb-2" : "pb-3"}>
+            <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : ''}`}>
               <Crown className="h-5 w-5 text-orange-600" />
               Current Plan
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className={`flex items-center justify-between ${isMobile ? 'flex-col gap-3' : ''}`}>
+              <div className={`flex items-center gap-3 ${isMobile ? 'text-center' : ''}`}>
                 <div className={`p-2 rounded-full ${subscriptionInfo.plan !== 'free' ? 'bg-orange-100' : 'bg-gray-100'}`}>
                   <Crown className={`h-4 w-4 ${subscriptionInfo.plan !== 'free' ? 'text-orange-600' : 'text-gray-600'}`} />
                 </div>
@@ -152,7 +154,7 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ className = '' }
                 </div>
               </div>
               {subscriptionInfo.plan === 'free' && (
-                <Button size="sm" onClick={() => window.location.href = '/pricing'}>
+                <Button size={isMobile ? "default" : "sm"} onClick={() => window.location.href = '/pricing'} className={isMobile ? 'w-full' : ''}>
                   Upgrade
                 </Button>
               )}
@@ -162,13 +164,13 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ className = '' }
       )}
 
       {/* Usage Statistics */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-blue-600" />
-            Monthly Usage
-          </CardTitle>
-        </CardHeader>
+              <Card>
+          <CardHeader className={isMobile ? "pb-2" : "pb-3"}>
+            <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : ''}`}>
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              Monthly Usage
+            </CardTitle>
+          </CardHeader>
         <CardContent>
           {usageStats ? (
             <div className="space-y-4">
