@@ -27,7 +27,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
-import { ModernLayout } from "@/components/ModernLayout";
+import { MobileOptimizedLayout } from "@/components/MobileOptimizedLayout";
 import { EnhancedJournalEditor } from "@/components/EnhancedJournalEditor";
 import { 
   PenTool, Plus, Calendar as CalendarIcon, Search, Filter, Heart, Star, BookOpen,
@@ -428,7 +428,7 @@ const Journal = () => {
 
   if (!user) {
     return (
-      <ModernLayout>
+      <MobileOptimizedLayout>
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
@@ -439,12 +439,12 @@ const Journal = () => {
             </p>
           </div>
         </div>
-      </ModernLayout>
+      </MobileOptimizedLayout>
     );
   }
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className={`h-screen flex bg-gray-50 ${isMobile ? 'mobile-safe-area flex-col' : ''}`}>
         {/* Calendar & Entries Sidebar */}
         <div className={`bg-white border-r border-gray-200 flex flex-col ${isMobile ? 'w-full border-r-0 border-b h-auto' : 'w-80'}`}>
@@ -834,7 +834,7 @@ const Journal = () => {
           )}
         </div>
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 };
 

@@ -20,7 +20,7 @@ import {
   Shield, Mail, Lock, Eye, EyeOff, Settings, Type, 
   Languages, Bot, Bell, Palette, Moon, Sun, Crown, CreditCard
 } from "lucide-react";
-import { ModernLayout } from "@/components/ModernLayout";
+import { MobileOptimizedLayout } from "@/components/MobileOptimizedLayout";
 
 interface UserProfile {
   id: string;
@@ -334,7 +334,7 @@ const Profile = () => {
   }
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className={`min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 w-full ${isMobile ? 'mobile-safe-area' : ''}`}>
         <div className={isMobile ? "p-3 sm:p-6" : "p-6"}>
           <div className={`flex items-center gap-4 mb-6 ${isMobile ? 'flex-col text-center sm:flex-row sm:text-left' : ''}`}>
@@ -958,7 +958,7 @@ const Profile = () => {
         </Tabs>
       </div>
     </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 };
 

@@ -15,7 +15,7 @@ import {
   TrendingUp,
   BookOpen
 } from 'lucide-react'
-import { ModernLayout } from '@/components/ModernLayout'
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout'
 import { useAuth } from '@/hooks/useAuth'
 import CommunityDiscussions from '@/components/community/CommunityDiscussions'
 import CommunityPrayerRequests from '@/components/community/CommunityPrayerRequests'
@@ -28,7 +28,7 @@ const Community: React.FC = () => {
   const { user } = useAuth()
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-6">
 
@@ -96,7 +96,7 @@ const Community: React.FC = () => {
         </Tabs>
         </div>
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   )
 }
 

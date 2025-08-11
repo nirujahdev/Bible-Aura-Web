@@ -21,7 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
-import { ModernLayout } from '@/components/ModernLayout';
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 
 interface FavoriteVerse {
@@ -187,7 +187,7 @@ export default function Favorites() {
   }
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
 
 
       {/* Main Content */}
@@ -361,6 +361,6 @@ export default function Favorites() {
           </Tabs>
         </div>
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 } 

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSEO } from '@/hooks/useSEO';
-import { ModernLayout } from '@/components/ModernLayout';
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { 
   Search, BookOpen, Users, Crown, TreePine, Library, 
   Heart, Star, Share, Plus, Eye, ArrowLeft
@@ -326,19 +326,19 @@ const StudyHub = () => {
   // If viewing individual study, render it full width
   if (currentStudy) {
     return (
-      <ModernLayout>
+      <MobileOptimizedLayout>
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white">
           <div className="max-w-7xl mx-auto">
             {renderStudyComponent()}
           </div>
         </div>
-      </ModernLayout>
+      </MobileOptimizedLayout>
     );
   }
 
   // Main overview interface - Full Width Design
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white">
         
         {/* Full Width Content Area */}
@@ -770,7 +770,7 @@ const StudyHub = () => {
           </div>
         </div>
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 };
 

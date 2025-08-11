@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ModernLayout } from '@/components/ModernLayout';
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { BibleAuraChat } from '@/components/BibleAuraChat';
 
 export default function Dashboard() {
@@ -21,10 +21,10 @@ export default function Dashboard() {
   }
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className={isMobile ? "h-[100dvh] mobile-safe-area" : "h-screen"}>
         <BibleAuraChat />
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 } 
