@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -147,9 +147,9 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
               const active = isActive(item.href);
               
               return (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   onClick={onClose}
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-lg transition-all duration-200",
@@ -166,7 +166,7 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   {active && (
                     <div className="w-2 h-2 bg-orange-500 rounded-full" />
                   )}
-                </a>
+                </Link>
               );
             })}
           </nav>
