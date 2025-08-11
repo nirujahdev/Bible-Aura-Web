@@ -35,7 +35,7 @@ import Profile from '@/pages/Profile';
 import Community from '@/pages/Community';
 import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
 import SubscriptionCancelled from '@/pages/SubscriptionCancelled';
-import Songs from '@/pages/Songs';
+
 import SermonLibrary from '@/pages/SermonLibrary';
 
 // Import feature pages
@@ -158,15 +158,7 @@ function App() {
                 <Route path="/blog/how-bible-aura-ai-chat-transforms-daily-scripture-study" element={<HowAIChatTransforms />} />
                 <Route path="/blog/:slug" element={<PlaceholderPage title="Blog Article" description="This blog article is being prepared. Check back soon!" />} />
                 
-                {/* Public study pages for SEO */}
-                <Route path="/study-hub" element={<PublicBibleStudyPage />} />
-                <Route path="/bible-qa" element={<PlaceholderPage title="Bible Q&A" description="Get answers to your Bible questions with AI-powered insights and community wisdom." />} />
-                <Route path="/topical-study" element={<PlaceholderPage title="Topical Bible Study" description="Explore Bible topics in depth with guided studies on faith, prayer, love, and more." />} />
-                <Route path="/parables-study" element={<PlaceholderPage title="Parables Study" description="Discover the deeper meanings of Jesus' parables with interactive study guides and historical context." />} />
-                <Route path="/community" element={<PlaceholderPage title="Bible Study Community" description="Connect with fellow believers, share insights, and grow together in faith through community discussions." />} />
-                <Route path="/sermons" element={<PlaceholderPage title="Sermon Library & Tools" description="Access sermon writing tools, browse sermon library, and create inspiring messages with AI assistance." />} />
-                <Route path="/sermon-writer" element={<PlaceholderPage title="AI Sermon Writer" description="Create powerful sermons with AI assistance, structured outlines, and biblical insights." />} />
-                <Route path="/songs" element={<PlaceholderPage title="Worship Songs & Hymns" description="Discover Christian songs, hymns, and worship music for personal devotion and church services." />} />
+
                 
                 {/* Protected routes - Require authentication */}
                 <Route path="/app" element={
@@ -214,6 +206,56 @@ function App() {
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/study-hub" element={
+                  <ProtectedRoute>
+                    <StudyHub />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/sermons" element={
+                  <ProtectedRoute>
+                    <Sermons />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/sermon-writer" element={
+                  <ProtectedRoute>
+                    <SermonWriter />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/community" element={
+                  <ProtectedRoute>
+                    <Community />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/bible-qa" element={
+                  <ProtectedRoute>
+                    <BibleQA />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/topical-study" element={
+                  <ProtectedRoute>
+                    <TopicalStudy />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/parables-study" element={
+                  <ProtectedRoute>
+                    <ParablesStudy />
+                  </ProtectedRoute>
+                } />
+                
+
+                
+                <Route path="/sermon-library" element={
+                  <ProtectedRoute>
+                    <SermonLibrary />
                   </ProtectedRoute>
                 } />
                 

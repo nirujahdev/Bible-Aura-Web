@@ -44,7 +44,7 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
     { href: "/features/ai-features", label: "AI Insights", icon: Brain, description: "AI-powered analysis" },
     { href: "/features/personal-tools", label: "Personal Tools", icon: User, description: "Journal and favorites" },
     { href: "/features/content-creation", label: "Sermon Creation", icon: Edit, description: "Create and organize sermons" },
-    { href: "/features/learning-resources", label: "Resources", icon: Library, description: "Study materials and songs" },
+    { href: "/features/learning-resources", label: "Resources", icon: Library, description: "Study materials and resources" },
     { href: "/features/advanced-study", label: "Advanced Study", icon: GraduationCap, description: "Deep biblical research" },
   ];
 

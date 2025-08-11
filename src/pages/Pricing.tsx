@@ -117,7 +117,7 @@ const Pricing = () => {
     {
       category: "📚 Learning Resources",
       features: [
-        { name: "Songs Library", free: "Full Access", pro: "Full Access", supporter: "Full Access", partner: "Full Access" },
+  
         { name: "Study Plans", free: "Full Access", pro: "Full Access", supporter: "Full Access", partner: "Full Access" },
         { name: "Daily Verses", free: "Full Access", pro: "Full Access", supporter: "Full Access", partner: "Full Access" },
         { name: "Reading Progress", free: "Full Access", pro: "Full Access", supporter: "Full Access", partner: "Full Access" }

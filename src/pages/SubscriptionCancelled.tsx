@@ -44,7 +44,7 @@ export default function SubscriptionCancelled() {
                   <li>Basic verse search and cross-references</li>
                   <li>Daily verses and reading plans</li>
                   <li>Bible characters and parables study</li>
-                  <li>Songs library and basic study tools</li>
+                  <li>Basic study tools</li>
                 </ul>
               </div>
             </div>

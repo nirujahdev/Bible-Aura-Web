@@ -11,9 +11,9 @@ import { useSEO } from "@/hooks/useSEO";
 const LearningResources = () => {
   // SEO optimization for Learning Resources
   useSEO({
-    title: "Bible Learning Resources | Sermons, Songs & Study Materials - Bible Aura",
-    description: "Access comprehensive Bible learning resources including sermon library, worship songs, daily devotions, study plans, and educational content for spiritual growth and ministry.",
-    keywords: "Bible learning resources, sermon library, Christian songs, worship music, daily devotions, Bible study plans, Christian education, ministry resources, spiritual growth materials",
+    title: "Bible Learning Resources | Sermons & Study Materials - Bible Aura",
+    description: "Access comprehensive Bible learning resources including sermon library, daily devotions, study plans, and educational content for spiritual growth and ministry.",
+    keywords: "Bible learning resources, sermon library, daily devotions, Bible study plans, Christian education, ministry resources, spiritual growth materials",
     canonicalUrl: "https://bibleaura.xyz/features/learning-resources"
   });
 
@@ -24,13 +24,6 @@ const LearningResources = () => {
       icon: Library,
       features: ["Sermon collection", "Topic organization", "Multiple speakers", "Searchable content"],
       link: "/sermons"
-    },
-    {
-      title: "Worship Songs",
-      description: "Discover inspiring Christian songs and worship music with lyrics, chord charts, and audio resources for personal devotion and ministry.",
-      icon: Music,
-      features: ["Song lyrics", "Chord charts", "Audio resources", "Worship playlists"],
-      link: "/songs"
     },
     {
       title: "Daily Devotions",
@@ -85,7 +78,7 @@ const LearningResources = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-12">
-            Explore comprehensive Bible learning resources including sermons, worship songs, daily devotions, study plans, and educational content for spiritual growth and ministry.
+            Explore comprehensive Bible learning resources including sermons, daily devotions, study plans, and educational content for spiritual growth and ministry.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

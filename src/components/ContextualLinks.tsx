@@ -131,8 +131,7 @@ export function ManualContextualLinks({ context, limit = 4 }: ManualContextualLi
       
       case 'worship':
         return [
-          { text: 'Christian Worship Songs', href: '/songs', type: 'internal', description: 'Collection of worship music' },
-          { text: 'Bible-Based Worship', href: '/songs', type: 'internal', description: 'Scripture-based songs' },
+          
           { text: 'Sermon Resources', href: '/sermons', type: 'internal', description: 'Worship and sermon materials' },
           { text: 'Study Hub', href: '/study-hub', type: 'internal', description: 'Comprehensive study tools' }
         ];

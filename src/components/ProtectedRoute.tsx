@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import LoadingScreen from './LoadingScreen';
+import LoadingScreen from '@/components/LoadingScreen';
 
 interface ProtectedRouteProps {
   children: ReactNode;

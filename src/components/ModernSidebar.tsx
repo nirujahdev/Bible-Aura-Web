@@ -260,12 +260,12 @@ function IconSidebar() {
                 <item.icon className="h-5 w-5" />
               </Link>
             ) : (
-              <button
-                onClick={() => window.location.href = '/study-hub'}
+              <Link
+                to="/study-hub"
                 className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all duration-200"
               >
                 <item.icon className="h-5 w-5" />
-              </button>
+              </Link>
             )}
             
             {/* Tooltip */}

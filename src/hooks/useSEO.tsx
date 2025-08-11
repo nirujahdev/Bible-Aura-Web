@@ -228,12 +228,6 @@ export const SEO_CONFIG = {
     keywords: "Bible parables, Jesus parables, parable study, AI parable analysis, bible aura parables, parables of Jesus, biblical parables, christian parables, faith parables, spiritual parables, parable meanings, parable interpretations, parable explanations, parable lessons, parable teachings, parable insights, parable wisdom, parable understanding, gospel parables, new testament parables, jesus teachings, christ teachings, biblical teachings, christian teachings",
     canonicalUrl: "https://bibleaura.xyz/parables-study"
   },
-  SONGS: {
-    title: "Christian Songs & Hymns | AI-Curated Sacred Music | Bible Aura",
-    description: "Discover Christian songs, hymns, and worship music curated by AI. Find songs that complement your Bible study and enhance your spiritual worship experience with Bible Aura.",
-    keywords: "Christian songs, christian hymns, worship music, sacred music, spiritual songs, bible aura songs, AI curated music, christian music, faith music, spiritual music, worship songs, praise songs, devotional music, biblical songs, scripture songs, christian worship, faith worship, spiritual worship, church music, congregational music, traditional hymns, modern christian music, contemporary christian music, gospel music, christian praise music",
-    canonicalUrl: "https://bibleaura.xyz/songs"
-  },
   SERMON_WRITER: {
     title: "AI Sermon Writer | Create Biblical Sermons with AI | Bible Aura",
     description: "Create powerful sermons with Bible Aura's AI sermon writer. Get biblical outlines, scripture references, and theological insights to craft inspiring messages for your congregation.",

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, Bot, MessageSquare, Library, FileText, Users, Music, Search, Brain, Zap, Star, Shield, Globe } from "lucide-react";
+import { ArrowRight, BookOpen, Bot, MessageSquare, Library, FileText, Users, Search, Brain, Zap, Star, Shield, Globe } from "lucide-react";
 
 interface RelatedLink {
   title: string;
@@ -65,14 +65,6 @@ const allLinks: RelatedLink[] = [
     icon: Users,
     category: "study",
     keywords: ["bible characters", "biblical figures", "bible personalities", "scripture characters", "biblical heroes"]
-  },
-  {
-    title: "Bible Songs & Hymns Collection",
-    href: "/songs",
-    description: "Access a vast collection of Christian hymns, worship songs, and Biblical music for spiritual enrichment",
-    icon: Music,
-    category: "worship",
-    keywords: ["bible songs", "christian hymns", "worship music", "biblical music", "spiritual songs"]
   },
   {
     title: "AI Sermon Generator & Library",
