@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 // import FAQ from "@/components/FAQ"; // COMMENTED OUT TO FIX ERRORS
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
-import { BibleAuraBannerAd, BibleAuraFluidAd } from "@/components/ads";
+import SimpleAdSense from "@/components/ads/SimpleAdSense";
 
 const Home = () => {
   // SEO optimization
@@ -181,13 +181,10 @@ const Home = () => {
         </div>
       </section>
 
-      {/* AdSense Banner - Basic Ad Unit */}
-      <section className="py-8 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <BibleAuraBannerAd 
-            showLabel={false}
-            className="homepage-banner"
-          />
+      {/* AdSense Banner - Auto Placement */}
+      <section className="py-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <SimpleAdSense slot="2853748608" />
         </div>
       </section>
 
@@ -399,12 +396,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* AdSense In-Feed - Fluid Layout Ad Unit */}
-      <section className="py-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <BibleAuraFluidAd 
-            showLabel={true}
-            className="infeed-ad"
+      {/* AdSense In-Feed - Auto Placement */}
+      <section className="py-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <SimpleAdSense 
+            slot="2682358212" 
+            isFluid={true}
+            layoutKey="-hp-o+1u-4z+9c"
           />
         </div>
       </section>

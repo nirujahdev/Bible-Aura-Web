@@ -1,12 +1,15 @@
-// AdSense Components Export
+// Simple AdSense Component - Recommended for Auto Placement
+export { default as SimpleAdSense } from './SimpleAdSense';
+
+// Recommended: Use SimpleAdSense for Google Auto Ads
+export { default as AdSense } from './SimpleAdSense';
+
+// Advanced Components (may interfere with auto placement)
 export { default as AdSenseDisplay } from './AdSenseDisplay';
 export { default as AdSenseBanner } from './AdSenseBanner';
 export { default as AdSenseInFeed } from './AdSenseInFeed';
 export { default as AdSenseSidebar } from './AdSenseSidebar';
 export { default as AdSenseUniversal } from './AdSenseUniversal';
-
-// Recommended: Use AdSenseUniversal for most use cases
-export { default as AdSense } from './AdSenseUniversal';
 
 // Bible Aura Specific Ad Components (with actual slot IDs)
 export {

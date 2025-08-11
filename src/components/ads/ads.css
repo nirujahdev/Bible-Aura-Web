@@ -1,216 +1,22 @@
-/* AdSense Components Styling for Bible Aura */
+/* Minimal AdSense Styling - Let Google Auto-Place Ads */
 
-/* Base AdSense container styling */
+/* Basic container - minimal interference */
 .adsense-container {
   margin: 20px 0;
   text-align: center;
-  transition: opacity 0.3s ease;
 }
 
-.adsense-container:hover {
-  opacity: 0.9;
-}
-
-/* Bible Aura specific ad styling */
-.bible-aura-basic-ad {
-  margin: 24px auto;
-  max-width: 100%;
-}
-
-.bible-aura-banner-ad {
-  margin: 20px auto;
-  padding: 16px 0;
-}
-
-.bible-aura-fluid-ad {
-  margin: 32px auto;
-  padding: 24px 0;
-  border-top: 1px solid #f3f4f6;
-  border-bottom: 1px solid #f3f4f6;
-  background: linear-gradient(135deg, #fafafa 0%, #f9f9f9 100%);
-  border-radius: 8px;
-}
-
-.bible-aura-sidebar-ad {
-  margin: 20px 0;
-  padding: 16px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.bible-aura-article-ad {
-  margin: 40px auto;
-  padding: 24px 0;
-  max-width: 100%;
-}
-
-/* Header and homepage banner styling */
-.homepage-banner {
-  margin: 24px auto;
-  padding: 20px 0;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
-.header-ad {
-  margin: 16px auto;
-  padding: 12px 0;
-}
-
-/* In-feed ad styling */
-.infeed-ad {
-  margin: 32px auto;
-  padding: 24px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
-}
-
-/* Blog content ad styling */
-.blog-content-ad {
-  margin: 32px auto;
-  padding: 24px;
-  background: linear-gradient(135deg, #fef7ff 0%, #f3f4f6 100%);
-  border-radius: 8px;
-  border-left: 4px solid #f97316;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Mobile optimization */
-.mobile-ad {
-  display: block;
-  margin: 20px auto;
-  max-width: 100%;
-  padding: 12px;
-}
-
-/* Responsive design */
+/* Essential responsive styling only */
 @media (max-width: 768px) {
   .adsense-container {
     margin: 16px 0;
-    padding: 0 8px;
-  }
-  
-  .bible-aura-sidebar-ad {
-    display: none; /* Hide sidebar ads on mobile */
-  }
-  
-  .bible-aura-banner-ad,
-  .homepage-banner {
-    margin: 16px auto;
-    padding: 12px;
-  }
-  
-  .bible-aura-fluid-ad,
-  .infeed-ad {
-    margin: 24px 8px;
-    padding: 16px;
-  }
-  
-  .bible-aura-article-ad {
-    margin: 24px auto;
-    padding: 16px 0;
   }
 }
 
-@media (max-width: 480px) {
-  .adsense-container {
-    margin: 12px 0;
-    padding: 0 4px;
-  }
-  
-  .bible-aura-fluid-ad,
-  .infeed-ad,
-  .blog-content-ad {
-    margin: 16px 4px;
-    padding: 12px;
-    border-radius: 6px;
-  }
-}
-
-/* Large screen optimization */
-@media (min-width: 1200px) {
-  .bible-aura-banner-ad,
-  .homepage-banner {
-    max-width: 970px;
-    margin: 32px auto;
-  }
-  
-  .bible-aura-fluid-ad,
-  .infeed-ad {
-    max-width: 800px;
-    margin: 40px auto;
-  }
-}
-
-/* AdSense advertisement label styling */
-.adsense-container .advertisement-label {
-  font-size: 11px;
-  color: #6b7280;
-  text-align: center;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 500;
-}
-
-/* Hover effects for better UX */
-.bible-aura-banner-ad:hover,
-.homepage-banner:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-}
-
-.infeed-ad:hover,
-.blog-content-ad:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transition: all 0.3s ease;
-}
-
-/* Loading placeholder for ads */
-.adsense-loading {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 8px;
-  min-height: 100px;
-}
-
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Bible Aura brand integration */
-.adsense-container .bible-aura-branding {
-  border-left: 3px solid #f97316;
-  padding-left: 16px;
-}
-
-/* Accessibility improvements */
-.adsense-container:focus-within {
-  outline: 2px solid #f97316;
-  outline-offset: 2px;
-  border-radius: 8px;
-}
-
-/* Print media - hide ads */
+/* Hide ads when printing */
 @media print {
   .adsense-container,
-  .bible-aura-basic-ad,
-  .bible-aura-banner-ad,
-  .bible-aura-fluid-ad,
-  .bible-aura-sidebar-ad,
-  .bible-aura-article-ad {
+  .adsbygoogle {
     display: none !important;
   }
 } 
