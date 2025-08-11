@@ -37,6 +37,8 @@ import { NoteTaking } from '@/components/NoteTaking';
 import { BibleAIChat } from '@/components/BibleAIChat';
 import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
+import { ModernLayout } from '@/components/ModernLayout';
 
 // New bookmarks and favorites service
 import { 
@@ -606,10 +608,13 @@ How can I apply this to my life?
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
   const newTestamentBooks = books.filter(book => book.testament === 'new');
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+  // Choose layout based on device type
+  const Layout = isMobile ? MobileOptimizedLayout : ModernLayout;
 
-      <div className="flex h-screen">
+  return (
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="flex h-screen">
         {/* Mobile Chapter Navigation - Improved positioning and size */}
         {isMobile && selectedBook && (
           <div className="fixed top-20 right-4 z-50 flex items-center gap-2 bg-white rounded-xl shadow-lg p-1">
@@ -1504,7 +1509,8 @@ How can I apply this to my life?
           verseReference={generateVerseReference(selectedVerseForAI)}
         />
       )}
-    </div>
+      </div>
+    </Layout>
   );
 }
 
