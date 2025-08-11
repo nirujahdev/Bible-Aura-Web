@@ -573,59 +573,59 @@ export function BibleAuraChat() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
+        <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3 lg:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 lg:gap-3">
               {/* Mobile Chat History Toggle */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowMobileHistory(!showMobileHistory)}
-                className="lg:hidden text-gray-600 hover:text-gray-800"
+                className="lg:hidden text-gray-600 hover:text-gray-800 p-1"
               >
-                <History className="h-5 w-5" />
+                <History className="h-4 w-4 lg:h-5 lg:w-5" />
               </Button>
               
-              <span className="text-orange-500 text-xl">✦</span>
+              <span className="text-orange-500 text-lg lg:text-xl">✦</span>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">Bible Aura AI</h1>
-                <p className="text-sm text-gray-600">Your Biblical Study Assistant</p>
+                <h1 className="text-sm lg:text-xl font-bold text-gray-800">Bible Aura AI</h1>
+                <p className="text-xs lg:text-sm text-gray-600">Your Biblical Study Assistant</p>
               </div>
             </div>
             
             <Button
               onClick={createNewConversation}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm"
               size="sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
               New Chat
             </Button>
           </div>
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 px-4 lg:px-6 py-4">
-          <div className="max-w-4xl mx-auto space-y-6">
+        <ScrollArea className="flex-1 px-3 lg:px-6 py-3 lg:py-4">
+          <div className="max-w-4xl mx-auto space-y-4 lg:space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-8 lg:py-12">
-                <div className="text-orange-500 mb-4">
-                  <Sparkles className="h-12 lg:h-16 w-12 lg:w-16 mx-auto" />
+              <div className="text-center py-6 lg:py-12">
+                <div className="text-orange-500 mb-3 lg:mb-4">
+                  <Sparkles className="h-8 lg:h-16 w-8 lg:w-16 mx-auto" />
                 </div>
-                <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">
-                  Hello Benaiah!
+                <h2 className="text-lg lg:text-2xl font-bold text-gray-800 mb-2">
+                  I'm Bible Aura AI, How can I assist you from the Bible?
                 </h2>
-                <p className="text-gray-600 mb-6 lg:mb-8">
-                  How can I assist you with your biblical studies today?
+                <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-8 px-4">
+                  Ask me anything about Scripture and I'll provide biblical insights
                 </p>
                 
                 {/* Suggested Questions */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-w-3xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-3 max-w-3xl mx-auto px-4">
                   {getSuggestedQuestions().map((question, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="text-left h-auto p-4 hover:bg-orange-50 border-orange-200 whitespace-normal break-words min-h-[60px] flex items-center justify-start"
+                      className="text-left h-auto p-3 lg:p-4 hover:bg-orange-50 border-orange-200 whitespace-normal break-words min-h-[50px] lg:min-h-[60px] flex items-center justify-start"
                       onClick={() => {
                         // Directly send the suggested question
                         if (!isLoading && question.trim()) {
@@ -636,7 +636,7 @@ export function BibleAuraChat() {
                         }
                       }}
                     >
-                      <span className="text-sm leading-relaxed">{question}</span>
+                      <span className="text-xs lg:text-sm leading-relaxed">{question}</span>
                     </Button>
                   ))}
                 </div>
@@ -710,15 +710,15 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 px-4 lg:px-6 py-4">
+        <div className="bg-white border-t border-gray-200 px-3 lg:px-6 py-3 lg:py-4">
           <div className="max-w-4xl mx-auto">
             {/* Controls */}
-            <div className="flex items-center gap-2 mb-3 text-sm overflow-x-auto">
+            <div className="flex items-center gap-1 lg:gap-2 mb-2 lg:mb-3 text-xs lg:text-sm overflow-x-auto">
               <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                <SelectTrigger className="w-32 lg:w-40 h-8 text-xs flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
-                    <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
+                <SelectTrigger className="w-28 lg:w-40 h-7 lg:h-8 text-xs flex-shrink-0">
+                  <div className="flex items-center gap-1 lg:gap-2">
+                    {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-2.5 w-2.5 lg:h-3 lg:w-3" })}
+                    <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent>
@@ -734,17 +734,17 @@ export function BibleAuraChat() {
               </Select>
 
               <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                <SelectTrigger className="w-20 lg:w-24 h-8 text-xs flex-shrink-0">
+                <SelectTrigger className="w-18 lg:w-24 h-7 lg:h-8 text-xs flex-shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="tamil">Tamil</SelectItem>
+                  <SelectItem value="english" className="text-xs">English</SelectItem>
+                  <SelectItem value="tamil" className="text-xs">Tamil</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={currentTranslation} onValueChange={(value) => setCurrentTranslation(value as TranslationCode)}>
-                <SelectTrigger className="w-16 lg:w-20 h-8 text-xs flex-shrink-0">
+                <SelectTrigger className="w-14 lg:w-20 h-7 lg:h-8 text-xs flex-shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -764,15 +764,15 @@ export function BibleAuraChat() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Ask me anything about the Bible... (${CHAT_MODES[currentMode]?.name})`}
-                className="pr-14 min-h-[60px] max-h-32 resize-none border-orange-200 focus:border-orange-400"
+                placeholder={`Type your query...`}
+                className="pr-12 lg:pr-14 min-h-[50px] lg:min-h-[60px] max-h-32 resize-none border-orange-200 focus:border-orange-400 text-sm lg:text-base"
                 disabled={isLoading}
               />
               
               <Button
                 onClick={handleSendMessage}
                 disabled={isLoading || !input.trim()}
-                className="absolute bottom-2 right-2 h-8 bg-orange-500 hover:bg-orange-600 text-white px-4"
+                className="absolute bottom-2 right-2 h-7 lg:h-8 bg-orange-500 hover:bg-orange-600 text-white px-2 lg:px-4 text-xs lg:text-sm"
               >
                 {isLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
