@@ -16,7 +16,17 @@ import {
   MessageCircle,
   Search,
   Home,
-  MoreVertical
+  MoreVertical,
+  History,
+  BookMarked,
+  Languages,
+  Filter,
+  List,
+  Edit3,
+  Share2,
+  Download,
+  Bookmark,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,138 +36,176 @@ import { Button } from '@/components/ui/button';
 interface MobileMoreMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  currentPage: string;
 }
 
-// Main navigation items
-const mainNavItems = [
-  { 
-    name: 'AI Chat', 
-    href: '/dashboard', 
-    icon: MessageCircle,
-    description: 'Bible AI Assistant',
-    quickAction: { name: 'New Chat', action: 'new-chat' }
-  },
-  { 
-    name: 'Bible', 
-    href: '/bible', 
-    icon: BookOpen,
-    description: 'Read Scripture',
-    quickAction: { name: 'Random Verse', action: 'random-verse' }
-  },
-  { 
-    name: 'Study Hub', 
-    href: '/study-hub', 
-    icon: Search,
-    description: 'Bible Study Tools',
-    quickAction: { name: 'New Study', action: 'new-study' }
-  },
-  { 
-    name: 'Journal', 
-    href: '/journal', 
-    icon: PenTool,
-    description: 'Personal reflections',
-    quickAction: { name: 'New Entry', action: 'new-journal' }
+// Get contextual actions based on current page
+const getContextualActions = (page: string) => {
+  switch (page) {
+    case '/':
+    case '/dashboard':
+      return [
+        { name: 'Chat History', icon: History, action: 'chat-history', description: 'View past conversations' },
+        { name: 'New Chat', icon: Plus, action: 'new-chat', description: 'Start fresh conversation' },
+        { name: 'Clear Chat', icon: RefreshCw, action: 'clear-chat', description: 'Clear current chat' },
+        { name: 'Export Chat', icon: Download, action: 'export-chat', description: 'Download conversation' }
+      ];
+    
+    case '/bible':
+      return [
+        { name: 'Book Selection', icon: BookOpen, action: 'book-selection', description: 'Choose Bible book' },
+        { name: 'Translation', icon: Languages, action: 'translation', description: 'Change translation' },
+        { name: 'Search Verses', icon: Search, action: 'search-verses', description: 'Find specific verses' },
+        { name: 'Bookmarks', icon: Bookmark, action: 'bookmarks', description: 'Saved verses' },
+        { name: 'Reading Plan', icon: Calendar, action: 'reading-plan', description: 'Daily reading' }
+      ];
+    
+    case '/journal':
+      return [
+        { name: 'Journal List', icon: List, action: 'journal-list', description: 'View all entries' },
+        { name: 'New Entry', icon: Edit3, action: 'new-entry', description: 'Write new entry' },
+        { name: 'Categories', icon: Filter, action: 'categories', description: 'Filter by category' },
+        { name: 'Export Journal', icon: Download, action: 'export-journal', description: 'Download entries' }
+      ];
+    
+    case '/study-hub':
+      return [
+        { name: 'Study Tools', icon: Search, action: 'study-tools', description: 'Bible study aids' },
+        { name: 'Saved Studies', icon: BookMarked, action: 'saved-studies', description: 'Your studies' },
+        { name: 'Study Plans', icon: Calendar, action: 'study-plans', description: 'Learning plans' },
+        { name: 'Share Study', icon: Share2, action: 'share-study', description: 'Share with others' }
+      ];
+    
+    case '/sermons':
+      return [
+        { name: 'Sermon List', icon: List, action: 'sermon-list', description: 'View all sermons' },
+        { name: 'Write Sermon', icon: Edit3, action: 'write-sermon', description: 'Create new sermon' },
+        { name: 'Templates', icon: BookMarked, action: 'templates', description: 'Sermon templates' },
+        { name: 'Export Sermon', icon: Download, action: 'export-sermon', description: 'Download sermon' }
+      ];
+    
+    case '/community':
+      return [
+        { name: 'New Discussion', icon: Plus, action: 'new-discussion', description: 'Start discussion' },
+        { name: 'My Posts', icon: User, action: 'my-posts', description: 'Your posts' },
+        { name: 'Saved Posts', icon: Bookmark, action: 'saved-posts', description: 'Bookmarked posts' },
+        { name: 'Groups', icon: Users, action: 'groups', description: 'Join groups' }
+      ];
+    
+    case '/favorites':
+      return [
+        { name: 'Verses', icon: BookOpen, action: 'fav-verses', description: 'Favorite verses' },
+        { name: 'Studies', icon: Search, action: 'fav-studies', description: 'Favorite studies' },
+        { name: 'Sermons', icon: PenTool, action: 'fav-sermons', description: 'Favorite sermons' },
+        { name: 'Export All', icon: Download, action: 'export-favorites', description: 'Download favorites' }
+      ];
+    
+    default:
+      return [
+        { name: 'Quick Search', icon: Search, action: 'quick-search', description: 'Search anything' },
+        { name: 'Bookmarks', icon: Bookmark, action: 'bookmarks', description: 'Your bookmarks' },
+        { name: 'History', icon: History, action: 'history', description: 'Recent activity' }
+      ];
   }
-];
+};
 
-// Additional features
-const additionalItems = [
-  { 
-    name: 'Sermons', 
-    href: '/sermons', 
-    icon: PenTool,
-    description: 'Sermon library & writer',
-    quickAction: { name: 'Write Sermon', action: 'new-sermon' }
-  },
-  { 
-    name: 'Community', 
-    href: '/community', 
-    icon: Users,
-    description: 'Connect with believers',
-    quickAction: { name: 'New Discussion', action: 'new-discussion' }
-  },
-  { 
-    name: 'Favorites', 
-    href: '/favorites', 
-    icon: Heart,
-    description: 'Saved verses & content'
-  },
-  { 
-    name: 'Topical Study', 
-    href: '/topical-study', 
-    icon: BookOpen,
-    description: 'Theme-based studies'
-  },
-  { 
-    name: 'Parables Study', 
-    href: '/parables-study', 
-    icon: Star,
-    description: 'Learn from parables'
+// Get page title from path
+const getPageTitle = (page: string) => {
+  switch (page) {
+    case '/':
+    case '/dashboard':
+      return 'AI Chat';
+    case '/bible':
+      return 'Bible';
+    case '/journal':
+      return 'Journal';
+    case '/study-hub':
+      return 'Study Hub';
+    case '/sermons':
+      return 'Sermons';
+    case '/community':
+      return 'Community';
+    case '/favorites':
+      return 'Favorites';
+    case '/topical-study':
+      return 'Topical Study';
+    case '/parables-study':
+      return 'Parables Study';
+    case '/profile':
+      return 'Profile';
+    default:
+      return 'Quick Actions';
   }
-];
+};
 
-const profileMenuItems = [
-  { 
-    name: 'Profile & Settings', 
-    href: '/profile', 
-    icon: User,
-    description: 'Account & preferences'
-  },
-  { 
-    name: 'Subscription', 
-    href: '/pricing', 
-    icon: Crown,
-    description: 'Manage subscription'
-  }
-];
-
-export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
-  const location = useLocation();
+export function MobileMoreMenu({ isOpen, onClose, currentPage }: MobileMoreMenuProps) {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
 
-  const getUserName = () => {
-    if (profile?.display_name) {
-      return profile.display_name.split(' ')[0];
-    }
-    if (user?.email) {
-      return user.email.split('@')[0];
-    }
-    return 'Friend';
-  };
+  const contextualActions = getContextualActions(currentPage);
+  const pageTitle = getPageTitle(currentPage);
 
-  const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return location.pathname === '/' || location.pathname === '/dashboard';
-    }
-    return location.pathname === href;
-  };
-
-  const handleQuickAction = (action: string) => {
+  const handleAction = (action: string) => {
     switch (action) {
+      case 'chat-history':
+        // Show chat history (could open a modal or navigate)
+        console.log('Show chat history');
+        break;
       case 'new-chat':
-        // Reset chat or start new conversation
         navigate('/dashboard');
         window.location.reload();
         break;
-      case 'random-verse':
-        // Navigate to random verse
-        navigate('/bible?random=true');
+      case 'clear-chat':
+        // Clear current chat
+        window.location.reload();
         break;
-      case 'new-study':
-        navigate('/study-hub?new=true');
+      case 'book-selection':
+        // Open book selection modal/dropdown
+        console.log('Open book selection');
         break;
-      case 'new-journal':
+      case 'translation':
+        // Open translation selector
+        console.log('Open translation selector');
+        break;
+      case 'search-verses':
+        navigate('/bible?search=true');
+        break;
+      case 'bookmarks':
+        navigate('/favorites');
+        break;
+      case 'reading-plan':
+        // Open reading plan
+        console.log('Open reading plan');
+        break;
+      case 'journal-list':
+        navigate('/journal?view=list');
+        break;
+      case 'new-entry':
         navigate('/journal?new=true');
         break;
-      case 'new-sermon':
+      case 'categories':
+        navigate('/journal?categories=true');
+        break;
+      case 'study-tools':
+        navigate('/study-hub?tools=true');
+        break;
+      case 'saved-studies':
+        navigate('/study-hub?saved=true');
+        break;
+      case 'sermon-list':
+        navigate('/sermons?view=list');
+        break;
+      case 'write-sermon':
         navigate('/sermons?new=true');
         break;
       case 'new-discussion':
         navigate('/community?new=true');
         break;
-      default:
+      case 'my-posts':
+        navigate('/community?my-posts=true');
         break;
+      default:
+        console.log('Action not implemented:', action);
     }
     onClose();
   };
@@ -172,13 +220,16 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
         onClick={onClose}
       />
       
-      {/* Side Menu Panel */}
+      {/* Contextual Menu Panel */}
       <div className="fixed right-0 top-0 bottom-0 z-50 bg-white shadow-2xl w-72 max-w-[85vw] lg:hidden transform transition-transform duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
           <div className="flex items-center gap-2">
             <MoreVertical className="h-4 w-4 text-orange-500" />
-            <h2 className="text-sm font-semibold text-gray-900">Quick Actions</h2>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">{pageTitle}</h2>
+              <p className="text-xs text-gray-600">Quick Actions</p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -188,187 +239,51 @@ export function MobileMoreMenu({ isOpen, onClose }: MobileMoreMenuProps) {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto h-full pb-4">
-          {/* User Profile Section */}
-          {user && (
-            <div className="p-3 border-b border-gray-100">
-              <div className="flex items-center gap-2 p-2 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-100">
-                <Avatar className="h-8 w-8 ring-2 ring-orange-200">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-orange-500 text-white font-semibold text-xs">
-                    {getUserName().charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-xs truncate">
-                    Hi, {getUserName()}
+        {/* Contextual Actions */}
+        <div className="flex-1 overflow-y-auto p-3">
+          <div className="space-y-1">
+            {contextualActions.map((action, index) => {
+              const IconComponent = action.icon;
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleAction(action.action)}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-all duration-200"
+                >
+                  <div className="p-1.5 rounded-md bg-gray-100">
+                    <IconComponent className="h-4 w-4" />
                   </div>
-                  <div className="text-xs text-gray-600 truncate">{user?.email}</div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full">
-                    <Calendar className="h-2.5 w-2.5" />
-                    <span>{profile?.reading_streak || 0}</span>
+                  <div className="flex-1 text-left">
+                    <div className="font-medium text-sm">{action.name}</div>
+                    <div className="text-xs text-gray-500">{action.description}</div>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Main Navigation with Quick Actions */}
-          <div className="p-3 border-b border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-700 mb-2">Main Navigation</h3>
-            <div className="space-y-1">
-              {mainNavItems.map((item) => {
-                const active = isActive(item.href);
-                const IconComponent = item.icon;
-                
-                return (
-                  <div key={item.name} className="space-y-1">
-                    <Link
-                      to={item.href}
-                      onClick={onClose}
-                      className={cn(
-                        "flex items-center gap-2 p-2 rounded-lg transition-all duration-200",
-                        active 
-                          ? "bg-orange-50 border border-orange-200 text-orange-600" 
-                          : "hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      <div className={cn(
-                        "p-1 rounded-md",
-                        active 
-                          ? "bg-orange-100" 
-                          : "bg-gray-100"
-                      )}>
-                        <IconComponent className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs">{item.name}</div>
-                        <div className="text-xs text-gray-500 truncate">{item.description}</div>
-                      </div>
-                    </Link>
-                    
-                    {/* Quick Action */}
-                    {item.quickAction && (
-                      <button
-                        onClick={() => handleQuickAction(item.quickAction.action)}
-                        className="w-full flex items-center gap-1.5 p-1.5 ml-3 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-800"
-                      >
-                        <Plus className="h-2.5 w-2.5" />
-                        <span className="text-xs font-medium">{item.quickAction.name}</span>
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Additional Features */}
-          <div className="p-3 border-b border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-700 mb-2">More Features</h3>
+          {/* Quick Links Section */}
+          <div className="mt-6 pt-3 border-t border-gray-200">
+            <h3 className="text-xs font-semibold text-gray-700 mb-2">Quick Links</h3>
             <div className="space-y-1">
-              {additionalItems.map((item) => {
-                const active = isActive(item.href);
-                const IconComponent = item.icon;
-                
-                return (
-                  <div key={item.name} className="space-y-1">
-                    <Link
-                      to={item.href}
-                      onClick={onClose}
-                      className={cn(
-                        "flex items-center gap-2 p-2 rounded-lg transition-all duration-200",
-                        active 
-                          ? "bg-orange-50 border border-orange-200 text-orange-600" 
-                          : "hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      <div className={cn(
-                        "p-1 rounded-md",
-                        active 
-                          ? "bg-orange-100" 
-                          : "bg-gray-100"
-                      )}>
-                        <IconComponent className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs">{item.name}</div>
-                        <div className="text-xs text-gray-500 truncate">{item.description}</div>
-                      </div>
-                    </Link>
-                    
-                    {/* Quick Action */}
-                    {item.quickAction && (
-                      <button
-                        onClick={() => handleQuickAction(item.quickAction.action)}
-                        className="w-full flex items-center gap-1.5 p-1.5 ml-3 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-800"
-                      >
-                        <Plus className="h-2.5 w-2.5" />
-                        <span className="text-xs font-medium">{item.quickAction.name}</span>
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+              <Link
+                to="/profile"
+                onClick={onClose}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <User className="h-4 w-4" />
+                <span className="text-sm">Profile & Settings</span>
+              </Link>
+              <Link
+                to="/pricing"
+                onClick={onClose}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 text-gray-700"
+              >
+                <Crown className="h-4 w-4" />
+                <span className="text-sm">Subscription</span>
+              </Link>
             </div>
-          </div>
-
-          {/* Profile & Settings */}
-          <div className="p-3 border-b border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-700 mb-2">Account</h3>
-            <div className="space-y-1">
-              {profileMenuItems.map((item) => {
-                const active = isActive(item.href);
-                const IconComponent = item.icon;
-                
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg transition-all duration-200",
-                      active 
-                        ? "bg-orange-50 border border-orange-200 text-orange-600" 
-                        : "hover:bg-gray-50 text-gray-700"
-                    )}
-                  >
-                    <div className={cn(
-                      "p-1 rounded-md",
-                      active 
-                        ? "bg-orange-100" 
-                        : "bg-gray-100"
-                    )}>
-                      <IconComponent className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-xs">{item.name}</div>
-                      <div className="text-xs text-gray-500">{item.description}</div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Sign Out */}
-          <div className="p-3">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 h-8 text-red-600 border-red-200 hover:bg-red-50 text-xs"
-              onClick={() => {
-                signOut();
-                onClose();
-              }}
-            >
-              <div className="p-1 bg-red-100 rounded-md">
-                <LogOut className="h-3 w-3" />
-              </div>
-              <span className="font-medium">Sign Out</span>
-            </Button>
           </div>
         </div>
       </div>
