@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, Brain, 
@@ -1295,7 +1294,7 @@ function VerseCard({
             onClick={() => onToggleFavorite(verse)}
             className="h-6 w-6 md:h-8 md:w-8 p-0"
           >
-            <Heart className={`h-3 w-3 md:h-4 md:w-4 ${
+            <Heart className={`h-3 w-3 md:h-4 w-4 ${
               isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'
             }`} />
           </Button>
