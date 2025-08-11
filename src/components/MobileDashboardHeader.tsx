@@ -52,9 +52,9 @@ export function MobileDashboardHeader({
       "sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-30 lg:hidden",
       className
     )}>
-      <div className="px-3 py-2">
+      <div className="px-3 py-2 pr-14"> {/* Added right padding to avoid overlap with three-dot menu */}
         {/* Main Header Row */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-start mb-2"> {/* Changed from justify-between to justify-start */}
           {/* Logo & Title */}
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center w-8 h-8 bg-orange-500 rounded-lg">
@@ -68,25 +68,6 @@ export function MobileDashboardHeader({
                 <p className="text-xs text-gray-600">{subtitle}</p>
               )}
             </div>
-          </div>
-
-          {/* User Actions */}
-          <div className="flex items-center gap-1.5">
-            {/* Notifications */}
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 relative">
-              <Bell className="h-4 w-4 text-gray-600" />
-              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white" />
-            </Button>
-
-            {/* Profile */}
-            <Link to="/profile">
-              <Avatar className="h-8 w-8 ring-1 ring-gray-200 hover:ring-orange-300 transition-all">
-                <AvatarImage src={profile?.avatar_url} />
-                <AvatarFallback className="bg-orange-500 text-white font-semibold text-xs">
-                  {getUserName().charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
           </div>
         </div>
 
