@@ -1,0 +1,13 @@
+# ads.txt for Bible Aura - biblelive.online
+# This file is used to verify authorized digital sellers for programmatic advertising
+# Generated for AdSense account: ca-pub-2517915911313139
+
+# Google AdSense - Primary Account
+google.com, pub-2517915911313139, DIRECT, f08c47fec0942fa0
+
+# Additional authorized advertising systems can be added below
+# Format: <Field #1>, <Field #2>, <Field #3>, <Field #4>
+# Field #1: Domain name of the advertising system
+# Field #2: Publisher's Account ID
+# Field #3: Type of Account/Relationship
+# Field #4: Certification Authority ID (optional) 
