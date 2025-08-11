@@ -139,8 +139,6 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
               { name: 'Sermons', href: '/sermons', icon: '🎤', description: 'Sermon Library' },
               { name: 'Community', href: '/community', icon: '👥', description: 'Connect with Believers' },
               { name: 'Favorites', href: '/favorites', icon: '❤️', description: 'Saved Content' },
-              { name: 'Topical Study', href: '/topical-study', icon: '📚', description: 'Theme Studies' },
-              { name: 'Parables Study', href: '/parables-study', icon: '⭐', description: 'Learn Parables' },
               { name: 'Profile', href: '/profile', icon: '👤', description: 'Account Settings' },
               { name: 'Subscription', href: '/pricing', icon: '👑', description: 'Manage Plan' }
             ].map((item) => {
