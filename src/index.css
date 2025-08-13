@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
-/* React Quill Editor Styles */
-@import 'react-quill/dist/quill.snow.css';
+/* React Quill Editor Styles - Removed due to build conflicts after security updates */
+/* Note: Quill styling is now handled by the component itself */
 
 /* AdSense Components Styling */
 @import './components/ads/ads.css';

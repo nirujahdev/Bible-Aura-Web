@@ -235,8 +235,21 @@ export class EnhancedSermonAI {
       // Build comprehensive prompt for AI
       const prompt = this.buildEnhancedPrompt(request, advancedOptions);
       
-      // For now, generate using template system (in production, this would call your AI service)
-      const sermon = await this.generateSermonFromTemplate(request, advancedOptions);
+      // Call DeepSeek API for actual AI generation
+      const response = await this.callDeepSeekAPI(prompt);
+      
+      let sermon: GeneratedSermon;
+      try {
+        // Try to parse as JSON first
+        sermon = JSON.parse(response);
+      } catch (parseError) {
+        // If JSON parsing fails, use enhanced parsing
+        sermon = await this.parseAIResponse(response, request, advancedOptions);
+      }
+      
+      // Enhance with calculated fields
+      sermon.estimatedDuration = this.calculateDuration(request.length);
+      sermon.wordCount = this.calculateWordCount(request.length);
       
       // Log generation for analytics
       await this.logSermonGeneration(request, sermon);
@@ -246,6 +259,121 @@ export class EnhancedSermonAI {
       console.error('Error generating sermon:', error);
       throw new Error('Failed to generate sermon. Please try again.');
     }
+  }
+
+  // DeepSeek API call for sermon generation
+  private static async callDeepSeekAPI(prompt: string): Promise<string> {
+    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
+    
+    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
+      throw new Error('🔑 DeepSeek API key not configured! Please check your environment variables.');
+    }
+
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts. Always respond in valid JSON format.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 8000,
+        temperature: 0.7,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('DeepSeek API Error:', errorText);
+      throw new Error(`Bible Aura AI error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
+  }
+
+  // Enhanced AI response parsing
+  private static async parseAIResponse(
+    response: string, 
+    request: SermonGenerationRequest, 
+    options: AdvancedOptions
+  ): Promise<GeneratedSermon> {
+    // If AI response is not JSON, create structured sermon from text
+    const lines = response.split('\n').filter(line => line.trim());
+    const title = this.extractTitle(lines) || this.generateDynamicTitle(request);
+    
+    return {
+      title,
+      overview: {
+        centralMessage: this.extractOrGenerate(lines, 'central message', () => this.generateCentralMessage(request)),
+        mainPoints: this.extractMainPointsFromText(lines) || this.generateMainPoints(request),
+        targetAudience: request.audienceType,
+        occasion: request.occasion || 'sunday-service'
+      },
+      openingHook: this.generateOpeningHook(request),
+      scriptureFoundation: this.generateScriptureFoundation(request),
+      theologicalFramework: this.generateTheologicalFramework(request),
+      mainPoints: this.generateDetailedMainPoints(request, options),
+      realWorldApplications: this.generateApplications(request),
+      callToAction: this.generateCallToAction(request),
+      closing: this.generateClosing(request, title),
+      studyGuide: this.generateStudyGuide(request),
+      ...(request.includeWorshipSuggestions && {
+        worshipSuggestions: this.generateWorshipSuggestions(request)
+      }),
+      estimatedDuration: this.calculateDuration(request.length),
+      wordCount: this.calculateWordCount(request.length)
+    };
+  }
+
+  // Helper methods for parsing AI response
+  private static extractTitle(lines: string[]): string | null {
+    for (const line of lines) {
+      if (line.toLowerCase().includes('title:') || line.toLowerCase().includes('sermon title:')) {
+        return line.replace(/.*title:\s*/i, '').trim();
+      }
+    }
+    return null;
+  }
+
+  private static extractOrGenerate(lines: string[], keyword: string, fallback: () => string): string {
+    for (const line of lines) {
+      if (line.toLowerCase().includes(keyword.toLowerCase())) {
+        return line.replace(new RegExp(`.*${keyword}:\\s*`, 'i'), '').trim();
+      }
+    }
+    return fallback();
+  }
+
+  private static extractMainPointsFromText(lines: string[]): string[] | null {
+    const points: string[] = [];
+    let inPointsSection = false;
+    
+    for (const line of lines) {
+      if (line.toLowerCase().includes('main points') || line.toLowerCase().includes('key points')) {
+        inPointsSection = true;
+        continue;
+      }
+      
+      if (inPointsSection && line.match(/^\d+\./)) {
+        points.push(line.replace(/^\d+\.\s*/, '').trim());
+      } else if (inPointsSection && points.length > 0 && !line.match(/^\d+\./)) {
+        break;
+      }
+    }
+    
+    return points.length > 0 ? points : null;
   }
 
   private static buildEnhancedPrompt(
@@ -289,7 +417,73 @@ ADVANCED OPTIONS:
 - Illustration Style: ${options.illustrationStyle}
 - Application Focus: ${options.applicationFocus}
 
+Please structure your response as a comprehensive JSON object with the following structure:
+
+{
+  "title": "Compelling sermon title",
+  "overview": {
+    "centralMessage": "One-sentence central message",
+    "mainPoints": ["Point 1", "Point 2", "Point 3"],
+    "targetAudience": "${request.audienceType}",
+    "occasion": "${request.occasion}"
+  },
+  "openingHook": {
+    "story": "Engaging opening story/illustration",
+    "connection": "How it connects to audience",
+    "bridge": "Transition to main scripture"
+  },
+  "scriptureFoundation": {
+    "primaryText": "${request.scripture}",
+    "context": "Historical and cultural context",
+    "originalLanguage": "Hebrew/Greek insights",
+    "authorIntent": "Author's intended message"
+  },
+  "theologicalFramework": {
+    "keyTheology": "Core theological concepts",
+    "redemptiveContext": "How this fits in God's redemptive plan",
+    "crossReferences": ["supporting verses"],
+    "doctrinalConnections": ["relevant doctrines"]
+  },
+  "mainPoints": [
+    {
+      "title": "Main point title",
+      "content": "Detailed explanation (300-500 words)",
+      "scriptureSupport": ["supporting verses"],
+      "illustrations": ["relevant illustrations"],
+      "applications": ["practical applications"]
+    }
+  ],
+  "realWorldApplications": {
+    "actionSteps": ["specific action steps"],
+    "lifeChallenges": ["addressing life challenges"],
+    "practicalTools": ["practical tools for implementation"]
+  },
+  "callToAction": {
+    "commitment": "Specific commitment request",
+    "prayer": "Closing prayer",
+    "nextSteps": ["follow-up actions"],
+    "resources": ["additional resources"]
+  },
+  "closing": {
+    "summary": "Key takeaways summary",
+    "benediction": "Blessing/benediction",
+    "preview": "Preview of next week/series"
+  },
+  "studyGuide": {
+    "discussionQuestions": ["discussion questions"],
+    "memoryVerse": "Key memory verse",
+    "additionalStudy": ["additional study resources"],
+    "prayerPoints": ["prayer points"]
+  }${request.includeWorshipSuggestions ? `,
+  "worshipSuggestions": {
+    "openingSongs": ["opening song suggestions"],
+    "responseSongs": ["response/meditation songs"],
+    "closingSongs": ["closing/sending songs"]
+  }` : ''}
+}
+
 OUTPUT REQUIREMENTS:
+- Respond ONLY with valid JSON - no additional text or formatting
 - Include comprehensive manuscript with transitions
 - Provide cross-references and original language insights
 - Include practical applications for target audience
@@ -298,6 +492,7 @@ ${request.includeWorshipSuggestions ? '- Include worship song suggestions' : ''}
 ${request.includeDevotionalVersion ? '- Include devotional adaptation' : ''}
 - Ensure cultural sensitivity for ${request.language} audience
 - Maintain theological accuracy within ${request.denominationLens} framework
+- Make content practical and engaging for ${request.audienceType} audience
     `;
   }
 

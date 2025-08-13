@@ -100,7 +100,11 @@ const TRANSLATIONS = [
 
 // DeepSeek AI integration with enhanced speed optimization
 const callDeepSeekAPI = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
-  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || 'sk-c253b7693e9f49f5830d936b9c92d446';
+  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
+  
+  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
+    throw new Error('🔑 DeepSeek API key not configured! Please check your environment variables.');
+  }
   
   const systemPrompt = generateSystemPrompt(mode);
   

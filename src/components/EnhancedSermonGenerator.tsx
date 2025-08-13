@@ -253,10 +253,7 @@ const EnhancedSermonGenerator: React.FC<EnhancedSermonGeneratorProps> = ({
 
     setIsGenerating(true);
     try {
-      // Simulate AI generation with realistic timing
-      await new Promise(resolve => setTimeout(resolve, 8000));
-
-      // Create comprehensive sermon based on form data
+      // Create comprehensive sermon based on form data using DeepSeek AI
       const sermon = await generateComprehensiveSermon(formData, advancedOptions);
       
       setGeneratedSermon(sermon);
