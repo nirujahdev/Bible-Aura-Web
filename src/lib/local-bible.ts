@@ -377,58 +377,10 @@ export async function getVerse(
   }
 }
 
-// Save verse to favorites/bookmarks (using Supabase)
-export async function saveBookmark(verse: BibleVerse, userId: string): Promise<boolean> {
-  try {
-    const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
-    const { error } = await supabase
-      .from('bookmarks')
-      .insert({
-        user_id: userId,
-        verse_id: verseId,
-        book_name: verse.book_name,
-        chapter: verse.chapter,
-        verse: verse.verse,
-        verse_text: verse.text,
-        verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
-        notes: null,
-        tags: [],
-        color: 'yellow',
-        is_favorite: true,
-        category: 'bookmark',
-        highlight_color: 'yellow',
-        created_at: new Date().toISOString()
-      });
-
-    return !error;
-  } catch (error) {
-    console.error('Error saving bookmark:', error);
-    return false;
-  }
-}
-
-// Get user bookmarks
-export async function getUserBookmarks(userId: string): Promise<BibleVerse[]> {
-  try {
-    const { data, error } = await supabase
-      .from('bookmarks')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    return (data || []).map(bookmark => ({
-      id: bookmark.verse_id,
-      book_id: bookmark.book_name,
-      book_name: bookmark.book_name,
-      chapter: bookmark.chapter,
-      verse: bookmark.verse,
-      text: bookmark.verse_text,
-      language: 'english' as const // Default to English, can be enhanced later
-    }));
-  } catch (error) {
-    console.error('Error fetching bookmarks:', error);
-    return [];
-  }
-} 
+// NOTE: Bookmark functionality has been moved to bookmarks-favorites-service.ts
+// Use BookmarksService and FavoritesService from that file instead
+// 
+// Example usage:
+// import { BookmarksService, FavoritesService } from '@/lib/bookmarks-favorites-service';
+// await BookmarksService.addToBookmarks(userId, verse, 'study', 'yellow', 'KJV');
+// await FavoritesService.addToFavorites(userId, verse, 'KJV'); 

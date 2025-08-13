@@ -1,13 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Types for Bible verse data
 export interface BibleVerse {
   book_name: string;
   chapter: number;
   verse: number;
   text: string;
-  id?: string;
 }
 
+// User Favorites interface
 export interface UserFavorite {
   id: string;
   user_id: string;
@@ -24,6 +25,7 @@ export interface UserFavorite {
   updated_at: string;
 }
 
+// User Bookmarks interface
 export interface UserBookmark {
   id: string;
   user_id: string;
@@ -59,7 +61,7 @@ export class FavoritesService {
       console.log('🔍 Fetching favorites for user:', userId);
       
       const { data, error } = await supabase
-        .from('user_favorites')
+        .from('user_bible_favorites')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -68,21 +70,16 @@ export class FavoritesService {
         console.error('❌ Error fetching favorites:', error);
         throw error;
       }
-      
+
       console.log('✅ Favorites fetched:', data?.length || 0);
       return data || [];
     } catch (error) {
       console.error('❌ Error in getUserFavorites:', error);
-      return [];
+      throw new Error(`Failed to fetch favorites: ${error.message}`);
     }
   }
 
-  static async addToFavorites(
-    userId: string, 
-    verse: BibleVerse, 
-    translation: string = 'KJV',
-    notes?: string
-  ): Promise<UserFavorite | null> {
+  static async addToFavorites(userId: string, verse: BibleVerse, translation: string = 'KJV', notes?: string): Promise<UserFavorite | null> {
     try {
       console.log('🔍 Adding to favorites:', { userId, verse, translation });
       
@@ -105,7 +102,7 @@ export class FavoritesService {
       console.log('📝 Inserting favorite data:', favoriteData);
 
       const { data, error } = await supabase
-        .from('user_favorites')
+        .from('user_bible_favorites')
         .upsert(favoriteData, {
           onConflict: 'user_id,verse_id'
         })
@@ -127,12 +124,10 @@ export class FavoritesService {
 
   static async removeFromFavorites(userId: string, verse: BibleVerse): Promise<boolean> {
     try {
-      console.log('🔍 Removing from favorites:', { userId, verse });
-      
       const verseId = generateVerseId(verse);
       
       const { error } = await supabase
-        .from('user_favorites')
+        .from('user_bible_favorites')
         .delete()
         .eq('user_id', userId)
         .eq('verse_id', verseId);
@@ -141,7 +136,7 @@ export class FavoritesService {
         console.error('❌ Error removing favorite:', error);
         throw error;
       }
-      
+
       console.log('✅ Favorite removed successfully');
       return true;
     } catch (error) {
@@ -155,24 +150,24 @@ export class FavoritesService {
       const verseId = generateVerseId(verse);
       
       const { data, error } = await supabase
-        .from('user_favorites')
+        .from('user_bible_favorites')
         .select('id')
         .eq('user_id', userId)
         .eq('verse_id', verseId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('❌ Error checking favorite status:', error);
-        return false;
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
       }
-      
+
       return !!data;
     } catch (error) {
-      console.error('❌ Error in isFavorited:', error);
+      console.error('❌ Error checking if favorited:', error);
       return false;
     }
   }
 }
+
 
 // BOOKMARKS OPERATIONS
 export class BookmarksService {
@@ -181,7 +176,7 @@ export class BookmarksService {
       console.log('🔍 Fetching bookmarks for user:', userId);
       
       const { data, error } = await supabase
-        .from('user_bookmarks')
+        .from('user_bible_bookmarks')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -190,12 +185,12 @@ export class BookmarksService {
         console.error('❌ Error fetching bookmarks:', error);
         throw error;
       }
-      
+
       console.log('✅ Bookmarks fetched:', data?.length || 0);
       return data || [];
     } catch (error) {
       console.error('❌ Error in getUserBookmarks:', error);
-      return [];
+      throw new Error(`Failed to fetch bookmarks: ${error.message}`);
     }
   }
 
@@ -231,7 +226,7 @@ export class BookmarksService {
       console.log('📝 Inserting bookmark data:', bookmarkData);
 
       const { data, error } = await supabase
-        .from('user_bookmarks')
+        .from('user_bible_bookmarks')
         .upsert(bookmarkData, {
           onConflict: 'user_id,verse_id'
         })
@@ -253,12 +248,10 @@ export class BookmarksService {
 
   static async removeFromBookmarks(userId: string, verse: BibleVerse): Promise<boolean> {
     try {
-      console.log('🔍 Removing from bookmarks:', { userId, verse });
-      
       const verseId = generateVerseId(verse);
       
       const { error } = await supabase
-        .from('user_bookmarks')
+        .from('user_bible_bookmarks')
         .delete()
         .eq('user_id', userId)
         .eq('verse_id', verseId);
@@ -267,7 +260,7 @@ export class BookmarksService {
         console.error('❌ Error removing bookmark:', error);
         throw error;
       }
-      
+
       console.log('✅ Bookmark removed successfully');
       return true;
     } catch (error) {
@@ -281,72 +274,43 @@ export class BookmarksService {
       const verseId = generateVerseId(verse);
       
       const { data, error } = await supabase
-        .from('user_bookmarks')
+        .from('user_bible_bookmarks')
         .select('id')
         .eq('user_id', userId)
         .eq('verse_id', verseId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('❌ Error checking bookmark status:', error);
-        return false;
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
       }
-      
+
       return !!data;
     } catch (error) {
-      console.error('❌ Error in isBookmarked:', error);
-      return false;
-    }
-  }
-
-  static async updateBookmarkNotes(
-    userId: string, 
-    verse: BibleVerse, 
-    notes: string
-  ): Promise<boolean> {
-    try {
-      const verseId = generateVerseId(verse);
-      
-      const { error } = await supabase
-        .from('user_bookmarks')
-        .update({ 
-          notes: notes,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-        .eq('verse_id', verseId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('❌ Error updating bookmark notes:', error);
+      console.error('❌ Error checking if bookmarked:', error);
       return false;
     }
   }
 }
 
+
 // COMBINED OPERATIONS
 export class BibleVerseService {
   static async getVerseStatus(userId: string, verse: BibleVerse) {
     try {
-      const [isFavorited, isBookmarked] = await Promise.all([
-        FavoritesService.isFavorited(userId, verse),
-        BookmarksService.isBookmarked(userId, verse)
+      const [isBookmarked, isFavorited] = await Promise.all([
+        BookmarksService.isBookmarked(userId, verse),
+        FavoritesService.isFavorited(userId, verse)
       ]);
 
       return {
-        isFavorited,
         isBookmarked,
-        verseId: generateVerseId(verse),
-        verseReference: generateVerseReference(verse)
+        isFavorited
       };
     } catch (error) {
       console.error('❌ Error getting verse status:', error);
       return {
-        isFavorited: false,
         isBookmarked: false,
-        verseId: generateVerseId(verse),
-        verseReference: generateVerseReference(verse)
+        isFavorited: false
       };
     }
   }

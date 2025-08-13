@@ -41,7 +41,7 @@ interface AdSenseUniversalProps {
    */
   showLabel?: boolean;
   /**
-   * Make sidebar ads sticky
+   * Make sidebar ads sticky - DISABLED for policy compliance
    */
   sticky?: boolean;
   /**
@@ -65,8 +65,8 @@ const AdSenseUniversal: React.FC<AdSenseUniversalProps> = ({
   responsive = true,
   className = '',
   style = {},
-  showLabel = false,
-  sticky = false,
+  showLabel = true,
+  sticky = false, // Always disabled for policy compliance
   layoutKey = '-6t+ed+2i-1n-4w'
 }) => {
   useEffect(() => {
@@ -131,26 +131,33 @@ const AdSenseUniversal: React.FC<AdSenseUniversalProps> = ({
     }
   };
 
-  // Container styles based on type
+  // Container styles based on type - Policy compliant spacing
   const getContainerStyle = () => {
     const baseStyle = {
       textAlign: 'center' as const,
-      margin: '20px 0',
+      margin: '32px 0', // Increased for policy compliance
+      padding: '16px 0', // Added padding to prevent accidental clicks
+      minHeight: '100px',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      gap: '8px',
       ...style
     };
 
-    if (type === 'sidebar' && sticky) {
+    // Sticky ads disabled for policy compliance
+    if (type === 'sidebar') {
       return {
         ...baseStyle,
-        position: 'sticky' as const,
-        top: '20px'
+        position: 'relative' as const, // Never sticky
+        margin: '40px 0' // Extra margin for sidebar
       };
     }
 
     if (type === 'infeed' || type === 'article') {
       return {
         ...baseStyle,
-        margin: '32px 0'
+        margin: '48px 0' // Extra spacing for in-feed ads
       };
     }
 
@@ -190,7 +197,8 @@ const AdSenseUniversal: React.FC<AdSenseUniversalProps> = ({
           marginBottom: '8px',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          opacity: 0.8
         }}>
           Advertisement
         </div>

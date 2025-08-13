@@ -181,10 +181,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* AdSense Banner - Auto Placement */}
-      <section className="py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <SimpleAdSense slot="2853748608" />
+      {/* AdSense Banner - Policy Compliant Placement */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4">
+          <SimpleAdSense 
+            slot="2853748608" 
+            showLabel={true}
+          />
         </div>
       </section>
 
@@ -396,13 +399,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* AdSense In-Feed - Auto Placement */}
-      <section className="py-4">
-        <div className="max-w-7xl mx-auto px-4">
+      {/* AdSense In-Feed - Policy Compliant Placement */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
           <SimpleAdSense 
             slot="2682358212" 
             isFluid={true}
             layoutKey="-hp-o+1u-4z+9c"
+            showLabel={true}
           />
         </div>
       </section>

@@ -1,22 +1,72 @@
-/* Minimal AdSense Styling - Let Google Auto-Place Ads */
+/* Policy-Compliant AdSense Styling */
 
-/* Basic container - minimal interference */
+/* Main container - adequate spacing to prevent accidental clicks */
 .adsense-container {
-  margin: 20px 0;
+  margin: 32px 0;
+  padding: 16px 0;
   text-align: center;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  /* Clear separation from content */
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-/* Essential responsive styling only */
+/* Responsive spacing */
 @media (max-width: 768px) {
   .adsense-container {
-    margin: 16px 0;
+    margin: 24px 0;
+    padding: 12px 0;
   }
+}
+
+/* Extra spacing for banner ads */
+.adsense-banner {
+  margin: 40px 0 !important;
+  padding: 20px 0 !important;
+}
+
+/* Extra spacing for sidebar ads */
+.adsense-sidebar {
+  margin: 40px 0 !important;
+  padding: 16px 0 !important;
+  /* Never sticky for policy compliance */
+  position: relative !important;
+}
+
+/* In-feed ads spacing */
+.adsense-infeed {
+  margin: 48px 0 !important;
+  padding: 20px 0 !important;
 }
 
 /* Hide ads when printing */
 @media print {
   .adsense-container,
+  .adsense-banner,
+  .adsense-sidebar,
+  .adsense-infeed,
   .adsbygoogle {
     display: none !important;
   }
+}
+
+/* Ensure ads don't interfere with navigation */
+.adsbygoogle {
+  min-height: 50px;
+  display: block;
+}
+
+/* Advertisement labels */
+.ad-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: system-ui, -apple-system, sans-serif;
+  opacity: 0.8;
+  margin-bottom: 8px;
 } 

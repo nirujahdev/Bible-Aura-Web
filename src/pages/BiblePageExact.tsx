@@ -12,7 +12,8 @@ import {
   MessageCircle, Bot, X, Send, Check, Bookmark, Search, Calendar, Plus
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getChapterVerses, saveBookmark, type BibleVerse, type TranslationCode } from '@/lib/local-bible';
+import { getChapterVerses, type BibleVerse, type TranslationCode } from '@/lib/local-bible';
+import { BookmarksService } from '@/lib/bookmarks-favorites-service';
 import { Input } from '@/components/ui/input';
 
 interface BibleBook {
@@ -241,13 +242,14 @@ export default function BiblePageExact() {
       return;
     }
 
-    const success = await saveBookmark(verse, user.id);
-    if (success) {
+    try {
+      await BookmarksService.addToBookmarks(user.id, verse, 'study', 'yellow', 'KJV');
       toast({
         title: "Added to favorites",
         description: `${verse.book_name} ${verse.chapter}:${verse.verse} saved`
       });
-    } else {
+    } catch (error) {
+      console.error('Error saving to favorites:', error);
       toast({
         title: "Error",
         description: "Failed to save to favorites",

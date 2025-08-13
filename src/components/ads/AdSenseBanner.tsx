@@ -17,6 +17,10 @@ interface AdSenseBannerProps {
    * Custom style
    */
   style?: React.CSSProperties;
+  /**
+   * Whether to show advertisement label (required by policy)
+   */
+  showLabel?: boolean;
 }
 
 declare global {
@@ -29,7 +33,8 @@ const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   slot,
   size = 'banner',
   className = '',
-  style = {}
+  style = {},
+  showLabel = true
 }) => {
   useEffect(() => {
     try {
@@ -59,16 +64,42 @@ const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
 
   const dimensions = getBannerDimensions(size);
 
-  const bannerStyle = {
-    display: 'block',
+  // Policy-compliant container styling with adequate spacing
+  const containerStyle = {
     textAlign: 'center' as const,
-    margin: '20px auto',
-    maxWidth: '100%',
+    margin: '40px 0', // Increased margin for policy compliance
+    padding: '20px 0', // Added padding to prevent accidental clicks
+    minHeight: '100px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '12px',
     ...style
   };
 
+  const bannerStyle = {
+    display: 'block',
+    textAlign: 'center' as const,
+    maxWidth: '100%',
+    minHeight: `${dimensions.height}px`
+  };
+
   return (
-    <div className={`adsense-banner ${className}`} style={{ textAlign: 'center', margin: '20px 0' }}>
+    <div className={`adsense-banner ${className}`} style={containerStyle}>
+      {showLabel && (
+        <div style={{
+          fontSize: '12px',
+          color: '#666',
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          marginBottom: '8px',
+          opacity: 0.8
+        }}>
+          Advertisement
+        </div>
+      )}
       <ins
         className="adsbygoogle"
         style={bannerStyle}

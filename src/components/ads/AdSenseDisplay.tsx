@@ -29,6 +29,10 @@ interface AdSenseDisplayProps {
    * Ad height (for fixed size ads)
    */
   height?: number;
+  /**
+   * Whether to show advertisement label (required by policy)
+   */
+  showLabel?: boolean;
 }
 
 declare global {
@@ -44,7 +48,8 @@ const AdSenseDisplay: React.FC<AdSenseDisplayProps> = ({
   style = {},
   className = '',
   width,
-  height
+  height,
+  showLabel = true
 }) => {
   const adRef = useRef<HTMLDivElement>(null);
 
@@ -59,10 +64,23 @@ const AdSenseDisplay: React.FC<AdSenseDisplayProps> = ({
     }
   }, []);
 
-  const adStyle = {
+  // Policy-compliant container styling
+  const containerStyle = {
+    textAlign: 'center' as const,
+    margin: '32px 0', // Adequate spacing to prevent accidental clicks
+    padding: '16px 0',
+    minHeight: '100px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '8px',
+    ...style
+  };
+
+  const adStyle: React.CSSProperties = {
     display: 'block',
     textAlign: 'center' as const,
-    ...style
+    minHeight: '50px'
   };
 
   // Set width and height if provided
@@ -79,7 +97,21 @@ const AdSenseDisplay: React.FC<AdSenseDisplayProps> = ({
   };
 
   return (
-    <div ref={adRef} className="adsense-container">
+    <div ref={adRef} className="adsense-container" style={containerStyle}>
+      {showLabel && (
+        <div style={{
+          fontSize: '12px',
+          color: '#666',
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          marginBottom: '8px',
+          opacity: 0.8
+        }}>
+          Advertisement
+        </div>
+      )}
       <ins {...adProps} />
     </div>
   );

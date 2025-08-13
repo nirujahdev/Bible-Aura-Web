@@ -26,9 +26,7 @@ import {
   BibleVerse, 
   getAllBooks, 
   getChapterVerses, 
-  searchVerses, 
-  saveBookmark, 
-  getUserBookmarks,
+  searchVerses,
   BIBLE_TRANSLATIONS,
   TranslationCode
 } from '@/lib/local-bible';
