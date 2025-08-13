@@ -1697,7 +1697,7 @@ const Sermons = () => {
                 AI Sermon Generator
                 <Badge variant="secondary" className="ml-2">
                   <Sparkles className="h-3 w-3 mr-1" />
-                  DeepSeek AI
+                  ✦ Bible Aura AI
                 </Badge>
               </DialogTitle>
             </DialogHeader>
@@ -1942,7 +1942,7 @@ const Sermons = () => {
                 AI Sermon Generator
                 <Badge variant="secondary" className="ml-2">
                   <Sparkles className="h-3 w-3 mr-1" />
-                  DeepSeek AI
+                  ✦ Bible Aura AI
                 </Badge>
               </DialogTitle>
             </DialogHeader>

@@ -127,7 +127,7 @@ const SermonAISidebar: React.FC<SermonAISidebarProps> = ({
     const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
     
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-      throw new Error('🔑 DeepSeek API key not configured!');
+      throw new Error('🔑 Bible Aura AI is not configured! Please contact support.');
     }
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
@@ -484,7 +484,7 @@ Please provide helpful sermon writing assistance.`;
         </div>
         <Badge variant="secondary" className="mt-2">
           <Bot className="h-3 w-3 mr-1" />
-          DeepSeek AI
+          ✦ Bible Aura AI
         </Badge>
       </div>
 

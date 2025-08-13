@@ -138,7 +138,7 @@ const SermonAIGenerator: React.FC<SermonAIGeneratorProps> = ({
     const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
     
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-      throw new Error('🔑 DeepSeek API key not configured! Please add your API key to environment variables.');
+      throw new Error('🔑 Bible Aura AI is not configured! Please contact support for assistance.');
     }
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
@@ -168,7 +168,7 @@ const SermonAIGenerator: React.FC<SermonAIGeneratorProps> = ({
     if (!response.ok) {
       const errorText = await response.text();
       console.error('DeepSeek API Error:', errorText);
-      throw new Error(`DeepSeek API error: ${response.status}`);
+      throw new Error(`Bible Aura AI error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -392,7 +392,7 @@ Ensure the sermon is:
         allowTaint: true
       });
 
-      const imgData = canvas.getDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210;
       const pageHeight = 295;
@@ -490,7 +490,7 @@ Memory Verse: ${sermon.studyGuide.memoryVerse}
             AI Sermon Generator
             <Badge variant="secondary" className="ml-auto">
               <Sparkles className="h-3 w-3 mr-1" />
-              DeepSeek AI
+              ✦ Bible Aura AI
             </Badge>
           </CardTitle>
         </CardHeader>

@@ -5,7 +5,7 @@
 ### **1. AI Sermon Generator**
 - **Location**: Sermon page → "AI Generate Sermon" button
 - **Purpose**: Create complete, professional sermons from scratch using AI
-- **Technology**: DeepSeek API integration
+- **Technology**: ✦ Bible Aura AI integration
 
 ### **2. AI Sermon Sidebar**
 - **Location**: Sermon editor → "AI Assistant" button
@@ -15,7 +15,7 @@
 ### **3. PDF Export**
 - **Location**: Generated sermon preview → "PDF" button
 - **Purpose**: Download professionally formatted sermon PDFs
-- **Technology**: jsPDF + html2canvas
+- **Technology**: Professional PDF generation
 
 ---
 
@@ -149,24 +149,24 @@
 
 ## 🔧 **Technical Requirements**
 
-### **API Configuration**
-- **DeepSeek API Key**: Required for AI features
-- **Environment Variable**: `VITE_DEEPSEEK_API_KEY`
-- **Alternative**: `VITE_AI_API_KEY` as fallback
+### **AI Configuration**
+- **Bible Aura AI**: Advanced AI system for sermon generation
+- **Setup**: Automatically configured for Bible Aura users
+- **Support**: Contact support if experiencing issues
 
-### **Dependencies**
-- **jsPDF**: PDF generation
-- **html2canvas**: Content to PDF conversion
-- **React Components**: Modern UI/UX
+### **System Requirements**
+- **Modern Browser**: Chrome, Firefox, Safari, or Edge
+- **Internet Connection**: Required for AI features
+- **Account**: Sign in to access AI capabilities
 
 ---
 
 ## 🚀 **Getting Started**
 
-### **Step 1: Set Up API Key**
-1. **Get DeepSeek API Key**: Visit https://platform.deepseek.com/
-2. **Add to Environment**: Set `VITE_DEEPSEEK_API_KEY` in your `.env.local`
-3. **Restart App**: Ensure API key is loaded
+### **Step 1: Getting Started**
+1. **Bible Aura AI**: Already integrated and ready to use
+2. **No Setup Required**: AI features work out of the box
+3. **Sign In**: Ensure you're signed in to access AI features
 
 ### **Step 2: Try AI Generation**
 1. **Navigate**: Go to Sermons page
@@ -212,8 +212,8 @@
 ## 📞 **Support & Troubleshooting**
 
 ### **Common Issues**
-- **API Key Error**: Ensure DeepSeek API key is properly configured
-- **Generation Fails**: Check internet connection and API limits
+- **AI Not Working**: Ensure you're signed in and have internet connection
+- **Generation Fails**: Check internet connection and try again
 - **PDF Export Issues**: Ensure modern browser with canvas support
 
 ### **Need Help?**
