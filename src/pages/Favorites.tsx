@@ -73,7 +73,7 @@ export default function Favorites() {
     try {
       // Load favorite verses
       const { data: favoritesData, error: favoritesError } = await supabase
-        .from('user_favorites')
+        .from('user_bible_favorites')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -83,7 +83,7 @@ export default function Favorites() {
 
       // Load bookmarked verses
       const { data: bookmarksData, error: bookmarksError } = await supabase
-        .from('user_bookmarks')
+        .from('user_bible_bookmarks')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -108,7 +108,7 @@ export default function Favorites() {
 
     try {
       const { error } = await supabase
-        .from('user_favorites')
+        .from('user_bible_favorites')
         .delete()
         .eq('id', verseId)
         .eq('user_id', user.id);
@@ -135,7 +135,7 @@ export default function Favorites() {
 
     try {
       const { error } = await supabase
-        .from('user_bookmarks')
+        .from('user_bible_bookmarks')
         .delete()
         .eq('id', bookmarkId)
         .eq('user_id', user.id);
