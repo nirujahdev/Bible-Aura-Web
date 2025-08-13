@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS } from "@/lib/local-bible";
 import SermonToolbar from '@/components/SermonToolbar';
 import SermonAIAssistant from '@/components/SermonAIAssistant';
+import SermonAIGenerator from '@/components/SermonAIGenerator';
+import SermonAISidebar from '@/components/SermonAISidebar';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { 
@@ -156,6 +158,10 @@ const Sermons = () => {
   const [lineHeight, setLineHeight] = useState(1.6);
   const [focusMode, setFocusMode] = useState(false);
   const [wordGoal, setWordGoal] = useState(1500);
+  
+  // AI features
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showAISidebar, setShowAISidebar] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -1057,6 +1063,28 @@ const Sermons = () => {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* AI Generator Button */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hover:bg-purple-50"
+                onClick={() => setShowAIGenerator(true)}
+              >
+                <Brain className="h-4 w-4 mr-2" />
+                AI Generator
+              </Button>
+              
+              {/* AI Sidebar Toggle */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
+                onClick={() => setShowAISidebar(!showAISidebar)}
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                AI Assistant
+              </Button>
+              
               {/* Bible Reference Button */}
               <Dialog open={showBibleDialog} onOpenChange={setShowBibleDialog}>
                 <DialogTrigger asChild>
@@ -1659,6 +1687,52 @@ const Sermons = () => {
 
 
         </div>
+        
+        {/* AI Generator Dialog */}
+        <Dialog open={showAIGenerator} onOpenChange={setShowAIGenerator}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-primary" />
+                AI Sermon Generator
+                <Badge variant="secondary" className="ml-2">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  DeepSeek AI
+                </Badge>
+              </DialogTitle>
+            </DialogHeader>
+            <SermonAIGenerator
+              onSermonGenerated={(sermon) => {
+                // Handle AI sermon generation
+                console.log('AI sermon generated:', sermon);
+                setShowAIGenerator(false);
+                toast({
+                  title: "AI Sermon Generated! ✨",
+                  description: "Your AI-generated sermon is ready",
+                });
+              }}
+              isVisible={showAIGenerator}
+            />
+          </DialogContent>
+        </Dialog>
+        
+        {/* AI Sidebar */}
+        {showAISidebar && (
+          <div className="fixed right-0 top-0 h-full z-40">
+            <SermonAISidebar
+              isOpen={showAISidebar}
+              onToggle={() => setShowAISidebar(!showAISidebar)}
+              currentSermonContent={selectedSermon?.content || ''}
+              onContentUpdate={(content) => {
+                if (selectedSermon) {
+                  setSelectedSermon({ ...selectedSermon, content });
+                }
+              }}
+              sermonTitle={selectedSermon?.title || ''}
+              scriptureReference={selectedSermon?.scripture_reference || ''}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -1680,14 +1754,24 @@ const Sermons = () => {
               <p className="text-gray-600">Create powerful sermons with ✦ AI assistance</p>
             </div>
           </div>
-          <Button
-            onClick={handleNewSermon}
-            size="lg"
-            className="bg-orange-600 hover:bg-orange-700 text-white"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            New Sermon
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setShowAIGenerator(true)}
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+            >
+              <Brain className="h-5 w-5 mr-2" />
+              AI Generate Sermon
+            </Button>
+            <Button
+              onClick={handleNewSermon}
+              size="lg"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              New Sermon
+            </Button>
+          </div>
         </div>
 
         {/* Simple Statistics Cards */}
@@ -1847,8 +1931,36 @@ const Sermons = () => {
             </Button>
           </div>
         )}
+              </div>
+        
+        {/* AI Generator Dialog for Dashboard */}
+        <Dialog open={showAIGenerator} onOpenChange={setShowAIGenerator}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-primary" />
+                AI Sermon Generator
+                <Badge variant="secondary" className="ml-2">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  DeepSeek AI
+                </Badge>
+              </DialogTitle>
+            </DialogHeader>
+            <SermonAIGenerator
+              onSermonGenerated={(sermon) => {
+                // Handle AI sermon generation
+                console.log('AI sermon generated:', sermon);
+                setShowAIGenerator(false);
+                toast({
+                  title: "AI Sermon Generated! ✨",
+                  description: "Your AI-generated sermon is ready",
+                });
+              }}
+              isVisible={showAIGenerator}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
-    </div>
     </MobileOptimizedLayout>
   );
 };
