@@ -58,7 +58,6 @@ export default defineConfig(({ mode }) => ({
               './src/pages/Bible'
             ],
           'pages-features': [
-            './src/pages/Journal',
             './src/pages/Sermons'
           ]
         }
