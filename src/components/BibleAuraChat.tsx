@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
-import { runWorkflow } from '@/lib/openai-workflow';
+import { runWorkflow } from '@/lib/openai-workflow-simple';
 import { StructuredAIResponse } from './StructuredAIResponse';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -97,20 +97,8 @@ const callOpenAIWorkflow = async (messages: Message[], mode: ChatMode = 'chat-cl
     // Run the OpenAI workflow with the user's input
     const result = await runWorkflow({ input_as_text: lastUserMessage.content });
     
-    // Handle different response types
-    if (typeof result === 'string') {
-      return result;
-    } else if (result?.safe_text) {
-      return result.safe_text;
-    } else if (result?.output_text) {
-      return result.output_text;
-    } else {
-      // If guardrails triggered, return error message
-      if (result?.pii?.failed || result?.moderation?.failed || result?.jailbreak?.failed || result?.hallucination?.failed) {
-        throw new Error('Your message was blocked by safety filters. Please rephrase your question.');
-      }
-      return 'I apologize, but I could not generate a response. Please try again.';
-    }
+    // The simplified workflow returns a string directly
+    return result;
   } catch (error) {
     console.error('OpenAI Workflow Error:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to connect to AI service');
