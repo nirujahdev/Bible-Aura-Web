@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
 import { subscriptionService } from '@/lib/subscription-service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,50 +97,16 @@ const TRANSLATIONS = [
   { code: 'NKJV', name: 'New King James Version' }
 ];
 
-// DeepSeek AI integration with enhanced speed optimization
-const callDeepSeekAPI = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
-  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-  
-  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-    throw new Error('🔑 DeepSeek API key not configured! Please check your environment variables.');
-  }
-  
-  const systemPrompt = generateSystemPrompt(mode);
-  
-  try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-        stream: false
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || 'I apologize, but I could not generate a response. Please try again.';
-  } catch (error) {
-    console.error('DeepSeek API Error:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to connect to AI service');
-  }
+const PLACEHOLDER_RESPONSES: Record<ChatMode, string> = {
+  'chat-clean': 'AI chat responses are currently unavailable. Please explore the built-in study tools or revisit later.',
+  'verse-clean': 'Verse analysis is temporarily offline. Consider using commentaries or study guides for deeper insight.',
+  'parable-clean': 'Parable explanations are paused. Reflect on the passage and its context for understanding.',
+  'character-clean': 'Character study assistance is unavailable. Review the related scriptures toLearn more.',
+  'topical-clean': 'Topical study summaries are paused. Explore the concordance or topical index for verses.',
+  'qa-clean': 'Quick Q&A responses are currently disabled. Search the knowledge base or trusted resources for guidance.'
 };
+
+const getPlaceholderResponse = async (mode: ChatMode) => PLACEHOLDER_RESPONSES[mode] ?? PLACEHOLDER_RESPONSES['chat-clean'];
 
 export function EnhancedAIChat() {
   const { user } = useAuth();
@@ -324,7 +289,7 @@ export function EnhancedAIChat() {
     }, 800);
 
     try {
-      const response = await callDeepSeekAPI([...messages, userMessage], currentMode);
+      const response = await getPlaceholderResponse(currentMode);
       
       clearInterval(stateInterval);
       setAiState('idle');

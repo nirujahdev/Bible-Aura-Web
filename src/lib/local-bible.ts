@@ -1,17 +1,9 @@
 // Local Bible Service - Load Bible data from local JSON files
 import { supabase } from '@/integrations/supabase/client';
 
-// Available Bible translations - 9 Most Popular English + Tamil
+// Available Bible translations - limited to KJV and Tamil
 export const BIBLE_TRANSLATIONS = [
   { code: 'KJV', name: 'King James Version', language: 'english', file: '/Bible/KJV_bible.json', public_domain: true },
-  { code: 'NIV', name: 'New International Version', language: 'english', file: '/Bible/translations/NIV_bible.json', public_domain: false },
-  { code: 'ESV', name: 'English Standard Version', language: 'english', file: '/Bible/translations/ESV_bible.json', public_domain: false },
-  { code: 'NLT', name: 'New Living Translation', language: 'english', file: '/Bible/translations/NLT_bible.json', public_domain: false },
-  { code: 'NASB', name: 'New American Standard Bible', language: 'english', file: '/Bible/translations/NASB_bible.json', public_domain: false },
-  { code: 'NKJV', name: 'New King James Version', language: 'english', file: '/Bible/translations/NKJV_bible.json', public_domain: false },
-  { code: 'NET', name: 'New English Translation', language: 'english', file: '/Bible/translations/NET_bible.json', public_domain: false },
-  { code: 'ASV', name: 'American Standard Version', language: 'english', file: '/Bible/translations/ASV_bible.json', public_domain: true },
-  { code: 'WEB', name: 'World English Bible', language: 'english', file: '/Bible/translations/WEB_bible.json', public_domain: true },
   { code: 'TAMIL', name: 'Tamil Bible', language: 'tamil', file: '/Bible/Tamil bible/', public_domain: true }
 ];
 

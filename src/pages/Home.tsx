@@ -11,7 +11,6 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 // import FAQ from "@/components/FAQ"; // COMMENTED OUT TO FIX ERRORS
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
-import SimpleAdSense from "@/components/ads/SimpleAdSense";
 
 const Home = () => {
   // SEO optimization
@@ -178,16 +177,6 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* AdSense Banner - Policy Compliant Placement */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4">
-          <SimpleAdSense 
-            slot="2853748608" 
-            showLabel={true}
-          />
         </div>
       </section>
 
@@ -396,18 +385,6 @@ const Home = () => {
               </p>
             </Card>
           </div>
-        </div>
-      </section>
-
-      {/* AdSense In-Feed - Policy Compliant Placement */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4">
-          <SimpleAdSense 
-            slot="2682358212" 
-            isFluid={true}
-            layoutKey="-hp-o+1u-4z+9c"
-            showLabel={true}
-          />
         </div>
       </section>
 

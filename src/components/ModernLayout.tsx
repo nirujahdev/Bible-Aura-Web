@@ -26,11 +26,8 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { name: 'AI Chat', href: '/dashboard', icon: () => <span className="text-2xl font-bold">✦</span>, tooltip: 'AI Chat Dashboard' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
-  { name: 'Study Hub', href: '/study-hub', icon: BarChart3, tooltip: 'Study Hub' },
   { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermons' },
-  { name: 'Community', href: '/community', icon: Users, tooltip: 'Community' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
-  { name: 'Journal', href: '/journal', icon: FileText, tooltip: 'Journal' },
 ];
 
 export function ModernLayout({ children }: ModernLayoutProps) {

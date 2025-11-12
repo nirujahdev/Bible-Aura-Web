@@ -35,14 +35,14 @@ export type SupportedLanguage = 'english' | 'tamil' | 'sinhala';
 // AI CONFIGURATION
 // =============================================================================
 
-// AI Configuration - DeepSeek API
+// AI Configuration
 const AI_CONFIG = {
   model: "deepseek-chat",
   baseURL: "https://api.deepseek.com",
-  apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || 'sk-c253b7693e9f49f5830d936b9c92d446',
+  apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || 'sk-c253b7693e9f49f5830d936b9c92d446'}`
+    'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY || ''}`
   },
   defaultParams: {
     max_tokens: 1000,

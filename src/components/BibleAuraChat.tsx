@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
+import { runWorkflow } from '@/lib/openai-workflow';
 import { StructuredAIResponse } from './StructuredAIResponse';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -78,47 +79,40 @@ const TRANSLATIONS = [
   { code: 'NKJV', name: 'New King James Version' }
 ];
 
-// DeepSeek AI integration
-const callDeepSeekAPI = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
-  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
+// OpenAI workflow integration
+const callOpenAIWorkflow = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   
-  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-    throw new Error('🔑 DeepSeek API key not configured! Please check your environment variables.');
+  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here') {
+    throw new Error('🔑 OpenAI API key not configured! Please check your environment variables.');
   }
   
-  const systemPrompt = generateSystemPrompt(mode);
-  
   try {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-        stream: false
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`);
+    // Get the last user message (most recent input)
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+    if (!lastUserMessage) {
+      throw new Error('No user message found');
     }
 
-    const data = await response.json();
-    return data.choices[0]?.message?.content || 'I apologize, but I could not generate a response. Please try again.';
+    // Run the OpenAI workflow with the user's input
+    const result = await runWorkflow({ input_as_text: lastUserMessage.content });
+    
+    // Handle different response types
+    if (typeof result === 'string') {
+      return result;
+    } else if (result?.safe_text) {
+      return result.safe_text;
+    } else if (result?.output_text) {
+      return result.output_text;
+    } else {
+      // If guardrails triggered, return error message
+      if (result?.pii?.failed || result?.moderation?.failed || result?.jailbreak?.failed || result?.hallucination?.failed) {
+        throw new Error('Your message was blocked by safety filters. Please rephrase your question.');
+      }
+      return 'I apologize, but I could not generate a response. Please try again.';
+    }
   } catch (error) {
-    console.error('DeepSeek API Error:', error);
+    console.error('OpenAI Workflow Error:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to connect to AI service');
   }
 };
@@ -368,7 +362,7 @@ export function BibleAuraChat() {
     setMessages(newMessages);
 
     try {
-      const aiResponse = await callDeepSeekAPI(newMessages, currentMode);
+      const aiResponse = await callOpenAIWorkflow(newMessages, currentMode);
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),

@@ -35,8 +35,6 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
   const navigationItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/about", label: "About", icon: Info },
-    { href: "/blog", label: "Blog", icon: FileText },
-    { href: "/pricing", label: "Pricing", icon: Heart },
   ];
 
   const featureItems = [

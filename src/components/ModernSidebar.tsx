@@ -44,25 +44,9 @@ const gridMenuItems: GridMenuItem[] = [
     path: "/bible"
   },
   {
-    label: "Study Hub",
-    icon: MessageCircle,
-    path: "/study-hub"
-  },
-  {
-    label: "Journal",
-    icon: PenTool,
-    path: "/journal",
-    isSpecial: true
-  },
-  {
     label: "Sermons",
     icon: PenTool,
     path: "/sermons"
-  },
-  {
-    label: "Community",
-    icon: Users,
-    path: "/community"
   },
   {
     label: "AI Chat",
@@ -75,8 +59,7 @@ const gridMenuItems: GridMenuItem[] = [
 const sidebarTopItems: SidebarIconItem[] = [
   { icon: MessageCircle, action: "new", tooltip: "New Chat" },
   { icon: Home, path: "/", tooltip: "Home" },
-  { icon: BookOpen, path: "/bible", tooltip: "Bible" },
-  { icon: Search, path: "/study-hub", tooltip: "AI Study" }
+  { icon: BookOpen, path: "/bible", tooltip: "Bible" }
 ]
 
 const sidebarBottomItems: SidebarIconItem[] = [
@@ -96,19 +79,9 @@ const allNavigationItems: NavigationItem[] = [
     icon: BookOpen,
   },
   {
-    title: "Study Hub",
-    url: "/study-hub",
-    icon: Search,
-  },
-  {
     title: "Sermons",
     url: "/sermons",
     icon: PenTool,
-  },
-  {
-    title: "Community",
-    url: "/community",
-    icon: Users,
   },
   {
     title: "AI Chat",
@@ -119,11 +92,6 @@ const allNavigationItems: NavigationItem[] = [
     title: "Favorites",
     url: "/favorites",
     icon: Heart,
-  },
-  {
-    title: "Journal",
-    url: "/journal",
-    icon: PenTool,
   },
   {
     title: "Profile & Settings",

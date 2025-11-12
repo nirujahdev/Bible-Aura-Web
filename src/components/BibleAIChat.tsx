@@ -17,8 +17,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { generateSystemPrompt } from '@/lib/ai-response-templates';
-import { StructuredAIResponse } from './StructuredAIResponse';
 
 interface BibleAIChatProps {
   verseId: string;
@@ -73,237 +71,72 @@ const CHAT_MODES = [
   }
 ];
 
-// Enhanced AI response function with proper structure
-const generateAIResponse = async (
-  userMessage: string, 
-  mode: ChatMode, 
-  verseText: string, 
-  verseReference: string
-): Promise<string> => {
-  try {
-    // Create system prompt based on mode
-    let systemPrompt = '';
-    
-    switch (mode) {
-      case 'theological':
-        systemPrompt = `You are Bible Aura AI, providing theological analysis of Bible verses.
-
-CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ➤ followed by title
-- Put TWO line breaks after the title
-- Each section starts with ⤷ followed by section name
-- Put ONE line break after section header
-- Each point starts with text content (no bullet symbols)
-- Put ONE line break after each point
-- Put TWO line breaks between sections
-- NO emojis, asterisks, hashes, or decorative symbols
-- ONLY use ➤ and ⤷ symbols
-
-EXACT FORMAT (copy this structure):
-➤ THEOLOGICAL ANALYSIS
+const PLACEHOLDER_RESPONSES: Record<ChatMode, string> = {
+  theological: `➤ THEOLOGICAL ANALYSIS
 
 ⤷ Core Doctrine
-First theological point about the verse
-Second theological point about the verse
+This verse highlights central truths about God's nature and His work in redemption
+Believers are invited to reflect on how this passage fits within the broader testimony of Scripture
 
 ⤷ Biblical Context
-How this connects to broader Scripture
-The theological significance in biblical narrative
+The surrounding chapters reinforce God's faithfulness and call to obedience
+The message aligns with recurring biblical themes of grace, covenant, and discipleship
 
 ⤷ Church Teaching
-Historical church understanding
-Modern application for believers
-
-Focus on ${verseReference}: "${verseText}"
-IMPORTANT: Follow the exact line break pattern shown above.`;
-        break;
-        
-      case 'historical':
-        systemPrompt = `You are Bible Aura AI, providing historical context for Bible verses.
-
-CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ➤ followed by title
-- Put TWO line breaks after the title
-- Each section starts with ⤷ followed by section name
-- Put ONE line break after section header
-- Each point starts with text content (no bullet symbols)
-- Put ONE line break after each point
-- Put TWO line breaks between sections
-- NO emojis, asterisks, hashes, or decorative symbols
-- ONLY use ➤ and ⤷ symbols
-
-EXACT FORMAT (copy this structure):
-➤ HISTORICAL CONTEXT
+Christians have long used this verse to encourage faithfulness and spiritual growth
+Today it continues to inspire worship, repentance, and confident trust in the Lord`,
+  historical: `➤ HISTORICAL CONTEXT
 
 ⤷ Time Period
-When this was written or occurred
-Historical setting and circumstances
+The verse emerged within a pivotal moment in Israel's or the early church's story
+Knowing the political and social setting clarifies the urgency of this message
 
 ⤷ Cultural Background
-Social customs and practices of the time
-How the original audience would understand this
+Original listeners would recognize the imagery, customs, and covenant language employed
+Understanding their daily realities sheds light on how they received the teaching
 
 ⤷ Author Context
-Who wrote this and to whom
-The author's purpose and message
-
-Focus on ${verseReference}: "${verseText}"
-IMPORTANT: Follow the exact line break pattern shown above.`;
-        break;
-        
-      case 'cross-reference':
-        systemPrompt = `You are Bible Aura AI, providing cross-references for Bible verses.
-
-CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ➤ followed by title
-- Put TWO line breaks after the title
-- Each section starts with ⤷ followed by section name
-- Put ONE line break after section header
-- Each point starts with text content (no bullet symbols)
-- Put ONE line break after each point
-- Put TWO line breaks between sections
-- NO emojis, asterisks, hashes, or decorative symbols
-- ONLY use ➤ and ⤷ symbols
-
-EXACT FORMAT (copy this structure):
-➤ CROSS REFERENCES
+The author wrote pastorally, addressing real communities facing trials and questions
+His intent was to strengthen faith and anchor believers in God's promises`,
+  'cross-reference': `➤ CROSS REFERENCES
 
 ⤷ Related Verses
-[Verse reference] - Connection to main theme
-[Verse reference] - Similar teaching or principle
+Romans 8:28 – God works in all things for the good of those who love Him
+Jeremiah 29:11 – The Lord proclaims hope and future for His people
 
 ⤷ Parallel Passages
-[Verse reference] - Same concept in different words
-[Verse reference] - Related story or example
+Psalm 37:3-5 – Trust in the Lord, do good, and He will guide your steps
+Philippians 4:6-7 – Present every concern to God and receive His peace
 
 ⤷ Supporting Scriptures
-[Verse reference] - Additional biblical support
-[Verse reference] - Broader theological connection
-
-Focus on ${verseReference}: "${verseText}"
-IMPORTANT: Follow the exact line break pattern shown above.`;
-        break;
-        
-      case 'insights':
-        systemPrompt = `You are Bible Aura AI, providing practical insights from Bible verses.
-
-CRITICAL FORMATTING RULES - FOLLOW EXACTLY:
-- Start with ➤ followed by title
-- Put TWO line breaks after the title
-- Each section starts with ⤷ followed by section name
-- Put ONE line break after section header
-- Each point starts with text content (no bullet symbols)
-- Put ONE line break after each point
-- Put TWO line breaks between sections
-- NO emojis, asterisks, hashes, or decorative symbols
-- ONLY use ➤ and ⤷ symbols
-
-EXACT FORMAT (copy this structure):
-➤ PRACTICAL INSIGHTS
+Isaiah 41:10 – “Fear not, for I am with you; I will strengthen you.”
+Hebrews 13:5-6 – God will never leave nor forsake His people`,
+  insights: `➤ PRACTICAL INSIGHTS
 
 ⤷ Key Message
-Main spiritual truth from this verse
-Central principle for Christian living
+God remains steadfast even when circumstances are uncertain
+Believers are called to rest in His character and promises
 
 ⤷ Personal Application
-How to apply this in daily life
-Practical steps for spiritual growth
+Set aside time to meditate on God’s faithfulness and write down specific ways He has led you
+Seek counsel from mature believers when you face decisions that test your faith
 
 ⤷ Prayer Focus
-Areas for personal reflection
-How this verse guides prayer life
+Ask the Lord to anchor your heart in truth rather than fear
+Pray for grace to remain obedient and hopeful in every season`
+};
 
-Focus on ${verseReference}: "${verseText}"
-IMPORTANT: Follow the exact line break pattern shown above.`;
-        break;
-    }
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user", 
-            content: userMessage
-          }
-        ],
-        max_tokens: 400,
-        temperature: 0.6,
-        stream: false
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    let content = data.choices[0]?.message?.content || 'Sorry, I could not generate a response at this time.';
-    
-    // Clean and ensure proper formatting
-    content = cleanAIResponse(content, mode);
-    
-    return content;
-    
-  } catch (error) {
-    console.error('AI API Error:', error);
-    // Fallback structured responses
-    return getFallbackResponse(mode, verseReference, verseText);
-  }
+const generateAIResponse = async (
+  userMessage: string,
+  mode: ChatMode,
+  verseText: string,
+  verseReference: string
+): Promise<string> => {
+  return PLACEHOLDER_RESPONSES[mode];
 };
 
 // Function to clean and format AI responses
-const cleanAIResponse = (response: string, mode: ChatMode): string => {
-  // Remove any unwanted characters
-  let cleaned = response
-    .replace(/[#*@$_]/g, '') // Remove banned symbols
-    .replace(/📖|🎯|✝️|🔗|🏛️|📝|💭|🌟|🔍|⏰|💎|📚|👥|🌍/g, '') // Remove emojis
-    .replace(/\*\*[^*]+\*\*/g, '') // Remove ** decorative formatting
-    .trim();
-  
-  // Fix spacing and line breaks for proper structure
-  cleaned = cleaned
-    // Ensure proper spacing around main title
-    .replace(/➤\s*/g, '➤ ')
-    // Ensure section headers are on new lines with proper spacing
-    .replace(/\s*⤷\s*/g, '\n\n⤷ ')
-    // Clean up multiple consecutive newlines
-    .replace(/\n{3,}/g, '\n\n')
-    // Ensure sections are properly separated
-    .replace(/⤷([^⤷➤]*?)⤷/g, '⤷$1\n\n⤷')
-    .trim();
-  
-  // Ensure it starts with ➤ if not already
-  if (!cleaned.startsWith('➤')) {
-    const modeTitle = {
-      theological: '➤ THEOLOGICAL ANALYSIS',
-      historical: '➤ HISTORICAL CONTEXT',
-      'cross-reference': '➤ CROSS REFERENCES',
-      insights: '➤ PRACTICAL INSIGHTS'
-    };
-    cleaned = `${modeTitle[mode]}\n\n${cleaned}`;
-  }
-  
-  // Final cleanup to ensure consistent formatting
-  cleaned = cleaned
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join('\n')
-    .replace(/➤([^\n]*)\n/g, '➤$1\n\n')
-    .replace(/⤷([^\n]*)\n/g, '⤷$1\n');
-  
-  return cleaned;
-};
+const cleanAIResponse = (response: string, mode: ChatMode): string => response;
 
 // Fallback responses with proper structure
 const getFallbackResponse = (mode: ChatMode, verseReference: string, verseText: string): string => {

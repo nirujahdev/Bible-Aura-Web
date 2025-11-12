@@ -3,9 +3,6 @@
 /* React Quill Editor Styles - Removed due to build conflicts after security updates */
 /* Note: Quill styling is now handled by the component itself */
 
-/* AdSense Components Styling */
-@import './components/ads/ads.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

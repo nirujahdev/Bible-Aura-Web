@@ -134,10 +134,7 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
             {[
               { name: 'AI Chat', href: '/dashboard', icon: '💬', description: 'Biblical AI Assistant' },
               { name: 'Bible', href: '/bible', icon: '📖', description: 'Read Scripture' },
-              { name: 'Study Hub', href: '/study-hub', icon: '🔍', description: 'Bible Study Tools' },
-              { name: 'Journal', href: '/journal', icon: '✍️', description: 'Personal Reflections' },
               { name: 'Sermons', href: '/sermons', icon: '🎤', description: 'Sermon Library' },
-              { name: 'Community', href: '/community', icon: '👥', description: 'Connect with Believers' },
               { name: 'Favorites', href: '/favorites', icon: '❤️', description: 'Saved Content' },
               { name: 'Profile', href: '/profile', icon: '👤', description: 'Account & Settings' }
             ].map((item) => {
