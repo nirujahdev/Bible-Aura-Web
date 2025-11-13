@@ -45,6 +45,12 @@ export default function Auth() {
   const [authSuccess, setAuthSuccess] = useState<string | null>(null);
   const [isMagicLinkAuth, setIsMagicLinkAuth] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [isOver13, setIsOver13] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [age, setAge] = useState('');
+  const [denomination, setDenomination] = useState('');
 
   // Enhanced features data for showcase
   const features = [
@@ -346,6 +352,12 @@ export default function Auth() {
         setAuthError(result.error.message);
       } else {
         setAuthSuccess('Account created successfully! Please check your email for confirmation.');
+        setAgreedToTerms(false);
+        setAgreedToPrivacy(false);
+        setIsOver13(false);
+        setPhoneNumber('');
+        setAge('');
+        setDenomination('');
       }
     } catch (error) {
       console.error('Sign up error:', error);

@@ -9,6 +9,12 @@ interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  phone_number?: string | null;
+  age?: number | null;
+  denomination?: string | null;
+  agreed_to_terms?: boolean;
+  agreed_to_privacy?: boolean;
+  is_over_13?: boolean;
   reading_streak: number;
   total_reading_days: number;
   favorite_translation: string;
@@ -48,6 +54,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
+
+  const createDefaultProfile = async (userId: string) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const authUser = userData?.user;
+
+      const fallbackName =
+        authUser?.user_metadata?.full_name ||
+        authUser?.user_metadata?.name ||
+        authUser?.email?.split('@')[0] ||
+        'Bible Aura Member';
+
+      const profilePayload = {
+        user_id: userId,
+        display_name: fallbackName,
+        phone_number: null,
+        age: null,
+        denomination: null,
+        agreed_to_terms: false,
+        agreed_to_privacy: false,
+        is_over_13: false,
+        favorite_translation: 'KJV',
+        reading_streak: 0,
+        total_reading_days: 0,
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(profilePayload)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating default profile:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile(data as Profile);
+      }
+    } catch (creationError) {
+      console.error('Error creating default profile:', creationError);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -199,19 +249,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(() => reject(new Error('Profile fetch timeout')), 6000)
       );
 
-      const { data, error } = await Promise.race([
-        profilePromise,
-        timeoutPromise
-      ]) as any;
+      const result = await Promise.race([profilePromise, timeoutPromise]) as any;
+      const data = result?.data ?? result;
+      const error = result?.error;
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          await createDefaultProfile(userId);
+        } else {
+          console.error('Error fetching profile:', error);
+        }
         return;
       }
 
       if (data) {
         console.log('Profile fetched successfully');
-        setProfile(data);
+        setProfile(data as Profile);
+      } else {
+        await createDefaultProfile(userId);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
