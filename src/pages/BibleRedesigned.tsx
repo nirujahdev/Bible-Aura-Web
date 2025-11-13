@@ -567,8 +567,8 @@ export default function BibleRedesigned() {
                   </TabsList>
 
                   <ScrollArea className="flex-1">
-                    <div className="p-4">
-                      <TabsContent value="read" className="mt-0 space-y-3">
+                    <div className="p-4 pb-2">
+                      <TabsContent value="read" className="mt-0 space-y-2">
                         {/* Old Testament */}
                         <Collapsible open={oldTestamentOpen} onOpenChange={setOldTestamentOpen}>
                           <CollapsibleTrigger asChild>
@@ -635,12 +635,12 @@ export default function BibleRedesigned() {
 
                         {/* Chapter Selection */}
                         {selectedBook && (
-                          <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                          <div className="mt-3">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-2">
                               {selectedBook.name} - Chapters
                             </h3>
                             <ScrollArea className="max-h-48">
-                              <div className="grid grid-cols-7 gap-2 pr-4">
+                              <div className="grid grid-cols-7 gap-1.5 pr-4">
                                 {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
                                   <Button
                                     key={chapter}
@@ -1036,19 +1036,8 @@ export default function BibleRedesigned() {
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
               >
-                {/* Panel Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">✦</span>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-900">Bible Aura AI</h3>
-                      <p className="text-xs text-gray-600">
-                        {selectedVerseForAI.book_name} {selectedVerseForAI.chapter}:{selectedVerseForAI.verse}
-                      </p>
-                    </div>
-                  </div>
+                {/* Close Button - Top Right */}
+                <div className="absolute top-4 right-4 z-10">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1056,14 +1045,14 @@ export default function BibleRedesigned() {
                       setAiChatOpen(false);
                       setSelectedVerseForAI(null);
                     }}
-                    className="h-9 w-9 p-0 rounded-full hover:bg-white"
+                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
                 
-                {/* AI Chat Content */}
-                <div className="flex-1 overflow-hidden">
+                {/* AI Chat Content - Full Height */}
+                <div className="flex-1 overflow-hidden pt-2">
                   <BibleVerseAIChat
                     verse={selectedVerseForAI}
                     isOpen={aiChatOpen}

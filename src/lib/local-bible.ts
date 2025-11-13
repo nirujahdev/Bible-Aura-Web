@@ -270,7 +270,7 @@ export async function getChapterVerses(
   }
 }
 
-// Search verses by text
+// Search verses by text with exact word matching
 export async function searchVerses(
   query: string, 
   language: 'english' | 'tamil' = 'english',
@@ -278,7 +278,17 @@ export async function searchVerses(
   translationCode: TranslationCode = 'KJV'
 ): Promise<BibleVerse[]> {
   const results: BibleVerse[] = [];
-  const searchQuery = query.toLowerCase();
+  const searchQuery = query.trim().toLowerCase();
+  
+  if (!searchQuery) return results;
+
+  // Create regex for exact word matching
+  // Escape special regex characters and match whole words
+  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Match word boundaries for exact word search
+  const wordRegex = new RegExp(`\\b${escapedQuery}\\b`, 'i');
+  // Also support phrase matching (multiple words)
+  const phraseRegex = new RegExp(escapedQuery.replace(/\s+/g, '\\s+'), 'i');
 
   try {
     if (language === 'english') {
@@ -291,7 +301,9 @@ export async function searchVerses(
 
         for (const [chapterNum, chapterData] of Object.entries(bookData)) {
           for (const [verseNum, text] of Object.entries(chapterData as Record<string, string>)) {
-            if (text.toLowerCase().includes(searchQuery)) {
+            const textLower = text.toLowerCase();
+            // Check for exact word match or phrase match
+            if (wordRegex.test(text) || phraseRegex.test(textLower)) {
               results.push({
                 id: `${bookName}-${chapterNum}-${verseNum}-${translationCode}`,
                 book_id: bookName,
@@ -307,7 +319,7 @@ export async function searchVerses(
         }
       }
     } else {
-      // Tamil search (existing code)
+      // Tamil search with exact word matching
       const books = await loadTamilBooks();
       const booksToSearch = bookFilter ? 
         books.filter(book => book.name === bookFilter) : books;
@@ -318,7 +330,9 @@ export async function searchVerses(
           
           for (const chapter of tamilBookData.chapters) {
             for (const verse of chapter.verses) {
-              if (verse.text.includes(query)) { // Tamil text search (exact match better for Tamil)
+              const textLower = verse.text.toLowerCase();
+              // Check for exact word match or phrase match
+              if (wordRegex.test(verse.text) || phraseRegex.test(textLower)) {
                 results.push({
                   id: `${book.name}-${chapter.chapter}-${verse.verse}-TAMIL`,
                   book_id: book.name,
