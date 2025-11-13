@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { ReactNode, useEffect, useState } from 'react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -16,6 +16,40 @@ import {
   LogOut
 } from 'lucide-react';
 
+type NavIcon = 'star' | 'bible' | 'sermon' | 'favorites' | 'profile';
+
+interface MobileNavItem {
+  name: string;
+  href: string;
+  icon: NavIcon;
+  description: string;
+}
+
+const NAV_ITEMS: MobileNavItem[] = [
+  { name: 'AI Chat', href: '/dashboard', icon: 'star', description: 'Biblical AI Assistant' },
+  { name: 'Bible', href: '/bible', icon: 'bible', description: 'Read Scripture' },
+  { name: 'Sermons', href: '/sermons', icon: 'sermon', description: 'Sermon Library' },
+  { name: 'Favorites', href: '/favorites', icon: 'favorites', description: 'Saved Content' },
+  { name: 'Profile', href: '/profile', icon: 'profile', description: 'Account & Settings' }
+];
+
+const renderIcon = (icon: NavIcon, className: string): ReactNode => {
+  switch (icon) {
+    case 'star':
+      return <span className={cn('font-semibold', className)}>✦</span>;
+    case 'bible':
+      return <BookOpen className={className} />;
+    case 'sermon':
+      return <PenTool className={className} />;
+    case 'favorites':
+      return <Heart className={className} />;
+    case 'profile':
+      return <User className={className} />;
+    default:
+      return null;
+  }
+};
+
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
   showBottomNav?: boolean;
@@ -24,7 +58,7 @@ interface MobileOptimizedLayoutProps {
 
 export function MobileOptimizedLayout({ 
   children, 
-  showBottomNav = false,
+  showBottomNav = true,
   className = '' 
 }: MobileOptimizedLayoutProps) {
   const isMobile = useIsMobile();
@@ -32,6 +66,14 @@ export function MobileOptimizedLayout({
   const location = useLocation();
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const navigationItems = NAV_ITEMS;
+
+  const isPathActive = (href: string) => {
+    if (href === '/dashboard') {
+      return ['/', '/dashboard', '/app', '/ai-chat'].includes(location.pathname);
+    }
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
+  };
 
   useEffect(() => {
     if (!isMobile) return;
@@ -42,23 +84,15 @@ export function MobileOptimizedLayout({
     };
   }, [hamburgerMenuOpen, contextMenuOpen, isMobile]);
 
+  useEffect(() => {
+    setHamburgerMenuOpen(false);
+    setContextMenuOpen(false);
+  }, [location.pathname]);
+
   // If not mobile or not authenticated, use the original ModernLayout
   if (!isMobile || !user) {
     return <ModernLayout>{children}</ModernLayout>;
   }
-
-  const navigationItems: Array<{
-    name: string;
-    href: string;
-    icon: React.ReactNode;
-    description: string;
-  }> = [
-    { name: 'AI Chat', href: '/dashboard', icon: <span className="text-lg font-semibold text-orange-500">✦</span>, description: 'Biblical AI Assistant' },
-    { name: 'Bible', href: '/bible', icon: <BookOpen className="h-5 w-5" />, description: 'Read Scripture' },
-    { name: 'Sermons', href: '/sermons', icon: <PenTool className="h-5 w-5" />, description: 'Sermon Library' },
-    { name: 'Favorites', href: '/favorites', icon: <Heart className="h-5 w-5" />, description: 'Saved Content' },
-    { name: 'Profile', href: '/profile', icon: <User className="h-5 w-5" />, description: 'Account & Settings' }
-  ];
 
   return (
     <div className={cn("min-h-screen bg-white flex flex-col pb-[env(safe-area-inset-bottom)]", className)}>
@@ -99,16 +133,63 @@ export function MobileOptimizedLayout({
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
+      <div className={cn("flex-1 overflow-auto", showBottomNav ? "pb-20" : "")}>
         <div className="min-h-full">
           {children}
         </div>
       </div>
 
+      {/* Bottom Navigation */}
+      {showBottomNav && (
+        <nav
+          className="sticky bottom-0 left-0 right-0 z-40 border-t border-orange-100 bg-white/95 backdrop-blur px-1 py-1.5"
+          aria-label="Primary mobile navigation"
+        >
+          <div className="flex items-center justify-between">
+            {navigationItems.map((item) => {
+              const active = isPathActive(item.href);
+              const iconClass = item.icon === 'star' ? 'text-base leading-none' : 'h-5 w-5';
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="flex-1"
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <div
+                    className={cn(
+                      'flex flex-col items-center gap-1 rounded-xl py-1 transition-colors',
+                      active ? 'text-orange-600' : 'text-gray-400 hover:text-orange-500'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
+                        active ? 'bg-orange-50' : 'bg-transparent'
+                      )}
+                    >
+                      {renderIcon(
+                        item.icon,
+                        cn(iconClass, active ? 'text-orange-600' : 'text-current')
+                      )}
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em]">
+                      {item.name}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
+
       {/* Hamburger Navigation Menu */}
       <MobileNavigationMenu 
         isOpen={hamburgerMenuOpen}
         onClose={() => setHamburgerMenuOpen(false)}
+        items={navigationItems}
       />
 
       {/* Contextual More Menu */}
@@ -122,7 +203,7 @@ export function MobileOptimizedLayout({
 }
 
 // Hamburger Menu Component for All Page Navigation
-function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function MobileNavigationMenu({ isOpen, onClose, items }: { isOpen: boolean; onClose: () => void; items: MobileNavItem[] }) {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
 
@@ -138,9 +219,9 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
-      return location.pathname === '/' || location.pathname === '/dashboard';
+      return ['/', '/dashboard', '/app', '/ai-chat'].includes(location.pathname);
     }
-    return location.pathname === href;
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
   if (!isOpen) return null;
@@ -188,23 +269,32 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto p-4">
           <nav className="space-y-2">
-            {navigationItems.map((item) => {
+            {items.map((item) => {
               const active = isActive(item.href);
+              const iconClass = item.icon === 'star' ? 'text-base leading-none' : 'h-5 w-5';
               
               return (
-                <Link
+                <button
                   key={item.name}
-                  to={item.href}
-                  onClick={onClose}
+                  type="button"
+                  onClick={() => {
+                    navigate(item.href);
+                    onClose();
+                  }}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg transition-all duration-200 border",
+                    "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all duration-200",
                     active 
                       ? "bg-orange-50 border-orange-200 text-orange-600 shadow-sm"
                       : "border-transparent hover:bg-gray-50 text-gray-700"
                   )}
                 >
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-orange-500">
-                    {item.icon}
+                  <span
+                    className={cn(
+                      "inline-flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+                      active ? "bg-white text-orange-500" : "bg-orange-50 text-orange-500"
+                    )}
+                  >
+                    {renderIcon(item.icon, iconClass)}
                   </span>
                   <div className="flex-1">
                     <div className="font-medium text-sm">{item.name}</div>
@@ -213,7 +303,7 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   {active && (
                     <div className="w-2 h-2 bg-orange-500 rounded-full" />
                   )}
-                </Link>
+                </button>
               );
             })}
           </nav>
