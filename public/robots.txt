@@ -33,12 +33,6 @@ Allow: /sermon-writer
 Allow: /sermon-library
 Allow: /community
 Allow: /community/*
-Allow: /privacy-policy.html
-Allow: /privacy-policy
-Allow: /privacy
-Allow: /terms-of-service.html
-Allow: /terms-of-service  
-Allow: /terms
 
 # Allow all Bible content and translations
 Allow: /bible/kjv/*
