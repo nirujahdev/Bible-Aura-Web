@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
-import { runWorkflow } from '@/lib/openai-workflow-enhanced';
+import { sendBibleAuraMessage } from '@/lib/chatkit';
 import { StructuredAIResponse } from './StructuredAIResponse';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -79,27 +79,9 @@ const TRANSLATIONS = [
   { code: 'NKJV', name: 'New King James Version' }
 ];
 
-// OpenAI workflow integration
-const callOpenAIWorkflow = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
-  // Get API key from environment variables
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  
-  // Debug logging (only in development)
-  if (import.meta.env.DEV) {
-    console.log('Checking API key...', {
-      hasKey: !!apiKey,
-      keyLength: apiKey?.length || 0,
-      keyPrefix: apiKey?.substring(0, 7) || 'none'
-    });
-  }
-  
-  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here' || apiKey.trim() === '') {
-    const errorMsg = import.meta.env.DEV 
-      ? '🔑 OpenAI API key not configured! Please:\n1. Check that .env.local exists in the project root\n2. Restart your dev server (stop and run `npm run dev` again)\n3. Make sure VITE_OPENAI_API_KEY is set in .env.local'
-      : '🔑 OpenAI API key not configured! Please check your environment variables.';
-    throw new Error(errorMsg);
-  }
-  
+// ChatKit workflow integration
+// Uses the backend API route to call OpenAI ChatKit workflow
+const callChatKitWorkflow = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
   try {
     // Get the last user message (most recent input)
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
@@ -107,13 +89,13 @@ const callOpenAIWorkflow = async (messages: Message[], mode: ChatMode = 'chat-cl
       throw new Error('No user message found');
     }
 
-    // Run the OpenAI workflow with the user's input
-    const result = await runWorkflow({ input_as_text: lastUserMessage.content });
+    // Call the ChatKit API via backend route
+    const response = await sendBibleAuraMessage(lastUserMessage.content);
     
-    // The simplified workflow returns a string directly
-    return result;
+    // Return the text response from ChatKit
+    return response.text;
   } catch (error) {
-    console.error('OpenAI Workflow Error:', error);
+    console.error('ChatKit Workflow Error:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to connect to AI service');
   }
 };
@@ -363,7 +345,7 @@ export function BibleAuraChat() {
     setMessages(newMessages);
 
     try {
-      const aiResponse = await callOpenAIWorkflow(newMessages, currentMode);
+      const aiResponse = await callChatKitWorkflow(newMessages, currentMode);
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
