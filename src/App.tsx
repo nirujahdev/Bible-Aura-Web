@@ -22,6 +22,7 @@ import TermsOfService from '@/pages/TermsOfService';
 import Bible from '@/pages/BibleRedesigned';
 import EnhancedBible from '@/pages/EnhancedBible';
 import BibleQA from '@/pages/BibleQA';
+import ReadingPlan from '@/pages/ReadingPlan';
 import Sermons from '@/pages/Sermons';
 import SermonWriter from '@/pages/SermonWriter';
 import EnhancedSermonHub from '@/pages/EnhancedSermonHub';
@@ -174,6 +175,12 @@ function App() {
                 <Route path="/bible-qa" element={
                   <ProtectedRoute>
                     <BibleQA />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/reading-plan" element={
+                  <ProtectedRoute>
+                    <ReadingPlan />
                   </ProtectedRoute>
                 } />
                 
