@@ -384,13 +384,44 @@ export function BibleAuraChat() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileHistory(true)}
+                className="lg:hidden p-1"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              
+              <span className="text-orange-500 text-2xl drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">✦</span>
+              <div>
+                <h1 className="text-lg font-bold text-gray-800">Bible Aura AI</h1>
+                <p className="text-xs text-gray-600">Your Biblical Study Assistant</p>
+              </div>
+            </div>
+            
+            <Button
+              onClick={createNewConversation}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 text-sm shadow-lg"
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Chat
+            </Button>
+          </div>
+        </div>
+
         {/* Messages Area */}
         <ScrollArea className="flex-1 px-4 py-6">
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
               <div className="text-center py-12">
                 <div className="inline-block mb-6">
-                  <span className="text-6xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">✦</span>
+                  <span className="text-6xl text-orange-500 drop-shadow-[0_0_25px_rgba(249,115,22,0.6)]">✦</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   I'm Bible Aura AI, How can I assist you from the Bible?
@@ -409,8 +440,8 @@ export function BibleAuraChat() {
                 >
                   {message.role === 'assistant' && (
                     <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-white text-lg font-bold">✦</span>
+                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                        <span className="text-white text-lg font-bold drop-shadow-lg">✦</span>
                       </div>
                     </div>
                   )}
@@ -451,9 +482,9 @@ export function BibleAuraChat() {
                 className="flex gap-3"
               >
                 <div className="flex-shrink-0 mt-1">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
                     <motion.span
-                      className="text-white text-lg font-bold"
+                      className="text-white text-lg font-bold drop-shadow-lg"
                       animate={{
                         rotate: [0, 360],
                         scale: [1, 1.1, 1],
@@ -543,23 +574,20 @@ export function BibleAuraChat() {
 
             {/* Message Input */}
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="text-orange-500 text-xl drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">✦</span>
-              </div>
               <Textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask a follow-up question"
-                className="pl-10 pr-12 min-h-[52px] max-h-32 resize-none border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 rounded-xl text-sm shadow-[0_0_15px_rgba(249,115,22,0.1)]"
+                className="pr-12 min-h-[52px] max-h-32 resize-none border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-300 rounded-xl text-sm shadow-[0_0_25px_rgba(249,115,22,0.15)] hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]"
                 disabled={isLoading}
               />
               
               <Button
                 onClick={handleSendMessage}
                 disabled={isLoading || !input.trim()}
-                className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg shadow-lg disabled:opacity-50"
+                className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] disabled:opacity-50"
               >
                 <Send className="h-4 w-4 text-white" />
               </Button>
@@ -567,7 +595,7 @@ export function BibleAuraChat() {
             
             {/* Terms */}
             <p className="text-[10px] text-gray-500 text-center mt-3">
-              By using BibleAura you agree with our <Link to="/terms" className="underline hover:text-orange-500">terms</Link>.
+              By using Bible Aura you agree with our <Link to="/terms" className="underline hover:text-orange-500">terms of use</Link>.
             </p>
           </div>
         </div>
