@@ -33,6 +33,7 @@ import {
 import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { InlineLoadingIndicator } from '@/components/BibleAuraLoadingAnimation';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { ModernLayout } from '@/components/ModernLayout';
 import { cn } from '@/lib/utils';
 
 const LANGUAGES = [
@@ -382,8 +383,9 @@ export default function BibleRedesigned() {
   const newTestamentBooks = books.filter(book => book.testament === 'new');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      <div className="flex h-screen">
+    <ModernLayout>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+        <div className="flex h-screen">
         {/* Sidebar */}
         <AnimatePresence>
           {(sidebarOpen || !isMobile) && (

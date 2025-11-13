@@ -24,40 +24,8 @@ export default function Dashboard() {
 
   return (
     <MobileOptimizedLayout>
-      <div className={isMobile ? "mobile-safe-area" : ""}>
-        {/* Quick Links Section */}
-        <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 border-b border-gray-200">
-          <div className="container mx-auto">
-            <div className="flex items-center gap-3 overflow-x-auto pb-2">
-              <Link to="/reading-plan">
-                <Button
-                  variant="outline"
-                  className="whitespace-nowrap bg-white hover:bg-orange-50 border-orange-200 hover:border-orange-400 text-gray-700 shadow-sm"
-                >
-                  <Calendar className="h-4 w-4 mr-2 text-orange-500" />
-                  <span className="flex items-center gap-1">
-                    <span className="text-orange-500 font-bold">✦</span>
-                    Bible Reading Planner
-                  </span>
-                </Button>
-              </Link>
-              <Link to="/bible">
-                <Button
-                  variant="outline"
-                  className="whitespace-nowrap bg-white hover:bg-orange-50 border-orange-200 hover:border-orange-400 text-gray-700 shadow-sm"
-                >
-                  <BookOpen className="h-4 w-4 mr-2 text-orange-500" />
-                  Read Bible
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Chat */}
-        <div className={isMobile ? "h-[calc(100dvh-120px)]" : "h-[calc(100vh-120px)]"}>
-          <BibleAuraChat />
-        </div>
+      <div className={isMobile ? "h-[100dvh] mobile-safe-area" : "h-screen"}>
+        <BibleAuraChat />
       </div>
     </MobileOptimizedLayout>
   );

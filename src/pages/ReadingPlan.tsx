@@ -16,6 +16,7 @@ import {
 } from '@/lib/storage';
 import { generateReadingPlan } from '@/lib/generateReadingPlan';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { ModernLayout } from '@/components/ModernLayout';
 
@@ -29,6 +30,7 @@ export default function ReadingPlan() {
   const { toast } = useToast();
   const [plan, setPlan] = useState<ReadingPlanType | null>(null);
   const [stats, setStats] = useState({ completed: 0, total: 0, percentage: 0, streak: 0 });
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Load existing plan
@@ -106,31 +108,31 @@ export default function ReadingPlan() {
 
   return (
     <ModernLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <div className="container mx-auto px-4 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+        <div className={`container mx-auto ${isMobile ? 'px-4 py-6' : 'px-4 py-12'}`}>
           {/* Hero Section */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            className={`text-center ${isMobile ? 'mb-6' : 'mb-12'}`}
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 shadow-2xl shadow-orange-500/50 mb-6">
-              <span className="text-4xl text-white">✦</span>
+            <div className={`inline-flex items-center justify-center ${isMobile ? 'w-16 h-16' : 'w-20 h-20'} rounded-full bg-gradient-to-br from-orange-500 to-orange-600 shadow-2xl shadow-orange-500/50 ${isMobile ? 'mb-4' : 'mb-6'}`}>
+              <Calendar className={`${isMobile ? 'h-8 w-8' : 'h-10 w-10'} text-white`} />
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+            <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl md:text-6xl'} font-bold text-gray-800 mb-4`}>
               Bible Reading Planner
             </h1>
             
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p className={`${isMobile ? 'text-base' : 'text-xl'} text-gray-600 max-w-2xl mx-auto`}>
               Build your personalized scripture journey. Create structured reading plans tailored to your spiritual goals.
             </p>
 
             {plan && (
               <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-full bg-orange-500/20 border border-orange-400/30 backdrop-blur-xl">
-                <Sparkles className="h-5 w-5 text-orange-400" />
-                <span className="text-sm font-medium text-orange-300">
+                <Sparkles className="h-5 w-5 text-orange-500" />
+                <span className="text-sm font-medium text-orange-700">
                   Active Plan: {stats.completed} of {stats.total} days completed
                 </span>
               </div>
@@ -192,11 +194,11 @@ export default function ReadingPlan() {
               ].map((feature, index) => (
                 <div
                   key={index}
-                  className="p-6 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  className="p-6 rounded-2xl backdrop-blur-xl bg-white/90 border border-orange-200/40 hover:bg-white transition-all shadow-sm"
                 >
                   <div className="text-4xl mb-4">{feature.icon}</div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-gray-400">{feature.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{feature.title}</h3>
+                  <p className="text-sm text-gray-600">{feature.description}</p>
                 </div>
               ))}
             </motion.div>

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   MessageCircle, BookOpen, BarChart3, 
   Heart, FileText, User, Settings,
-  Headphones, Home, PenTool, Users
+  Headphones, Home, PenTool, Users, Calendar
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -26,6 +26,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { name: 'AI Chat', href: '/dashboard', icon: () => <span className="text-2xl font-bold">✦</span>, tooltip: 'AI Chat Dashboard' },
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
+  { name: 'Reading Plan', href: '/reading-plan', icon: Calendar, tooltip: 'Bible Reading Planner' },
   { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermons' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
 ];
