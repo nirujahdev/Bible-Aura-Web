@@ -89,6 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Error creating default profile:', error);
+        // Log detailed error
+        if (error.code === 'PGRST301' || error.message?.includes('permission denied')) {
+          console.error('RLS policy blocking profile creation. User may need to sign out and back in.');
+        } else if (error.message?.includes('violates not-null constraint')) {
+          console.error('Missing required fields. Check database schema.');
+        }
         return;
       }
 
@@ -172,7 +178,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(session?.user ?? null);
               
               if (session?.user) {
-                await loadUserProfile(session.user.id);
+                // For OAuth users, ensure profile exists
+                const isOAuthUser = session.user.app_metadata?.provider !== 'email';
+                if (isOAuthUser) {
+                  // Give trigger a moment to create profile, then load it
+                  setTimeout(async () => {
+                    await loadUserProfile(session.user.id);
+                  }, 500);
+                } else {
+                  await loadUserProfile(session.user.id);
+                }
               }
             } else if (event === 'SIGNED_OUT') {
               console.log('User signed out');
@@ -256,9 +271,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          console.log('Profile not found, creating default profile...');
           await createDefaultProfile(userId);
         } else {
           console.error('Error fetching profile:', error);
+          // Try to create profile anyway if it's a permission error
+          if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+            console.log('Permission error, attempting to create profile...');
+            await createDefaultProfile(userId);
+          }
         }
         return;
       }
@@ -267,6 +289,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Profile fetched successfully');
         setProfile(data as Profile);
       } else {
+        // No data returned, create default profile
+        console.log('No profile data, creating default profile...');
         await createDefaultProfile(userId);
       }
     } catch (error) {
