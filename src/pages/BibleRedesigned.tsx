@@ -603,20 +603,10 @@ export default function BibleRedesigned() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="bg-white border-b border-gray-200 px-4 py-3">
+          {/* Header - Hidden on mobile, shown on desktop */}
+          <div className="hidden lg:block bg-white border-b border-gray-200 px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {isMobile && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSidebarOpen(true)}
-                    className="h-9 w-9 p-0"
-                  >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                )}
                 
                 {selectedBook && (
                   <div className="flex items-center gap-2">
