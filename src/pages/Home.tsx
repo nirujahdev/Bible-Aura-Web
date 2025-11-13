@@ -476,34 +476,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Prominent Legal Links */}
-            <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-orange-200 max-w-2xl mx-auto">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Legal Information</h4>
-              <p className="text-gray-600 mb-6 text-sm md:text-base">
-                Learn more about how we protect your data and the terms governing your use of Bible Aura
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  asChild 
-                  size="lg" 
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
-                >
-                  <a href="/privacy-policy.html">
-                    🛡️ Privacy Policy
-                  </a>
-                </Button>
-                <Button 
-                  asChild 
-                  size="lg" 
-                  variant="outline"
-                  className="border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white px-6 py-3 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
-                >
-                  <a href="/terms-of-service.html">
-                    📋 Terms of Service
-                  </a>
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       </section>

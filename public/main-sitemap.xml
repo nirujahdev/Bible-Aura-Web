@@ -124,39 +124,6 @@
     <mobile:mobile/>
 </url>
 
-<!-- Legal Pages -->
-<url>
-    <loc>https://bibleaura.xyz/privacy-policy</loc>
-    <lastmod>2025-02-05</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <mobile:mobile/>
-</url>
-
-<url>
-    <loc>https://bibleaura.xyz/privacy-policy.html</loc>
-    <lastmod>2025-02-05</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <mobile:mobile/>
-</url>
-
-<url>
-    <loc>https://bibleaura.xyz/terms-of-service</loc>
-    <lastmod>2025-02-05</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <mobile:mobile/>
-</url>
-
-<url>
-    <loc>https://bibleaura.xyz/terms-of-service.html</loc>
-    <lastmod>2025-02-05</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-    <mobile:mobile/>
-</url>
-
 <!-- Subscription Pages -->
 <url>
     <loc>https://bibleaura.xyz/subscription-success</loc>
