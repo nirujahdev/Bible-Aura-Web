@@ -52,9 +52,8 @@ export async function sendBibleAuraMessage(message: string): Promise<ChatKitResp
 
   // Try workflow API first (if available)
   try {
-    const apiUrl = import.meta.env.PROD
-      ? `${import.meta.env.VITE_APP_URL || window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`
-      : `${window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`;
+    // Use the same origin to avoid CORS issues
+    const apiUrl = `${window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`;
 
     console.log('[Bible Aura AI] Trying workflow API:', apiUrl);
 
