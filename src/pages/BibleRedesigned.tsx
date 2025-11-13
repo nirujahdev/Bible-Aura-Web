@@ -493,8 +493,8 @@ export default function BibleRedesigned() {
 
   return (
     <MobileOptimizedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-        <div className="flex h-screen">
+      <div className="h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 overflow-hidden">
+        <div className="flex h-full">
         {/* Sidebar - Only show on desktop (lg and up) */}
         <AnimatePresence>
           {sidebarOpen && !isMobile && (
@@ -684,28 +684,61 @@ export default function BibleRedesigned() {
                               Results ({searchResults.length})
                             </h3>
                             <div className="space-y-2">
-                              {searchResults.slice(0, 20).map((verse, idx) => (
-                                <Card
-                                  key={idx}
-                                  className="p-3 cursor-pointer hover:bg-orange-50 transition-colors"
-                                  onClick={() => {
-                                    const book = books.find(b => b.name === verse.book_name);
-                                    if (book) {
-                                      setSelectedBook(book);
-                                      setSelectedChapter(verse.chapter);
-                                      setActiveTab('read');
-                                      if (isMobile) setSidebarOpen(false);
-                                    }
-                                  }}
-                                >
-                                  <div className="font-medium text-orange-600 text-xs mb-1">
-                                    {verse.book_name} {verse.chapter}:{verse.verse}
-                                  </div>
-                                  <div className="text-gray-700 text-xs line-clamp-2">
-                                    {verse.text}
-                                  </div>
-                                </Card>
-                              ))}
+                              {searchResults.slice(0, 20).map((verse, idx) => {
+                                const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
+                                return (
+                                  <Card
+                                    key={verseId}
+                                    className="p-3 cursor-pointer hover:bg-orange-50 transition-colors"
+                                    onClick={async () => {
+                                      const book = books.find(b => b.name === verse.book_name);
+                                      if (book) {
+                                        setSelectedBook(book);
+                                        setSelectedChapter(verse.chapter);
+                                        setActiveTab('read');
+                                        setSearchQuery('');
+                                        setSearchResults([]);
+                                        if (isMobile) setSidebarOpen(false);
+                                        
+                                        // Wait for verses to load, then scroll to exact verse
+                                        const scrollToVerse = () => {
+                                          const verseElement = document.getElementById(`verse-${verseId}`);
+                                          if (verseElement) {
+                                            verseElement.scrollIntoView({ 
+                                              behavior: 'smooth', 
+                                              block: 'center' 
+                                            });
+                                            // Highlight the verse briefly
+                                            verseElement.classList.add('ring-2', 'ring-orange-400', 'ring-offset-2', 'rounded-xl');
+                                            setTimeout(() => {
+                                              verseElement.classList.remove('ring-2', 'ring-orange-400', 'ring-offset-2');
+                                            }, 2000);
+                                            return true;
+                                          }
+                                          return false;
+                                        };
+                                        
+                                        // Try multiple times in case verses are still loading
+                                        let attempts = 0;
+                                        const maxAttempts = 10;
+                                        const tryScroll = setInterval(() => {
+                                          attempts++;
+                                          if (scrollToVerse() || attempts >= maxAttempts) {
+                                            clearInterval(tryScroll);
+                                          }
+                                        }, 200);
+                                      }
+                                    }}
+                                  >
+                                    <div className="font-medium text-orange-600 text-xs mb-1">
+                                      {verse.book_name} {verse.chapter}:{verse.verse}
+                                    </div>
+                                    <div className="text-gray-700 text-xs line-clamp-2">
+                                      {verse.text}
+                                    </div>
+                                  </Card>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -803,7 +836,7 @@ export default function BibleRedesigned() {
             ) : selectedBook && verses.length > 0 ? (
               <div className={cn(
                 "max-w-4xl mx-auto",
-                isMobile ? "p-4 pb-24" : "p-8"
+                isMobile ? "p-4 pb-16" : "p-8 pb-8"
               )}>
                 <div className="space-y-6">
                   {verses.map((verse) => {
@@ -816,6 +849,7 @@ export default function BibleRedesigned() {
                     return (
                       <motion.div
                         key={verseId}
+                        id={`verse-${verseId}`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={cn(
@@ -1012,62 +1046,60 @@ export default function BibleRedesigned() {
       </div>
 
       {/* AI Chat Side Panel */}
-      {selectedVerseForAI && (
-        <AnimatePresence>
-          {aiChatOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => {
-                  setAiChatOpen(false);
-                  setSelectedVerseForAI(null);
-                }}
-                className="fixed inset-0 bg-black/50 z-50"
-              />
+      <AnimatePresence>
+        {aiChatOpen && selectedVerseForAI && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setAiChatOpen(false);
+                setSelectedVerseForAI(null);
+              }}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+            
+            {/* Side Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
+            >
+              {/* Close Button - Top Right */}
+              <div className="absolute top-4 right-4 z-10">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
               
-              {/* Side Panel */}
-              <motion.div
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
-              >
-                {/* Close Button - Top Right */}
-                <div className="absolute top-4 right-4 z-10">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setAiChatOpen(false);
-                      setSelectedVerseForAI(null);
-                    }}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                {/* AI Chat Content - Full Height */}
-                <div className="flex-1 overflow-hidden pt-2">
-                  <BibleVerseAIChat
-                    verse={selectedVerseForAI}
-                    isOpen={aiChatOpen}
-                    onClose={() => {
-                      setAiChatOpen(false);
-                      setSelectedVerseForAI(null);
-                    }}
-                    verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
-                  />
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      )}
+              {/* AI Chat Content - Full Height */}
+              <div className="flex-1 overflow-hidden pt-2">
+                <BibleVerseAIChat
+                  verse={selectedVerseForAI}
+                  isOpen={aiChatOpen}
+                  onClose={() => {
+                    setAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Translation Selection Dialog (Mobile) */}
       <Dialog open={translationDialogOpen} onOpenChange={setTranslationDialogOpen}>
