@@ -5,12 +5,11 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Workflow configuration constants
-const WORKFLOW_ID = 'wf_6914dcd45c3c81909293fb24b99295d70aa098ac551088a0';
-const WORKFLOW_VERSION = '1';
-const DOMAIN_KEY = 'pk_69156df484148193bde4d23dd08c12fc0d90a851713b0413';
-const ALLOWED_ORIGIN = 'https://bibleaura.xyz';
-const WORKFLOW_ENDPOINT = `https://api.openai.com/v1/workflows/${WORKFLOW_ID}/runs`;
+// Default origin allowed for CORS (can be overridden via environment variables)
+const DEFAULT_ALLOWED_ORIGIN =
+  process.env.CHATKIT_ALLOWED_ORIGIN ??
+  process.env.VITE_APP_URL ??
+  'https://bibleaura.xyz';
 
 // Types for language and mode classification
 type Language = 'en' | 'ta';
@@ -19,10 +18,56 @@ type Mode = 'chat' | 'verse' | 'parable' | 'character' | 'topical' | 'qa';
 // Workflow input/output types
 type WorkflowInput = { input_as_text: string };
 
+interface ChatKitConfig {
+  workflowId: string;
+  version: string;
+  domainKey?: string;
+  allowedOrigin: string;
+  apiBaseUrl: string;
+}
+
+function resolveChatKitConfig(): ChatKitConfig {
+  const workflowId =
+    process.env.CHATKIT_WORKFLOW_ID ??
+    process.env.VITE_CHATKIT_WORKFLOW_ID ??
+    '';
+
+  if (!workflowId) {
+    throw new Error(
+      'ChatKit workflow ID not configured. Please set CHATKIT_WORKFLOW_ID in your environment variables.'
+    );
+  }
+
+  const version =
+    process.env.CHATKIT_WORKFLOW_VERSION ??
+    process.env.VITE_CHATKIT_WORKFLOW_VERSION ??
+    '1';
+
+  const domainKey =
+    process.env.CHATKIT_DOMAIN_KEY ??
+    process.env.VITE_CHATKIT_DOMAIN_KEY ??
+    '';
+
+  const allowedOrigin =
+    process.env.CHATKIT_ALLOWED_ORIGIN ??
+    process.env.VITE_APP_URL ??
+    DEFAULT_ALLOWED_ORIGIN;
+
+  const apiBaseUrl = (process.env.CHATKIT_API_BASE_URL ?? 'https://api.openai.com').replace(/\/+$/, '');
+
+  return {
+    workflowId,
+    version,
+    domainKey: domainKey || undefined,
+    allowedOrigin,
+    apiBaseUrl,
+  };
+}
+
 // CORS headers helper
-function setCORSHeaders(res: VercelResponse, origin?: string) {
+function setCORSHeaders(res: VercelResponse, origin?: string, allowedOrigin: string = DEFAULT_ALLOWED_ORIGIN) {
   // Allow requests from the Bible Aura domain and localhost for development
-  const isAllowedOrigin = origin === ALLOWED_ORIGIN || 
+  const isAllowedOrigin = origin === allowedOrigin || 
                           origin?.includes('bibleaura.xyz') || 
                           origin?.includes('localhost') ||
                           origin?.includes('127.0.0.1') ||
@@ -32,7 +77,7 @@ function setCORSHeaders(res: VercelResponse, origin?: string) {
     // Use the origin if it's localhost, otherwise use the allowed origin
     const corsOrigin = origin?.includes('localhost') || origin?.includes('127.0.0.1') 
       ? origin 
-      : ALLOWED_ORIGIN;
+      : allowedOrigin;
     
     res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -43,22 +88,26 @@ function setCORSHeaders(res: VercelResponse, origin?: string) {
 
 // Main handler function
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const allowedOrigin = process.env.CHATKIT_ALLOWED_ORIGIN ?? DEFAULT_ALLOWED_ORIGIN;
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    setCORSHeaders(res, req.headers.origin);
+    setCORSHeaders(res, req.headers.origin, allowedOrigin);
     return res.status(200).end();
   }
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    setCORSHeaders(res, req.headers.origin);
+    setCORSHeaders(res, req.headers.origin, allowedOrigin);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   // Set CORS headers
-  setCORSHeaders(res, req.headers.origin);
+  setCORSHeaders(res, req.headers.origin, allowedOrigin);
 
   try {
+    const chatKitConfig = resolveChatKitConfig();
+
     // Validate API key
     const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here' || apiKey.trim() === '') {
@@ -78,9 +127,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const workflowResult = await executeWorkflow(apiKey, {
-      input_as_text: message.trim()
-    });
+    const workflowResult = await executeWorkflow(
+      apiKey,
+      {
+        input_as_text: message.trim()
+      },
+      chatKitConfig
+    );
 
     // Extract response from workflow result
     let aiResponse = '';
@@ -137,6 +190,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       errorMessage = 'Workflow execution failed. Please try again or contact support.';
     } else if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
       errorMessage = 'API authentication failed. Please check your API key configuration.';
+    } else if (errorMessage.includes('ChatKit workflow ID')) {
+      errorMessage = 'Server configuration missing ChatKit workflow details. Please update environment variables.';
     }
     
     return res.status(500).json({
@@ -147,24 +202,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput) {
+async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, config: ChatKitConfig) {
+  const workflowEndpoint = `${config.apiBaseUrl}/v1/workflows/${config.workflowId}/runs`;
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${apiKey}`,
     'OpenAI-Beta': 'workflows=1'
   };
 
-  if (DOMAIN_KEY) {
-    headers['OpenAI-Organization'] = DOMAIN_KEY;
+  if (config.domainKey) {
+    headers['OpenAI-Organization'] = config.domainKey;
   }
 
-  const initialResponse = await fetch(WORKFLOW_ENDPOINT, {
+  const initialResponse = await fetch(workflowEndpoint, {
     method: 'POST',
     headers,
     body: JSON.stringify({
       input: workflowInput,
-      workflow_id: WORKFLOW_ID,
-      version: WORKFLOW_VERSION
+      workflow_id: config.workflowId,
+      version: config.version
     })
   });
 
@@ -187,7 +244,7 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput) {
   while ((currentRun.status === 'queued' || currentRun.status === 'in_progress') && attempts < maxAttempts) {
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    const pollResponse = await fetch(`${WORKFLOW_ENDPOINT}/${currentRun.run_id}`, {
+    const pollResponse = await fetch(`${workflowEndpoint}/${currentRun.run_id}`, {
       method: 'GET',
       headers
     });

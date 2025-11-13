@@ -1,13 +1,28 @@
 // ChatKit Client Setup for Bible Aura
 // Centralized configuration for OpenAI ChatKit workflow integration
 
-// Workflow configuration constants
-export const CHATKIT_CONFIG = {
-  workflowId: 'wf_6914dcd45c3c81909293fb24b99295d70aa098ac551088a0',
-  version: '1',
-  domainKey: 'pk_69156df484148193bde4d23dd08c12fc0d90a851713b0413',
-  apiEndpoint: '/api/bibleaura-chat',
-} as const;
+// Helper to safely read environment variables
+const getEnv = (key: string, fallback = ''): string => {
+  const value = (import.meta.env as Record<string, string | undefined>)[key];
+  return typeof value === 'string' && value.trim() !== '' ? value : fallback;
+};
+
+// Workflow configuration constants sourced from environment variables
+const workflowId = getEnv('VITE_CHATKIT_WORKFLOW_ID');
+const workflowVersion = getEnv('VITE_CHATKIT_WORKFLOW_VERSION', '1');
+const apiEndpoint = getEnv('VITE_CHATKIT_API_ENDPOINT', '/api/bibleaura-chat');
+
+if (import.meta.env.DEV && (!workflowId || workflowId === 'your_workflow_id')) {
+  console.warn(
+    '[Bible Aura] ChatKit workflow ID is not configured. Please set VITE_CHATKIT_WORKFLOW_ID in your environment variables.'
+  );
+}
+
+export const CHATKIT_CONFIG = Object.freeze({
+  workflowId,
+  version: workflowVersion,
+  apiEndpoint,
+});
 
 // Response type from ChatKit API
 export interface ChatKitResponse {
