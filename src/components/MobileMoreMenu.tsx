@@ -147,6 +147,14 @@ export function MobileMoreMenu({ isOpen, onClose, currentPage }: MobileMoreMenuP
   const pageTitle = getPageTitle(currentPage);
 
   const handleAction = (action: string) => {
+    // Emit custom event for Bible page actions
+    if (currentPage === '/bible') {
+      window.dispatchEvent(new CustomEvent('bible-action', { detail: { action } }));
+      onClose();
+      return;
+    }
+
+    // Handle other page actions
     switch (action) {
       case 'chat-history':
         // Show chat history (could open a modal or navigate)
@@ -159,26 +167,6 @@ export function MobileMoreMenu({ isOpen, onClose, currentPage }: MobileMoreMenuP
       case 'clear-chat':
         // Clear current chat
         window.location.reload();
-        break;
-      case 'book-selection':
-        // Open book selection modal/dropdown
-        console.log('Open book selection');
-        break;
-      case 'translation':
-        // Open translation selector
-        console.log('Open translation selector');
-        break;
-      case 'search-verses':
-        navigate('/bible?search=true');
-        break;
-      case 'bookmarks':
-        navigate('/favorites');
-        break;
-      case 'reading-plan':
-        navigate('/bible?reading-plan=true');
-        break;
-      case 'random-verse':
-        navigate('/bible?random=true');
         break;
       case 'journal-list':
         navigate('/journal?view=list');

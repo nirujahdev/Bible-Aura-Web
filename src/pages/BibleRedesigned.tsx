@@ -916,6 +916,103 @@ export default function BibleRedesigned() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Translation Selection Dialog (Mobile) */}
+      <Dialog open={translationDialogOpen} onOpenChange={setTranslationDialogOpen}>
+        <DialogContent className="bg-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Choose Translation</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Language</label>
+              <Select value={selectedLanguage} onValueChange={(v) => setSelectedLanguage(v as 'english' | 'tamil')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.value} value={lang.value}>
+                      {lang.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Translation</label>
+              <p className="text-sm text-gray-600">
+                {selectedLanguage === 'english' ? 'King James Version (KJV)' : 'Tamil Bible'}
+              </p>
+            </div>
+            <Button onClick={() => setTranslationDialogOpen(false)} className="w-full bg-orange-500 hover:bg-orange-600">
+              Apply
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Book Selection Dialog (Mobile) */}
+      <Dialog open={bookSelectionDialogOpen} onOpenChange={setBookSelectionDialogOpen}>
+        <DialogContent className="bg-white max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Choose Bible Book</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="flex-1 py-4">
+            {/* Old Testament */}
+            <Collapsible open={oldTestamentOpen} onOpenChange={setOldTestamentOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-50 rounded-lg">
+                <span className="font-semibold text-gray-800">Old Testament</span>
+                <ChevronDown className={cn("h-4 w-4 transition-transform", oldTestamentOpen && "rotate-180")} />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid grid-cols-2 gap-2 p-4">
+                  {oldTestamentBooks.map((book) => (
+                    <Button
+                      key={book.name}
+                      variant={selectedBook?.name === book.name ? "default" : "outline"}
+                      onClick={() => {
+                        setSelectedBook(book);
+                        setSelectedChapter(1);
+                        setBookSelectionDialogOpen(false);
+                      }}
+                      className="justify-start text-sm"
+                    >
+                      {book.name}
+                    </Button>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* New Testament */}
+            <Collapsible open={newTestamentOpen} onOpenChange={setNewTestamentOpen} className="mt-2">
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-50 rounded-lg">
+                <span className="font-semibold text-gray-800">New Testament</span>
+                <ChevronDown className={cn("h-4 w-4 transition-transform", newTestamentOpen && "rotate-180")} />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid grid-cols-2 gap-2 p-4">
+                  {newTestamentBooks.map((book) => (
+                    <Button
+                      key={book.name}
+                      variant={selectedBook?.name === book.name ? "default" : "outline"}
+                      onClick={() => {
+                        setSelectedBook(book);
+                        setSelectedChapter(1);
+                        setBookSelectionDialogOpen(false);
+                      }}
+                      className="justify-start text-sm"
+                    >
+                      {book.name}
+                    </Button>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
       </div>
     </MobileOptimizedLayout>
   );
