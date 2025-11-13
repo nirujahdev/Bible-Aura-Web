@@ -19,7 +19,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 
 // Import main application pages
-import Bible from '@/pages/Bible';
+import Bible from '@/pages/BibleRedesigned';
 import EnhancedBible from '@/pages/EnhancedBible';
 import BibleQA from '@/pages/BibleQA';
 import Sermons from '@/pages/Sermons';

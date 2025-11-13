@@ -55,12 +55,7 @@ const LANGUAGES = [
 // English translations available
 const ENGLISH_TRANSLATIONS = BIBLE_TRANSLATIONS.filter(t => t.language === 'english');
 
-const READING_PLANS = [
-  { id: 'bible-year', name: 'Bible in a Year', duration: '365 days', description: 'Complete the Bible in one year' },
-  { id: 'new-testament-90', name: 'New Testament in 90 Days', duration: '90 days', description: 'Focus on the New Testament' },
-  { id: 'psalms-month', name: 'Psalms in a Month', duration: '31 days', description: 'One chapter of Psalms daily' },
-  { id: 'gospels-30', name: 'Gospels in 30 Days', duration: '30 days', description: 'Read through the four Gospels' },
-];
+// Reading plans removed - focusing on simple Bible reading experience
 
 const HIGHLIGHT_COLORS = [
   { id: 'yellow', name: 'Yellow', color: 'bg-yellow-200 border-yellow-400' },
@@ -693,7 +688,7 @@ How can I apply this to my life?
                   setSearchResults([]);
                 }
               }} className="flex-1 flex flex-col h-[calc(100vh-140px)]">
-                <TabsList className="grid w-full grid-cols-3 mx-4 mt-4">
+                <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
                   <TabsTrigger value="read">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Read
@@ -701,10 +696,6 @@ How can I apply this to my life?
                   <TabsTrigger value="search">
                     <Search className="h-4 w-4 mr-2" />
                     Search
-                  </TabsTrigger>
-                  <TabsTrigger value="plans">
-                    <Target className="h-4 w-4 mr-2" />
-                    Plans
                   </TabsTrigger>
                 </TabsList>
 
@@ -859,36 +850,6 @@ How can I apply this to my life?
                     )}
                   </TabsContent>
 
-                  <TabsContent value="plans" className="mt-4 space-y-4">
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-800 mb-3">Reading Plans</h3>
-                      <div className="space-y-2">
-                        {READING_PLANS.map((plan) => (
-                          <div
-                            key={plan.id}
-                            className={`p-3 border rounded cursor-pointer transition-colors ${
-                              readingPlan === plan.id ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                            onClick={() => setReadingPlan(readingPlan === plan.id ? null : plan.id)}
-                          >
-                            <div className="font-medium text-sm">{plan.name}</div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {plan.duration} • {plan.description}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {readingPlan && (
-                        <div className="mt-4 p-3 bg-orange-50 rounded">
-                          <div className="text-sm font-medium text-orange-800 mb-2">
-                            Progress: {readingProgress.toFixed(1)}%
-                          </div>
-                          <Progress value={readingProgress} className="h-2" />
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
                 </div>
               </Tabs>
             </div>
