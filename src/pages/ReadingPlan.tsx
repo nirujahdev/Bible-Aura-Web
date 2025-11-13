@@ -109,29 +109,25 @@ export default function ReadingPlan() {
   return (
     <ModernLayout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-        <div className={`container mx-auto ${isMobile ? 'px-4 py-4' : 'px-6 py-6'}`}>
-
-          {/* Main Content */}
-          <div>
-            {!plan ? (
-              /* Show Wizard if no plan exists */
-              <div>
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Your Reading Plan</h2>
-                  <p className="text-sm text-gray-600">Answer 5 simple questions to get started</p>
-                </div>
-                <ReadingPlanWizard onComplete={handleWizardComplete} />
+        <div className={`container mx-auto ${isMobile ? 'px-4 py-4' : 'px-6 py-4 max-w-7xl'}`}>
+          {!plan ? (
+            /* Show Wizard if no plan exists */
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Your Reading Plan</h2>
+                <p className="text-sm text-gray-600">Answer 5 simple questions to get started</p>
               </div>
-            ) : (
-              /* Show Plan Display if plan exists */
-              <ReadingPlanDisplay
-                plan={plan}
-                onToggle={handleToggleDay}
-                onReset={handleResetPlan}
-                stats={stats}
-              />
-            )}
-          </div>
+              <ReadingPlanWizard onComplete={handleWizardComplete} />
+            </div>
+          ) : (
+            /* Show Plan Display if plan exists */
+            <ReadingPlanDisplay
+              plan={plan}
+              onToggle={handleToggleDay}
+              onReset={handleResetPlan}
+              stats={stats}
+            />
+          )}
         </div>
       </div>
     </ModernLayout>

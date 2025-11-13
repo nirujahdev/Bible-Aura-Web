@@ -1,113 +1,65 @@
-// Calendar View - Visual calendar grid
+// Calendar View - Compact grid display
 
 import { Card } from '@/components/ui/card';
-import { ReadingPlanDay } from '@/lib/storage';
-import { CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { CheckCircle2, Circle } from 'lucide-react';
+import { ReadingPlan } from '@/lib/storage';
 
 interface CalendarViewProps {
-  plan: ReadingPlanDay[];
+  plan: ReadingPlan;
   onToggle: (day: number) => void;
 }
 
 export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
-  // Calculate weeks needed
-  const totalDays = plan.length;
-  const weeksNeeded = Math.ceil(totalDays / 7);
-  
-  // Create calendar grid
-  const calendar: (ReadingPlanDay | null)[][] = [];
-  for (let week = 0; week < weeksNeeded; week++) {
-    const weekDays: (ReadingPlanDay | null)[] = [];
-    for (let day = 0; day < 7; day++) {
-      const dayIndex = week * 7 + day;
-      weekDays.push(dayIndex < totalDays ? plan[dayIndex] : null);
-    }
-    calendar.push(weekDays);
+  // Group days into weeks (7 days per row)
+  const weeks: typeof plan.days[][] = [];
+  for (let i = 0; i < plan.days.length; i += 7) {
+    weeks.push(plan.days.slice(i, i + 7));
   }
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
   return (
-    <Card className="p-6 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20">
-      {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-          <span className="text-orange-400">✦</span>
-          Calendar View
-        </h3>
-        <p className="text-sm text-gray-400 mt-1">
-          Click any day to mark as completed
-        </p>
+    <Card className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-gray-800">Calendar Overview</h3>
+        <p className="text-xs text-gray-600 mt-0.5">Click any day to toggle completion</p>
       </div>
 
-      {/* Day Names Header */}
-      <div className="grid grid-cols-7 gap-2 mb-2">
-        {dayNames.map((name) => (
-          <div
-            key={name}
-            className="text-center text-xs font-semibold text-gray-400 py-2"
-          >
-            {name}
-          </div>
-        ))}
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="space-y-2">
-        {calendar.map((week, weekIndex) => (
-          <div key={weekIndex} className="grid grid-cols-7 gap-2">
-            {week.map((day, dayIndex) => (
-              <motion.div
-                key={`${weekIndex}-${dayIndex}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: (weekIndex * 7 + dayIndex) * 0.01 }}
-              >
-                {day ? (
-                  <div
-                    onClick={() => onToggle(day.day)}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 ${
-                      day.completed
-                        ? 'bg-green-500/20 border-2 border-green-400 shadow-lg shadow-green-500/30'
-                        : 'bg-white/10 border border-white/20 hover:bg-white/15 hover:border-orange-400'
-                    }`}
-                  >
-                    <div className={`font-bold text-sm ${
-                      day.completed ? 'text-green-400' : 'text-white'
-                    }`}>
-                      {day.day}
-                    </div>
-                    {day.completed && (
-                      <CheckCircle2 className="h-4 w-4 text-green-400 mt-1" />
-                    )}
-                    {!day.completed && (
-                      <div className="text-xs text-gray-400 mt-1">
-                        {day.reading.length}
-                      </div>
+      <div className="space-y-3 max-h-[calc(100vh-360px)] overflow-y-auto pr-2">
+        {weeks.map((week, weekIndex) => (
+          <div key={weekIndex}>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              Week {weekIndex + 1}
+            </div>
+            <div className="grid grid-cols-7 gap-1.5">
+              {week.map((day) => (
+                <button
+                  key={day.day}
+                  onClick={() => onToggle(day.day)}
+                  className={`aspect-square rounded-lg transition-all duration-200 hover:scale-105 border-2 ${
+                    day.completed
+                      ? 'bg-green-500 border-green-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-700 hover:border-orange-400'
+                  }`}
+                  title={`Day ${day.day}: ${day.reading.join(', ')}`}
+                >
+                  <div className="flex flex-col items-center justify-center gap-0.5">
+                    <div className="text-xs font-bold">{day.day}</div>
+                    {day.completed ? (
+                      <CheckCircle2 className="h-3 w-3" />
+                    ) : (
+                      <Circle className="h-3 w-3 text-gray-400" />
                     )}
                   </div>
-                ) : (
-                  <div className="aspect-square rounded-xl bg-white/5 border border-white/10" />
-                )}
-              </motion.div>
-            ))}
+                </button>
+              ))}
+              {/* Fill remaining cells if week is incomplete */}
+              {week.length < 7 &&
+                Array.from({ length: 7 - week.length }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="aspect-square" />
+                ))}
+            </div>
           </div>
         ))}
-      </div>
-
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-6 pt-6 border-t border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-green-500/20 border-2 border-green-400" />
-          <span className="text-xs text-gray-400">Completed</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-white/10 border border-white/20" />
-          <span className="text-xs text-gray-400">Pending</span>
-        </div>
       </div>
     </Card>
   );
 }
-
