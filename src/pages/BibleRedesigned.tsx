@@ -30,6 +30,11 @@ import {
   searchVerses,
   TranslationCode
 } from '@/lib/local-bible';
+import { 
+  FavoritesService, 
+  BookmarksService,
+  generateVerseId 
+} from '@/lib/bookmarks-favorites-service';
 import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { InlineLoadingIndicator } from '@/components/BibleAuraLoadingAnimation';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
@@ -214,21 +219,13 @@ export default function BibleRedesigned() {
     
     try {
       // Load bookmarks
-      const { data: bookmarksData } = await supabase
-        .from('bookmarks')
-        .select('verse_id')
-        .eq('user_id', user.id);
-      
+      const bookmarksData = await BookmarksService.getUserBookmarks(user.id);
       if (bookmarksData) {
         setBookmarks(new Set(bookmarksData.map(b => b.verse_id)));
       }
       
       // Load favorites
-      const { data: favoritesData } = await supabase
-        .from('favorite_verses')
-        .select('verse_id')
-        .eq('user_id', user.id);
-      
+      const favoritesData = await FavoritesService.getUserFavorites(user.id);
       if (favoritesData) {
         setFavorites(new Set(favoritesData.map(f => f.verse_id)));
       }
@@ -246,6 +243,11 @@ export default function BibleRedesigned() {
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load user data",
+        variant: "destructive"
+      });
     }
   };
 
@@ -353,36 +355,35 @@ export default function BibleRedesigned() {
       return;
     }
 
-    const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
+    const verseId = generateVerseId(verse);
     const newBookmarks = new Set(bookmarks);
+    const isCurrentlyBookmarked = bookmarks.has(verseId);
     
     try {
-      if (bookmarks.has(verseId)) {
-        await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('verse_id', verseId);
+      if (isCurrentlyBookmarked) {
+        await BookmarksService.removeFromBookmarks(user.id, verse);
         newBookmarks.delete(verseId);
         toast({ title: "Bookmark Removed" });
       } else {
-        await supabase
-          .from('bookmarks')
-          .insert({
-            user_id: user.id,
-            verse_id: verseId,
-            verse_text: verse.text,
-            verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
-            category: 'study'
-          });
+        await BookmarksService.addToBookmarks(
+          user.id, 
+          verse, 
+          'study', 
+          'yellow', 
+          selectedTranslation
+        );
         newBookmarks.add(verseId);
         toast({ title: "Bookmarked!" });
       }
       
       setBookmarks(newBookmarks);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling bookmark:', error);
-      toast({ title: "Error", description: "Failed to update bookmark", variant: "destructive" });
+      toast({ 
+        title: "Error", 
+        description: error?.message || "Failed to update bookmark", 
+        variant: "destructive" 
+      });
     }
   };
 
@@ -396,35 +397,30 @@ export default function BibleRedesigned() {
       return;
     }
 
-    const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
+    const verseId = generateVerseId(verse);
     const newFavorites = new Set(favorites);
     
     try {
-      if (favorites.has(verseId)) {
-        await supabase
-          .from('favorite_verses')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('verse_id', verseId);
+      const isCurrentlyFavorited = favorites.has(verseId);
+      
+      if (isCurrentlyFavorited) {
+        await FavoritesService.removeFromFavorites(user.id, verse);
         newFavorites.delete(verseId);
         toast({ title: "Removed from Favorites" });
       } else {
-        await supabase
-          .from('favorite_verses')
-          .insert({
-            user_id: user.id,
-            verse_id: verseId,
-            verse_text: verse.text,
-            verse_reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`
-          });
+        await FavoritesService.addToFavorites(user.id, verse, selectedTranslation);
         newFavorites.add(verseId);
         toast({ title: "Added to Favorites ❤️" });
       }
       
       setFavorites(newFavorites);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling favorite:', error);
-      toast({ title: "Error", description: "Failed to update favorite", variant: "destructive" });
+      toast({ 
+        title: "Error", 
+        description: error?.message || "Failed to update favorite", 
+        variant: "destructive" 
+      });
     }
   };
 
@@ -438,17 +434,21 @@ export default function BibleRedesigned() {
       return;
     }
 
-    const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
+    const verseId = generateVerseId(verse);
     
     try {
-      await supabase
+      const { error } = await supabase
         .from('verse_highlights')
         .upsert({
           user_id: user.id,
           verse_id: verseId,
           color: color,
           category: 'highlight'
+        }, {
+          onConflict: 'user_id,verse_id'
         });
+      
+      if (error) throw error;
       
       const newHighlights = new Map(highlights);
       newHighlights.set(verseId, color);
@@ -685,7 +685,7 @@ export default function BibleRedesigned() {
                             </h3>
                             <div className="space-y-2">
                               {searchResults.slice(0, 20).map((verse, idx) => {
-                                const verseId = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
+                                const verseId = generateVerseId(verse);
                                 return (
                                   <Card
                                     key={verseId}
