@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -52,13 +52,11 @@ const renderIcon = (icon: NavIcon, className: string): ReactNode => {
 
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
-  showBottomNav?: boolean;
   className?: string;
 }
 
 export function MobileOptimizedLayout({ 
   children, 
-  showBottomNav = true,
   className = '' 
 }: MobileOptimizedLayoutProps) {
   const isMobile = useIsMobile();
@@ -68,13 +66,6 @@ export function MobileOptimizedLayout({
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const navigationItems = NAV_ITEMS;
 
-  const isPathActive = (href: string) => {
-    if (href === '/dashboard') {
-      return ['/', '/dashboard', '/app', '/ai-chat'].includes(location.pathname);
-    }
-    return location.pathname === href || location.pathname.startsWith(`${href}/`);
-  };
-
   useEffect(() => {
     if (!isMobile) return;
     const lockScroll = hamburgerMenuOpen || contextMenuOpen;
@@ -83,11 +74,6 @@ export function MobileOptimizedLayout({
       document.body.style.overflow = '';
     };
   }, [hamburgerMenuOpen, contextMenuOpen, isMobile]);
-
-  useEffect(() => {
-    setHamburgerMenuOpen(false);
-    setContextMenuOpen(false);
-  }, [location.pathname]);
 
   // If not mobile or not authenticated, use the original ModernLayout
   if (!isMobile || !user) {
@@ -133,62 +119,17 @@ export function MobileOptimizedLayout({
       </div>
 
       {/* Main Content Area */}
-      <div className={cn("flex-1 overflow-auto", showBottomNav ? "pb-20" : "")}>
+      <div className="flex-1 overflow-auto">
         <div className="min-h-full">
           {children}
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      {showBottomNav && (
-        <nav
-          className="sticky bottom-0 left-0 right-0 z-40 border-t border-orange-100 bg-white/95 backdrop-blur px-1 py-1.5"
-          aria-label="Primary mobile navigation"
-        >
-          <div className="flex items-center justify-between">
-            {navigationItems.map((item) => {
-              const active = isPathActive(item.href);
-              const iconClass = item.icon === 'star' ? 'text-base leading-none' : 'h-5 w-5';
-
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="flex-1"
-                  aria-current={active ? 'page' : undefined}
-                >
-                  <div
-                    className={cn(
-                      'flex flex-col items-center gap-1 rounded-xl py-1 transition-colors',
-                      active ? 'text-orange-600' : 'text-gray-400 hover:text-orange-500'
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
-                        active ? 'bg-orange-50' : 'bg-transparent'
-                      )}
-                    >
-                      {renderIcon(
-                        item.icon,
-                        cn(iconClass, active ? 'text-orange-600' : 'text-current')
-                      )}
-                    </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em]">
-                      {item.name}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      )}
-
       {/* Hamburger Navigation Menu */}
       <MobileNavigationMenu 
         isOpen={hamburgerMenuOpen}
         onClose={() => setHamburgerMenuOpen(false)}
+        items={navigationItems}
         items={navigationItems}
       />
 
@@ -204,18 +145,9 @@ export function MobileOptimizedLayout({
 
 // Hamburger Menu Component for All Page Navigation
 function MobileNavigationMenu({ isOpen, onClose, items }: { isOpen: boolean; onClose: () => void; items: MobileNavItem[] }) {
-  const { user, profile, signOut } = useAuth();
+  const { signOut } = useAuth();
   const location = useLocation();
-
-  const getUserName = () => {
-    if (profile?.display_name) {
-      return profile.display_name.split(' ')[0];
-    }
-    if (user?.email) {
-      return user.email.split('@')[0];
-    }
-    return 'Friend';
-  };
+  const navigate = useNavigate();
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -260,9 +192,6 @@ function MobileNavigationMenu({ isOpen, onClose, items }: { isOpen: boolean; onC
             >
               <X className="h-4 w-4 text-gray-500" />
             </button>
-          </div>
-          <div className="mt-2">
-            <p className="text-sm text-gray-600">Hi, {getUserName()}!</p>
           </div>
         </div>
 

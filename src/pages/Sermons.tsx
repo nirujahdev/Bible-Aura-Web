@@ -1739,9 +1739,9 @@ const Sermons = () => {
 
   // Clean and simple dashboard view
   return (
-    <MobileOptimizedLayout>
-      <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-6">
+    <MobileOptimizedLayout className="bg-gray-50">
+      <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-orange-600 rounded-xl">

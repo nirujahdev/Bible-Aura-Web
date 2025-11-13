@@ -21,7 +21,6 @@ import TermsOfService from '@/pages/TermsOfService';
 // Import main application pages
 import Bible from '@/pages/Bible';
 import EnhancedBible from '@/pages/EnhancedBible';
-import BiblePageExact from '@/pages/BiblePageExact';
 import BibleQA from '@/pages/BibleQA';
 import Sermons from '@/pages/Sermons';
 import SermonWriter from '@/pages/SermonWriter';
@@ -140,7 +139,7 @@ function App() {
                 
                 <Route path="/bible" element={
                   <ProtectedRoute>
-                    <BiblePageExact />
+                    <Bible />
                   </ProtectedRoute>
                 } />
                 
