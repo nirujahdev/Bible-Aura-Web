@@ -4,14 +4,13 @@
 // Uses OpenAI Agents SDK to call the workflow
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { OpenAI } from 'openai';
-import { Runner, withTrace, AgentInputItem } from '@openai/agents';
 
 // Workflow configuration constants
 const WORKFLOW_ID = 'wf_6914dcd45c3c81909293fb24b99295d70aa098ac551088a0';
 const WORKFLOW_VERSION = '1';
 const DOMAIN_KEY = 'pk_69156df484148193bde4d23dd08c12fc0d90a851713b0413';
 const ALLOWED_ORIGIN = 'https://bibleaura.xyz';
+const WORKFLOW_ENDPOINT = `https://api.openai.com/v1/workflows/${WORKFLOW_ID}/runs`;
 
 // Types for language and mode classification
 type Language = 'en' | 'ta';
@@ -79,77 +78,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Initialize OpenAI client
-    const openai = new OpenAI({
-      apiKey: apiKey,
-    });
-
-    // Prepare workflow input
-    const workflowInput: WorkflowInput = {
+    const workflowResult = await executeWorkflow(apiKey, {
       input_as_text: message.trim()
-    };
-
-    // Call the workflow using OpenAI Workflows API
-    // The workflow is executed via HTTP API since the SDK doesn't have workflows support yet
-    const workflowResult = await withTrace('Bible Aura AI', async () => {
-      // Execute workflow via HTTP API
-      const workflowResponse = await fetch(`https://api.openai.com/v1/workflows/${WORKFLOW_ID}/runs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'OpenAI-Beta': 'workflows=1'
-        },
-        body: JSON.stringify({
-          input: workflowInput
-        })
-      });
-
-      if (!workflowResponse.ok) {
-        const errorData = await workflowResponse.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Workflow API error: ${workflowResponse.status}`);
-      }
-
-      const workflowData = await workflowResponse.json();
-      
-      // If the response has a run_id, poll for completion
-      if (workflowData.run_id) {
-        let run = workflowData;
-        let attempts = 0;
-        const maxAttempts = 60; // 30 seconds max (500ms * 60)
-
-        while ((run.status === 'queued' || run.status === 'in_progress') && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const runResponse = await fetch(`https://api.openai.com/v1/workflows/${WORKFLOW_ID}/runs/${run.run_id}`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'OpenAI-Beta': 'workflows=1'
-            }
-          });
-
-          if (runResponse.ok) {
-            run = await runResponse.json();
-          } else {
-            break; // Stop polling if we can't retrieve the run
-          }
-          attempts++;
-        }
-
-        if (run.status === 'completed' && run.output) {
-          return run.output;
-        } else if (run.status === 'failed') {
-          throw new Error(run.error || 'Workflow execution failed');
-        } else if (run.status === 'queued' || run.status === 'in_progress') {
-          throw new Error('Workflow execution timed out');
-        }
-
-        return run.output || run;
-      }
-
-      // If no run_id, return the response directly
-      return workflowData.output || workflowData;
     });
 
     // Extract response from workflow result
@@ -203,7 +133,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let errorMessage = error?.message || 'Failed to process chat message';
     
     // Check for specific error types
-    if (errorMessage.includes('workflow') || errorMessage.includes('Workflow')) {
+    if (errorMessage.toLowerCase().includes('workflow')) {
       errorMessage = 'Workflow execution failed. Please try again or contact support.';
     } else if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
       errorMessage = 'API authentication failed. Please check your API key configuration.';
@@ -215,6 +145,72 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
+}
+
+async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${apiKey}`,
+    'OpenAI-Beta': 'workflows=1'
+  };
+
+  if (DOMAIN_KEY) {
+    headers['OpenAI-Organization'] = DOMAIN_KEY;
+  }
+
+  const initialResponse = await fetch(WORKFLOW_ENDPOINT, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      input: workflowInput,
+      workflow_id: WORKFLOW_ID,
+      version: WORKFLOW_VERSION
+    })
+  });
+
+  if (!initialResponse.ok) {
+    const errorData = await initialResponse.json().catch(() => ({}));
+    const errorMessage = errorData.error?.message || errorData.message || `Workflow API error: ${initialResponse.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const initialData = await initialResponse.json();
+
+  if (!initialData.run_id) {
+    return initialData.output || initialData;
+  }
+
+  let attempts = 0;
+  const maxAttempts = 60; // 30 seconds max (500ms * 60)
+  let currentRun = initialData;
+
+  while ((currentRun.status === 'queued' || currentRun.status === 'in_progress') && attempts < maxAttempts) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const pollResponse = await fetch(`${WORKFLOW_ENDPOINT}/${currentRun.run_id}`, {
+      method: 'GET',
+      headers
+    });
+
+    if (!pollResponse.ok) {
+      const errorData = await pollResponse.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || errorData.message || `Workflow poll error: ${pollResponse.status}`;
+      throw new Error(errorMessage);
+    }
+
+    currentRun = await pollResponse.json();
+    attempts++;
+  }
+
+  if (currentRun.status === 'completed' && currentRun.output) {
+    return currentRun.output;
+  }
+
+  if (currentRun.status === 'failed') {
+    throw new Error(currentRun.error || 'Workflow execution failed');
+  }
+
+  throw new Error('Workflow execution timed out');
 }
 
 // Helper function to classify language using OpenAI API (fallback)
