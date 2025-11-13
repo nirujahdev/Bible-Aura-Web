@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { subscriptionService, UsageInfo, ResourceType, SubscriptionInfo } from '@/lib/subscription-service';
+// import { subscriptionService, UsageInfo, ResourceType, SubscriptionInfo } from '@/lib/subscription-service'; // Removed subscription feature
+type SubscriptionInfo = any;
+type UsageInfo = any;
+type ResourceType = string;
 import { 
   Crown, 
   MessageSquare, 
@@ -40,10 +43,9 @@ export const UsageDashboard: React.FC<UsageDashboardProps> = ({ className = '' }
 
     setLoading(true);
     try {
-      const [usage, subscription] = await Promise.all([
-        subscriptionService.getAllUsageStats(user.id),
-        subscriptionService.getSubscriptionInfo(user.id)
-      ]);
+      // Subscription service removed - set default values
+      const usage = null;
+      const subscription = { plan: 'free', status: 'active' };
 
       setUsageStats(usage);
       setSubscriptionInfo(subscription);

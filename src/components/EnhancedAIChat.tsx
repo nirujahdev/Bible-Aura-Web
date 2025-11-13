@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { subscriptionService } from '@/lib/subscription-service';
+// import { subscriptionService } from '@/lib/subscription-service'; // Removed subscription feature
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -254,18 +254,18 @@ export function EnhancedAIChat() {
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
     
-    // Check subscription limits
+    // Subscription check removed - all users have access
     if (!user) return;
     
-    const usageInfo = await subscriptionService.canUseFeature(user.id, 'ai_chat');
-    if (!usageInfo.canUse) {
-      toast({
-        title: 'Upgrade Required',
-        description: 'You have reached your AI chat limit. Please upgrade your plan.',
-        variant: 'destructive'
-      });
-      return;
-    }
+    // const usageInfo = await subscriptionService.canUseFeature(user.id, 'ai_chat');
+    // if (!usageInfo.canUse) {
+    //   toast({
+    //     title: 'Upgrade Required',
+    //     description: 'You have reached your AI chat limit. Please upgrade your plan.',
+    //     variant: 'destructive'
+    //   });
+    //   return;
+    // }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -304,8 +304,8 @@ export function EnhancedAIChat() {
 
       setMessages(prev => [...prev, assistantMessage]);
       
-      // Increment usage after successful response
-      await subscriptionService.incrementUsage(user.id, 'ai_chat');
+      // Usage tracking removed
+      // await subscriptionService.incrementUsage(user.id, 'ai_chat');
       
     } catch (error) {
       clearInterval(stateInterval);

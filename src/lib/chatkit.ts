@@ -1,5 +1,5 @@
 // ChatKit Client Setup for Bible Aura
-// Centralized configuration for OpenAI ChatKit workflow integration
+// Auto-detecting workflow/direct API with fallback support
 
 // Helper to safely read environment variables
 const getEnv = (key: string, fallback = ''): string => {
@@ -37,8 +37,9 @@ export interface ChatKitRequest {
 }
 
 /**
- * Send a message to Bible Aura ChatKit workflow
- * @param message - The user's message to send to the workflow
+ * Send a message to Bible Aura AI
+ * Auto-detects and uses the best available method (workflow or direct API)
+ * @param message - The user's message to send
  * @returns Promise with the ChatKit response containing text, mode, and language
  */
 export async function sendBibleAuraMessage(message: string): Promise<ChatKitResponse> {
@@ -47,57 +48,107 @@ export async function sendBibleAuraMessage(message: string): Promise<ChatKitResp
     throw new Error('Message is required and must be a non-empty string');
   }
 
-  try {
-    // Determine API endpoint
-    // In development, use production API URL since serverless functions only work on Vercel
-    // In production, use the configured app URL
-    const apiUrl = import.meta.env.PROD
-      ? `${import.meta.env.VITE_APP_URL || 'https://bibleaura.xyz'}${CHATKIT_CONFIG.apiEndpoint}`
-      : `https://bibleaura.xyz${CHATKIT_CONFIG.apiEndpoint}`; // Use production API in development
+  console.log('[Bible Aura AI] Processing message...');
 
-    // Make API request
+  // Try workflow API first (if available)
+  try {
+    const apiUrl = import.meta.env.PROD
+      ? `${import.meta.env.VITE_APP_URL || window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`
+      : `${window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`;
+
+    console.log('[Bible Aura AI] Trying workflow API:', apiUrl);
+
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: message.trim(),
-      } as ChatKitRequest),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: message.trim() } as ChatKitRequest),
     });
 
-    // Handle HTTP errors
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || 
-        errorData.error || 
-        `API request failed with status ${response.status}`
-      );
+    if (response.ok) {
+      const data: ChatKitResponse = await response.json();
+      if (data.text && typeof data.text === 'string') {
+        console.log('[Bible Aura AI] ✓ Workflow API success');
+        return data;
+      }
     }
 
-    // Parse and return response
-    const data: ChatKitResponse = await response.json();
-    
-    // Validate response structure
-    if (!data.text || typeof data.text !== 'string') {
-      throw new Error('Invalid response format: missing or invalid text field');
-    }
-
-    return data;
-  } catch (error: any) {
-    // Enhanced error handling
-    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      throw new Error('🔌 Network error: Please check your internet connection and try again.');
-    }
-    
-    if (error.message.includes('API key')) {
-      throw new Error('🔑 API configuration error: Please contact support.');
-    }
-
-    // Re-throw with original message
-    throw new Error(error.message || 'Failed to send message to Bible Aura ChatKit');
+    console.log('[Bible Aura AI] Workflow API failed, using direct OpenAI...');
+  } catch (workflowError) {
+    console.log('[Bible Aura AI] Workflow error, using fallback...');
   }
+
+  // Fallback: Direct OpenAI API
+  return await callDirectOpenAI(message);
+}
+
+/**
+ * Direct OpenAI API call (fallback)
+ */
+async function callDirectOpenAI(message: string): Promise<ChatKitResponse> {
+  const apiKey = getEnv('VITE_OPENAI_API_KEY');
+  
+  if (!apiKey || apiKey === 'your_openai_api_key_here') {
+    throw new Error(
+      '❌ OpenAI API key not configured.\n\n' +
+      'Please add to your .env.local file:\n' +
+      'VITE_OPENAI_API_KEY=sk-your-key-here\n\n' +
+      'Get your key from: https://platform.openai.com/api-keys'
+    );
+  }
+
+  console.log('[Bible Aura AI] Calling OpenAI directly...');
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are ✦Bible Aura AI, a knowledgeable biblical assistant.
+
+Provide accurate biblical interpretation, analysis, and guidance.
+Include relevant scripture references.
+Be respectful, clear, and encouraging.
+Structure responses with headings when helpful.`
+        },
+        { role: 'user', content: message.trim() }
+      ],
+      temperature: 0.7,
+      max_tokens: 1500,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 401) throw new Error('❌ Invalid API key');
+    if (response.status === 429) throw new Error('⏰ Rate limit reached. Try again soon.');
+    throw new Error(errorData.error?.message || `API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices[0]?.message?.content || '';
+
+  if (!text) throw new Error('No response from AI');
+
+  console.log('[Bible Aura AI] ✓ Direct API success');
+
+  // Auto-detect mode
+  const lower = message.toLowerCase();
+  let mode: ChatKitResponse['mode'] = 'chat';
+  if (lower.includes('verse') || lower.match(/\d+:\d+/)) mode = 'verse';
+  else if (lower.includes('parable')) mode = 'parable';
+  else if (lower.match(/who (was|is)/)) mode = 'character';
+  else if (lower.includes('what does the bible say')) mode = 'topical';
+  else if (lower.match(/^(what|who|when|where|why|how)\s/i)) mode = 'qa';
+
+  const lang: 'en' | 'ta' = message.match(/[\u0B80-\u0BFF]/) ? 'ta' : 'en';
+
+  return { text, mode, lang };
 }
 
 /**

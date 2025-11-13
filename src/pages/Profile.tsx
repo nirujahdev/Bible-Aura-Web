@@ -13,7 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { subscriptionService, SubscriptionInfo, UsageInfo, ResourceType } from "@/lib/subscription-service";
+// import { subscriptionService, SubscriptionInfo, UsageInfo, ResourceType } from "@/lib/subscription-service"; // Removed subscription feature
+type SubscriptionInfo = any;
+type UsageInfo = any;
+type ResourceType = string;
 import { 
   User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
   Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
@@ -177,10 +180,9 @@ const Profile = () => {
 
     setSubscriptionLoading(true);
     try {
-      const [subscription, usage] = await Promise.all([
-        subscriptionService.getSubscriptionInfo(user.id),
-        subscriptionService.getAllUsageStats(user.id)
-      ]);
+      // Subscription service removed - set default free tier
+      const subscription = { plan: 'free', status: 'active' };
+      const usage = null;
 
       setSubscriptionInfo(subscription);
       setUsageStats(usage);

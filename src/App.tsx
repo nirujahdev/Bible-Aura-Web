@@ -29,8 +29,6 @@ import Favorites from '@/pages/Favorites';
 import TopicalStudy from '@/pages/TopicalStudy';
 import ParablesStudy from '@/pages/ParablesStudy';
 import Profile from '@/pages/Profile';
-import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
-import SubscriptionCancelled from '@/pages/SubscriptionCancelled';
 
 import SermonLibrary from '@/pages/SermonLibrary';
 
@@ -198,10 +196,6 @@ function App() {
                     <SermonLibrary />
                   </ProtectedRoute>
                 } />
-                
-                {/* Subscription pages */}
-                <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-                <Route path="/subscription-cancelled" element={<SubscriptionCancelled />} />
                 
                 {/* 404 fallback */}
                 <Route path="*" element={<NotFound />} />
