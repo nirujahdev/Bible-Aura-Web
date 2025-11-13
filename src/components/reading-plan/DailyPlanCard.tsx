@@ -19,9 +19,9 @@ export default function DailyPlanCard({ day, onToggle }: DailyPlanCardProps) {
       }`}
       onClick={onToggle}
     >
-      <div className="flex items-start gap-3">
-        {/* Day Number Badge */}
-        <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm ${
+      <div className="flex items-center gap-3">
+        {/* Day Number Badge - Compact */}
+        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
           day.completed
             ? 'bg-green-500 text-white'
             : 'bg-orange-500 text-white'
@@ -30,25 +30,16 @@ export default function DailyPlanCard({ day, onToggle }: DailyPlanCardProps) {
         </div>
 
         {/* Reading Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-800 text-sm">Day {day.day}</h3>
-            {day.completed ? (
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-            ) : (
-              <Circle className="h-5 w-5 text-gray-300" />
-            )}
-          </div>
-          
-          {/* Reading List */}
-          <div className="flex flex-wrap gap-1.5">
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          {/* Reading List - Compact Pills */}
+          <div className="flex flex-wrap gap-1.5 flex-1">
             {day.reading.map((passage, idx) => (
               <span
                 key={idx}
-                className={`text-xs px-2 py-1 rounded-md inline-flex items-center gap-1 ${
+                className={`text-xs px-2 py-0.5 rounded-md inline-flex items-center gap-1 font-medium ${
                   day.completed
-                    ? 'bg-green-100 text-green-700 border border-green-200'
-                    : 'bg-orange-50 text-orange-700 border border-orange-200'
+                    ? 'bg-green-100 text-green-800 border border-green-300'
+                    : 'bg-orange-100 text-orange-800 border border-orange-300'
                 }`}
               >
                 <BookOpen className="h-3 w-3" />
@@ -56,6 +47,13 @@ export default function DailyPlanCard({ day, onToggle }: DailyPlanCardProps) {
               </span>
             ))}
           </div>
+          
+          {/* Completion Icon - Compact */}
+          {day.completed ? (
+            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+          ) : (
+            <Circle className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          )}
         </div>
       </div>
     </Card>
