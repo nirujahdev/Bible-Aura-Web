@@ -20,6 +20,7 @@ import {
   PenTool
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { callOpenAIAPI } from '@/lib/openai-api-helper';
 
 interface DailyVerse {
   id: string;
@@ -71,35 +72,20 @@ Write 2-3 sentences that:
 
 Keep it warm, biblical, and uplifting.`;
 
-    // Use AI to generate devotional context
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Christian devotional writer. Create inspiring, biblical reflections that help people connect God\'s word to their daily lives. Be encouraging, practical, and spiritually uplifting.'
-          },
-          {
-            role: 'user',
-            content: contextPrompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 200
-      })
-    });
-
+    // Use OpenAI to generate devotional context
     let aiContext = "God's word speaks directly to our hearts today. Take time to meditate on this verse and let its truth guide your steps. Remember that God's promises are faithful and His love for you is unchanging.";
     
-    if (response.ok) {
-      const data = await response.json();
-      aiContext = data.choices[0]?.message?.content || aiContext;
+    try {
+      const response = await callOpenAIAPI(contextPrompt, {
+        systemPrompt: 'You are a Christian devotional writer. Create inspiring, biblical reflections that help people connect God\'s word to their daily lives. Be encouraging, practical, and spiritually uplifting.',
+        maxTokens: 200,
+        temperature: 0.7,
+        model: 'gpt-4o-mini'
+      });
+      aiContext = response || aiContext;
+    } catch (error) {
+      console.error('Error generating AI context:', error);
+      // Use fallback context if API fails
     }
 
     return {

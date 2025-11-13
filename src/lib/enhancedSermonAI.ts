@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { callOpenAIAPI } from './openai-api-helper';
 
 interface SermonGenerationRequest {
   topic: string;
@@ -235,8 +236,8 @@ export class EnhancedSermonAI {
       // Build comprehensive prompt for AI
       const prompt = this.buildEnhancedPrompt(request, advancedOptions);
       
-      // Call DeepSeek API for actual AI generation
-      const response = await this.callDeepSeekAPI(prompt);
+      // Call OpenAI API for actual AI generation
+      const response = await this.callOpenAIService(prompt);
       
       let sermon: GeneratedSermon;
       try {
@@ -261,46 +262,16 @@ export class EnhancedSermonAI {
     }
   }
 
-  // DeepSeek API call for sermon generation
-  private static async callDeepSeekAPI(prompt: string): Promise<string> {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-    
-    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-      throw new Error('🔑 DeepSeek API key not configured! Please check your environment variables.');
-    }
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts. Always respond in valid JSON format.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 8000,
-        temperature: 0.7,
-        stream: false
-      })
+  // OpenAI API call for sermon generation
+  import { callOpenAIAPI } from './openai-api-helper';
+  
+  private static async callOpenAIService(prompt: string): Promise<string> {
+    return await callOpenAIAPI(prompt, {
+      systemPrompt: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts. Always respond in valid JSON format.',
+      maxTokens: 8000,
+      temperature: 0.7,
+      model: 'gpt-4o-mini'
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('DeepSeek API Error:', errorText);
-      throw new Error(`Bible Aura AI error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
   }
 
   // Enhanced AI response parsing

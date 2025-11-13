@@ -253,7 +253,7 @@ const EnhancedSermonGenerator: React.FC<EnhancedSermonGeneratorProps> = ({
 
     setIsGenerating(true);
     try {
-      // Create comprehensive sermon based on form data using DeepSeek AI
+      // Create comprehensive sermon based on form data using OpenAI
       const sermon = await generateComprehensiveSermon(formData, advancedOptions);
       
       setGeneratedSermon(sermon);

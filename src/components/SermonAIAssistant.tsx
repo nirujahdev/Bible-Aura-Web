@@ -4,6 +4,7 @@ import {
   Sparkles, Bot, Target, Users, BookOpen, 
   CheckCircle, RefreshCw, Wand2, Brain
 } from 'lucide-react';
+import { callOpenAIAPI } from '@/lib/openai-api-helper';
 
 interface SermonOutline {
   title: string;
@@ -40,44 +41,14 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
   const [tone, setTone] = useState('inspiring');
   const [generatedOutline, setGeneratedOutline] = useState<SermonOutline | null>(null);
 
-  // DeepSeek API call for sermon assistant
-  const callDeepSeekAPI = async (prompt: string): Promise<string> => {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-    
-    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-      throw new Error('🔑 DeepSeek API key not configured! Please check your environment variables.');
-    }
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert sermon writing assistant. Help pastors create biblically sound, engaging sermons with practical applications.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 3000,
-        temperature: 0.7,
-        stream: false
-      })
+  // OpenAI API call for sermon assistant
+  const callOpenAIService = async (prompt: string): Promise<string> => {
+    return await callOpenAIAPI(prompt, {
+      systemPrompt: 'You are an expert sermon writing assistant. Help pastors create biblically sound, engaging sermons with practical applications.',
+      maxTokens: 3000,
+      temperature: 0.7,
+      model: 'gpt-4o-mini'
     });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
   };
 
   // Generate sermon outline
@@ -112,7 +83,7 @@ Please provide:
 
 Make it practical, engaging, and biblically sound for a ${audience} audience.`;
 
-      const response = await callDeepSeekAPI(prompt);
+      const response = await callOpenAIService(prompt);
       
       // Parse the AI response into a structured outline
       const outline: SermonOutline = parseOutlineResponse(response, topic, scriptureReference);

@@ -24,6 +24,7 @@ import SermonToolbar from '@/components/SermonToolbar';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { callOpenAIAPI } from '@/lib/openai-api-helper';
 
 interface SermonEntry {
   id: string;
@@ -532,27 +533,14 @@ const SermonWriter = () => {
     setAiLoading(true);
 
     try {
-      const response = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            {
-              role: "system",
-              content: "You are a biblical studies assistant helping with sermon preparation. Provide thoughtful, biblically sound insights."
-            },
-            { role: "user", content: aiInput }
-          ],
-          max_tokens: 500,
-          temperature: 0.7
-        })
+      const response = await callOpenAIAPI(aiInput, {
+        systemPrompt: "You are a biblical studies assistant helping with sermon preparation. Provide thoughtful, biblically sound insights.",
+        maxTokens: 500,
+        temperature: 0.7,
+        model: 'gpt-4o-mini'
       });
 
-      const data = await response.json();
+      const data = { choices: [{ message: { content: response } }] };
       
       const aiMessage: AIMessage = {
         id: (Date.now() + 1).toString(),

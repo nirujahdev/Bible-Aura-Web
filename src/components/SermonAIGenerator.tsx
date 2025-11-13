@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { callOpenAIAPI } from '@/lib/openai-api-helper';
 
 interface SermonGenerationRequest {
   topic: string;
@@ -133,46 +134,14 @@ const SermonAIGenerator: React.FC<SermonAIGeneratorProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // DeepSeek API call for sermon generation
-  const callDeepSeekAPI = async (prompt: string): Promise<string> => {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-    
-    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-      throw new Error('🔑 Bible Aura AI is not configured! Please contact support for assistance.');
-    }
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 8000,
-        temperature: 0.7,
-        stream: false
-      })
+  // OpenAI API call for sermon generation
+  const callOpenAIService = async (prompt: string): Promise<string> => {
+    return await callOpenAIAPI(prompt, {
+      systemPrompt: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts.',
+      maxTokens: 8000,
+      temperature: 0.7,
+      model: 'gpt-4o-mini'
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('DeepSeek API Error:', errorText);
-      throw new Error(`Bible Aura AI error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
   };
 
   // Build comprehensive prompt for sermon generation
@@ -271,7 +240,7 @@ Ensure the sermon is:
 `;
   };
 
-  // Generate sermon using DeepSeek API
+  // Generate sermon using OpenAI API
   const generateSermon = async () => {
     if (!formData.topic && !formData.scripture) {
       toast({
@@ -285,7 +254,7 @@ Ensure the sermon is:
     setIsGenerating(true);
     try {
       const prompt = buildSermonPrompt(formData);
-      const response = await callDeepSeekAPI(prompt);
+      const response = await callOpenAIService(prompt);
       
       // Parse the JSON response
       let sermon: GeneratedSermon;

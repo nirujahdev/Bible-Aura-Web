@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
 import { supabase } from '@/integrations/supabase/client';
+import { callOpenAIAPI } from '@/lib/openai-api-helper';
 
 interface BibleVerse {
   book_name: string;
@@ -83,7 +84,7 @@ const AI_CHAT_MODES = [
   }
 ];
 
-// DeepSeek AI integration - SPEED OPTIMIZED
+// OpenAI integration - SPEED OPTIMIZED
 const callBiblicalAI = async (
   messages: Array<{role: string, content: string}>,
   mode: string = 'verse',
@@ -91,14 +92,6 @@ const callBiblicalAI = async (
   abortController?: AbortController
 ): Promise<string> => {
   try {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here' || apiKey === 'your_actual_deepseek_api_key_here') {
-      throw new Error('🔑 DeepSeek API key not configured! Please:\n1. Go to https://platform.deepseek.com/\n2. Create an API key\n3. Add it to your .env.local file\n4. Restart the dev server');
-    }
-
-    const controller = abortController || new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // Reduced to 10 seconds for verse-specific queries
-
     const systemPrompt = generateSystemPrompt(mode as keyof typeof AI_RESPONSE_TEMPLATES) + `
 
 VERSE CONTEXT: ${verseContext}
@@ -108,55 +101,26 @@ TRANSLATION: Use KJV Bible translation when citing verses.
 FOCUS: Center your analysis specifically on the provided verse while connecting to broader biblical themes.
 SPEED PRIORITY: Generate fast, accurate verse-specific responses.`;
 
-    // Speed-optimized settings for verse analysis
-    const requestBody = {
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
-      max_tokens: mode === 'verse' || mode === 'character' || mode === 'parable' || mode === 'topical' ? 800 : 500, // Reduced for speed
-      temperature: 0.2, // Lower for faster, more focused responses
-      top_p: 0.8, // Reduced for focus
-      frequency_penalty: 0.1,
-      presence_penalty: 0.1,
-      stream: false
-    };
+    const maxTokens = mode === 'verse' || mode === 'character' || mode === 'parable' || mode === 'topical' ? 800 : 500;
+    
+    // Convert messages array to OpenAI format
+    const openAIMessages = messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
 
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal
+    // Get the last user message as the prompt, or use empty string if no messages
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+    
+    const response = await callOpenAIAPI(lastUserMessage, {
+      systemPrompt,
+      messages: openAIMessages,
+      maxTokens,
+      temperature: 0.2, // Lower for faster, more focused responses
+      model: 'gpt-4o-mini'
     });
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('DeepSeek API Error:', errorText);
-      
-      if (response.status === 401) {
-        throw new Error('🔐 AI service authentication failed. Please check your API key.');
-      } else if (response.status === 429) {
-        throw new Error('⏳ Too many requests. Please wait a moment and try again.');
-      } else if (response.status >= 500) {
-        throw new Error('🔧 AI service is temporarily unavailable. Please try again later.');
-      } else {
-        throw new Error(`❌ AI service error (${response.status}). Please try again.`);
-      }
-    }
-
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('❌ Invalid response from AI service. Please try again.');
-    }
-
-    return data.choices[0].message.content;
+    return response;
   } catch (error: any) {
     console.error('AI Call Error:', error);
     if (error.name === 'AbortError') {

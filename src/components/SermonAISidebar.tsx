@@ -17,6 +17,7 @@ import {
   FileText, Edit3, Plus, Settings, X, Send, Copy, Eye,
   Mic, Volume2, Timer, Calendar, Users, Church, Star
 } from 'lucide-react';
+import { callOpenAIAPI } from '@/lib/openai-api-helper';
 
 interface SermonAISidebarProps {
   isOpen: boolean;
@@ -122,51 +123,23 @@ const SermonAISidebar: React.FC<SermonAISidebarProps> = ({
     }
   ];
 
-  // DeepSeek API call
-  const callDeepSeekAPI = async (prompt: string): Promise<string> => {
-    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_AI_API_KEY;
-    
-    if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_deepseek_api_key_here') {
-      throw new Error('🔑 Bible Aura AI is not configured! Please contact support.');
-    }
-
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert sermon writing assistant. You help pastors and speakers create biblically sound, engaging, and practical sermons. 
+  // OpenAI API call
+  const callOpenAIService = async (prompt: string): Promise<string> => {
+    const systemPrompt = `You are an expert sermon writing assistant. You help pastors and speakers create biblically sound, engaging, and practical sermons. 
 
 Current Sermon Context:
 - Title: ${sermonTitle || 'Untitled Sermon'}
 - Scripture: ${scriptureReference || 'Not specified'}
 - Current Content Length: ${currentSermonContent.length} characters
 
-Provide helpful, practical, and theologically sound assistance.`
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.7,
-        stream: false
-      })
+Provide helpful, practical, and theologically sound assistance.`;
+
+    return await callOpenAIAPI(prompt, {
+      systemPrompt,
+      maxTokens: 2000,
+      temperature: 0.7,
+      model: 'gpt-4o-mini'
     });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
   };
 
   // Execute AI tool
@@ -335,7 +308,7 @@ Request: ${input || 'General assistance'}
 Provide helpful, practical, and biblically sound guidance.`;
       }
 
-      const response = await callDeepSeekAPI(prompt);
+      const response = await callOpenAIService(prompt);
       
       // Add to conversation history
       const userMessage = {
@@ -385,7 +358,7 @@ Please provide helpful sermon writing assistance.`;
 
     setIsGenerating(true);
     try {
-      const response = await callDeepSeekAPI(prompt);
+      const response = await callOpenAIService(prompt);
       
       const userMessage = {
         type: 'user' as const,
