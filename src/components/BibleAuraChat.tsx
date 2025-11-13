@@ -3,26 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
 import { sendBibleAuraMessage } from '@/lib/chatkit';
-import { StructuredAIResponse } from './StructuredAIResponse';
-import { BibleAuraLoadingAnimation, InlineLoadingIndicator } from './BibleAuraLoadingAnimation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   MessageCircle, 
   Plus, 
   Send, 
-  Loader2, 
   Sparkles,
   BookOpen,
   Brain,
   Search,
   Heart,
-  Volume2,
   User,
   History,
   Trash2,
@@ -35,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Link } from 'react-router-dom';
 
 // Types
 interface Message {
@@ -59,42 +54,15 @@ interface Conversation {
 
 type ChatMode = 'chat-clean' | 'verse-clean' | 'parable-clean' | 'character-clean' | 'topical-clean' | 'qa-clean';
 type Language = 'english' | 'tamil';
-type TranslationCode = 'KJV'; // Only KJV for English
 
 // Chat modes configuration
 const CHAT_MODES = {
-  'chat-clean': { name: 'AI Chat', icon: MessageCircle, color: 'bg-orange-500', description: 'General Bible chat and guidance' },
-  'verse-clean': { name: 'Verse Analysis', icon: BookOpen, color: 'bg-blue-500', description: 'Deep verse analysis and interpretation' },
-  'parable-clean': { name: 'Parable Study', icon: Heart, color: 'bg-green-500', description: 'Understanding parables and stories' },
-  'character-clean': { name: 'Character Study', icon: Search, color: 'bg-purple-500', description: 'Biblical character profiles' },
-  'topical-clean': { name: 'Topical Study', icon: Sparkles, color: 'bg-pink-500', description: 'Topic-based Bible study' },
-  'qa-clean': { name: 'Quick Q&A', icon: Brain, color: 'bg-indigo-500', description: 'Fast answers with scripture' }
-};
-
-// Only KJV for English (Tamil Bible is separate)
-const TRANSLATIONS = [
-  { code: 'KJV', name: 'King James Version' }
-];
-
-// ChatKit workflow integration
-// Uses the backend API route to call OpenAI ChatKit workflow
-const callChatKitWorkflow = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
-  try {
-    // Get the last user message (most recent input)
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-    if (!lastUserMessage) {
-      throw new Error('No user message found');
-    }
-
-    // Call the ChatKit API via backend route
-    const response = await sendBibleAuraMessage(lastUserMessage.content);
-    
-    // Return the text response from ChatKit
-    return response.text;
-  } catch (error) {
-    console.error('ChatKit Workflow Error:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to connect to AI service');
-  }
+  'chat-clean': { name: 'AI Chat', icon: MessageCircle, description: 'General Bible chat and guidance' },
+  'verse-clean': { name: 'Verse Analysis', icon: BookOpen, description: 'Deep verse analysis' },
+  'parable-clean': { name: 'Parable Study', icon: Heart, description: 'Understanding parables' },
+  'character-clean': { name: 'Character Study', icon: Search, description: 'Biblical characters' },
+  'topical-clean': { name: 'Topical Study', icon: Sparkles, description: 'Topic-based study' },
+  'qa-clean': { name: 'Quick Q&A', icon: Brain, description: 'Fast answers' }
 };
 
 export function BibleAuraChat() {
@@ -109,7 +77,6 @@ export function BibleAuraChat() {
   // Settings state
   const [currentMode, setCurrentMode] = useState<ChatMode>('verse-clean');
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
-  const [currentTranslation, setCurrentTranslation] = useState<TranslationCode>('KJV');
   
   // Chat history state
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -135,17 +102,9 @@ export function BibleAuraChat() {
   // Auto-save conversation when messages change
   useEffect(() => {
     if (user && messages.length > 0) {
-      console.log('Auto-save triggered:', { 
-        messagesCount: messages.length, 
-        userId: user.id, 
-        conversationId: currentConversationId 
-      });
-      
-      // Auto-save after a short delay to allow UI to update
       const saveTimer = setTimeout(async () => {
         try {
           await saveCurrentConversation();
-          console.log('Auto-save completed successfully');
         } catch (error) {
           console.error('Auto-save failed:', error);
         }
@@ -153,55 +112,33 @@ export function BibleAuraChat() {
       
       return () => clearTimeout(saveTimer);
     }
-  }, [messages, user]); // Changed from messages.length to messages to trigger on every change
-
-  // Save when conversation settings change
-  useEffect(() => {
-    if (user && currentConversationId && messages.length > 0) {
-      console.log('Settings changed, saving conversation');
-      saveCurrentConversation();
-    }
-  }, [currentMode, currentLanguage, currentTranslation]);
+  }, [messages, user]);
 
   const loadConversations = async () => {
-    if (!user) {
-      console.log('Load conversations skipped: no user');
-      return;
-    }
+    if (!user) return;
     
     try {
-      console.log('Loading conversations for user:', user.id);
       const { data, error } = await supabase
         .from('ai_conversations')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
       
-      if (error) {
-        console.error('Supabase load error:', error);
-        throw error;
-      }
-      
-      console.log('Conversations loaded successfully:', data?.length || 0, 'conversations');
+      if (error) throw error;
       setConversations(data || []);
     } catch (error: any) {
-      console.error('Load conversations error:', error);
       toast({
-        title: "Load Error (Debug)",
-        description: `Failed to load conversations: ${error.message || 'Unknown error'}`,
+        title: "Load Error",
+        description: "Failed to load conversations",
         variant: "destructive",
       });
     }
   };
 
   const saveCurrentConversation = async () => {
-    if (!user || messages.length === 0) {
-      console.log('Save skipped:', { user: !!user, messagesLength: messages.length });
-      return;
-    }
+    if (!user || messages.length === 0) return;
     
     try {
-      console.log('Starting save process...');
       const title = messages[0]?.content.slice(0, 50) + '...' || 'New Conversation';
       
       const conversationData = {
@@ -210,34 +147,18 @@ export function BibleAuraChat() {
         messages: JSON.stringify(messages),
         mode: currentMode,
         language: currentLanguage,
-        translation: currentTranslation,
+        translation: 'KJV',
         updated_at: new Date().toISOString()
       };
 
-      console.log('Conversation data prepared:', {
-        userId: conversationData.user_id,
-        title: conversationData.title,
-        mode: conversationData.mode,
-        messagesCount: messages.length,
-        conversationId: currentConversationId
-      });
-
       if (currentConversationId) {
-        // Update existing conversation
-        console.log('Updating existing conversation:', currentConversationId);
         const { error } = await supabase
           .from('ai_conversations')
           .update(conversationData)
           .eq('id', currentConversationId);
         
-        if (error) {
-          console.error('Supabase update error:', error);
-          throw error;
-        }
-        console.log('Conversation updated successfully');
+        if (error) throw error;
       } else {
-        // Create new conversation
-        console.log('Creating new conversation...');
         const { data, error } = await supabase
           .from('ai_conversations')
           .insert({
@@ -247,25 +168,15 @@ export function BibleAuraChat() {
           .select()
           .single();
         
-        if (error) {
-          console.error('Supabase insert error:', error);
-          throw error;
-        }
-        
-        console.log('New conversation created:', data.id);
+        if (error) throw error;
         setCurrentConversationId(data.id);
       }
       
-      // Reload conversations to update the list
-      console.log('Reloading conversations list...');
       await loadConversations();
-      console.log('Save process completed successfully');
     } catch (error: any) {
-      console.error('Full save error details:', error);
-      // Show error for debugging
       toast({
-        title: "Save Error (Debug)",
-        description: `Failed to save: ${error.message || 'Unknown error'}`,
+        title: "Save Error",
+        description: "Failed to save conversation",
         variant: "destructive",
       });
     }
@@ -276,7 +187,6 @@ export function BibleAuraChat() {
     setMessages(JSON.parse(conversation.messages as any) || []);
     setCurrentMode(conversation.mode as ChatMode);
     setCurrentLanguage(conversation.language as Language);
-    setCurrentTranslation(conversation.translation as TranslationCode);
   };
 
   const createNewConversation = () => {
@@ -305,7 +215,6 @@ export function BibleAuraChat() {
         description: "The conversation has been removed from your history.",
       });
     } catch (error) {
-      console.error('Error deleting conversation:', error);
       toast({
         title: "Error",
         description: "Failed to delete conversation.",
@@ -320,7 +229,7 @@ export function BibleAuraChat() {
     if (!user) {
       toast({
         title: "Sign in required",
-        description: "Please sign in to chat with AI about the Bible",
+        description: "Please sign in to chat with AI",
         variant: "destructive",
       });
       return;
@@ -342,24 +251,22 @@ export function BibleAuraChat() {
     setMessages(newMessages);
 
     try {
-      const aiResponse = await callChatKitWorkflow(newMessages, currentMode);
+      const aiResponse = await sendBibleAuraMessage(userInput);
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse,
+        content: aiResponse.text,
         timestamp: new Date().toISOString(),
         mode: currentMode
       };
 
-      const finalMessages = [...newMessages, aiMessage];
-      setMessages(finalMessages);
+      setMessages([...newMessages, aiMessage]);
       
     } catch (error: any) {
-      console.error('AI Response Error:', error);
       toast({
         title: "AI Error",
-        description: error.message || "Failed to get AI response. Please try again.",
+        description: error.message || "Failed to get AI response",
         variant: "destructive"
       });
     } finally {
@@ -374,63 +281,30 @@ export function BibleAuraChat() {
     }
   };
 
-  const getSuggestedQuestions = () => {
-    const suggestions = {
-      'verse-clean': [
-        "What does Romans 8:28 mean?",
-        "Explain the Good Samaritan parable",
-        "What are the fruits of the Spirit?",
-        "How to strengthen faith in trials?"
-      ],
-      'chat-clean': [
-        "How do I pray effectively?", 
-        "What does the Bible say about forgiveness?",
-        "How can I grow spiritually?",
-        "What is God's will for my life?"
-      ],
-      'character-clean': [
-        "Tell me about King David",
-        "What can we learn from Moses?",
-        "How did Paul change after conversion?",
-        "What made Daniel so faithful?"
-      ]
-    };
-    
-    return suggestions[currentMode] || suggestions['verse-clean'];
-  };
-
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex h-full bg-gradient-to-br from-gray-50 to-white">
       {/* Sidebar - Chat History */}
-      <div className="hidden lg:flex w-80 bg-white border-r border-gray-200 flex-col">
-        {/* Sidebar Header */}
+      <div className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col">
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <History className="h-5 w-5 text-gray-600" />
-              <h2 className="font-medium text-gray-800">Chat History</h2>
-            </div>
-            <Button
-              onClick={createNewConversation}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Chat
-            </Button>
-          </div>
+          <Button
+            onClick={createNewConversation}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Chat
+          </Button>
         </div>
         
-        {/* Conversations List */}
         <ScrollArea className="flex-1">
           <div className="p-3 space-y-2">
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}
-                className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                className={`group p-3 rounded-lg cursor-pointer transition-all ${
                   currentConversationId === conversation.id
-                    ? 'bg-orange-100 border border-orange-200'
-                    : 'bg-gray-50 hover:bg-gray-100'
+                    ? 'bg-orange-50 border border-orange-200'
+                    : 'hover:bg-gray-50'
                 }`}
                 onClick={() => loadConversation(conversation)}
               >
@@ -442,9 +316,6 @@ export function BibleAuraChat() {
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(conversation.updated_at).toLocaleDateString()}
                     </p>
-                    <Badge variant="outline" className="mt-1 text-xs">
-                      {CHAT_MODES[conversation.mode as ChatMode]?.name || conversation.mode}
-                    </Badge>
                   </div>
                   <Button
                     variant="ghost"
@@ -453,9 +324,9 @@ export function BibleAuraChat() {
                       e.stopPropagation();
                       deleteConversation(conversation.id);
                     }}
-                    className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100"
+                    className="opacity-0 group-hover:opacity-100 p-1"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-3 w-3 text-red-500" />
                   </Button>
                 </div>
               </div>
@@ -464,75 +335,38 @@ export function BibleAuraChat() {
         </ScrollArea>
       </div>
 
-      {/* Mobile Chat History Overlay */}
+      {/* Mobile Chat History */}
       {showMobileHistory && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setShowMobileHistory(false)}>
-          <div className="w-80 h-full bg-white border-r border-gray-200 flex flex-col" onClick={(e) => e.stopPropagation()}>
-            {/* Mobile Sidebar Header */}
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <History className="h-5 w-5 text-gray-600" />
-                  <h2 className="font-medium text-gray-800">Chat History</h2>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowMobileHistory(false)}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setShowMobileHistory(false)}>
+          <div className="w-80 h-full bg-white flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b flex items-center justify-between">
+              <h2 className="font-medium">History</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowMobileHistory(false)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
             
-            {/* Mobile Conversations List */}
             <ScrollArea className="flex-1">
               <div className="p-3 space-y-2">
                 {conversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className={`group p-3 rounded-lg cursor-pointer transition-colors ${
-                      currentConversationId === conversation.id
-                        ? 'bg-orange-100 border border-orange-200'
-                        : 'bg-gray-50 hover:bg-gray-100'
-                    }`}
+                    className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
                     onClick={() => {
                       loadConversation(conversation);
                       setShowMobileHistory(false);
                     }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">
-                          {conversation.title}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(conversation.updated_at).toLocaleDateString()}
-                        </p>
-                        <Badge variant="outline" className="mt-1 text-xs">
-                          {CHAT_MODES[conversation.mode as ChatMode]?.name || conversation.mode}
-                        </Badge>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteConversation(conversation.id);
-                        }}
-                        className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <p className="text-sm font-medium truncate">{conversation.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(conversation.updated_at).toLocaleDateString()}
+                    </p>
                   </div>
                 ))}
               </div>
             </ScrollArea>
             
-            {/* Mobile New Chat Button */}
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t">
               <Button
                 onClick={() => {
                   createNewConversation();
@@ -550,111 +384,58 @@ export function BibleAuraChat() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3 lg:py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 lg:gap-3">
-              {/* Mobile Chat History Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileHistory(!showMobileHistory)}
-                className="lg:hidden text-gray-600 hover:text-gray-800 p-1"
-              >
-                <History className="h-4 w-4 lg:h-5 lg:w-5" />
-              </Button>
-              
-              <span className="text-orange-500 text-lg lg:text-xl">✦</span>
-              <div>
-                <h1 className="text-sm lg:text-xl font-bold text-gray-800">Bible Aura AI</h1>
-                <p className="text-xs lg:text-sm text-gray-600">Your Biblical Study Assistant</p>
-              </div>
-            </div>
-            
-            <Button
-              onClick={createNewConversation}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm"
-              size="sm"
-            >
-              <Plus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-              New Chat
-            </Button>
-          </div>
-        </div>
-
         {/* Messages Area */}
-        <ScrollArea className="flex-1 px-3 lg:px-6 py-3 lg:py-4">
-          <div className="max-w-4xl mx-auto space-y-4 lg:space-y-6">
+        <ScrollArea className="flex-1 px-4 py-6">
+          <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-6 lg:py-12">
-                <div className="text-orange-500 mb-3 lg:mb-4">
-                  <Sparkles className="h-8 lg:h-16 w-8 lg:w-16 mx-auto" />
+              <div className="text-center py-12">
+                <div className="inline-block mb-6">
+                  <span className="text-6xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">✦</span>
                 </div>
-                <h2 className="text-lg lg:text-2xl font-bold text-gray-800 mb-2">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   I'm Bible Aura AI, How can I assist you from the Bible?
                 </h2>
-                <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-8 px-4">
+                <p className="text-sm text-gray-600 mb-8">
                   Ask me anything about Scripture and I'll provide biblical insights
                 </p>
-                
-                {/* Suggested Questions */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-3 max-w-3xl mx-auto px-4">
-                  {getSuggestedQuestions().map((question, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      className="text-left h-auto p-3 lg:p-4 hover:bg-orange-50 border-orange-200 whitespace-normal break-words min-h-[50px] lg:min-h-[60px] flex items-center justify-start"
-                      onClick={() => {
-                        // Directly send the suggested question
-                        if (!isLoading && question.trim()) {
-                          setInput(question);
-                          setTimeout(() => {
-                            handleSendMessage();
-                          }, 10);
-                        }
-                      }}
-                    >
-                      <span className="text-xs lg:text-sm leading-relaxed">{question}</span>
-                    </Button>
-                  ))}
-                </div>
               </div>
             ) : (
               messages.map((message) => (
                 <motion.div
                   key={message.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {message.role === 'assistant' && (
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xl font-bold">✦</span>
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white text-lg font-bold">✦</span>
                       </div>
                     </div>
                   )}
                   
-                  <div className={`max-w-3xl ${message.role === 'user' ? 'order-first' : ''}`}>
+                  <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                     {message.role === 'assistant' ? (
-                      <StructuredAIResponse 
-                        content={message.content}
-                        verseReference={message.mode === 'verse-clean' ? 'John 3:16' : undefined}
-                      />
+                      <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {message.content}
+                        </div>
+                      </div>
                     ) : (
-                      <div className="bg-orange-500 text-white p-4 rounded-lg">
-                        <div className="whitespace-pre-wrap">{message.content}</div>
+                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-lg">
+                        <div className="whitespace-pre-wrap text-sm">{message.content}</div>
                       </div>
                     )}
-                    <div className="text-xs text-gray-500 mt-2">
+                    <div className="text-[10px] text-gray-400 mt-1 px-2">
                       {new Date(message.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
                   
                   {message.role === 'user' && (
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-white" />
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-white" />
                       </div>
                     </div>
                   )}
@@ -665,18 +446,47 @@ export function BibleAuraChat() {
             {/* Loading indicator */}
             {isLoading && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex gap-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex gap-3"
               >
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xl font-bold">✦</span>
+                <div className="flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                    <motion.span
+                      className="text-white text-lg font-bold"
+                      animate={{
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    >
+                      ✦
+                    </motion.span>
                   </div>
                 </div>
-                <div className="bg-white border border-orange-200 p-4 rounded-lg shadow-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex gap-1">
+                      <motion.div
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                      />
+                    </div>
                     <span>AI is thinking...</span>
                   </div>
                 </div>
@@ -688,15 +498,24 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 px-3 lg:px-6 py-3 lg:py-4">
-          <div className="max-w-4xl mx-auto">
+        <div className="bg-white border-t border-gray-200 px-4 py-4">
+          <div className="max-w-3xl mx-auto">
             {/* Controls */}
-            <div className="flex items-center gap-1 lg:gap-2 mb-2 lg:mb-3 text-xs lg:text-sm overflow-x-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileHistory(true)}
+                className="lg:hidden"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              
               <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                <SelectTrigger className="w-28 lg:w-40 h-7 lg:h-8 text-xs flex-shrink-0">
-                  <div className="flex items-center gap-1 lg:gap-2">
-                    {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-2.5 w-2.5 lg:h-3 lg:w-3" })}
-                    <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
+                <SelectTrigger className="w-40 h-9 text-xs">
+                  <div className="flex items-center gap-2">
+                    {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
+                    <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent>
@@ -712,69 +531,47 @@ export function BibleAuraChat() {
               </Select>
 
               <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                <SelectTrigger className="w-18 lg:w-24 h-7 lg:h-8 text-xs flex-shrink-0">
+                <SelectTrigger className="w-28 h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english" className="text-xs">English</SelectItem>
-                  <SelectItem value="tamil" className="text-xs">Tamil</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={currentTranslation} onValueChange={(value) => setCurrentTranslation(value as TranslationCode)}>
-                <SelectTrigger className="w-14 lg:w-20 h-7 lg:h-8 text-xs flex-shrink-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRANSLATIONS.map((translation) => (
-                    <SelectItem key={translation.code} value={translation.code}>
-                      {translation.code}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="english">English</SelectItem>
+                  <SelectItem value="tamil">Tamil</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Message Input */}
             <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="text-orange-500 text-xl drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">✦</span>
+              </div>
               <Textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Type your query...`}
-                className="pr-12 lg:pr-14 min-h-[50px] lg:min-h-[60px] max-h-32 resize-none border-orange-200 focus:border-orange-400 text-sm lg:text-base"
+                placeholder="Ask a follow-up question"
+                className="pl-10 pr-12 min-h-[52px] max-h-32 resize-none border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 rounded-xl text-sm shadow-[0_0_15px_rgba(249,115,22,0.1)]"
                 disabled={isLoading}
               />
               
               <Button
                 onClick={handleSendMessage}
                 disabled={isLoading || !input.trim()}
-                className="absolute bottom-2 right-2 h-7 lg:h-8 bg-orange-500 hover:bg-orange-600 text-white px-2 lg:px-4 text-xs lg:text-sm"
-
+                className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg shadow-lg disabled:opacity-50"
               >
-                {isLoading ? (
-                  <motion.span
-                    className="text-lg font-bold"
-                    animate={{
-                      rotate: [0, 360],
-                      scale: [1, 1.2, 1],
-                    }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                    }}
-                  >
-                    ✦
-                  </motion.span>
-                ) : (
-                  <Send className="h-3 w-3" />
-                )}
+                <Send className="h-4 w-4 text-white" />
               </Button>
             </div>
+            
+            {/* Terms */}
+            <p className="text-[10px] text-gray-500 text-center mt-3">
+              By using BibleAura you agree with our <Link to="/terms" className="underline hover:text-orange-500">terms</Link>.
+            </p>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}
