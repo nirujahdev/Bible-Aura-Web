@@ -929,7 +929,6 @@ export default function BibleRedesigned() {
           </DialogContent>
         </Dialog>
       )}
-        </div>
       </div>
     </ModernLayout>
   );
