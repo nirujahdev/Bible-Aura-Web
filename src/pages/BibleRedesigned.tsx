@@ -86,12 +86,69 @@ export default function BibleRedesigned() {
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
 
+  // Dialog states for mobile
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false);
+  const [bookSelectionDialogOpen, setBookSelectionDialogOpen] = useState(false);
+
   useEffect(() => {
-    loadBooks();
-    if (user) {
-      loadUserData();
+    try {
+      loadBooks();
+      if (user) {
+        loadUserData();
+      }
+    } catch (error) {
+      console.error('Error initializing Bible page:', error);
+      toast({
+        title: "Error",
+        description: "Failed to initialize Bible page",
+        variant: "destructive"
+      });
     }
   }, [user]);
+
+  // Listen for bible-action events from MobileMoreMenu
+  useEffect(() => {
+    const handleBibleAction = (event: CustomEvent) => {
+      const action = event.detail?.action;
+      console.log('Bible action received:', action);
+      
+      try {
+        switch (action) {
+          case 'book-selection':
+            setBookSelectionDialogOpen(true);
+            break;
+          case 'translation':
+            setTranslationDialogOpen(true);
+            break;
+          case 'search-verses':
+            setActiveTab('search');
+            break;
+          case 'reading-plan':
+            window.location.href = '/reading-plan';
+            break;
+          case 'bookmarks':
+            // Could show bookmarks dialog or navigate
+            toast({
+              title: "Bookmarks",
+              description: "View your bookmarked verses",
+            });
+            break;
+          case 'random-verse':
+            handleRandomVerse();
+            break;
+          default:
+            console.log('Unknown bible action:', action);
+        }
+      } catch (error) {
+        console.error('Error handling bible action:', error);
+      }
+    };
+
+    window.addEventListener('bible-action', handleBibleAction as EventListener);
+    return () => {
+      window.removeEventListener('bible-action', handleBibleAction as EventListener);
+    };
+  }, [books, toast]); // Add dependencies
 
   useEffect(() => {
     if (selectedBook) {
@@ -226,11 +283,54 @@ export default function BibleRedesigned() {
   };
 
   const handleBookSelect = (bookName: string) => {
-    const book = books.find(b => b.name === bookName);
-    if (book) {
-      setSelectedBook(book);
-      setSelectedChapter(1);
-      if (isMobile) setSidebarOpen(false);
+    try {
+      const book = books.find(b => b.name === bookName);
+      if (book) {
+        setSelectedBook(book);
+        setSelectedChapter(1);
+        if (isMobile) setSidebarOpen(false);
+      }
+    } catch (error) {
+      console.error('Error selecting book:', error);
+      toast({
+        title: "Error",
+        description: "Failed to select book",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRandomVerse = () => {
+    try {
+      if (books.length === 0) {
+        toast({
+          title: "Loading",
+          description: "Please wait for books to load",
+        });
+        return;
+      }
+      
+      // Select random book
+      const randomBook = books[Math.floor(Math.random() * books.length)];
+      if (!randomBook) return;
+      
+      // Select random chapter (1 to book.chapters)
+      const randomChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
+      
+      setSelectedBook(randomBook);
+      setSelectedChapter(randomChapter);
+      
+      toast({
+        title: "Random Verse",
+        description: `Loading ${randomBook.name} ${randomChapter}`,
+      });
+    } catch (error) {
+      console.error('Error loading random verse:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load random verse",
+        variant: "destructive"
+      });
     }
   };
 
