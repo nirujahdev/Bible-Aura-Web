@@ -152,7 +152,16 @@ export default function BibleRedesigned() {
 
   useEffect(() => {
     if (selectedBook) {
-      loadChapter();
+      try {
+        loadChapter();
+      } catch (error) {
+        console.error('Error in chapter loading effect:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load chapter",
+          variant: "destructive"
+        });
+      }
     }
   }, [selectedBook, selectedChapter, selectedLanguage, selectedTranslation]);
 
