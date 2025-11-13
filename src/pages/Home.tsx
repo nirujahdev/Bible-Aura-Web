@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
-  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3
+  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3, Calendar, Languages, ArrowRight
 } from "lucide-react";
 import { Link } from "react-router-dom";
 // import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks"; // COMMENTED OUT TO FIX ERRORS
@@ -447,35 +447,174 @@ const Home = () => {
       {/* SEO Backlinks */}
       {/* <SEOBacklinks currentPage="/" category="general" /> */}
 
-      {/* Enhanced Privacy & Legal Section */}
-      <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-blue-50 border-t">
-        <div className="w-full px-4 md:px-6 lg:px-10 max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-white text-lg">🔒</span>
-              </div>
+      {/* Interactive Features Showcase */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 via-white to-orange-50 overflow-hidden">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 shadow-xl">
+              <Sparkles className="h-8 w-8" />
             </div>
-            
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              Your Privacy & Security Matter
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-                <h4 className="font-semibold text-gray-900 mb-3">🛡️ Data Protection</h4>
-                <p className="text-gray-600 text-sm md:text-base">
-                  We only ask for your Google email for account verification and security. Your personal content is encrypted and never shared.
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Powerful Features at Your Fingertips
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+              Experience the future of Bible study with AI-powered tools designed to deepen your understanding
+            </p>
+          </div>
+
+          {/* Feature Cards with Animations */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {/* Feature 1: AI Bible Chat */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <MessageCircle className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors">
+                  AI Bible Chat
+                </h3>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Ask questions about Scripture and get instant, accurate biblical insights powered by advanced AI.
                 </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
-                <h4 className="font-semibold text-gray-900 mb-3">🔒 Complete Privacy</h4>
-                <p className="text-gray-600 text-sm md:text-base">
-                  Your journals, sermons, chat conversations, and spiritual journey remain completely private and secure.
-                </p>
+                <div className="flex items-center gap-2 text-orange-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>Try it now</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
               </div>
             </div>
 
+            {/* Feature 2: Bible Reading */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <BookOpen className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                  Bible Reading
+                </h3>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Read KJV and Tamil Bible translations with verse highlighting, bookmarks, and search functionality.
+                </p>
+                <div className="flex items-center gap-2 text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>Explore Bible</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3: Reading Planner */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <Calendar className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
+                  Reading Planner
+                </h3>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Create personalized Bible reading plans and track your progress with daily, weekly, and calendar views.
+                </p>
+                <div className="flex items-center gap-2 text-green-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>Create Plan</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 4: Sermon Writing */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <Mic className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
+                  Sermon Writing
+                </h3>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Create and organize sermons with AI assistance, Bible references, and professional templates.
+                </p>
+                <div className="flex items-center gap-2 text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>Start Writing</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 5: Favorites */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <Star className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">
+                  Favorites
+                </h3>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Save and organize your favorite Bible verses for quick access and personal study.
+                </p>
+                <div className="flex items-center gap-2 text-pink-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>View Favorites</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 6: Tamil & English Support */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <Languages className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                  Bilingual Support
+                </h3>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Full support for both Tamil and English Bible study with AI responses in both languages.
+                </p>
+                <div className="flex items-center gap-2 text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>Learn More</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Animated Stats Section */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text mb-2 group-hover:scale-110 transition-transform duration-300">
+                24/7
+              </div>
+              <p className="text-gray-600 font-medium">AI Available</p>
+            </div>
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text mb-2 group-hover:scale-110 transition-transform duration-300">
+                2+
+              </div>
+              <p className="text-gray-600 font-medium">Languages</p>
+            </div>
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-purple-500 to-purple-600 bg-clip-text mb-2 group-hover:scale-110 transition-transform duration-300">
+                100%
+              </div>
+              <p className="text-gray-600 font-medium">Free to Use</p>
+            </div>
+            <div className="text-center group">
+              <div className="text-4xl md:text-5xl font-bold text-transparent bg-gradient-to-r from-green-500 to-green-600 bg-clip-text mb-2 group-hover:scale-110 transition-transform duration-300">
+                ∞
+              </div>
+              <p className="text-gray-600 font-medium">Bible Verses</p>
+            </div>
           </div>
         </div>
       </section>
