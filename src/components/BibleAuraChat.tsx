@@ -81,10 +81,23 @@ const TRANSLATIONS = [
 
 // OpenAI workflow integration
 const callOpenAIWorkflow = async (messages: Message[], mode: ChatMode = 'chat-clean') => {
+  // Get API key from environment variables
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
   
-  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here') {
-    throw new Error('🔑 OpenAI API key not configured! Please check your environment variables.');
+  // Debug logging (only in development)
+  if (import.meta.env.DEV) {
+    console.log('Checking API key...', {
+      hasKey: !!apiKey,
+      keyLength: apiKey?.length || 0,
+      keyPrefix: apiKey?.substring(0, 7) || 'none'
+    });
+  }
+  
+  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here' || apiKey.trim() === '') {
+    const errorMsg = import.meta.env.DEV 
+      ? '🔑 OpenAI API key not configured! Please:\n1. Check that .env.local exists in the project root\n2. Restart your dev server (stop and run `npm run dev` again)\n3. Make sure VITE_OPENAI_API_KEY is set in .env.local'
+      : '🔑 OpenAI API key not configured! Please check your environment variables.';
+    throw new Error(errorMsg);
   }
   
   try {
