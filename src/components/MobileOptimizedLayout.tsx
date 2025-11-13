@@ -130,7 +130,6 @@ export function MobileOptimizedLayout({
         isOpen={hamburgerMenuOpen}
         onClose={() => setHamburgerMenuOpen(false)}
         items={navigationItems}
-        items={navigationItems}
       />
 
       {/* Contextual More Menu */}

@@ -30,7 +30,7 @@ import {
   searchVerses,
   TranslationCode
 } from '@/lib/local-bible';
-import { BibleVerseAIChat } from '@/components/BibleVerseAIChat';
+import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { InlineLoadingIndicator } from '@/components/BibleAuraLoadingAnimation';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { cn } from '@/lib/utils';
