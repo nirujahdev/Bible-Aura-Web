@@ -52,7 +52,7 @@ export function MobileOptimizedLayout({
     <div className={cn("min-h-screen bg-white flex flex-col pb-[env(safe-area-inset-bottom)]", className)}>
       {/* Mobile Top Header */}
       <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3 gap-3">
           {/* Left - Hamburger Menu */}
           <button 
             onClick={() => setHamburgerMenuOpen(true)}
@@ -64,9 +64,14 @@ export function MobileOptimizedLayout({
           </button>
           
           {/* Center - Logo */}
-          <div className="flex items-center gap-2">
-            <span className="text-orange-500 text-lg font-bold">✦</span>
-            <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2">
+              <span className="text-orange-500 text-xl font-bold leading-none">✦</span>
+              <span className="text-lg font-semibold text-gray-900 tracking-tight">Bible Aura</span>
+            </div>
+            <span className="text-[11px] text-orange-500 font-medium uppercase tracking-[0.16em] mt-0.5">
+              Your Biblical Study Assistant
+            </span>
           </div>
           
           {/* Right - Contextual Three dots */}
@@ -147,12 +152,14 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
         <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500/10 via-orange-400/10 to-amber-400/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm shadow-orange-200">
-                <Sparkles className="h-5 w-5" />
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm shadow-orange-200 text-xl font-bold">
+                ✦
               </span>
-              <div>
+              <div className="flex flex-col">
                 <p className="text-sm font-semibold text-gray-900">Bible Aura</p>
-                <p className="text-xs text-gray-500">Guided AI Study</p>
+                <p className="text-[11px] text-orange-500 font-medium uppercase tracking-[0.16em]">
+                  Your Biblical Study Assistant
+                </p>
               </div>
             </div>
             <button
@@ -187,16 +194,18 @@ function MobileNavigationMenu({ isOpen, onClose }: { isOpen: boolean; onClose: (
                   to={item.href}
                   onClick={onClose}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg transition-all duration-200 border",
+                    "flex items-center gap-3 p-3 rounded-xl transition-all duration-200 border shadow-sm",
                     active 
-                      ? "bg-orange-50 border-orange-200 text-orange-600 shadow-sm"
-                      : "border-transparent hover:bg-gray-50 text-gray-700"
+                      ? "bg-orange-50 border-orange-200 text-orange-600 shadow-md"
+                      : "bg-white border-transparent hover:bg-orange-50/70 text-gray-700"
                   )}
                 >
                   <span
                     className={cn(
                       "inline-flex h-10 w-10 items-center justify-center rounded-xl",
-                      active ? "bg-white text-orange-500" : "bg-orange-50 text-orange-500"
+                      active 
+                        ? "bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-inner" 
+                        : "bg-orange-50 text-orange-500"
                     )}
                   >
                     <IconComponent className="h-5 w-5" />
