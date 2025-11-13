@@ -28,6 +28,7 @@ interface MobileNavItem {
 const NAV_ITEMS: MobileNavItem[] = [
   { name: 'AI Chat', href: '/dashboard', icon: 'star', description: 'Biblical AI Assistant' },
   { name: 'Bible', href: '/bible', icon: 'bible', description: 'Read Scripture' },
+  { name: 'Reading Plan', href: '/reading-plan', icon: 'favorites', description: 'Bible Reading Planner' },
   { name: 'Sermons', href: '/sermons', icon: 'sermon', description: 'Sermon Library' },
   { name: 'Favorites', href: '/favorites', icon: 'favorites', description: 'Saved Content' },
   { name: 'Profile', href: '/profile', icon: 'profile', description: 'Account & Settings' }

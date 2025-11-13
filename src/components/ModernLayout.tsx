@@ -52,7 +52,7 @@ export function ModernLayout({ children }: ModernLayoutProps) {
 
   return (
     <div className="min-h-screen bg-white flex">
-      {/* Desktop Sidebar - Exactly matching the image */}
+      {/* Desktop Sidebar - Hidden on mobile, only shows on lg and up */}
       <div className="hidden lg:flex w-16 bg-white border-r border-gray-100 flex-col shadow-sm">
         {/* Navigation Icons */}
         <div className="flex-1 py-6 px-2 space-y-2">

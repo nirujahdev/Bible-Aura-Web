@@ -12,7 +12,7 @@ interface DailyPlanCardProps {
 export default function DailyPlanCard({ day, onToggle }: DailyPlanCardProps) {
   return (
     <Card
-      className={`p-4 rounded-xl transition-all duration-200 cursor-pointer border ${
+      className={`p-3 rounded-lg transition-all duration-200 cursor-pointer border ${
         day.completed
           ? 'bg-green-50 border-green-300 hover:border-green-400'
           : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-sm'

@@ -18,7 +18,7 @@ import { generateReadingPlan } from '@/lib/generateReadingPlan';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
-import { ModernLayout } from '@/components/ModernLayout';
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 
 export default function ReadingPlan() {
   useSEO({
@@ -107,9 +107,9 @@ export default function ReadingPlan() {
   };
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-        <div className={`container mx-auto ${isMobile ? 'px-4 py-4' : 'px-6 py-4 max-w-7xl'}`}>
+        <div className={`container mx-auto ${isMobile ? 'px-3 py-3' : 'px-6 py-4 max-w-7xl'}`}>
           {!plan ? (
             /* Show Wizard if no plan exists */
             <div className="max-w-2xl mx-auto">
@@ -130,7 +130,7 @@ export default function ReadingPlan() {
           )}
         </div>
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 }
 

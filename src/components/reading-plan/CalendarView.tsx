@@ -17,13 +17,13 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
   }
 
   return (
-    <Card className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm">
-      <div className="mb-4">
+    <Card className="p-3 rounded-lg bg-white border border-gray-200 shadow-sm">
+      <div className="mb-3">
         <h3 className="text-sm font-semibold text-gray-800">Calendar Overview</h3>
-        <p className="text-xs text-gray-600 mt-0.5">Click any day to toggle completion</p>
+        <p className="text-xs text-gray-600 mt-0.5">Tap any day to mark complete</p>
       </div>
 
-      <div className="space-y-3 max-h-[calc(100vh-360px)] overflow-y-auto pr-2">
+      <div className="space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
         {weeks.map((week, weekIndex) => (
           <div key={weekIndex}>
             <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">

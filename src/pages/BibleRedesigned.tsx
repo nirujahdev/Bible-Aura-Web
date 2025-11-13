@@ -33,7 +33,7 @@ import {
 import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { InlineLoadingIndicator } from '@/components/BibleAuraLoadingAnimation';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
-import { ModernLayout } from '@/components/ModernLayout';
+import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { cn } from '@/lib/utils';
 
 const LANGUAGES = [
@@ -383,12 +383,12 @@ export default function BibleRedesigned() {
   const newTestamentBooks = books.filter(book => book.testament === 'new');
 
   return (
-    <ModernLayout>
+    <MobileOptimizedLayout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
         <div className="flex h-screen">
-        {/* Sidebar */}
+        {/* Sidebar - Only show on desktop (lg and up) */}
         <AnimatePresence>
-          {(sidebarOpen || !isMobile) && (
+          {sidebarOpen && !isMobile && (
             <>
               {/* Mobile Overlay */}
               {isMobile && (
@@ -401,16 +401,13 @@ export default function BibleRedesigned() {
                 />
               )}
               
-              {/* Sidebar Content */}
+              {/* Sidebar Content - Desktop Only */}
               <motion.div
-                initial={isMobile ? { x: -320 } : false}
+                initial={false}
                 animate={{ x: 0 }}
                 exit={{ x: -320 }}
                 transition={{ type: "spring", damping: 25 }}
-                className={cn(
-                  "bg-white border-r border-gray-200 z-50 flex flex-col",
-                  isMobile ? "fixed inset-y-0 left-0 w-80 shadow-xl" : "w-80"
-                )}
+                className="bg-white border-r border-gray-200 w-80 flex flex-col"
               >
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-gray-200">
@@ -930,7 +927,7 @@ export default function BibleRedesigned() {
         </Dialog>
       )}
       </div>
-    </ModernLayout>
+    </MobileOptimizedLayout>
   );
 }
 

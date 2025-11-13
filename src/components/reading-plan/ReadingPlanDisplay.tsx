@@ -93,7 +93,7 @@ export default function ReadingPlanDisplay({
       {/* Two Column Layout: Daily List + Calendar */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Left: Daily Reading List */}
-        <div className="space-y-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-2">
+        <div className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
           {plan.days.map((day) => (
             <DailyPlanCard
               key={day.day}
