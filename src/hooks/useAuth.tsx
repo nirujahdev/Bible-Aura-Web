@@ -24,7 +24,15 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, userData?: {
+    displayName?: string;
+    phoneNumber?: string;
+    age?: number;
+    denomination?: string | null;
+    agreedToTerms?: boolean;
+    agreedToPrivacy?: boolean;
+    isOver13?: boolean;
+  }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
@@ -377,7 +385,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string, userData?: {
+    displayName?: string;
+    phoneNumber?: string;
+    age?: number;
+    denomination?: string | null;
+    agreedToTerms?: boolean;
+    agreedToPrivacy?: boolean;
+    isOver13?: boolean;
+  }) => {
     try {
       setLoading(true);
       
@@ -390,19 +406,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Please enter a valid email address');
       }
 
-      if (password.length < 6) {
-        throw new Error('Password must be at least 6 characters long');
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
       }
 
       const redirectUrl = `${window.location.origin}/auth`;
       
+      // Sign up with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            display_name: displayName?.trim() || null,
+            display_name: userData?.displayName?.trim() || null,
+            phone_number: userData?.phoneNumber?.trim() || null,
+            age: userData?.age || null,
+            denomination: userData?.denomination || null,
           },
         },
       });
@@ -413,7 +433,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error.message.includes('already registered')) {
           userFriendlyMessage = 'An account with this email already exists. Please sign in instead.';
         } else if (error.message.includes('weak password')) {
-          userFriendlyMessage = 'Please choose a stronger password with at least 6 characters.';
+          userFriendlyMessage = 'Please choose a stronger password with at least 8 characters.';
         } else if (error.message.includes('invalid email')) {
           userFriendlyMessage = 'Please enter a valid email address.';
         }
@@ -425,22 +445,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         
         return { error: new Error(userFriendlyMessage) };
-      } else {
-        // Check if email confirmation is required
-        if (data.user && !data.session) {
-          toast({
-            title: "Check your email!",
-            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
-          });
-        } else {
-          toast({
-            title: "Welcome to Bible Aura!",
-            description: "Account created successfully! You can now start exploring.",
-          });
-        }
-        
-        return { error: null };
       }
+
+      // If user was created, create/update profile with additional data
+      if (data.user) {
+        try {
+          const profileData = {
+            user_id: data.user.id,
+            display_name: userData?.displayName?.trim() || null,
+            phone_number: userData?.phoneNumber?.trim() || null,
+            age: userData?.age || null,
+            denomination: userData?.denomination || null,
+            agreed_to_terms: userData?.agreedToTerms || false,
+            agreed_to_privacy: userData?.agreedToPrivacy || false,
+            is_over_13: userData?.isOver13 || false,
+            favorite_translation: 'KJV', // Default
+            reading_streak: 0,
+            total_reading_days: 0,
+          };
+
+          // Try to insert profile, if it fails (already exists), update it
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert(profileData, { onConflict: 'user_id' });
+
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            // Don't fail the signup if profile creation fails - it can be updated later
+          }
+        } catch (profileError) {
+          console.error('Error creating profile:', profileError);
+          // Continue even if profile creation fails
+        }
+      }
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        toast({
+          title: "Check your email!",
+          description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+        });
+      } else {
+        toast({
+          title: "Welcome to Bible Aura!",
+          description: "Account created successfully! You can now start exploring.",
+        });
+      }
+      
+      return { error: null };
     } catch (error: unknown) {
       const errorMessage = (error as Error).message;
       toast({

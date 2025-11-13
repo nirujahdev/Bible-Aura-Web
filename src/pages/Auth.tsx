@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { supabase } from '@/integrations/supabase/client';
@@ -201,6 +203,8 @@ export default function Auth() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const displayName = formData.get('displayName') as string;
+    const phone = formData.get('phoneNumber') as string;
+    const ageValue = formData.get('age') as string;
     
     // Email validation
     if (!email) {
@@ -221,9 +225,44 @@ export default function Auth() {
       errors.password = 'For better security, use at least 8 characters';
     }
     
-    // Display name validation for sign up
-    if (isSignUp && displayName && displayName.length > 50) {
-      errors.displayName = 'Display name must be less than 50 characters';
+    // Sign up specific validations
+    if (isSignUp) {
+      // Display name validation
+      if (!displayName || !displayName.trim()) {
+        errors.displayName = 'Name is required';
+      } else if (displayName.length > 50) {
+        errors.displayName = 'Display name must be less than 50 characters';
+      }
+
+      // Phone number validation
+      if (!phone || !phone.trim()) {
+        errors.phoneNumber = 'Phone number is required';
+      } else if (!/^[\d\s\-\+\(\)]+$/.test(phone)) {
+        errors.phoneNumber = 'Please enter a valid phone number';
+      }
+
+      // Age validation
+      if (!ageValue || !ageValue.trim()) {
+        errors.age = 'Age is required';
+      } else {
+        const ageNum = parseInt(ageValue);
+        if (isNaN(ageNum) || ageNum < 13 || ageNum > 120) {
+          errors.age = 'Age must be between 13 and 120';
+        }
+      }
+
+      // Agreement validations
+      if (!agreedToTerms) {
+        errors.terms = 'You must agree to the Terms of Service';
+      }
+
+      if (!agreedToPrivacy) {
+        errors.privacy = 'You must agree to the Privacy Policy';
+      }
+
+      if (!isOver13) {
+        errors.ageVerification = 'You must confirm that you are over 13 years old';
+      }
     }
     
     setFormErrors(errors);
@@ -282,14 +321,27 @@ export default function Auth() {
       const formData = new FormData(e.currentTarget);
       
       if (!validateForm(formData, true)) {
+        setIsSubmitting(false);
         return;
       }
 
       const email = formData.get('email') as string;
       const password = formData.get('password') as string;
       const displayName = formData.get('displayName') as string;
+      const phoneNumber = formData.get('phoneNumber') as string;
+      const age = formData.get('age') as string;
+      const denomination = formData.get('denomination') as string || '';
 
-      const result = await signUp(email, password, displayName);
+      const result = await signUp(email, password, {
+        displayName,
+        phoneNumber,
+        age: parseInt(age),
+        denomination: denomination || null,
+        agreedToTerms: agreedToTerms,
+        agreedToPrivacy: agreedToPrivacy,
+        isOver13: isOver13
+      });
+
       if (result.error) {
         setAuthError(result.error.message);
       } else {
@@ -766,32 +818,95 @@ export default function Auth() {
                 <TabsContent value="signup" className="space-y-4 mt-0">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-name" className="text-primary font-medium">Name</Label>
+                      <Label htmlFor="signup-name" className="text-primary font-medium">Name *</Label>
                       <Input
                         id="signup-name"
                         name="displayName"
                         type="text"
-                        placeholder="Enter your name"
+                        placeholder="Enter your full name"
+                        required
                         disabled={isSubmitting}
                         className="border-primary/30 focus:border-primary focus:ring-primary h-11"
                       />
                       {formErrors.displayName && <p className="text-xs text-red-500">{formErrors.displayName}</p>}
                     </div>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-primary font-medium">Email</Label>
+                      <Label htmlFor="signup-email" className="text-primary font-medium">Email address *</Label>
                       <Input
                         id="signup-email"
                         name="email"
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Enter your email address"
                         required
                         disabled={isSubmitting}
                         className="border-primary/30 focus:border-primary focus:ring-primary h-11"
                       />
                       {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-primary font-medium">Password</Label>
+                      <Label htmlFor="signup-phone" className="text-primary font-medium">Phone number *</Label>
+                      <Input
+                        id="signup-phone"
+                        name="phoneNumber"
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        required
+                        disabled={isSubmitting}
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="border-primary/30 focus:border-primary focus:ring-primary h-11"
+                      />
+                      {formErrors.phoneNumber && <p className="text-xs text-red-500">{formErrors.phoneNumber}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-age" className="text-primary font-medium">Age *</Label>
+                      <Input
+                        id="signup-age"
+                        name="age"
+                        type="number"
+                        placeholder="Enter your age"
+                        required
+                        min="13"
+                        max="120"
+                        disabled={isSubmitting}
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        className="border-primary/30 focus:border-primary focus:ring-primary h-11"
+                      />
+                      {formErrors.age && <p className="text-xs text-red-500">{formErrors.age}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-denomination" className="text-primary font-medium">Denomination</Label>
+                      <Select
+                        name="denomination"
+                        value={denomination}
+                        onValueChange={setDenomination}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger className="border-primary/30 focus:border-primary focus:ring-primary h-11">
+                          <SelectValue placeholder="Select your denomination (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="baptist">Baptist</SelectItem>
+                          <SelectItem value="catholic">Catholic</SelectItem>
+                          <SelectItem value="methodist">Methodist</SelectItem>
+                          <SelectItem value="presbyterian">Presbyterian</SelectItem>
+                          <SelectItem value="lutheran">Lutheran</SelectItem>
+                          <SelectItem value="anglican">Anglican</SelectItem>
+                          <SelectItem value="pentecostal">Pentecostal</SelectItem>
+                          <SelectItem value="orthodox">Orthodox</SelectItem>
+                          <SelectItem value="nondenominational">Non-denominational</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password" className="text-primary font-medium">Password *</Label>
                       <div className="relative">
                         <Input
                           id="signup-password"
@@ -800,7 +915,7 @@ export default function Auth() {
                           placeholder="Create a password"
                           required
                           disabled={isSubmitting}
-                          minLength={6}
+                          minLength={8}
                           className="border-primary/30 focus:border-primary focus:ring-primary h-11 pr-11"
                         />
                         <Button
@@ -815,12 +930,75 @@ export default function Auth() {
                       </div>
                       {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
                       <p className="text-xs text-muted-foreground">
-                        Minimum 6 characters required
+                        Minimum 8 characters required
                       </p>
                     </div>
+
+                    {/* Agreement Checkboxes */}
+                    <div className="space-y-3 pt-2 border-t border-gray-200">
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="terms-checkbox"
+                          checked={agreedToTerms}
+                          onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                          disabled={isSubmitting}
+                          className="mt-1"
+                        />
+                        <label
+                          htmlFor="terms-checkbox"
+                          className="text-sm text-gray-700 leading-relaxed cursor-pointer"
+                        >
+                          I agree to the{' '}
+                          <Link to="/terms-of-service" className="text-primary hover:underline font-medium" target="_blank">
+                            Terms of Service
+                          </Link>
+                          {' '}*
+                        </label>
+                      </div>
+                      {formErrors.terms && <p className="text-xs text-red-500 ml-7">{formErrors.terms}</p>}
+
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="privacy-checkbox"
+                          checked={agreedToPrivacy}
+                          onCheckedChange={(checked) => setAgreedToPrivacy(checked === true)}
+                          disabled={isSubmitting}
+                          className="mt-1"
+                        />
+                        <label
+                          htmlFor="privacy-checkbox"
+                          className="text-sm text-gray-700 leading-relaxed cursor-pointer"
+                        >
+                          I agree to the{' '}
+                          <Link to="/privacy-policy" className="text-primary hover:underline font-medium" target="_blank">
+                            Privacy Policy
+                          </Link>
+                          {' '}*
+                        </label>
+                      </div>
+                      {formErrors.privacy && <p className="text-xs text-red-500 ml-7">{formErrors.privacy}</p>}
+
+                      <div className="flex items-start space-x-3">
+                        <Checkbox
+                          id="age-checkbox"
+                          checked={isOver13}
+                          onCheckedChange={(checked) => setIsOver13(checked === true)}
+                          disabled={isSubmitting}
+                          className="mt-1"
+                        />
+                        <label
+                          htmlFor="age-checkbox"
+                          className="text-sm text-gray-700 leading-relaxed cursor-pointer"
+                        >
+                          I am over 13 years old *
+                        </label>
+                      </div>
+                      {formErrors.ageVerification && <p className="text-xs text-red-500 ml-7">{formErrors.ageVerification}</p>}
+                    </div>
+
                     <Button
                       type="submit"
-                      className="w-full bg-primary hover:bg-primary/90 text-white h-11"
+                      className="w-full bg-primary hover:bg-primary/90 text-white h-11 mt-4"
                       disabled={isSubmitting}
                     >
                       <UserPlus className="h-4 w-4 mr-2" />
