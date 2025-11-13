@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
 import { sendBibleAuraMessage } from '@/lib/chatkit';
 import { StructuredAIResponse } from './StructuredAIResponse';
+import { BibleAuraLoadingAnimation, InlineLoadingIndicator } from './BibleAuraLoadingAnimation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -754,9 +755,22 @@ export function BibleAuraChat() {
                 onClick={handleSendMessage}
                 disabled={isLoading || !input.trim()}
                 className="absolute bottom-2 right-2 h-7 lg:h-8 bg-orange-500 hover:bg-orange-600 text-white px-2 lg:px-4 text-xs lg:text-sm"
+
               >
                 {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <motion.span
+                    className="text-lg font-bold"
+                    animate={{
+                      rotate: [0, 360],
+                      scale: [1, 1.2, 1],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                    }}
+                  >
+                    ✦
+                  </motion.span>
                 ) : (
                   <Send className="h-3 w-3" />
                 )}

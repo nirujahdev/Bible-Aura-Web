@@ -113,12 +113,13 @@ async function callDirectOpenAI(message: string): Promise<ChatKitResponse> {
 Provide accurate biblical interpretation, analysis, and guidance.
 Include relevant scripture references.
 Be respectful, clear, and encouraging.
-Structure responses with headings when helpful.`
+Use bold text (**text**) for emphasis instead of headers.
+Do NOT use # symbols or markdown headers in your response.`
         },
         { role: 'user', content: message.trim() }
       ],
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: 800,
     }),
   });
 
@@ -130,9 +131,15 @@ Structure responses with headings when helpful.`
   }
 
   const data = await response.json();
-  const text = data.choices[0]?.message?.content || '';
+  let text = data.choices[0]?.message?.content || '';
 
   if (!text) throw new Error('No response from AI');
+
+  // Remove markdown headers (# symbols) from response
+  text = text
+    .replace(/^#{1,6}\s+/gm, '') // Remove # at start of lines
+    .replace(/\n#{1,6}\s+/g, '\n') // Remove # after newlines
+    .trim();
 
   console.log('[Bible Aura AI] ✓ Direct API success');
 
