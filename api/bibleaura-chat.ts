@@ -17,13 +17,20 @@ type Mode = 'chat' | 'verse' | 'parable' | 'character' | 'topical' | 'qa';
 
 // CORS headers helper
 function setCORSHeaders(res: VercelResponse, origin?: string) {
-  // Allow requests from the Bible Aura domain
-  const allowedOrigin = origin === ALLOWED_ORIGIN || origin?.includes('bibleaura.xyz') || !origin 
-    ? ALLOWED_ORIGIN 
-    : origin;
+  // Allow requests from the Bible Aura domain and localhost for development
+  const isAllowedOrigin = origin === ALLOWED_ORIGIN || 
+                          origin?.includes('bibleaura.xyz') || 
+                          origin?.includes('localhost') ||
+                          origin?.includes('127.0.0.1') ||
+                          !origin;
   
-  if (allowedOrigin) {
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  if (isAllowedOrigin) {
+    // Use the origin if it's localhost, otherwise use the allowed origin
+    const corsOrigin = origin?.includes('localhost') || origin?.includes('127.0.0.1') 
+      ? origin 
+      : ALLOWED_ORIGIN;
+    
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours

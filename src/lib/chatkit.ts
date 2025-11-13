@@ -33,10 +33,12 @@ export async function sendBibleAuraMessage(message: string): Promise<ChatKitResp
   }
 
   try {
-    // Determine API endpoint (use full URL in production, relative in development)
+    // Determine API endpoint
+    // In development, use production API URL since serverless functions only work on Vercel
+    // In production, use the configured app URL
     const apiUrl = import.meta.env.PROD
       ? `${import.meta.env.VITE_APP_URL || 'https://bibleaura.xyz'}${CHATKIT_CONFIG.apiEndpoint}`
-      : CHATKIT_CONFIG.apiEndpoint;
+      : `https://bibleaura.xyz${CHATKIT_CONFIG.apiEndpoint}`; // Use production API in development
 
     // Make API request
     const response = await fetch(apiUrl, {
