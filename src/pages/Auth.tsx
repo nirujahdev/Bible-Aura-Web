@@ -124,6 +124,9 @@ export default function Auth() {
                          urlSearch.includes('type=invite') ||
                          urlSearch.includes('type=magiclink');
     
+    // Check specifically for OAuth callback
+    const isOAuthCallback = urlHash.includes('access_token') || urlHash.includes('refresh_token');
+    
     if (isPasswordReset) {
       console.log('Password reset flow detected');
       setCurrentTab('reset');
@@ -156,33 +159,48 @@ export default function Auth() {
       }, 1000);
       
     } else if (hasAuthParams) {
-      console.log('Magic link or OAuth callback detected');
+      console.log('Magic link or OAuth callback detected', { isOAuthCallback });
       setIsMagicLinkAuth(true);
-      setAuthSuccess('Authenticating... Please wait while we verify your credentials.');
       
-      // Set timeout for magic link authentication
+      if (isOAuthCallback) {
+        setAuthSuccess('Completing Google sign-in... Please wait.');
+      } else {
+        setAuthSuccess('Authenticating... Please wait while we verify your credentials.');
+      }
+      
+      // Set timeout for authentication
       const authTimeout = setTimeout(() => {
         if (isMagicLinkAuth && !user) {
-          console.log('Magic link authentication timeout');
+          console.log('Authentication timeout');
           setIsMagicLinkAuth(false);
           setAuthSuccess(null);
           setAuthError('Authentication timed out. Please try again or sign in manually.');
           window.history.replaceState({}, '', '/auth');
         }
-      }, 8000); // Increased timeout to 8 seconds
+      }, 10000); // Increased timeout to 10 seconds for OAuth
       
       return () => clearTimeout(authTimeout);
     }
-  }, []);
+  }, [user]);
 
   // Handle successful authentication with direct dashboard redirect
   useEffect(() => {
     console.log('Auth state check:', { user: !!user, loading, isMagicLinkAuth });
     
+    // Check for OAuth callback in URL hash
+    const urlHash = window.location.hash;
+    const hasOAuthCallback = urlHash.includes('access_token') || urlHash.includes('refresh_token');
+    
+    // Only redirect if user is authenticated and not loading
     if (!loading && user) {
       console.log('User authenticated, preparing redirect');
       setIsMagicLinkAuth(false);
-      setAuthSuccess('Authentication successful! Redirecting...');
+      setAuthSuccess('Authentication successful! Redirecting to dashboard...');
+      
+      // Clean up OAuth callback from URL immediately
+      if (hasOAuthCallback) {
+        window.history.replaceState({}, '', '/auth');
+      }
       
       const urlParams = new URLSearchParams(window.location.search);
       const redirectTo = urlParams.get('redirect');
@@ -190,15 +208,18 @@ export default function Auth() {
       // Determine final redirect destination - go to dashboard unless specific redirect
       const finalRedirect = redirectTo || '/dashboard';
       
-      // Delay redirect slightly to show success message
-      setTimeout(() => {
-        console.log('Redirecting to:', finalRedirect);
-        navigate(finalRedirect, { replace: true });
-      }, 1000);
+      // Redirect immediately - no delay needed since user is already authenticated
+      console.log('Redirecting to:', finalRedirect);
+      navigate(finalRedirect, { replace: true });
       
     } else if (!loading && isMagicLinkAuth && !user) {
-      // Magic link detected but no user - continue waiting
-      console.log('Still waiting for magic link authentication...');
+      // Authentication params detected but no user yet - continue waiting
+      console.log('Still waiting for authentication...');
+    } else if (hasOAuthCallback && !user && !loading) {
+      // OAuth callback detected but user not loaded yet - wait a bit more
+      console.log('OAuth callback detected, waiting for session to be established...');
+      setIsMagicLinkAuth(true);
+      setAuthSuccess('Completing Google sign-in... Please wait.');
     }
   }, [user, loading, navigate, isMagicLinkAuth]);
 
