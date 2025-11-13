@@ -144,14 +144,13 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                   </Link>
                 ))}
                 
-                {/* Features Link in Mobile */}
+                {/* Features Link in Mobile - Centered, No Icon */}
                 <Link
                   to="/features"
                   onClick={closeMobileMenu}
-                  className="flex items-center space-x-3 px-6 py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300"
+                  className="block text-center px-6 py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 text-lg font-medium"
                 >
-                  <Sparkles className="h-5 w-5" />
-                  <span className="text-lg font-medium">Features</span>
+                  Features
                 </Link>
               </div>
               
