@@ -15,6 +15,8 @@ import NotFound from '@/pages/NotFound';
 import Features from '@/pages/Features';
 import HelpCenter from '@/pages/HelpCenter';
 import Contact from '@/pages/Contact';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfService from '@/pages/TermsOfService';
 
 // Import main application pages
 import Bible from '@/pages/Bible';
@@ -104,6 +106,8 @@ function App() {
                 <Route path="/features" element={<Features />} />
                 <Route path="/help-center" element={<HelpCenter />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
                 
                 {/* Public feature pages - SEO optimized */}
                 <Route path="/features/bible-study" element={<BibleStudy />} />

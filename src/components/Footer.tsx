@@ -138,6 +138,15 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-white">
+            <div>
+              <Link to="/terms-of-service" className="hover:text-orange-400 transition-colors duration-300 text-sm text-white">
+                Terms of Use
+              </Link>
+              <span className="mx-2">|</span>
+              <Link to="/privacy-policy" className="hover:text-orange-400 transition-colors duration-300 text-sm text-white">
+                Privacy Policy
+              </Link>
+            </div>
             
             <div className="text-sm text-white">
               {/* Mobile/Tablet: Two lines */}
