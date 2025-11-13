@@ -34,17 +34,9 @@ export interface BibleChapter {
   verses: BibleVerse[];
 }
 
-// Cache for loaded Bible data
+// Cache for loaded Bible data - Only KJV and Tamil
 let bibleCache: Record<TranslationCode, Record<string, any> | null> = {
   KJV: null,
-  NIV: null,
-  ESV: null,
-  NLT: null,
-  NASB: null,
-  NKJV: null,
-  NET: null,
-  ASV: null,
-  WEB: null,
   TAMIL: null
 };
 let tamilBooksCache: BibleBook[] | null = null;

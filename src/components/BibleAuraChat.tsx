@@ -59,7 +59,7 @@ interface Conversation {
 
 type ChatMode = 'chat-clean' | 'verse-clean' | 'parable-clean' | 'character-clean' | 'topical-clean' | 'qa-clean';
 type Language = 'english' | 'tamil';
-type TranslationCode = 'KJV' | 'NIV' | 'ESV' | 'NLT' | 'NASB' | 'NKJV';
+type TranslationCode = 'KJV'; // Only KJV for English
 
 // Chat modes configuration
 const CHAT_MODES = {
@@ -71,13 +71,9 @@ const CHAT_MODES = {
   'qa-clean': { name: 'Quick Q&A', icon: Brain, color: 'bg-indigo-500', description: 'Fast answers with scripture' }
 };
 
+// Only KJV for English (Tamil Bible is separate)
 const TRANSLATIONS = [
-  { code: 'KJV', name: 'King James Version' },
-  { code: 'NIV', name: 'New International Version' },
-  { code: 'ESV', name: 'English Standard Version' },
-  { code: 'NLT', name: 'New Living Translation' },
-  { code: 'NASB', name: 'New American Standard Bible' },
-  { code: 'NKJV', name: 'New King James Version' }
+  { code: 'KJV', name: 'King James Version' }
 ];
 
 // ChatKit workflow integration
