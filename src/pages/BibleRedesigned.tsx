@@ -555,13 +555,13 @@ export default function BibleRedesigned() {
 
                 {/* Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                  <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
-                    <TabsTrigger value="read" className="text-xs">
-                      <Book className="h-4 w-4 mr-1" />
+                  <TabsList className="grid w-full grid-cols-2 mx-4 mt-4 rounded-lg bg-gray-100 p-1">
+                    <TabsTrigger value="read" className="text-sm rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                      <Book className="h-4 w-4 mr-2" />
                       Books
                     </TabsTrigger>
-                    <TabsTrigger value="search" className="text-xs">
-                      <Search className="h-4 w-4 mr-1" />
+                    <TabsTrigger value="search" className="text-sm rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                      <Search className="h-4 w-4 mr-2" />
                       Search
                     </TabsTrigger>
                   </TabsList>
@@ -572,24 +572,26 @@ export default function BibleRedesigned() {
                         {/* Old Testament */}
                         <Collapsible open={oldTestamentOpen} onOpenChange={setOldTestamentOpen}>
                           <CollapsibleTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between h-10">
-                              <span className="font-medium">Old Testament ({oldTestamentBooks.length})</span>
+                            <Button variant="outline" className="w-full justify-between h-11 bg-white hover:bg-gray-50 border-gray-200">
+                              <span className="font-semibold text-gray-800">Old Testament ({oldTestamentBooks.length})</span>
                               <ChevronDown className={cn(
-                                "h-4 w-4 transition-transform",
+                                "h-4 w-4 transition-transform text-gray-600",
                                 oldTestamentOpen && "rotate-180"
                               )} />
                             </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="mt-2">
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="grid grid-cols-2 gap-2">
                               {oldTestamentBooks.map((book) => (
                                 <Button
                                   key={book.id}
                                   variant={selectedBook?.id === book.id ? "default" : "outline"}
                                   onClick={() => handleBookSelect(book.name)}
                                   className={cn(
-                                    "text-xs h-9 justify-start",
-                                    selectedBook?.id === book.id && 'bg-orange-500 hover:bg-orange-600'
+                                    "text-sm h-10 justify-start font-medium transition-all",
+                                    selectedBook?.id === book.id 
+                                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' 
+                                      : 'hover:bg-gray-50 hover:border-orange-300'
                                   )}
                                 >
                                   {book.name}
@@ -602,24 +604,26 @@ export default function BibleRedesigned() {
                         {/* New Testament */}
                         <Collapsible open={newTestamentOpen} onOpenChange={setNewTestamentOpen}>
                           <CollapsibleTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between h-10">
-                              <span className="font-medium">New Testament ({newTestamentBooks.length})</span>
+                            <Button variant="outline" className="w-full justify-between h-11 bg-white hover:bg-gray-50 border-gray-200">
+                              <span className="font-semibold text-gray-800">New Testament ({newTestamentBooks.length})</span>
                               <ChevronDown className={cn(
-                                "h-4 w-4 transition-transform",
+                                "h-4 w-4 transition-transform text-gray-600",
                                 newTestamentOpen && "rotate-180"
                               )} />
                             </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="mt-2">
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="grid grid-cols-2 gap-2">
                               {newTestamentBooks.map((book) => (
                                 <Button
                                   key={book.id}
                                   variant={selectedBook?.id === book.id ? "default" : "outline"}
                                   onClick={() => handleBookSelect(book.name)}
                                   className={cn(
-                                    "text-xs h-9 justify-start",
-                                    selectedBook?.id === book.id && 'bg-orange-500 hover:bg-orange-600'
+                                    "text-sm h-10 justify-start font-medium transition-all",
+                                    selectedBook?.id === book.id 
+                                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' 
+                                      : 'hover:bg-gray-50 hover:border-orange-300'
                                   )}
                                 >
                                   {book.name}
@@ -632,24 +636,28 @@ export default function BibleRedesigned() {
                         {/* Chapter Selection */}
                         {selectedBook && (
                           <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                            <h3 className="text-sm font-semibold text-gray-700 mb-3">
                               {selectedBook.name} - Chapters
                             </h3>
-                            <div className="grid grid-cols-7 gap-1 max-h-40 overflow-y-auto">
-                              {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                                <Button
-                                  key={chapter}
-                                  variant={selectedChapter === chapter ? "default" : "outline"}
-                                  onClick={() => setSelectedChapter(chapter)}
-                                  className={cn(
-                                    "h-8 text-xs p-0",
-                                    selectedChapter === chapter && 'bg-orange-500 hover:bg-orange-600'
-                                  )}
-                                >
-                                  {chapter}
-                                </Button>
-                              ))}
-                            </div>
+                            <ScrollArea className="max-h-48">
+                              <div className="grid grid-cols-7 gap-2 pr-4">
+                                {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                                  <Button
+                                    key={chapter}
+                                    variant={selectedChapter === chapter ? "default" : "outline"}
+                                    onClick={() => setSelectedChapter(chapter)}
+                                    className={cn(
+                                      "h-9 text-sm font-medium transition-all",
+                                      selectedChapter === chapter 
+                                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' 
+                                        : 'hover:bg-gray-50 hover:border-orange-300'
+                                    )}
+                                  >
+                                    {chapter}
+                                  </Button>
+                                ))}
+                              </div>
+                            </ScrollArea>
                           </div>
                         )}
                       </TabsContent>
@@ -1003,27 +1011,73 @@ export default function BibleRedesigned() {
         </div>
       </div>
 
-      {/* AI Chat Dialog */}
+      {/* AI Chat Side Panel */}
       {selectedVerseForAI && (
-        <Dialog open={aiChatOpen} onOpenChange={setAiChatOpen}>
-          <DialogContent className="max-w-4xl max-h-[85vh]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5 text-orange-500" />
-                Ask AI About This Verse
-              </DialogTitle>
-            </DialogHeader>
-            <BibleVerseAIChat
-              verse={selectedVerseForAI}
-              isOpen={aiChatOpen}
-              onClose={() => {
-                setAiChatOpen(false);
-                setSelectedVerseForAI(null);
-              }}
-              verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
-            />
-          </DialogContent>
-        </Dialog>
+        <AnimatePresence>
+          {aiChatOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setAiChatOpen(false);
+                  setSelectedVerseForAI(null);
+                }}
+                className="fixed inset-0 bg-black/50 z-50"
+              />
+              
+              {/* Side Panel */}
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
+              >
+                {/* Panel Header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">✦</span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900">Bible Aura AI</h3>
+                      <p className="text-xs text-gray-600">
+                        {selectedVerseForAI.book_name} {selectedVerseForAI.chapter}:{selectedVerseForAI.verse}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setAiChatOpen(false);
+                      setSelectedVerseForAI(null);
+                    }}
+                    className="h-9 w-9 p-0 rounded-full hover:bg-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+                
+                {/* AI Chat Content */}
+                <div className="flex-1 overflow-hidden">
+                  <BibleVerseAIChat
+                    verse={selectedVerseForAI}
+                    isOpen={aiChatOpen}
+                    onClose={() => {
+                      setAiChatOpen(false);
+                      setSelectedVerseForAI(null);
+                    }}
+                    verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
+                  />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       )}
 
       {/* Translation Selection Dialog (Mobile) */}
