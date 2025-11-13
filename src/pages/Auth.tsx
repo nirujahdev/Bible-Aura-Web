@@ -35,7 +35,7 @@ export default function Auth() {
   // SEO optimization
   useSEO(SEO_CONFIG.AUTH);
   
-  const { user, signIn, signInWithMagicLink, signInWithGoogle, signUp, loading } = useAuth();
+  const { user, session, signIn, signInWithMagicLink, signInWithGoogle, signUp, loading } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -164,13 +164,22 @@ export default function Auth() {
       
       if (isOAuthCallback) {
         setAuthSuccess('Completing Google sign-in... Please wait.');
+        
+        // For OAuth, also check session directly after a short delay
+        setTimeout(async () => {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (currentSession && window.location.pathname === '/auth') {
+            console.log('OAuth session detected, redirecting...');
+            navigate('/dashboard', { replace: true });
+          }
+        }, 2000);
       } else {
         setAuthSuccess('Authenticating... Please wait while we verify your credentials.');
       }
       
       // Set timeout for authentication
       const authTimeout = setTimeout(() => {
-        if (isMagicLinkAuth && !user) {
+        if (isMagicLinkAuth && !user && !session) {
           console.log('Authentication timeout');
           setIsMagicLinkAuth(false);
           setAuthSuccess(null);
@@ -181,47 +190,57 @@ export default function Auth() {
       
       return () => clearTimeout(authTimeout);
     }
-  }, [user]);
+  }, [user, session, navigate]);
 
   // Handle successful authentication with direct dashboard redirect
   useEffect(() => {
-    console.log('Auth state check:', { user: !!user, loading, isMagicLinkAuth });
-    
-    // Check for OAuth callback in URL hash
     const urlHash = window.location.hash;
     const hasOAuthCallback = urlHash.includes('access_token') || urlHash.includes('refresh_token');
     
-    // Only redirect if user is authenticated and not loading
-    if (!loading && user) {
-      console.log('User authenticated, preparing redirect');
+    console.log('Auth state check:', { 
+      user: !!user, 
+      session: !!session,
+      loading, 
+      isMagicLinkAuth,
+      hasOAuthCallback,
+      currentPath: window.location.pathname
+    });
+    
+    // Redirect if user OR session exists (session might be available before user state updates)
+    const isAuthenticated = (user || session) && !loading;
+    
+    if (isAuthenticated && window.location.pathname === '/auth') {
+      console.log('User authenticated, redirecting to dashboard');
       setIsMagicLinkAuth(false);
-      setAuthSuccess('Authentication successful! Redirecting to dashboard...');
+      setAuthSuccess('Authentication successful! Redirecting...');
       
-      // Clean up OAuth callback from URL immediately
+      // Clean up OAuth callback from URL
       if (hasOAuthCallback) {
         window.history.replaceState({}, '', '/auth');
       }
       
       const urlParams = new URLSearchParams(window.location.search);
       const redirectTo = urlParams.get('redirect');
-      
-      // Determine final redirect destination - go to dashboard unless specific redirect
       const finalRedirect = redirectTo || '/dashboard';
       
-      // Redirect immediately - no delay needed since user is already authenticated
-      console.log('Redirecting to:', finalRedirect);
-      navigate(finalRedirect, { replace: true });
+      // Use a small delay to ensure state is updated
+      const redirectTimer = setTimeout(() => {
+        console.log('Navigating to:', finalRedirect);
+        navigate(finalRedirect, { replace: true });
+      }, 100);
       
-    } else if (!loading && isMagicLinkAuth && !user) {
-      // Authentication params detected but no user yet - continue waiting
+      return () => clearTimeout(redirectTimer);
+      
+    } else if (!loading && isMagicLinkAuth && !user && !session) {
+      // Authentication params detected but no user/session yet - continue waiting
       console.log('Still waiting for authentication...');
-    } else if (hasOAuthCallback && !user && !loading) {
-      // OAuth callback detected but user not loaded yet - wait a bit more
-      console.log('OAuth callback detected, waiting for session to be established...');
+    } else if (hasOAuthCallback && !user && !session && !loading) {
+      // OAuth callback detected but user/session not loaded yet
+      console.log('OAuth callback detected, waiting for session...');
       setIsMagicLinkAuth(true);
       setAuthSuccess('Completing Google sign-in... Please wait.');
     }
-  }, [user, loading, navigate, isMagicLinkAuth]);
+  }, [user, session, loading, navigate, isMagicLinkAuth]);
 
   // Enhanced form validation
   const validateForm = (formData: FormData, isSignUp: boolean = false) => {
