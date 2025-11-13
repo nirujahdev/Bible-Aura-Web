@@ -80,9 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         total_reading_days: 0,
       };
 
+      // Use upsert instead of insert to handle existing profiles
       const { data, error } = await supabase
         .from('profiles')
-        .insert(profilePayload)
+        .upsert(profilePayload, { onConflict: 'user_id' })
         .select()
         .single();
 
@@ -526,7 +527,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           if (profileError) {
             console.error('Profile creation error:', profileError);
+            // Log detailed error for debugging
+            if (profileError.code === 'PGRST301' || profileError.message?.includes('permission denied')) {
+              console.error('RLS policy issue - user may not have permission to insert profile');
+            } else if (profileError.message?.includes('violates not-null constraint')) {
+              console.error('Missing required fields in profile data');
+            }
             // Don't fail the signup if profile creation fails - it can be updated later
+            // User can still sign in and complete profile later
+          } else {
+            console.log('Profile created successfully with all fields');
           }
         } catch (profileError) {
           console.error('Error creating profile:', profileError);
