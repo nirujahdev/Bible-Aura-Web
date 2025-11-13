@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Home, Info, FileText, Crown, Heart, LogIn, UserPlus, Menu, X, ChevronDown,
-  BookOpen, Brain, User, Edit, Library, GraduationCap
+  BookOpen, Brain, User, Edit, Library, GraduationCap, HelpCircle, Newspaper
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -35,6 +35,8 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
   const navigationItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/about", label: "About", icon: Info },
+    { href: "/blog", label: "Blog", icon: Newspaper },
+    { href: "/faq", label: "FAQ", icon: HelpCircle },
   ];
 
   const featureItems = [

@@ -17,6 +17,8 @@ import HelpCenter from '@/pages/HelpCenter';
 import Contact from '@/pages/Contact';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
+import Blog from '@/pages/Blog';
+import FAQ from '@/pages/FAQ';
 
 // Import main application pages
 import Bible from '@/pages/BibleRedesigned';
@@ -101,6 +103,8 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/faq" element={<FAQ />} />
                 <Route path="/features" element={<Features />} />
                 <Route path="/help-center" element={<HelpCenter />} />
                 <Route path="/contact" element={<Contact />} />
