@@ -69,23 +69,23 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold text-white mb-6">Features</h4>
             <nav className="space-y-3">
-              <Link to="/features/bible-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Bible Study Tools
+              <Link to="/features" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                All Features
               </Link>
-              <Link to="/features/ai-features" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                AI Features
+              <Link to="/dashboard" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                AI Bible Chat
               </Link>
-              <Link to="/features/content-creation" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Content Creation
+              <Link to="/bible" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Bible Reading
               </Link>
-              <Link to="/features/personal-tools" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Personal Tools
+              <Link to="/reading-plan" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Reading Planner
               </Link>
-              <Link to="/features/learning-resources" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Learning Resources
+              <Link to="/sermons" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Sermon Writing
               </Link>
-              <Link to="/features/advanced-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Advanced Study
+              <Link to="/favorites" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Favorites
               </Link>
             </nav>
           </div>
@@ -94,23 +94,23 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h4 className="text-xl font-semibold text-white mb-6">Menu</h4>
             <nav className="space-y-3">
+              <Link to="/" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Home
+              </Link>
               <Link to="/about" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 About
               </Link>
-              <Link to="/features" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                All Features
+              <Link to="/blog" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Blog
               </Link>
-              <Link to="/pricing" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Pricing
+              <Link to="/faq" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                FAQ
               </Link>
               <Link to="/contact" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 Contact
               </Link>
-              <Link to="/help-center" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Help Center
-              </Link>
               <Link to="/auth" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                Sign in
+                Sign In
               </Link>
             </nav>
           </div>
@@ -122,14 +122,20 @@ const Footer = () => {
               <Link to="/blog" className="block text-white hover:text-orange-400 transition-colors duration-300">
                 All Articles
               </Link>
-              <Link to="/blog/how-ai-transforms-bible-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                AI Bible Study Guide
+              <Link to="/blog/what-is-bible-aura-ai-bible-study-tool" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                What Is Bible Aura?
               </Link>
-              <Link to="/blog/bible-ai-vs-traditional-study" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                AI vs Traditional Study
+              <Link to="/blog/how-to-use-ai-to-understand-any-bible-verse" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                How to Use AI for Bible Verses
               </Link>
-              <Link to="/blog/ai-bible-insights-accuracy" className="block text-white hover:text-orange-400 transition-colors duration-300">
-                AI Insights Accuracy
+              <Link to="/blog/tamil-bible-study-ai-tools" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Tamil Bible Study Tools
+              </Link>
+              <Link to="/blog/free-bible-reading-plan-generator" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                Bible Reading Plan Generator
+              </Link>
+              <Link to="/blog/ai-for-pastors-sermon-prep-bible-aura" className="block text-white hover:text-orange-400 transition-colors duration-300">
+                AI for Pastors
               </Link>
             </nav>
           </div>

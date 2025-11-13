@@ -1,26 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { GlobalNavigation } from '@/components/GlobalNavigation';
+import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSEO } from '@/hooks/useSEO';
 import { 
   BookOpen, 
   Bot, 
-  FileText, 
-  GraduationCap, 
-  PenTool, 
-  Zap,
   MessageCircle,
   Heart,
-  Users,
   Calendar,
   Search,
-  Star
+  Sparkles,
+  Languages,
+  Highlighter,
+  Bookmark,
+  PenTool,
+  Star,
+  ArrowRight
 } from 'lucide-react';
 
 const SEO_CONFIG = {
   title: "Features - Bible Aura | AI-Powered Bible Study Tools",
-  description: "Discover all Bible Aura features: AI Bible chat, study tools, sermon writing, journaling, community, and more. Transform your Bible study experience.",
+  description: "Discover all Bible Aura features: AI Bible chat, verse explanations, reading plans, Tamil/English support, and more. Transform your Bible study experience.",
   keywords: "Bible study features, AI Bible tools, Christian app features, Bible study platform",
   canonicalUrl: "https://bibleaura.xyz/features"
 };
@@ -28,166 +31,200 @@ const SEO_CONFIG = {
 const Features = () => {
   useSEO(SEO_CONFIG);
 
-  const featureCategories = [
+  // Only actual features that exist in the app
+  const features = [
     {
-      title: "Bible Study Tools",
-      description: "Comprehensive tools for deep Bible study and analysis",
-      icon: BookOpen,
-      features: [
-        { name: "Multiple Translations", description: "KJV, NIV, ESV, and more" },
-        { name: "Cross References", description: "Connect related verses" },
-        { name: "Commentary Integration", description: "Expert biblical insights" },
-        { name: "Word Studies", description: "Hebrew and Greek analysis" }
-      ],
-      link: "/features/bible-study",
-      color: "bg-blue-50 border-blue-200"
-    },
-    {
-      title: "AI-Powered Features",
-      description: "Revolutionary AI assistance for biblical understanding",
+      title: "AI-Powered Bible Chat",
+      description: "Ask questions about Scripture, get verse explanations, and receive biblical insights powered by advanced AI. Available in both English and Tamil.",
       icon: Bot,
       features: [
-        { name: "AI Bible Chat", description: "Ask questions, get biblical answers" },
-        { name: "Smart Insights", description: "AI-generated study notes" },
-        { name: "Context Analysis", description: "Historical and cultural context" },
-        { name: "Personalized Learning", description: "Adaptive study suggestions" }
+        "Verse explanations and analysis",
+        "Biblical Q&A in English and Tamil",
+        "Contextual understanding",
+        "Scripture-focused responses"
       ],
-      link: "/features/ai-features",
-      color: "bg-purple-50 border-purple-200"
+      link: "/dashboard",
+      color: "from-purple-500 to-purple-600",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-200"
     },
     {
-      title: "Personal Tools",
-      description: "Organize and track your spiritual journey",
-      icon: FileText,
+      title: "Bible Reading & Study",
+      description: "Read the Bible with multiple translations (KJV, Tamil), search verses, highlight passages, and bookmark your favorite verses.",
+      icon: BookOpen,
       features: [
-        { name: "Digital Journal", description: "Record spiritual insights" },
-        { name: "Favorite Verses", description: "Save and organize verses" },
-        { name: "Reading Plans", description: "Structured Bible reading" },
-        { name: "Progress Tracking", description: "Monitor your growth" }
+        "KJV and Tamil Bible translations",
+        "Verse search and navigation",
+        "Verse highlighting with colors",
+        "Bookmarks and favorites"
       ],
-      link: "/features/personal-tools",
-      color: "bg-green-50 border-green-200"
+      link: "/bible",
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200"
     },
     {
-      title: "Content Creation",
-      description: "Tools for teachers, pastors, and content creators",
+      title: "Bible Reading Planner",
+      description: "Create personalized Bible reading plans based on your schedule, goals, and preferences. Track your progress and stay consistent.",
+      icon: Calendar,
+      features: [
+        "Custom reading plans (30-365 days)",
+        "Daily, weekly, and calendar views",
+        "Progress tracking",
+        "Mark days as completed"
+      ],
+      link: "/reading-plan",
+      color: "from-orange-500 to-orange-600",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-200"
+    },
+    {
+      title: "Sermon Writing & Preparation",
+      description: "Create and organize sermons with AI assistance. Build sermon outlines, save drafts, and manage your sermon library.",
       icon: PenTool,
       features: [
-        { name: "Sermon Writer", description: "AI-assisted sermon preparation" },
-        { name: "Study Guide Generator", description: "Create study materials" },
-        { name: "Teaching Resources", description: "Lesson plans and outlines" },
-        { name: "Presentation Tools", description: "Visual teaching aids" }
+        "Sermon writing tools",
+        "AI-assisted outlines",
+        "Sermon library management",
+        "Bible references integration"
       ],
-      link: "/features/content-creation",
-      color: "bg-orange-50 border-orange-200"
+      link: "/sermons",
+      color: "from-green-500 to-green-600",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200"
     },
     {
-      title: "Learning Resources",
-      description: "Educational content for all levels of Bible study",
-      icon: GraduationCap,
+      title: "Favorites & Bookmarks",
+      description: "Save your favorite Bible verses, organize them, and access them anytime. Build your personal collection of meaningful Scripture.",
+      icon: Heart,
       features: [
-        { name: "Beginner Guides", description: "Start your Bible journey" },
-        { name: "Advanced Studies", description: "Deep theological exploration" },
-        { name: "Video Tutorials", description: "Visual learning content" },
-        { name: "Interactive Courses", description: "Structured learning paths" }
+        "Save favorite verses",
+        "Organize bookmarks",
+        "Quick access to saved verses",
+        "Personal verse collection"
       ],
-      link: "/features/learning-resources",
-      color: "bg-indigo-50 border-indigo-200"
+      link: "/favorites",
+      color: "from-pink-500 to-pink-600",
+      bgColor: "bg-pink-50",
+      borderColor: "border-pink-200"
     },
     {
-      title: "Advanced Study",
-      description: "Professional-grade research and analysis tools",
-      icon: Search,
+      title: "Tamil & English Support",
+      description: "Full bilingual support for Tamil and English Bible study. Ask questions, read verses, and get explanations in both languages.",
+      icon: Languages,
       features: [
-        { name: "Concordance Search", description: "Comprehensive word studies" },
-        { name: "Manuscript Analysis", description: "Original text research" },
-        { name: "Archaeological Insights", description: "Historical discoveries" },
-        { name: "Scholarly Resources", description: "Academic references" }
+        "Tamil Bible translations",
+        "English Bible (KJV)",
+        "Bilingual AI responses",
+        "Language switching"
       ],
-      link: "/features/advanced-study",
-      color: "bg-red-50 border-red-200"
+      link: "/bible",
+      color: "from-indigo-500 to-indigo-600",
+      bgColor: "bg-indigo-50",
+      borderColor: "border-indigo-200"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-800 mb-6">
-            ✦ Bible Aura Features
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50">
+      <GlobalNavigation variant="landing" />
+      
+      {/* Hero Section */}
+      <section className="pt-24 md:pt-32 pb-12 px-4 md:px-6 lg:px-10">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 shadow-lg">
+            <Sparkles className="h-8 w-8" />
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">
+              Bible Aura Features
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Discover comprehensive Bible study tools powered by AI technology. 
-            Transform your spiritual journey with intelligent features designed for modern believers.
+          
+          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Discover powerful AI-powered tools designed to deepen your Bible study and enhance your spiritual journey.
           </p>
         </div>
+      </section>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {featureCategories.map((category, index) => {
-            const IconComponent = category.icon;
-            return (
-              <Card key={index} className={`${category.color} hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1`}>
-                <CardHeader className="text-center pb-4">
-                  <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md mb-4">
-                    <IconComponent className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-800">
-                    {category.title}
-                  </CardTitle>
-                  <p className="text-gray-600 text-sm">
-                    {category.description}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 mb-6">
-                    {category.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-2">
-                        <Star className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <span className="font-medium text-gray-800">{feature.name}</span>
-                          <p className="text-xs text-gray-600">{feature.description}</p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to={category.link}>
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                      Explore {category.title}
+      {/* Features Grid */}
+      <section className="pb-20 px-4 md:px-6 lg:px-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <Card
+                  key={index}
+                  className={`${feature.bgColor} border-2 ${feature.borderColor} hover:shadow-lg transition-all duration-200 group`}
+                >
+                  <CardHeader>
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} text-white mb-4 group-hover:scale-110 transition-transform`}>
+                      <IconComponent className="h-6 w-6" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-gray-900 mb-2">
+                      {feature.title}
+                    </CardTitle>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 mb-6">
+                      {feature.features.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                          <Star className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      asChild
+                      className={`w-full bg-gradient-to-r ${feature.color} hover:opacity-90 text-white`}
+                    >
+                      <Link to={feature.link}>
+                        Try Now
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Link>
                     </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Call to Action */}
-        <div className="text-center bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Ready to Transform Your Bible Study?
-          </h2>
-          <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-            Join thousands of believers who are deepening their faith through AI-powered Bible study tools.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/auth">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-                <Zap className="w-5 h-5 mr-2" />
-                Get Started Free
-              </Button>
-            </Link>
-            <Link to="/pricing">
-              <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8">
-                View Pricing Plans
-              </Button>
-            </Link>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 px-4 md:px-6 lg:px-10 bg-white/50">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-8 md:p-12 border border-orange-100">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-500 text-white mb-4">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              Ready to Transform Your Bible Study?
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-xl mx-auto">
+              Start using Bible Aura today and experience AI-powered biblical insights that deepen your understanding of Scripture.
+            </p>
+            <Button
+              asChild
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+            >
+              <Link to="/auth?redirect=%2Fdashboard">
+                Get Started Free
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 };
 
-export default Features; 
+export default Features;

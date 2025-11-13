@@ -35,13 +35,12 @@ import Profile from '@/pages/Profile';
 
 import SermonLibrary from '@/pages/SermonLibrary';
 
-// Import feature pages
-import BibleStudy from '@/pages/features/BibleStudy';
-import AIFeatures from '@/pages/features/AIFeatures';
-import PersonalTools from '@/pages/features/PersonalTools';
-import ContentCreation from '@/pages/features/ContentCreation';
-import LearningResources from '@/pages/features/LearningResources';
-import AdvancedStudy from '@/pages/features/AdvancedStudy';
+// Import blog posts
+import WhatIsBibleAura from '@/pages/blog/WhatIsBibleAura';
+import HowToUseAIForBibleVerses from '@/pages/blog/HowToUseAIForBibleVerses';
+import TamilBibleStudy from '@/pages/blog/TamilBibleStudy';
+import BibleReadingPlanGenerator from '@/pages/blog/BibleReadingPlanGenerator';
+import AIForPastors from '@/pages/blog/AIForPastors';
 
 
 // Protected Route wrapper
@@ -111,13 +110,12 @@ function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 
-                {/* Public feature pages - SEO optimized */}
-                <Route path="/features/bible-study" element={<BibleStudy />} />
-                <Route path="/features/ai-features" element={<AIFeatures />} />
-                <Route path="/features/personal-tools" element={<PersonalTools />} />
-                <Route path="/features/content-creation" element={<ContentCreation />} />
-                <Route path="/features/learning-resources" element={<LearningResources />} />
-                <Route path="/features/advanced-study" element={<AdvancedStudy />} />
+                {/* Blog post pages - SEO optimized */}
+                <Route path="/blog/what-is-bible-aura-ai-bible-study-tool" element={<WhatIsBibleAura />} />
+                <Route path="/blog/how-to-use-ai-to-understand-any-bible-verse" element={<HowToUseAIForBibleVerses />} />
+                <Route path="/blog/tamil-bible-study-ai-tools" element={<TamilBibleStudy />} />
+                <Route path="/blog/free-bible-reading-plan-generator" element={<BibleReadingPlanGenerator />} />
+                <Route path="/blog/ai-for-pastors-sermon-prep-bible-aura" element={<AIForPastors />} />
                 
 
                 

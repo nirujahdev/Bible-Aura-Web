@@ -2,16 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Home, Info, FileText, Crown, Heart, LogIn, UserPlus, Menu, X, ChevronDown,
-  BookOpen, Brain, User, Edit, Library, GraduationCap, HelpCircle, Newspaper
+  BookOpen, Brain, User, Edit, Library, GraduationCap, HelpCircle, Newspaper, Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 
 interface GlobalNavigationProps {
   variant?: 'landing' | 'app';
@@ -20,7 +13,6 @@ interface GlobalNavigationProps {
 
 export function GlobalNavigation({ variant = 'landing', className = '' }: GlobalNavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
 
   const toggleMobileMenu = () => {
     console.log('Toggle menu clicked, current state:', isMobileMenuOpen);
@@ -39,13 +31,9 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
     { href: "/faq", label: "FAQ", icon: HelpCircle },
   ];
 
+  // Features dropdown removed - all features are now on /features page
   const featureItems = [
-    { href: "/features/bible-study", label: "Bible", icon: BookOpen, description: "Scripture reading and study" },
-    { href: "/features/ai-features", label: "AI Insights", icon: Brain, description: "AI-powered analysis" },
-    { href: "/features/personal-tools", label: "Personal Tools", icon: User, description: "Journal and favorites" },
-    { href: "/features/content-creation", label: "Sermon Creation", icon: Edit, description: "Create and organize sermons" },
-    { href: "/features/learning-resources", label: "Resources", icon: Library, description: "Study materials and resources" },
-    { href: "/features/advanced-study", label: "Advanced Study", icon: GraduationCap, description: "Deep biblical research" },
+    { href: "/features", label: "All Features", icon: Sparkles, description: "View all Bible Aura features" },
   ];
 
   if (variant === 'landing') {
@@ -79,41 +67,14 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                   );
                 })}
                 
-                {/* Features Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="group relative flex items-center space-x-2 px-5 py-2.5 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95">
-                      <Crown className="h-4 w-4 transition-all duration-500 group-hover:scale-110 group-hover:rotate-12" />
-                      <span className="text-sm font-semibold whitespace-nowrap">Features</span>
-                      <ChevronDown className="h-3 w-3 transition-transform duration-300 group-hover:rotate-180" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 mt-2 bg-white/95 backdrop-blur-xl border border-white/30 shadow-2xl rounded-2xl p-2">
-                    {featureItems.map((feature, index) => {
-                      const IconComponent = feature.icon;
-                      return (
-                        <DropdownMenuItem key={feature.href} asChild>
-                          <Link 
-                            to={feature.href}
-                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 transition-all duration-300 group cursor-pointer"
-                          >
-                            <div className="p-2 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300">
-                              <IconComponent className="h-4 w-4 text-primary group-hover:scale-110 transition-transform duration-300" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-sm text-gray-900 group-hover:text-primary transition-colors">
-                                {feature.label}
-                              </div>
-                              <div className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
-                                {feature.description}
-                              </div>
-                            </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Features Link */}
+                <Link 
+                  to="/features"
+                  className="group relative flex items-center space-x-2 px-5 py-2.5 rounded-full transition-all duration-500 hover:bg-gradient-to-r hover:from-primary hover:to-primary/80 hover:text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95"
+                >
+                  <Sparkles className="h-4 w-4 transition-all duration-500 group-hover:scale-110 group-hover:rotate-12" />
+                  <span className="text-sm font-semibold whitespace-nowrap">Features</span>
+                </Link>
               </div>
 
               {/* Right - Auth Buttons */}
@@ -183,35 +144,15 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                   </Link>
                 ))}
                 
-                {/* Features Section in Mobile */}
-                <div className="px-6 py-4">
-                  <button
-                    onClick={() => setIsFeaturesOpen(!isFeaturesOpen)}
-                    className="flex items-center justify-center w-full text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300 text-lg font-medium py-2"
-                  >
-                    Features
-                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-300 ${isFeaturesOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isFeaturesOpen && (
-                    <div className="mt-4 space-y-2 pl-4">
-                      {featureItems.map((feature) => {
-                        const IconComponent = feature.icon;
-                        return (
-                          <Link
-                            key={feature.href}
-                            to={feature.href}
-                            onClick={closeMobileMenu}
-                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-all duration-300"
-                          >
-                            <IconComponent className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium text-gray-700">{feature.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                {/* Features Link in Mobile */}
+                <Link
+                  to="/features"
+                  onClick={closeMobileMenu}
+                  className="flex items-center space-x-3 px-6 py-4 text-gray-700 hover:bg-primary/10 hover:text-primary transition-all duration-300"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  <span className="text-lg font-medium">Features</span>
+                </Link>
               </div>
               
               {/* Auth Buttons */}
@@ -262,29 +203,13 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
               </Link>
             ))}
             
-            {/* Features Dropdown for App variant */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="text-gray-600 hover:text-primary transition-colors duration-200 font-medium text-sm lg:text-base flex items-center">
-                Features
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                {featureItems.map((feature) => {
-                  const IconComponent = feature.icon;
-                  return (
-                    <DropdownMenuItem key={feature.href} asChild>
-                      <Link 
-                        to={feature.href}
-                        className="flex items-center space-x-2 cursor-pointer"
-                      >
-                        <IconComponent className="h-4 w-4" />
-                        <span>{feature.label}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Features Link for App variant */}
+            <Link
+              to="/features"
+              className="text-gray-600 hover:text-primary transition-colors duration-200 font-medium text-sm lg:text-base"
+            >
+              Features
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -319,31 +244,14 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
                 </Link>
               ))}
               
-              {/* Mobile Features Dropdown */}
-              <div className="px-4 py-2">
-                <button
-                  onClick={() => setIsFeaturesOpen(!isFeaturesOpen)}
-                  className="flex items-center w-full text-gray-600 hover:text-primary transition-colors duration-200 text-sm sm:text-base"
-                >
-                  Features
-                  <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-300 ${isFeaturesOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {isFeaturesOpen && (
-                  <div className="mt-2 ml-4 space-y-1">
-                    {featureItems.map((feature) => (
-                      <Link
-                        key={feature.href}
-                        to={feature.href}
-                        onClick={closeMobileMenu}
-                        className="block px-4 py-2 text-gray-500 hover:text-primary hover:bg-gray-50 transition-colors duration-200 text-sm"
-                      >
-                        {feature.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Features Link in Mobile Menu */}
+              <Link
+                to="/features"
+                onClick={closeMobileMenu}
+                className="block px-4 py-2 text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors duration-200 text-sm sm:text-base"
+              >
+                Features
+              </Link>
             </div>
           </div>
         )}
