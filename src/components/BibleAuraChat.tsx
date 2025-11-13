@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
-import { runWorkflow } from '@/lib/openai-workflow-simple';
+import { runWorkflow } from '@/lib/openai-workflow-enhanced';
 import { StructuredAIResponse } from './StructuredAIResponse';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';

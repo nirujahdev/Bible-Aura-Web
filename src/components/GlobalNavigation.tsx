@@ -48,8 +48,8 @@ export function GlobalNavigation({ variant = 'landing', className = '' }: Global
 
   if (variant === 'landing') {
     return (
-      <nav className={`fixed top-2 sm:top-4 left-1/2 transform -translate-x-1/2 z-50 w-[98%] sm:w-auto max-w-6xl px-2 sm:px-4 ${className}`}>
-        <div className="bg-white/90 backdrop-blur-2xl rounded-full shadow-2xl border border-white/30 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.01] relative">
+      <nav className={`fixed top-2 sm:top-4 left-1/2 transform -translate-x-1/2 z-50 w-[98%] sm:w-[95%] max-w-7xl px-2 sm:px-4 ${className}`}>
+        <div className="bg-white/90 backdrop-blur-2xl rounded-full shadow-2xl border border-white/30 px-6 sm:px-8 lg:px-12 xl:px-16 py-3 sm:py-4 lg:py-4 transition-all duration-500 hover:shadow-3xl hover:scale-[1.01] relative">
           {/* Enhanced Glowing border effect */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/25 via-primary/10 to-primary/25 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
           
