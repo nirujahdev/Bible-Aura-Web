@@ -99,7 +99,7 @@ export function BibleAuraChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Auto-save conversation when messages change
+  // Auto-save conversation when messages change (debounced)
   useEffect(() => {
     if (user && messages.length > 0) {
       const saveTimer = setTimeout(async () => {
@@ -108,7 +108,7 @@ export function BibleAuraChat() {
         } catch (error) {
           console.error('Auto-save failed:', error);
         }
-      }, 1000);
+      }, 3000); // Increased delay to 3 seconds
       
       return () => clearTimeout(saveTimer);
     }
@@ -122,16 +122,17 @@ export function BibleAuraChat() {
         .from('ai_conversations')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(20); // Limit to recent 20 conversations
       
-      if (error) throw error;
+      if (error) {
+        console.error('Load error:', error);
+        return; // Fail silently
+      }
       setConversations(data || []);
     } catch (error: any) {
-      toast({
-        title: "Load Error",
-        description: "Failed to load conversations",
-        variant: "destructive",
-      });
+      console.error('Load conversations error:', error);
+      // Removed toast - fail silently
     }
   };
 
@@ -152,13 +153,18 @@ export function BibleAuraChat() {
       };
 
       if (currentConversationId) {
+        // Update existing conversation silently
         const { error } = await supabase
           .from('ai_conversations')
           .update(conversationData)
           .eq('id', currentConversationId);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Save error:', error);
+          return; // Fail silently, don't show toast
+        }
       } else {
+        // Create new conversation
         const { data, error } = await supabase
           .from('ai_conversations')
           .insert({
@@ -168,17 +174,18 @@ export function BibleAuraChat() {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Save error:', error);
+          return; // Fail silently
+        }
         setCurrentConversationId(data.id);
       }
       
-      await loadConversations();
+      // Load conversations in background without blocking UI
+      loadConversations().catch(err => console.error('Background load error:', err));
     } catch (error: any) {
-      toast({
-        title: "Save Error",
-        description: "Failed to save conversation",
-        variant: "destructive",
-      });
+      console.error('Save conversation error:', error);
+      // Removed toast - fail silently
     }
   };
 
@@ -384,19 +391,10 @@ export function BibleAuraChat() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-4 py-3">
+        {/* Header - Desktop Only */}
+        <div className="hidden lg:block bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileHistory(true)}
-                className="lg:hidden p-1"
-              >
-                <History className="h-4 w-4" />
-              </Button>
-              
               <span className="text-orange-500 text-2xl drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">✦</span>
               <div>
                 <h1 className="text-lg font-bold text-gray-800">Bible Aura AI</h1>
@@ -534,10 +532,14 @@ export function BibleAuraChat() {
             {/* Controls */}
             <div className="flex items-center gap-2 mb-3">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => setShowMobileHistory(true)}
-                className="lg:hidden"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowMobileHistory(true);
+                }}
+                className="lg:hidden flex-shrink-0 h-9 px-2"
               >
                 <History className="h-4 w-4" />
               </Button>
