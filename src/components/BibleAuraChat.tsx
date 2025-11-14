@@ -23,7 +23,9 @@ import {
   Trash2,
   X,
   FileText,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Mic,
+  Volume2
 } from 'lucide-react';
 import {
   Select,
@@ -623,7 +625,7 @@ export function BibleAuraChat() {
                           ) : null}
                         </div>
                       ) : (
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-lg">
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-sm">
                           <div className="whitespace-pre-wrap text-sm">{message.content}</div>
                         </div>
                       )}
@@ -720,7 +722,7 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 px-4 py-4">
+        <div className="bg-white border-t border-gray-100 px-4 py-6">
           <div className="max-w-3xl mx-auto">
             {/* Controls */}
             <div className="flex items-center gap-2 mb-3">
@@ -767,37 +769,65 @@ export function BibleAuraChat() {
               </Select>
             </div>
 
-            {/* Message Input - Clean, borderless design */}
-            <div className="relative">
-              <div className="relative bg-white rounded-[24px] transition-shadow">
-                <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Message Bible Aura AI..."
-                  className="w-full min-h-[44px] max-h-[200px] py-2.5 pl-4 pr-12 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400"
-                  disabled={isLoading}
-                  style={{ borderRadius: '24px' }}
-                />
-                
-                <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={isLoading || !input.trim()}
-                    size="icon"
-                    className="h-7 w-7 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            {/* Message Input - ChatGPT style design */}
+            <div className="relative max-w-3xl mx-auto">
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 focus-within:border-gray-300 focus-within:shadow-lg">
+                <div className="flex items-center gap-2 px-3 py-2.5">
+                  {/* Plus Icon */}
+                  <button
+                    onClick={createNewConversation}
+                    className="flex-shrink-0 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="New chat"
                   >
-                    <Send className="h-3.5 w-3.5 text-white" />
-                  </Button>
+                    <Plus className="h-5 w-5 text-gray-600" />
+                  </button>
+                  
+                  {/* Text Input */}
+                  <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask anything"
+                    className="flex-1 min-h-[24px] max-h-[200px] py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400 outline-none"
+                    disabled={isLoading}
+                    rows={1}
+                  />
+                  
+                  {/* Right Side Icons */}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {/* Microphone Icon */}
+                    <button
+                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                      aria-label="Voice input"
+                    >
+                      <Mic className="h-5 w-5 text-gray-600" />
+                    </button>
+                    
+                    {/* Send Button / Active Indicator */}
+                    {input.trim() ? (
+                      <Button
+                        onClick={handleSendMessage}
+                        disabled={isLoading}
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm"
+                      >
+                        <Send className="h-4 w-4 text-white" />
+                      </Button>
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Volume2 className="h-4 w-4 text-blue-600" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+              
+              {/* Disclaimer */}
+              <p className="text-xs text-gray-500 text-center mt-2">
+                Bible Aura AI can make mistakes. Check important information.
+              </p>
             </div>
-            
-            {/* Terms */}
-            <p className="text-[10px] text-gray-500 text-center mt-3">
-              By using Bible Aura you agree with our <Link to="/terms" className="underline hover:text-orange-500">terms of use</Link>.
-            </p>
           </div>
         </div>
       </div>
