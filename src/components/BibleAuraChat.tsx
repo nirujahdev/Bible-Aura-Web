@@ -555,27 +555,27 @@ export function BibleAuraChat() {
                             {message.content}
                           </div>
                           
-                          {/* Sources and Cross-References with Tabs */}
+                          {/* Sources and Cross-References with Tabs - Clean design */}
                           {(message.sources && message.sources.length > 0) || (message.crossReferences && message.crossReferences.length > 0) ? (
                             <div className="mt-4 pt-4 border-t border-gray-200">
                               <Tabs defaultValue="sources" className="w-full">
-                                <TabsList className="grid w-full grid-cols-2 h-9">
-                                  <TabsTrigger value="sources" className="text-xs flex items-center gap-1.5">
-                                    <FileText className="h-3.5 w-3.5" />
+                                <TabsList className="inline-flex h-auto p-0 bg-transparent gap-0 border-b border-gray-200">
+                                  <TabsTrigger 
+                                    value="sources" 
+                                    className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                  >
                                     <span>Sources</span>
                                     {message.sources && message.sources.length > 0 && (
-                                      <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
-                                        {message.sources.length}
-                                      </Badge>
+                                      <span className="ml-1.5 text-xs text-gray-500">({message.sources.length})</span>
                                     )}
                                   </TabsTrigger>
-                                  <TabsTrigger value="crossrefs" className="text-xs flex items-center gap-1.5">
-                                    <LinkIcon className="h-3.5 w-3.5" />
+                                  <TabsTrigger 
+                                    value="crossrefs" 
+                                    className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                  >
                                     <span>Cross-Refs</span>
                                     {message.crossReferences && message.crossReferences.length > 0 && (
-                                      <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
-                                        {message.crossReferences.length}
-                                      </Badge>
+                                      <span className="ml-1.5 text-xs text-gray-500">({message.crossReferences.length})</span>
                                     )}
                                   </TabsTrigger>
                                 </TabsList>
@@ -767,28 +767,28 @@ export function BibleAuraChat() {
               </Select>
             </div>
 
-            {/* Message Input - ChatGPT style curved design */}
+            {/* Message Input - Clean, borderless design */}
             <div className="relative">
-              <div className="relative bg-white border border-gray-300 rounded-[24px] shadow-sm hover:shadow-md transition-shadow focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.1)]">
+              <div className="relative bg-white rounded-[24px] transition-shadow">
                 <Textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Message Bible Aura AI..."
-                  className="w-full min-h-[52px] max-h-[200px] py-3 pl-4 pr-14 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400"
+                  className="w-full min-h-[44px] max-h-[200px] py-2.5 pl-4 pr-12 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400"
                   disabled={isLoading}
                   style={{ borderRadius: '24px' }}
                 />
                 
-                <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
                   <Button
                     onClick={handleSendMessage}
                     disabled={isLoading || !input.trim()}
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    className="h-7 w-7 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <Send className="h-4 w-4 text-white" />
+                    <Send className="h-3.5 w-3.5 text-white" />
                   </Button>
                 </div>
               </div>
