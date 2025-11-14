@@ -458,12 +458,12 @@ export function BibleAuraChat() {
 
       {/* Mobile Chat History */}
       {showMobileHistory && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setShowMobileHistory(false)}>
-          <div className="w-80 h-full bg-white flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b flex items-center justify-between">
-              <h2 className="font-medium">History</h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowMobileHistory(false)}>
-                <X className="h-4 w-4" />
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/30" onClick={() => setShowMobileHistory(false)}>
+          <div className="w-80 h-full bg-white/95 backdrop-blur-sm flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-medium text-gray-700">History</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowMobileHistory(false)} className="hover:bg-gray-100">
+                <X className="h-4 w-4 text-gray-500" />
               </Button>
             </div>
             
@@ -472,14 +472,14 @@ export function BibleAuraChat() {
                 {conversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                    className="p-3 rounded-lg bg-gray-50/50 hover:bg-gray-100/50 cursor-pointer border border-gray-100/50 transition-colors"
                     onClick={() => {
                       loadConversation(conversation);
                       setShowMobileHistory(false);
                     }}
                   >
-                    <p className="text-sm font-medium truncate">{conversation.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm font-medium truncate text-gray-700">{conversation.title}</p>
+                    <p className="text-xs text-gray-400 mt-1">
                       {new Date(conversation.updated_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -487,13 +487,13 @@ export function BibleAuraChat() {
               </div>
             </ScrollArea>
             
-            <div className="p-4 border-t">
+            <div className="p-4 border-t border-gray-100">
               <Button
                 onClick={() => {
                   createNewConversation();
                   setShowMobileHistory(false);
                 }}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Chat
