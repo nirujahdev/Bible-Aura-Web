@@ -608,11 +608,16 @@ async function runFastRAGPipeline(
   const metaAgentResult = await runMetaAgent(ragResult, client, modelMode);
 
   // Node 3: Global Guardrails
-  const safeText = await runGlobalGuardrails(
+  let safeText = await runGlobalGuardrails(
     metaAgentResult.response,
     client,
     config.isDeepAnalysis ? 2000 : 1000 // Longer timeout for deep analysis
   );
+
+  // Improve Tamil text if language is Tamil
+  if (metaAgentResult.lang === "ta") {
+    safeText = improveTamilText(safeText);
+  }
 
   const crossReferences = extractCrossReferences(ragResult.sources);
 
@@ -623,6 +628,27 @@ async function runFastRAGPipeline(
     sources: ragResult.sources.slice(0, config.isDeepAnalysis ? 10 : 5),
     crossReferences: crossReferences
   };
+}
+
+// Improve Tamil text by replacing incorrect terms with correct ones
+function improveTamilText(text: string): string {
+  const replacements: Record<string, string> = {
+    "கிரிஸ்து": "கிறிஸ்து",
+    "பைபிள்": "பரிசுத்த வேதாகமம்",
+    "பைபிள் புத்தகம்": "பரிசுத்த வேதாகமம்",
+    "மத விசுவாசி": "விசுவாசி",
+    "பரிசுத்த ஆவி": "பரிசுத்த ஆவியார்",
+    "சேவை": "ஊழியம்",
+    "ஆசிரியர்": "மேய்ப்பர்"
+  };
+
+  let improved = text;
+  for (const [incorrect, correct] of Object.entries(replacements)) {
+    const regex = new RegExp(incorrect, 'g');
+    improved = improved.replace(regex, correct);
+  }
+
+  return improved;
 }
 
 /**
