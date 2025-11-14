@@ -1039,7 +1039,7 @@ export function BibleAuraChat() {
             {/* Message Input - All controls inside */}
             <div className="relative">
               <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
-                <div className="flex items-center gap-2 px-3 py-2.5">
+                <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2.5">
                   {/* History Button (Mobile) */}
                   <Button
                     variant="ghost"
