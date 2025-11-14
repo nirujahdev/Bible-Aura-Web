@@ -89,32 +89,59 @@ export const supabase = createClient(
         'X-Client-Version': '2.0.0'
       },
       // Add fetch with better error handling
-      fetch: (url, options = {}) => {
-        return fetch(url, options).catch((error) => {
+      fetch: async (url, options = {}) => {
+        // Check if we're using placeholder credentials
+        if (!hasCredentials) {
+          const error = new Error('Supabase credentials not configured');
+          console.error('❌ Supabase Fetch Blocked:', {
+            reason: 'Missing environment variables',
+            url: typeof url === 'string' ? url : url.toString(),
+            message: 'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set in Vercel environment variables'
+          });
+          throw error;
+        }
+        
+        // Validate URL is not placeholder
+        const urlString = typeof url === 'string' ? url : url.toString();
+        if (urlString.includes('placeholder.supabase.co')) {
+          const error = new Error('Invalid Supabase URL: placeholder detected');
+          console.error('❌ Supabase Fetch Blocked:', {
+            reason: 'Placeholder URL detected',
+            message: 'Please set VITE_SUPABASE_URL in Vercel environment variables'
+          });
+          throw error;
+        }
+        
+        try {
+          return await fetch(url, options);
+        } catch (error: any) {
           // Enhanced error logging for fetch failures
           console.error('❌ Supabase Fetch Error:', {
-            url: typeof url === 'string' ? url : url.toString(),
+            url: urlString,
             error: error.message,
             type: error.name,
             cause: error.cause,
             hasCredentials: hasCredentials,
-            supabaseUrl: SUPABASE_URL ? 'SET' : 'MISSING'
+            supabaseUrl: SUPABASE_URL ? 'SET' : 'MISSING',
+            isPlaceholder: urlString.includes('placeholder')
           });
           
           // Provide helpful error messages
           if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             console.error(
               '🔍 Network Error Diagnosis:\n' +
-              '1. Check if Supabase project is active (not paused)\n' +
-              '2. Verify VITE_SUPABASE_URL is correct\n' +
-              '3. Check browser console for CORS errors\n' +
-              '4. Ensure Supabase project allows your domain in CORS settings\n' +
-              `Current URL: ${SUPABASE_URL || 'NOT SET'}`
+              '1. ✅ Supabase project is active (verified via MCP)\n' +
+              '2. ⚠️ Check VITE_SUPABASE_URL is set in Vercel Dashboard\n' +
+              '3. ⚠️ Check VITE_SUPABASE_ANON_KEY is set in Vercel Dashboard\n' +
+              '4. ⚠️ Verify environment variables are set for Production environment\n' +
+              '5. ⚠️ Redeploy after setting environment variables\n' +
+              `Current Status: ${hasCredentials ? 'Credentials SET' : 'Credentials MISSING'}\n` +
+              `URL: ${SUPABASE_URL || 'NOT SET'}`
             );
           }
           
           throw error;
-        });
+        }
       }
     },
     
