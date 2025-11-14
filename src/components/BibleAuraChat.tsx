@@ -32,7 +32,8 @@ import {
   Copy,
   Share2,
   Menu,
-  MoreVertical
+  MoreVertical,
+  PenTool
 } from 'lucide-react';
 import {
   Select,
@@ -41,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 // Types
 interface Message {
@@ -175,8 +176,10 @@ function generateRelatedQuestions(lastResponse: string, allMessages: Message[]):
 }
 
 export function BibleAuraChat() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   
   // Core state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -191,6 +194,8 @@ export function BibleAuraChat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [showMobileHistory, setShowMobileHistory] = useState(false);
+  const [showMobileNavMenu, setShowMobileNavMenu] = useState(false);
+  const [showMobileMoreMenu, setShowMobileMoreMenu] = useState(false);
   
   // UI refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -723,10 +728,11 @@ export function BibleAuraChat() {
               </span>
             </div>
             
-            {/* Right - Three Dots Menu */}
+            {/* Right - Three Dots Menu (Page Actions) */}
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setShowMobileMoreMenu(true)}
               className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
             >
               <MoreVertical className="h-5 w-5 text-gray-600" />
@@ -769,7 +775,7 @@ export function BibleAuraChat() {
                   How can I assist you from the Bible?
                 </h2>
                 <p className="text-xs md:text-sm text-gray-600 whitespace-nowrap">
-                  Ask me anything about Scripture and I'll provide biblical insights
+                  Ask me anything about Scripture
                 </p>
               </div>
             ) : (
@@ -1075,40 +1081,41 @@ export function BibleAuraChat() {
           <div className="max-w-3xl mx-auto">
             {/* Mobile: Redesigned Input Bar */}
             <div className="lg:hidden">
+              {/* Mode and Language - On Top */}
+              <div className="flex items-center gap-2 mb-2">
+                <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
+                  <SelectTrigger className="h-8 text-[10px] border border-gray-200 bg-white hover:bg-gray-50 focus:ring-0 shadow-sm rounded-lg flex-1">
+                    <div className="flex items-center gap-1.5">
+                      {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
+                      <span className="truncate text-[10px]">{CHAT_MODES[currentMode]?.name}</span>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center gap-2">
+                          {React.createElement(mode.icon, { className: "h-3 w-3" })}
+                          {mode.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
+                  <SelectTrigger className="h-8 text-[10px] border border-gray-200 bg-white hover:bg-gray-50 focus:ring-0 shadow-sm rounded-lg w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="tamil">Tamil</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Message Input Bar */}
               <div className="bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
                 <div className="flex items-end gap-2 p-2">
-                  {/* Mode and Language - Compact Row */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                      <SelectTrigger className="w-24 h-8 text-[10px] border-0 bg-white hover:bg-gray-100 focus:ring-0 shadow-sm rounded-lg">
-                        <div className="flex items-center gap-1">
-                          {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
-                          <span className="truncate text-[10px]">{CHAT_MODES[currentMode]?.name}</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(CHAT_MODES).map(([key, mode]) => (
-                          <SelectItem key={key} value={key}>
-                            <div className="flex items-center gap-2">
-                              {React.createElement(mode.icon, { className: "h-3 w-3" })}
-                              {mode.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                      <SelectTrigger className="w-18 h-8 text-[10px] border-0 bg-white hover:bg-gray-100 focus:ring-0 shadow-sm rounded-lg min-w-[60px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="tamil">Tamil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
                   {/* Text Input */}
                   <Textarea
                     ref={textareaRef}
