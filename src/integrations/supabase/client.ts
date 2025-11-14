@@ -58,48 +58,49 @@ const isFromEmailLink = typeof window !== 'undefined' && (() => {
 })();
 
 // Enhanced Supabase client configuration
-// Use placeholder values if credentials are missing to prevent crash
+// Use real credentials if available, otherwise use placeholders to prevent crash
 export const supabase = createClient(
   SUPABASE_URL || 'https://placeholder.supabase.co',
   SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
   {
-  auth: {
-    // Enable session persistence for better UX and to prevent white screens
-    persistSession: true,
+    auth: {
+      // Enable session persistence for better UX and to prevent white screens
+      persistSession: true,
+      
+      // Enable auto refresh for seamless authentication
+      autoRefreshToken: true,
+      
+      // Always detect auth sessions in URL for magic links and OAuth
+      detectSessionInUrl: true,
+      
+      // Use PKCE flow for better security
+      flowType: 'pkce',
+      
+      // Enhanced debug mode for development
+      debug: import.meta.env.DEV ? true : false,
+      
+      // Storage key prefix for multi-tenancy support
+      storageKey: 'sb-bible-aura-auth-token'
+    },
     
-    // Enable auto refresh for seamless authentication
-    autoRefreshToken: true,
+    global: {
+      headers: {
+        'X-Client-Info': 'bible-aura-web',
+        'X-Client-Version': '2.0.0'
+      }
+    },
     
-    // Always detect auth sessions in URL for magic links and OAuth
-    detectSessionInUrl: true,
+    db: {
+      schema: 'public'
+    },
     
-    // Use PKCE flow for better security
-    flowType: 'pkce',
-    
-    // Enhanced debug mode for development
-    debug: import.meta.env.DEV ? true : false,
-    
-    // Storage key prefix for multi-tenancy support
-    storageKey: 'sb-bible-aura-auth-token'
-  },
-  
-  global: {
-    headers: {
-      'X-Client-Info': 'bible-aura-web',
-      'X-Client-Version': '2.0.0'
-    }
-  },
-  
-  db: {
-    schema: 'public'
-  },
-  
-  realtime: {
-    params: {
-      eventsPerSecond: 10
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
     }
   }
-});
+);
 
 // Enhanced error handling and logging for development
 if (import.meta.env.DEV) {

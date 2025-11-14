@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { sendBibleAuraMessage } from '@/lib/chatkit';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -117,6 +117,12 @@ export function BibleAuraChat() {
   const loadConversations = async () => {
     if (!user) return;
     
+    // Check if Supabase is properly configured
+    if (!hasSupabaseCredentials) {
+      console.warn('⚠️ Supabase credentials not configured - chat history unavailable');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('ai_conversations')
@@ -126,7 +132,11 @@ export function BibleAuraChat() {
         .limit(20); // Limit to recent 20 conversations
       
       if (error) {
-        console.error('Load error:', error);
+        console.error('Load conversations error:', error);
+        // Check if table doesn't exist
+        if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+          console.error('❌ ai_conversations table does not exist. Please run database migration.');
+        }
         return; // Fail silently
       }
       setConversations(data || []);

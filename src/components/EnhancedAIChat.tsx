@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 // import { subscriptionService } from '@/lib/subscription-service'; // Removed subscription feature
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,6 +155,12 @@ export function EnhancedAIChat() {
   const loadConversations = async () => {
     if (!user) return;
     
+    // Check if Supabase is properly configured
+    if (!hasSupabaseCredentials) {
+      console.warn('⚠️ Supabase credentials not configured - chat history unavailable');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('ai_conversations')
@@ -162,7 +168,14 @@ export function EnhancedAIChat() {
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading conversations:', error);
+        // Check if table doesn't exist
+        if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+          console.error('❌ ai_conversations table does not exist. Please run database migration.');
+        }
+        return;
+      }
       
       setConversations(data || []);
     } catch (error) {

@@ -246,7 +246,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, config: ChatKitConfig) {
-  const workflowEndpoint = `${config.apiBaseUrl}/v1/workflows/${config.workflowId}/runs`;
+  // Convert version to number if it's a string, default to 2 if invalid
+  const versionNumber = parseInt(config.version, 10) || 2;
+  
+  // OpenAI Workflows API format: /v1/workflows/{workflow_id}/runs
+  // Version can be specified as query parameter: ?version={version}
+  const baseEndpoint = `${config.apiBaseUrl}/v1/workflows/${config.workflowId}/runs`;
+  const workflowEndpoint = versionNumber > 1 
+    ? `${baseEndpoint}?version=${versionNumber}` 
+    : baseEndpoint;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -257,21 +265,22 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, con
   if (config.domainKey) {
     headers['OpenAI-Organization'] = config.domainKey;
   }
-
-  // Convert version to number if it's a string, default to 1 if invalid
-  const versionNumber = parseInt(config.version, 10) || 1;
   
   // Log version being used for debugging (without exposing full workflow ID)
   if (process.env.NODE_ENV === 'development') {
     console.log(`[ChatKit] Executing workflow ${config.workflowId.substring(0, 8)}... with version ${versionNumber}`);
+    console.log(`[ChatKit] Request URL: ${workflowEndpoint}`);
   }
 
-  // Build request body - always include version as OpenAI API may require it
-  const requestBody: any = {
-    input: workflowInput,
-    workflow_id: config.workflowId,
-    version: versionNumber  // Always include version (as number)
+  // Build request body - OpenAI Workflows API only accepts 'input' in the body
+  // workflow_id is in the URL path, version is in query parameter
+  const requestBody = {
+    input: workflowInput
   };
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[ChatKit] Request body:`, JSON.stringify(requestBody, null, 2));
+  }
 
   const initialResponse = await fetch(workflowEndpoint, {
     method: 'POST',
@@ -283,12 +292,15 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, con
     const errorData = await initialResponse.json().catch(() => ({}));
     const errorMessage = errorData.error?.message || errorData.message || `Workflow API error: ${initialResponse.status}`;
     
-    // Enhanced error logging for version-specific issues (sanitized)
+    // Enhanced error logging for debugging
     console.error(`[ChatKit] Workflow execution failed:`, {
       status: initialResponse.status,
+      statusText: initialResponse.statusText,
       error: errorMessage,
+      errorData: process.env.NODE_ENV === 'development' ? errorData : undefined,
       workflowId: process.env.NODE_ENV === 'development' ? config.workflowId : config.workflowId.substring(0, 8) + '...',
-      version: versionNumber
+      version: versionNumber,
+      endpoint: process.env.NODE_ENV === 'development' ? workflowEndpoint : 'hidden'
     });
     
     // Provide more specific error messages for version-related issues
@@ -316,7 +328,9 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, con
   while ((currentRun.status === 'queued' || currentRun.status === 'in_progress') && attempts < maxAttempts) {
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    const pollResponse = await fetch(`${workflowEndpoint}/${currentRun.run_id}`, {
+    // Poll endpoint uses base endpoint without version query parameter
+    const pollEndpoint = `${baseEndpoint}/${currentRun.run_id}`;
+    const pollResponse = await fetch(pollEndpoint, {
       method: 'GET',
       headers
     });
