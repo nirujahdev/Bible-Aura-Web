@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
   MessageCircle, 
-  Plus, 
   Send, 
   Sparkles,
   BookOpen,
@@ -23,9 +22,7 @@ import {
   Trash2,
   X,
   FileText,
-  Link as LinkIcon,
-  Mic,
-  Volume2
+  Link as LinkIcon
 } from 'lucide-react';
 import {
   Select,
@@ -583,20 +580,35 @@ export function BibleAuraChat() {
                                 </TabsList>
                                 
                                 <TabsContent value="sources" className="mt-3">
-                                  {message.sources && message.sources.length > 0 ? (
-                                    <div className="space-y-2">
-                                      {message.sources.map((source, idx) => (
-                                        <div key={idx} className="flex items-center justify-between text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors">
-                                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                                            <FileText className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-                                            <span className="truncate">{source.filename}</span>
-                                          </div>
-                                          <Badge variant="outline" className="ml-2 text-[10px] bg-white">
-                                            {(source.score * 100).toFixed(0)}%
-                                          </Badge>
-                                        </div>
-                                      ))}
+                              {message.sources && message.sources.length > 0 ? (
+                                <div className="space-y-2">
+                                  {message.sources.map((source, idx) => (
+                                    <div key={idx} className="flex items-center justify-between text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors">
+                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        {source.url ? (
+                                          <LinkIcon className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                                        ) : (
+                                          <FileText className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                                        )}
+                                        {source.url ? (
+                                          <a 
+                                            href={source.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="truncate text-blue-600 hover:underline"
+                                          >
+                                            {source.filename}
+                                          </a>
+                                        ) : (
+                                          <span className="truncate">{source.filename}</span>
+                                        )}
+                                      </div>
+                                      <Badge variant="outline" className="ml-2 text-[10px] bg-white">
+                                        {source.url ? 'Web' : `${(source.score * 100).toFixed(0)}%`}
+                                      </Badge>
                                     </div>
+                                  ))}
+                                </div>
                                   ) : (
                                     <div className="text-xs text-gray-500 text-center py-4">No sources available</div>
                                   )}
@@ -728,15 +740,6 @@ export function BibleAuraChat() {
             <div className="relative">
               <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
                 <div className="flex items-center gap-2 px-3 py-2.5">
-                  {/* Plus Icon */}
-                  <button
-                    onClick={createNewConversation}
-                    className="flex-shrink-0 p-1.5 hover:bg-gray-100/50 rounded-lg transition-colors"
-                    aria-label="New chat"
-                  >
-                    <Plus className="h-5 w-5 text-gray-600" />
-                  </button>
-                  
                   {/* History Button (Mobile) */}
                   <Button
                     variant="ghost"
@@ -794,32 +797,15 @@ export function BibleAuraChat() {
                     rows={1}
                   />
                   
-                  {/* Right Side Icons */}
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {/* Microphone Icon */}
-                    <button
-                      className="p-1.5 hover:bg-gray-100/50 rounded-lg transition-colors"
-                      aria-label="Voice input"
-                    >
-                      <Mic className="h-5 w-5 text-gray-600" />
-                    </button>
-                    
-                    {/* Send Button / Active Indicator */}
-                    {input.trim() ? (
-                      <Button
-                        onClick={handleSendMessage}
-                        disabled={isLoading}
-                        size="icon"
-                        className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm"
-                      >
-                        <Send className="h-4 w-4 text-white" />
-                      </Button>
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Volume2 className="h-4 w-4 text-blue-600" />
-                      </div>
-                    )}
-                  </div>
+                  {/* Send Button */}
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !input.trim()}
+                    size="icon"
+                    className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                  >
+                    <Send className="h-4 w-4 text-white" />
+                  </Button>
                 </div>
               </div>
               

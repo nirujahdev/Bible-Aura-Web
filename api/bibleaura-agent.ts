@@ -91,6 +91,41 @@ function detectLanguage(text: string): "en" | "ta" {
   return tamilRegex.test(text) ? "ta" : "en";
 }
 
+// Web search function using Tavily API (or fallback to simple search)
+async function searchWeb(query: string): Promise<Array<{ title: string; url: string; snippet: string }>> {
+  try {
+    // Try Tavily API if available
+    const tavilyApiKey = process.env.TAVILY_API_KEY;
+    if (tavilyApiKey) {
+      const response = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: tavilyApiKey,
+          query: query,
+          search_depth: 'basic',
+          max_results: 3
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return (data.results || []).map((r: any) => ({
+          title: r.title || 'Web Result',
+          url: r.url || '',
+          snippet: r.content || r.snippet || ''
+        }));
+      }
+    }
+    
+    // Fallback: Return empty array if no web search available
+    return [];
+  } catch (error: any) {
+    console.error("[Web Search] Error:", error.message);
+    return [];
+  }
+}
+
 async function retrieveBibleContext(
   userInput: string,
   client: OpenAI,
@@ -100,18 +135,36 @@ async function retrieveBibleContext(
   const vectorStoreId = lang === "en" ? ENGLISH_VECTOR_STORE : TAMIL_VECTOR_STORE;
 
   try {
-    const searchResults = await client.vectorStores.search(vectorStoreId, {
-      query: userInput,
-      max_num_results: MAX_CHUNKS
-    });
+    // Parallel: Vector store search + Web search
+    const [vectorSearchResults, webResults] = await Promise.all([
+      client.vectorStores.search(vectorStoreId, {
+        query: userInput,
+        max_num_results: MAX_CHUNKS
+      }).catch(() => ({ data: [] })),
+      searchWeb(userInput)
+    ]);
 
-    const sources = searchResults.data.map((result) => ({
+    // Extract Bible sources
+    const bibleSources = vectorSearchResults.data.map((result) => ({
       id: result.file_id,
       filename: result.filename || "Unknown",
       score: result.score || 0
     }));
 
-    const context = searchResults.data
+    // Add web sources
+    const webSources = webResults.map((result, idx) => ({
+      id: `web-${idx}`,
+      filename: result.title || result.url || "Web Result",
+      score: 0.8, // Default score for web results
+      url: result.url,
+      snippet: result.snippet
+    }));
+
+    // Combine all sources
+    const allSources = [...bibleSources, ...webSources].slice(0, MAX_CHUNKS + 3);
+
+    // Build context: Bible chunks + Web snippets
+    const bibleContext = vectorSearchResults.data
       .map((result) => {
         const text = (result as any).text || result.filename || "";
         return text;
@@ -119,11 +172,17 @@ async function retrieveBibleContext(
       .filter(Boolean)
       .join("\n---\n");
 
+    const webContext = webResults
+      .map((result) => `${result.title}\n${result.snippet}`)
+      .join("\n---\n");
+
+    const combinedContext = [bibleContext, webContext].filter(Boolean).join("\n\n[Web Sources]\n---\n");
+
     return {
       lang,
-      context: context || userInput,
+      context: combinedContext || userInput,
       query: userInput,
-      sources: sources.slice(0, MAX_CHUNKS)
+      sources: allSources
     };
   } catch (error: any) {
     console.error("[RAG Retriever] Error:", error.message);
@@ -149,16 +208,18 @@ Your responsibilities:
    - character → character study (overview, timeline, lessons)
    - topical → topic overview (definition, scriptures, application)
    - qa → short Q&A format (max 50 words)
-3. Use the Bible context provided. NEVER hallucinate verses. Only reference verses that exist in the context.
+3. Use the Bible context and web sources provided. NEVER hallucinate verses. Only reference verses that exist in the context.
 4. Strict formatting rules:
-   - Use ✦ for title
-   - Use ↗ for section headings
+   - Use ✦ for main title (add a blank line before and after each title)
+   - Use ↗ for section headings (add a blank line before each heading)
    - Use • for bullet points
+   - Always add a blank line between different sections/titles
    - Never use markdown (#, *, **, etc.)
    - Never use code blocks or backticks
-5. Produce a clean final answer.
+   - Format titles with blank lines: \n\n✦ Title\n\n
+5. Produce a clean final answer with proper spacing between titles and sections.
 
-Bible Context:
+Bible Context & Web Sources:
 ${ragContext}
 
 User Query: ${userQuery}
@@ -167,7 +228,7 @@ Return JSON only:
 {
   "lang": "en" or "ta",
   "mode": "chat" | "verse" | "qa" | "topical" | "parable" | "character",
-  "response": "your formatted answer here"
+  "response": "your formatted answer here with blank lines between titles"
 }`;
 }
 
