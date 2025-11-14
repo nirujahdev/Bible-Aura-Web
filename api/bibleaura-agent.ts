@@ -197,8 +197,20 @@ async function retrieveBibleContext(
   }
 }
 
+// Extract verse references from context
+function extractVerseReferences(context: string): string[] {
+  // Pattern to match Bible verse references: "Book Chapter:Verse" or "Book Chapter:Verse-Verse"
+  const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/g;
+  const matches = context.match(versePattern);
+  return matches ? [...new Set(matches)] : []; // Remove duplicates
+}
+
 // Node 2: Meta-Agent
-function getMetaAgentPrompt(ragContext: string, userQuery: string): string {
+function getMetaAgentPrompt(ragContext: string, userQuery: string, availableVerses: string[]): string {
+  const versesList = availableVerses.length > 0 
+    ? `\n\nAvailable verse references in context:\n${availableVerses.slice(0, 10).join(', ')}`
+    : '\n\nIMPORTANT: You must find and include at least one Bible verse reference from the context above.';
+
   return `You are the Bible Aura Meta-Agent.
 
 Your responsibilities:
@@ -211,7 +223,11 @@ Your responsibilities:
    - topical → topic overview (definition, scriptures, application)
    - qa → short Q&A format (max 50 words)
 3. Use the Bible context and web sources provided. NEVER hallucinate verses. Only reference verses that exist in the context.
-4. Strict formatting rules:
+4. MANDATORY: Every response MUST include at least ONE Bible verse reference (e.g., "John 3:16", "Romans 8:28", "Psalm 23:1"). 
+   - If the context contains verse references, use them.
+   - Format verse references clearly, e.g., "As written in John 3:16..." or "Scripture reference: Romans 8:28"
+   - Include the verse reference naturally in your response.
+5. Strict formatting rules:
    - Use ✦ for main title (add a blank line before and after each title)
    - Use ↗ for section headings (add a blank line before each heading)
    - Use • for bullet points
@@ -219,10 +235,10 @@ Your responsibilities:
    - Never use markdown (#, *, **, etc.)
    - Never use code blocks or backticks
    - Format titles with blank lines: \n\n✦ Title\n\n
-5. Produce a clean final answer with proper spacing between titles and sections.
+6. Produce a clean final answer with proper spacing between titles and sections.
 
 Bible Context & Web Sources:
-${ragContext}
+${ragContext}${versesList}
 
 User Query: ${userQuery}
 
@@ -230,7 +246,7 @@ Return JSON only:
 {
   "lang": "en" or "ta",
   "mode": "chat" | "verse" | "qa" | "topical" | "parable" | "character",
-  "response": "your formatted answer here with blank lines between titles"
+  "response": "your formatted answer here with blank lines between titles. MUST include at least one verse reference."
 }`;
 }
 
@@ -239,14 +255,16 @@ async function runMetaAgent(
   client: OpenAI
 ): Promise<z.infer<typeof MetaAgentResponseSchema>> {
   try {
-    const prompt = getMetaAgentPrompt(ragResult.context, ragResult.query);
+    // Extract verse references from context
+    const availableVerses = extractVerseReferences(ragResult.context);
+    const prompt = getMetaAgentPrompt(ragResult.context, ragResult.query, availableVerses);
 
     const completion = await client.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
-          content: "You are the Bible Aura Meta-Agent. Always return valid JSON matching the required schema."
+          content: "You are the Bible Aura Meta-Agent. Always return valid JSON matching the required schema. Every response MUST include at least one Bible verse reference."
         },
         {
           role: "user",
@@ -278,13 +296,30 @@ async function runMetaAgent(
       }
     }
 
-    return MetaAgentResponseSchema.parse(parsedResponse);
+    const validated = MetaAgentResponseSchema.parse(parsedResponse);
+    
+    // Verify that response contains at least one verse reference
+    const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/;
+    if (!versePattern.test(validated.response)) {
+      // If no verse found, try to add one from available verses or add a fallback
+      if (availableVerses.length > 0) {
+        const verseToAdd = availableVerses[0];
+        validated.response = `${validated.response}\n\nScripture reference: ${verseToAdd}`;
+      } else {
+        // Fallback: Add a general verse reference if none found
+        // This is a last resort - ideally the agent should find one
+        console.warn("[Meta-Agent] No verse reference found in response, adding fallback");
+        validated.response = `${validated.response}\n\nScripture reference: Please refer to the Bible context provided above.`;
+      }
+    }
+
+    return validated;
   } catch (error: any) {
     console.error("[Meta-Agent] Error:", error.message);
     return {
       lang: ragResult.lang,
       mode: "chat",
-      response: "I apologize, but I encountered an error processing your request. Please try again."
+      response: "I apologize, but I encountered an error processing your request. Please try again. Scripture reference: John 3:16"
     };
   }
 }
