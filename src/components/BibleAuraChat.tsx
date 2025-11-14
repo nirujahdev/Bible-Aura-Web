@@ -30,7 +30,9 @@ import {
   ThumbsDown,
   Flag,
   Copy,
-  Share2
+  Share2,
+  Menu,
+  MoreVertical
 } from 'lucide-react';
 import {
   Select,
@@ -697,6 +699,41 @@ export function BibleAuraChat() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full">
+        {/* Mobile Header */}
+        <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-40 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-3">
+            {/* Left - Hamburger Menu */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileHistory(true)}
+              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
+            >
+              <Menu className="h-5 w-5 text-gray-600" />
+            </Button>
+            
+            {/* Center - Logo */}
+            <div className="flex flex-col items-center justify-center leading-tight">
+              <div className="flex items-center gap-2">
+                <span className="text-orange-500 text-xl font-semibold drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">✦</span>
+                <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
+              </div>
+              <span className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
+                Bible AI Assistance
+              </span>
+            </div>
+            
+            {/* Right - Three Dots Menu */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
+            >
+              <MoreVertical className="h-5 w-5 text-gray-600" />
+            </Button>
+          </div>
+        </div>
+
         {/* Header - Desktop Only */}
         <div className="hidden lg:block bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -724,14 +761,14 @@ export function BibleAuraChat() {
         <ScrollArea className="flex-1 min-h-0 overflow-auto px-2 md:px-4 py-2 md:py-6">
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-2 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center">
-                <div className="inline-block mb-2 md:mb-4">
-                  <span className="text-xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
+              <div className="text-center py-4 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="inline-block mb-3 md:mb-4">
+                  <span className="text-2xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
                 </div>
-                <h2 className="text-[11px] md:text-base font-bold text-gray-800 mb-1 md:mb-2 whitespace-nowrap">
+                <h2 className="text-sm md:text-base font-bold text-gray-800 mb-2 md:mb-2 whitespace-nowrap">
                   How can I assist you from the Bible?
                 </h2>
-                <p className="text-[9px] md:text-sm text-gray-600 whitespace-nowrap">
+                <p className="text-xs md:text-sm text-gray-600 whitespace-nowrap">
                   Ask me anything about Scripture and I'll provide biblical insights
                 </p>
               </div>
@@ -1034,56 +1071,43 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area - Fixed at bottom */}
-        <div className="bg-transparent border-t border-gray-100 px-2 md:px-4 py-2 md:py-3 flex-shrink-0">
+        <div className="bg-white border-t border-gray-200 px-3 md:px-4 py-3 md:py-4 flex-shrink-0 safe-area-bottom">
           <div className="max-w-3xl mx-auto">
-            {/* Message Input - All controls inside */}
-            <div className="relative">
-              <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
-                <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2.5">
-                  {/* History Button (Mobile) */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowMobileHistory(true);
-                    }}
-                     className="lg:hidden flex-shrink-0 h-7 w-7 md:h-8 md:w-8 p-0 hover:bg-gray-100/50"
-                  >
-                    <History className="h-4 w-4 text-gray-500" />
-                  </Button>
-                  
-                  {/* Mode Selector */}
-                  <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                     <SelectTrigger className="w-28 md:w-36 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
-                      <div className="flex items-center gap-1.5">
-                        {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
-                        <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(CHAT_MODES).map(([key, mode]) => (
-                        <SelectItem key={key} value={key}>
-                          <div className="flex items-center gap-2">
-                            {React.createElement(mode.icon, { className: "h-3 w-3" })}
-                            {mode.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {/* Mobile: Redesigned Input Bar */}
+            <div className="lg:hidden">
+              <div className="bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="flex items-end gap-2 p-2">
+                  {/* Mode and Language - Compact Row */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
+                      <SelectTrigger className="w-24 h-8 text-[10px] border-0 bg-white hover:bg-gray-100 focus:ring-0 shadow-sm rounded-lg">
+                        <div className="flex items-center gap-1">
+                          {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
+                          <span className="truncate text-[10px]">{CHAT_MODES[currentMode]?.name}</span>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center gap-2">
+                              {React.createElement(mode.icon, { className: "h-3 w-3" })}
+                              {mode.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  {/* Language Selector */}
-                  <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                     <SelectTrigger className="w-20 md:w-24 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="english">English</SelectItem>
-                      <SelectItem value="tamil">Tamil</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
+                      <SelectTrigger className="w-18 h-8 text-[10px] border-0 bg-white hover:bg-gray-100 focus:ring-0 shadow-sm rounded-lg min-w-[60px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="tamil">Tamil</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   
                   {/* Text Input */}
                   <Textarea
@@ -1092,7 +1116,7 @@ export function BibleAuraChat() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything about bible"
-                     className="flex-1 min-h-[20px] md:min-h-[24px] max-h-[120px] md:max-h-[200px] py-1 md:py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-xs md:text-sm bg-transparent placeholder:text-gray-400 outline-none"
+                    className="flex-1 min-h-[36px] max-h-[100px] py-2 px-3 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-white rounded-lg placeholder:text-gray-400 outline-none"
                     disabled={isLoading}
                     rows={1}
                   />
@@ -1102,17 +1126,83 @@ export function BibleAuraChat() {
                     onClick={() => handleSendMessage()}
                     disabled={isLoading || !input.trim()}
                     size="icon"
-                     className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex-shrink-0"
+                    className="h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex-shrink-0 mb-0.5"
                   >
                     <Send className="h-4 w-4 text-white" />
                   </Button>
                 </div>
               </div>
-              
               {/* Disclaimer */}
-               <p className="text-[8px] md:text-xs text-gray-500 text-center mt-0.5 md:mt-2">
+              <p className="text-[8px] text-gray-500 text-center mt-1.5">
                 By using bible aura your are agree with our polices
               </p>
+            </div>
+
+            {/* Desktop: Original Input Bar */}
+            <div className="hidden lg:block">
+              <div className="relative">
+                <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
+                  <div className="flex items-center gap-2 px-3 py-2.5">
+                    {/* Mode Selector */}
+                    <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
+                      <SelectTrigger className="w-36 h-8 text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                        <div className="flex items-center gap-1.5">
+                          {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
+                          <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                          <SelectItem key={key} value={key}>
+                            <div className="flex items-center gap-2">
+                              {React.createElement(mode.icon, { className: "h-3 w-3" })}
+                              {mode.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Language Selector */}
+                    <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
+                      <SelectTrigger className="w-24 h-8 text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="tamil">Tamil</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Text Input */}
+                    <Textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask anything about bible"
+                      className="flex-1 min-h-[24px] max-h-[200px] py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400 outline-none"
+                      disabled={isLoading}
+                      rows={1}
+                    />
+                    
+                    {/* Send Button */}
+                    <Button
+                      onClick={() => handleSendMessage()}
+                      disabled={isLoading || !input.trim()}
+                      size="icon"
+                      className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    >
+                      <Send className="h-4 w-4 text-white" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Disclaimer */}
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  By using bible aura your are agree with our polices
+                </p>
+              </div>
             </div>
           </div>
         </div>
