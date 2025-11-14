@@ -71,7 +71,13 @@ function resolveChatKitConfig(): ChatKitConfig {
 function setCORSHeaders(res: VercelResponse, origin?: string, allowedOrigin: string = DEFAULT_ALLOWED_ORIGIN) {
   // Security: Only allow requests from the configured origin or localhost in development
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const isAllowedOrigin = origin === allowedOrigin || 
+  
+  // Support both www and non-www versions
+  const normalizedAllowedOrigin = allowedOrigin.replace(/^https?:\/\/(www\.)?/, 'https://');
+  const normalizedOrigin = origin?.replace(/^https?:\/\/(www\.)?/, 'https://');
+  
+  const isAllowedOrigin = normalizedOrigin === normalizedAllowedOrigin || 
+                          origin === allowedOrigin ||
                           (isDevelopment && origin && (origin.includes('localhost') || origin.includes('127.0.0.1')));
   
   if (isAllowedOrigin && origin) {
@@ -85,6 +91,16 @@ function setCORSHeaders(res: VercelResponse, origin?: string, allowedOrigin: str
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  } else {
+    // Log CORS rejection for debugging
+    if (isDevelopment) {
+      console.warn('[CORS] Request rejected:', {
+        origin,
+        allowedOrigin,
+        normalizedOrigin,
+        normalizedAllowedOrigin
+      });
+    }
   }
 }
 
@@ -114,9 +130,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here' || apiKey.trim() === '') {
       console.error('[Security] OpenAI API key not configured or invalid');
+      console.error('[ChatKit] Environment check:', {
+        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+        hasWorkflowId: !!process.env.CHATKIT_WORKFLOW_ID,
+        hasVersion: !!process.env.CHATKIT_WORKFLOW_VERSION,
+        workflowId: process.env.CHATKIT_WORKFLOW_ID?.substring(0, 8) + '...' || 'MISSING'
+      });
       return res.status(500).json({
         error: 'Service unavailable',
-        message: 'API service is not configured'
+        message: 'API service is not configured. Please set OPENAI_API_KEY in Vercel environment variables.'
       });
     }
 
