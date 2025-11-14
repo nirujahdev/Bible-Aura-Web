@@ -1,5 +1,5 @@
 // ChatKit Client Setup for Bible Aura
-// Auto-detecting workflow/direct API with fallback support
+// REQUIRES OpenAI Workflow/Agents - No direct API fallback
 
 // Helper to safely read environment variables
 const getEnv = (key: string, fallback = ''): string => {
@@ -38,7 +38,7 @@ export interface ChatKitRequest {
 
 /**
  * Send a message to Bible Aura AI
- * Auto-detects and uses the best available method (workflow or direct API)
+ * REQUIRES ChatKit Workflow - All requests go through OpenAI Workflow/Agents
  * @param message - The user's message to send
  * @returns Promise with the ChatKit response containing text, mode, and language
  */
@@ -48,114 +48,69 @@ export async function sendBibleAuraMessage(message: string): Promise<ChatKitResp
     throw new Error('Message is required and must be a non-empty string');
   }
 
-  console.log('[Bible Aura AI] Processing message...');
+  console.log('[Bible Aura AI] Processing message through ChatKit Workflow...');
 
-  // Try workflow API first (if available)
+  // Use the same origin to avoid CORS issues
+  const apiUrl = `${window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`;
+
+  console.log('[Bible Aura AI] Calling ChatKit Workflow API:', apiUrl);
+
   try {
-    // Use the same origin to avoid CORS issues
-    const apiUrl = `${window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`;
-
-    console.log('[Bible Aura AI] Trying workflow API:', apiUrl);
-
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: message.trim() } as ChatKitRequest),
     });
 
-    if (response.ok) {
-      const data: ChatKitResponse = await response.json();
-      if (data.text && typeof data.text === 'string') {
-        console.log('[Bible Aura AI] ✓ Workflow API success');
-        return data;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || errorData.error || `Workflow API error: ${response.status}`;
+      
+      console.error('[Bible Aura AI] ❌ Workflow API failed:', errorMessage);
+      
+      // Provide helpful error messages
+      if (response.status === 500 && errorMessage.includes('workflow ID')) {
+        throw new Error(
+          '❌ ChatKit Workflow not configured.\n\n' +
+          'Please ensure CHATKIT_WORKFLOW_ID is set in your Vercel environment variables.\n\n' +
+          'Contact your administrator to configure the workflow.'
+        );
       }
+      
+      if (response.status === 500 && errorMessage.includes('API key')) {
+        throw new Error(
+          '❌ OpenAI API key not configured on server.\n\n' +
+          'Please ensure OPENAI_API_KEY is set in your Vercel environment variables.'
+        );
+      }
+      
+      throw new Error(`Workflow API error: ${errorMessage}`);
     }
 
-    console.log('[Bible Aura AI] Workflow API failed, using direct OpenAI...');
-  } catch (workflowError) {
-    console.log('[Bible Aura AI] Workflow error, using fallback...');
-  }
+    const data: ChatKitResponse = await response.json();
+    
+    if (!data || !data.text || typeof data.text !== 'string') {
+      throw new Error('Invalid response from ChatKit Workflow. Expected text field in response.');
+    }
 
-  // Fallback: Direct OpenAI API
-  return await callDirectOpenAI(message);
+    console.log('[Bible Aura AI] ✓ ChatKit Workflow success');
+    return data;
+
+  } catch (error: any) {
+    console.error('[Bible Aura AI] ❌ ChatKit Workflow error:', error);
+    
+    // Re-throw with better error message if it's not already formatted
+    if (error.message && !error.message.includes('❌')) {
+      throw new Error(`ChatKit Workflow failed: ${error.message}`);
+    }
+    
+    throw error;
+  }
 }
 
-/**
- * Direct OpenAI API call (fallback)
- */
-async function callDirectOpenAI(message: string): Promise<ChatKitResponse> {
-  const apiKey = getEnv('VITE_OPENAI_API_KEY');
-  
-  if (!apiKey || apiKey === 'your_openai_api_key_here') {
-    throw new Error(
-      '❌ OpenAI API key not configured.\n\n' +
-      'Please add to your .env.local file:\n' +
-      'VITE_OPENAI_API_KEY=sk-your-key-here\n\n' +
-      'Get your key from: https://platform.openai.com/api-keys'
-    );
-  }
-
-  console.log('[Bible Aura AI] Calling OpenAI directly...');
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are ✦Bible Aura AI, a knowledgeable biblical assistant.
-
-Provide accurate biblical interpretation, analysis, and guidance.
-Include relevant scripture references.
-Be respectful, clear, and encouraging.
-Use bold text (**text**) for emphasis instead of headers.
-Do NOT use # symbols or markdown headers in your response.`
-        },
-        { role: 'user', content: message.trim() }
-      ],
-      temperature: 0.7,
-      max_tokens: 800,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    if (response.status === 401) throw new Error('❌ Invalid API key');
-    if (response.status === 429) throw new Error('⏰ Rate limit reached. Try again soon.');
-    throw new Error(errorData.error?.message || `API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  let text = data.choices[0]?.message?.content || '';
-
-  if (!text) throw new Error('No response from AI');
-
-  // Remove markdown headers (# symbols) from response
-  text = text
-    .replace(/^#{1,6}\s+/gm, '') // Remove # at start of lines
-    .replace(/\n#{1,6}\s+/g, '\n') // Remove # after newlines
-    .trim();
-
-  console.log('[Bible Aura AI] ✓ Direct API success');
-
-  // Auto-detect mode
-  const lower = message.toLowerCase();
-  let mode: ChatKitResponse['mode'] = 'chat';
-  if (lower.includes('verse') || lower.match(/\d+:\d+/)) mode = 'verse';
-  else if (lower.includes('parable')) mode = 'parable';
-  else if (lower.match(/who (was|is)/)) mode = 'character';
-  else if (lower.includes('what does the bible say')) mode = 'topical';
-  else if (lower.match(/^(what|who|when|where|why|how)\s/i)) mode = 'qa';
-
-  const lang: 'en' | 'ta' = message.match(/[\u0B80-\u0BFF]/) ? 'ta' : 'en';
-
-  return { text, mode, lang };
-}
+// Direct OpenAI API fallback has been removed
+// All AI chat requests MUST go through ChatKit Workflow
+// This ensures consistent behavior and proper workflow execution
 
 /**
  * Check if ChatKit API is available
