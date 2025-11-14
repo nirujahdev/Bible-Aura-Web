@@ -100,6 +100,10 @@ export async function sendBibleAuraMessage(message: string): Promise<AgentSDKRes
     
     // Re-throw with better error message if it's not already formatted
     if (error.message && !error.message.includes('❌')) {
+      // Don't wrap if it's already a network error
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        throw new Error(`Network error: Unable to connect to Agent SDK API. Please check your connection.`);
+      }
       throw new Error(`Agent SDK failed: ${error.message}`);
     }
     
