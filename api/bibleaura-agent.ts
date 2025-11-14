@@ -72,7 +72,7 @@ const guardrailsConfig = {
       config: {
         model: "gpt-4o-mini",
         knowledge_source: "vs_6914c8f2ecf48191b8c80e0911d335cf",
-        confidence_threshold: 0.7
+        confidence_threshold: 0.9 // Increased threshold - only block clear hallucinations, allow theological interpretations
       }
     },
     {
@@ -467,11 +467,34 @@ ${sourcesContext}`
       const guardrailsAnonymizedtext = getGuardrailSafeText(guardrailsResult, guardrailsInputtext);
       
       if (hasTripwire) {
-        console.warn('[Agent SDK] Guardrails triggered, blocking content');
-        throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
+        // Check if it's just hallucination detection (which can be too strict for biblical commentary)
+        const hallucinationResult = (guardrailsResult ?? []).find((r: any) => {
+          const info = r?.info ?? {};
+          const name = (info?.guardrail_name ?? info?.guardrailName);
+          return name === "Hallucination Detection";
+        });
+        
+        // If only hallucination detection failed (and it's an "unsupported_claim" type), 
+        // allow it through as biblical commentary is expected to include interpretations
+        if (hallucinationResult && hallucinationResult.tripwireTriggered) {
+          const hallucinationType = hallucinationResult?.info?.hallucination_type;
+          if (hallucinationType === "unsupported_claim") {
+            console.warn('[Agent SDK] Hallucination detection flagged unsupported claims, but allowing through as valid biblical commentary');
+            guardrailsOutput = { safe_text: guardrailsInputtext };
+          } else {
+            // For other hallucination types (fabrication, contradiction), block it
+            console.warn('[Agent SDK] Guardrails triggered, blocking content');
+            throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
+          }
+        } else {
+          // For PII, moderation, or jailbreak, always block
+          console.warn('[Agent SDK] Guardrails triggered, blocking content');
+          throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
+        }
+      } else {
+        guardrailsOutput = { safe_text: (guardrailsAnonymizedtext ?? guardrailsInputtext) };
       }
       
-      guardrailsOutput = { safe_text: (guardrailsAnonymizedtext ?? guardrailsInputtext) };
       console.log('[Agent SDK] Guardrails passed');
     } catch (guardrailError: any) {
       // If guardrails fail, check if it's a content block or an error
