@@ -108,25 +108,35 @@ export default function ReadingPlan() {
 
   return (
     <MobileOptimizedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-        <div className={`container mx-auto ${isMobile ? 'px-3 py-3' : 'px-6 py-4 max-w-7xl'}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 ${isMobile ? 'pb-4' : ''}`}>
+        <div className={`container mx-auto ${isMobile ? 'px-3 py-3' : 'px-4 md:px-6 py-4 max-w-7xl'}`}>
           {!plan ? (
             /* Show Wizard if no plan exists */
             <div className="max-w-2xl mx-auto">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Your Reading Plan</h2>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center mb-6"
+              >
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Create Your Reading Plan</h2>
                 <p className="text-sm text-gray-600">Answer 5 simple questions to get started</p>
-              </div>
+              </motion.div>
               <ReadingPlanWizard onComplete={handleWizardComplete} />
             </div>
           ) : (
             /* Show Plan Display if plan exists */
-            <ReadingPlanDisplay
-              plan={plan}
-              onToggle={handleToggleDay}
-              onReset={handleResetPlan}
-              stats={stats}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ReadingPlanDisplay
+                plan={plan}
+                onToggle={handleToggleDay}
+                onReset={handleResetPlan}
+                stats={stats}
+              />
+            </motion.div>
           )}
         </div>
       </div>
