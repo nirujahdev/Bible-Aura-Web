@@ -595,9 +595,9 @@ export function BibleAuraChat() {
   };
 
   return (
-    <div className="flex h-full bg-gradient-to-br from-gray-50 to-white">
+    <div className="flex h-full bg-gradient-to-br from-gray-50 to-white overflow-hidden">
       {/* Sidebar - Chat History */}
-      <div className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col">
+      <div className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col min-h-0 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
           <Button
             onClick={createNewConversation}
@@ -696,9 +696,9 @@ export function BibleAuraChat() {
       )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Header - Desktop Only */}
-        <div className="hidden lg:block bg-white border-b border-gray-100 px-4 py-3">
+        <div className="hidden lg:block bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-orange-500 text-2xl drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">✦</span>
@@ -720,21 +720,19 @@ export function BibleAuraChat() {
         </div>
 
 
-        {/* Messages Area */}
-        <ScrollArea className="flex-1 px-4 py-6">
+        {/* Messages Area - Scrollable */}
+        <ScrollArea className="flex-1 min-h-0 px-2 md:px-4 py-3 md:py-6">
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-12 px-4">
-                <div className="inline-block mb-4">
-                  <span className="text-3xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
+              <div className="text-center py-4 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center min-h-full">
+                <div className="inline-block mb-2 md:mb-4">
+                  <span className="text-xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
                 </div>
-                <h2 className="text-sm md:text-base font-bold text-gray-800 mb-2 max-w-xs md:max-w-md mx-auto leading-tight px-2">
-                  <span className="block md:inline">How can I assist you</span>
-                  <span className="block md:inline"> from the Bible?</span>
+                <h2 className="text-[11px] md:text-base font-bold text-gray-800 mb-1 md:mb-2 whitespace-nowrap">
+                  How can I assist you from the Bible?
                 </h2>
-                <p className="text-xs md:text-sm text-gray-600 mb-4 max-w-xs md:max-w-md mx-auto leading-relaxed px-2">
-                  <span className="block md:inline">Ask me anything about Scripture</span>
-                  <span className="block md:inline"> and I'll provide biblical insights</span>
+                <p className="text-[9px] md:text-sm text-gray-600 whitespace-nowrap">
+                  Ask me anything about Scripture and I'll provide biblical insights
                 </p>
               </div>
             ) : (
@@ -1035,8 +1033,8 @@ export function BibleAuraChat() {
           </div>
         </ScrollArea>
 
-        {/* Input Area */}
-        <div className="bg-transparent border-t border-gray-100 px-4 py-6">
+        {/* Input Area - Fixed at bottom */}
+        <div className="bg-transparent border-t border-gray-100 px-2 md:px-4 py-3 md:py-4 flex-shrink-0">
           <div className="max-w-3xl mx-auto">
             {/* Message Input - All controls inside */}
             <div className="relative">
@@ -1112,7 +1110,7 @@ export function BibleAuraChat() {
               </div>
               
               {/* Disclaimer */}
-              <p className="text-xs text-gray-500 text-center mt-2">
+              <p className="text-[9px] md:text-xs text-gray-500 text-center mt-1 md:mt-2">
                 By using bible aura your are agree with our polices
               </p>
             </div>
