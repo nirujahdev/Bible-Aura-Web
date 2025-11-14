@@ -1215,6 +1215,158 @@ export function BibleAuraChat() {
         </div>
       </div>
 
+      {/* Mobile Navigation Menu */}
+      {showMobileNavMenu && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setShowMobileNavMenu(false)}>
+          <div className="fixed left-0 top-0 bottom-0 z-50 bg-white shadow-2xl w-72 max-w-[85vw] transform transition-transform duration-300 translate-x-0" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500/10 via-orange-400/10 to-amber-400/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-semibold text-orange-500">✦</span>
+                  <div className="leading-tight">
+                    <p className="text-sm font-semibold text-gray-900">Bible Aura</p>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
+                      Bible AI Assistance
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMobileNavMenu(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4 text-gray-500" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Navigation Items */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <nav className="space-y-2">
+                {[
+                  { name: 'AI Chat', href: '/dashboard', icon: 'star', description: 'Biblical AI Assistant' },
+                  { name: 'Bible', href: '/bible', icon: 'bible', description: 'Read Scripture' },
+                  { name: 'Reading Plan', href: '/reading-plan', icon: 'favorites', description: 'Bible Reading Planner' },
+                  { name: 'Sermons', href: '/sermons', icon: 'sermon', description: 'Sermon Library' },
+                  { name: 'Favorites', href: '/favorites', icon: 'favorites', description: 'Saved Content' },
+                  { name: 'Profile', href: '/profile', icon: 'profile', description: 'Account & Settings' }
+                ].map((item) => {
+                  const isActive = location.pathname === item.href || (item.href === '/dashboard' && ['/', '/dashboard', '/app', '/ai-chat'].includes(location.pathname));
+                  const renderIcon = (icon: string) => {
+                    switch (icon) {
+                      case 'star':
+                        return <span className="text-base leading-none font-semibold">✦</span>;
+                      case 'bible':
+                        return <BookOpen className="h-5 w-5" />;
+                      case 'sermon':
+                        return <PenTool className="h-5 w-5" />;
+                      case 'favorites':
+                        return <Heart className="h-5 w-5" />;
+                      case 'profile':
+                        return <User className="h-5 w-5" />;
+                      default:
+                        return null;
+                    }
+                  };
+                  
+                  return (
+                    <button
+                      key={item.name}
+                      type="button"
+                      onClick={() => {
+                        navigate(item.href);
+                        setShowMobileNavMenu(false);
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-all duration-200 ${
+                        isActive 
+                          ? "bg-orange-50 border-orange-200 text-orange-600 shadow-sm"
+                          : "border-transparent hover:bg-gray-50 text-gray-700"
+                      }`}
+                    >
+                      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
+                        isActive ? "bg-white text-orange-500" : "bg-orange-50 text-orange-500"
+                      }`}>
+                        {renderIcon(item.icon)}
+                      </span>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{item.name}</div>
+                        <div className="text-xs text-gray-500">{item.description}</div>
+                      </div>
+                      {isActive && (
+                        <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Footer - Sign Out */}
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={async () => {
+                  await signOut();
+                  setShowMobileNavMenu(false);
+                }}
+                className="flex items-center gap-3 w-full p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                  <Trash2 className="h-5 w-5" />
+                </span>
+                <span className="font-medium text-sm">Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile More Menu (Page Actions) */}
+      {showMobileMoreMenu && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setShowMobileMoreMenu(false)}>
+          <div className="fixed right-0 top-0 bottom-0 z-50 bg-white shadow-2xl w-72 max-w-[85vw] transform transition-transform duration-300 translate-x-0" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">Chat Actions</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMobileMoreMenu(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4 text-gray-500" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 space-y-2">
+              {[
+                { name: 'Chat History', icon: History, action: () => { setShowMobileHistory(true); setShowMobileMoreMenu(false); }, description: 'View past conversations' },
+                { name: 'New Chat', icon: Plus, action: () => { createNewConversation(); setShowMobileMoreMenu(false); }, description: 'Start fresh conversation' },
+                { name: 'Clear Chat', icon: Trash2, action: () => { createNewConversation(); setShowMobileMoreMenu(false); }, description: 'Clear current chat' },
+              ].map((action) => (
+                <button
+                  key={action.name}
+                  onClick={action.action}
+                  className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-600">
+                    <action.icon className="h-5 w-5" />
+                  </span>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm text-gray-900">{action.name}</div>
+                    <div className="text-xs text-gray-500">{action.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Report Dialog */}
       <Dialog open={reportDialogOpen} onOpenChange={(open) => {
         setReportDialogOpen(open);
