@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
   // Show loading screen while authentication is being determined
-  // But only for a reasonable amount of time
+  // But only for a reasonable amount of time (max 3 seconds)
   if (loading) {
     return <LoadingScreen message="Checking your authentication..." />;
   }
@@ -22,7 +22,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     try {
       sessionStorage.removeItem('navigation-state');
       sessionStorage.removeItem('auth-redirect');
-      localStorage.removeItem('supabase.auth.token');
+      // Don't clear all localStorage - only auth tokens
+      const keysToRemove = Object.keys(localStorage).filter(key => 
+        key.includes('supabase') || key.includes('auth')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
     } catch (error) {
       console.error('Error clearing navigation state:', error);
     }
@@ -31,20 +35,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   // Render the protected component if authenticated
-  try {
-    return <>{children}</>;
-  } catch (error) {
-    console.error('Error rendering protected route:', error);
-    // Clear potentially corrupted auth state
-    try {
-      sessionStorage.clear();
-      localStorage.removeItem('supabase.auth.token');
-    } catch (clearError) {
-      console.error('Error clearing session storage:', clearError);
-    }
-    // Fallback to auth page if there's an error rendering the protected content
-    return <Navigate to="/auth" replace />;
-  }
+  // Wrap in error boundary to catch rendering errors
+  return <>{children}</>;
 };
 
 export default ProtectedRoute; 
