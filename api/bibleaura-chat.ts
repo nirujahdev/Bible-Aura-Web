@@ -315,25 +315,45 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, con
 
   if (!initialResponse.ok) {
     const errorData = await initialResponse.json().catch(() => ({}));
-    const errorMessage = errorData.error?.message || errorData.message || `Workflow API error: ${initialResponse.status}`;
+    const errorMessage = errorData.error?.message || errorData.message || errorData.error || `Workflow API error: ${initialResponse.status}`;
     
-    // Enhanced error logging for debugging
+    // Enhanced error logging for debugging (always log in production for troubleshooting)
     console.error(`[ChatKit] Workflow execution failed:`, {
       status: initialResponse.status,
       statusText: initialResponse.statusText,
       error: errorMessage,
-      errorData: process.env.NODE_ENV === 'development' ? errorData : undefined,
-      workflowId: process.env.NODE_ENV === 'development' ? config.workflowId : config.workflowId.substring(0, 8) + '...',
+      errorType: errorData.error?.type || errorData.type,
+      errorCode: errorData.error?.code || errorData.code,
+      errorData: process.env.NODE_ENV === 'development' ? errorData : {
+        error: errorData.error?.message || errorData.message,
+        type: errorData.error?.type || errorData.type,
+        code: errorData.error?.code || errorData.code
+      },
+      workflowId: config.workflowId.substring(0, 8) + '...',
       version: versionNumber,
       endpoint: process.env.NODE_ENV === 'development' ? workflowEndpoint : 'hidden'
     });
     
-    // Provide more specific error messages for version-related issues
+    // Provide more specific error messages
     if (errorMessage.toLowerCase().includes('version') || errorMessage.toLowerCase().includes('not found')) {
       throw new Error(
         `Workflow version ${versionNumber} error: ${errorMessage}. ` +
-        `Please verify that version ${versionNumber} exists for workflow ${config.workflowId}. ` +
+        `Please verify that version ${versionNumber} exists for workflow ${config.workflowId.substring(0, 8)}... ` +
         `You may need to check your workflow configuration or use version 1.`
+      );
+    }
+    
+    if (errorMessage.toLowerCase().includes('unauthorized') || errorMessage.toLowerCase().includes('authentication')) {
+      throw new Error(
+        `Authentication failed: ${errorMessage}. ` +
+        `Please verify your OPENAI_API_KEY and CHATKIT_DOMAIN_KEY are correct.`
+      );
+    }
+    
+    if (errorMessage.toLowerCase().includes('not found') || errorMessage.toLowerCase().includes('404')) {
+      throw new Error(
+        `Workflow not found: ${errorMessage}. ` +
+        `Please verify your CHATKIT_WORKFLOW_ID is correct.`
       );
     }
     
@@ -375,10 +395,35 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, con
   }
 
   if (currentRun.status === 'failed') {
-    throw new Error(currentRun.error || 'Workflow execution failed');
+    // Log detailed error information
+    const errorDetails = currentRun.error || currentRun.last_error || 'Unknown error';
+    console.error('[ChatKit] Workflow execution failed:', {
+      status: currentRun.status,
+      error: errorDetails,
+      runId: currentRun.run_id,
+      workflowId: config.workflowId.substring(0, 8) + '...',
+      version: versionNumber
+    });
+    
+    // Provide more specific error message
+    const errorMessage = typeof errorDetails === 'string' 
+      ? errorDetails 
+      : errorDetails?.message || errorDetails?.error || 'Workflow execution failed';
+    
+    throw new Error(`Workflow failed: ${errorMessage}`);
   }
 
-  throw new Error('Workflow execution timed out');
+  // Log timeout with details
+  console.error('[ChatKit] Workflow execution timed out:', {
+    status: currentRun.status,
+    attempts,
+    maxAttempts,
+    runId: currentRun.run_id,
+    workflowId: config.workflowId.substring(0, 8) + '...',
+    version: versionNumber
+  });
+
+  throw new Error('Workflow execution timed out. The workflow may be taking longer than expected.');
 }
 
 // Helper function to classify language using OpenAI API (fallback)
