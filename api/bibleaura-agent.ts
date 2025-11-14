@@ -458,8 +458,10 @@ ${sourcesContext}`
     let guardrailsOutput: { safe_text: string };
     
     try {
-      const guardrailsInputtext = workflow.input_as_text;
+      const guardrailsInputtext = agentResult.output_text; // Check the agent output, not the input
       const context = { guardrailLlm: client };
+      
+      console.log('[Agent SDK] Running guardrails on agent output...');
       const guardrailsResult = await runGuardrails(guardrailsInputtext, guardrailsConfig, context, true);
       const hasTripwire = guardrailsHasTripwire(guardrailsResult);
       const guardrailsAnonymizedtext = getGuardrailSafeText(guardrailsResult, guardrailsInputtext);
@@ -470,12 +472,17 @@ ${sourcesContext}`
       }
       
       guardrailsOutput = { safe_text: (guardrailsAnonymizedtext ?? guardrailsInputtext) };
+      console.log('[Agent SDK] Guardrails passed');
     } catch (guardrailError: any) {
       // If guardrails fail, check if it's a content block or an error
-      if (guardrailError.message.includes('Content blocked')) {
+      if (guardrailError.message && guardrailError.message.includes('Content blocked')) {
         throw guardrailError; // Re-throw content blocks
       }
       console.error('[Agent SDK] Guardrails execution error:', guardrailError.message);
+      console.error('[Agent SDK] Guardrails error details:', {
+        name: guardrailError?.name,
+        stack: guardrailError?.stack?.substring(0, 500)
+      });
       // If guardrails fail due to error, use the agent output directly
       guardrailsOutput = { safe_text: agentResult.output_text };
     }
@@ -583,7 +590,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Execute workflow
+    console.log('[Agent SDK] Starting workflow execution for message:', trimmedMessage.substring(0, 50));
+    
     const result = await runWorkflow({ input_as_text: trimmedMessage }, client);
+    
+    console.log('[Agent SDK] Workflow completed successfully:', {
+      hasText: !!result.text,
+      mode: result.mode,
+      lang: result.lang,
+      sourcesCount: result.sources?.length || 0
+    });
 
     // Return response
     return res.status(200).json({
@@ -598,10 +614,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Bible Aura Agent API Error:', error);
     console.error('Error details:', {
       message: error?.message,
-      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined,
+      stack: error?.stack,
       name: error?.name,
-      cause: error?.cause
+      cause: error?.cause,
+      type: typeof error,
+      constructor: error?.constructor?.name
     });
+    
+    // Log the full error object in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+    }
     
     let errorMessage = error?.message || 'Failed to process chat message';
     
