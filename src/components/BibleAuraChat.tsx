@@ -179,6 +179,7 @@ export function BibleAuraChat() {
   // Settings state
   const [currentMode, setCurrentMode] = useState<ChatMode>('verse-clean');
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
+  const [currentModel, setCurrentModel] = useState<'aura-1.0' | 'aura-1.0-thinking'>('aura-1.0');
   
   // Chat history state
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -390,7 +391,8 @@ export function BibleAuraChat() {
       
       const aiResponse = await sendBibleAuraMessage(userInput, {
         mode: apiMode,
-        language: apiLanguage
+        language: apiLanguage,
+        modelMode: currentModel
       });
       
       const aiMessage: Message = {
@@ -568,14 +570,37 @@ export function BibleAuraChat() {
               </div>
             </div>
             
-            <Button
-              onClick={createNewConversation}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 text-sm shadow-lg"
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Chat
-            </Button>
+            <div className="flex items-center gap-3">
+              {/* Model Selector */}
+              <Select value={currentModel} onValueChange={(value) => setCurrentModel(value as 'aura-1.0' | 'aura-1.0-thinking')}>
+                <SelectTrigger className="w-48 h-9 text-sm border-gray-200 bg-white hover:bg-gray-50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aura-1.0">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Aura 1.0</span>
+                      <span className="text-xs text-gray-500">Fast & Brief</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="aura-1.0-thinking">
+                    <div className="flex flex-col">
+                      <span className="font-medium">Aura 1.0 Thinking</span>
+                      <span className="text-xs text-gray-500">Deep Analysis</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button
+                onClick={createNewConversation}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 text-sm shadow-lg"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+            </div>
           </div>
         </div>
 

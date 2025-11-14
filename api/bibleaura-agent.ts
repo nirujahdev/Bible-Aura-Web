@@ -21,12 +21,12 @@ const responseCache = new Map<string, CachedResponse>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 100;
 
-function getCacheKey(message: string, mode?: string, language?: string): string {
-  return `${message.trim().toLowerCase()}|${mode || 'default'}|${language || 'default'}`;
+function getCacheKey(message: string, mode?: string, language?: string, modelMode?: string): string {
+  return `${message.trim().toLowerCase()}|${mode || 'default'}|${language || 'default'}|${modelMode || 'aura-1.0'}`;
 }
 
-function getCachedResponse(message: string, mode?: string, language?: string): CachedResponse | null {
-  const key = getCacheKey(message, mode, language);
+function getCachedResponse(message: string, mode?: string, language?: string, modelMode?: string): CachedResponse | null {
+  const key = getCacheKey(message, mode, language, modelMode);
   const cached = responseCache.get(key);
   
   if (!cached) return null;
@@ -44,7 +44,8 @@ function setCachedResponse(
   message: string,
   response: Omit<CachedResponse, 'timestamp'>,
   mode?: string,
-  language?: string
+  language?: string,
+  modelMode?: string
 ): void {
   // Clean up if cache is full
   if (responseCache.size >= MAX_CACHE_SIZE) {
@@ -54,7 +55,7 @@ function setCachedResponse(
     toRemove.forEach(([key]) => responseCache.delete(key));
   }
   
-  const key = getCacheKey(message, mode, language);
+  const key = getCacheKey(message, mode, language, modelMode);
   responseCache.set(key, {
     ...response,
     timestamp: Date.now()
@@ -70,7 +71,34 @@ const DEFAULT_ALLOWED_ORIGIN =
 // Vector Store IDs
 const ENGLISH_VECTOR_STORE = "vs_6914c8f2ecf48191b8c80e0911d335cf";
 const TAMIL_VECTOR_STORE = "vs_6914ce9d39b4819188024077258a0db3";
-const MAX_CHUNKS = 5;
+
+// Model Modes
+type ModelMode = 'aura-1.0' | 'aura-1.0-thinking';
+
+interface ModelConfig {
+  maxChunks: number;
+  maxTokens: number;
+  temperature: number;
+  topP: number;
+  isDeepAnalysis: boolean;
+}
+
+const MODEL_CONFIGS: Record<ModelMode, ModelConfig> = {
+  'aura-1.0': {
+    maxChunks: 5,
+    maxTokens: 1024, // Increased from 512
+    temperature: 0.3,
+    topP: 0.7,
+    isDeepAnalysis: false
+  },
+  'aura-1.0-thinking': {
+    maxChunks: 15, // Much more context
+    maxTokens: 2048, // Much longer responses
+    temperature: 0.4, // Slightly more creative
+    topP: 0.8,
+    isDeepAnalysis: true
+  }
+};
 
 // Types
 type Language = 'en' | 'ta';
@@ -193,17 +221,19 @@ async function searchWeb(query: string): Promise<Array<{ title: string; url: str
 async function retrieveBibleContext(
   userInput: string,
   client: OpenAI,
-  preferredLanguage?: "en" | "ta"
+  preferredLanguage?: "en" | "ta",
+  modelMode: ModelMode = 'aura-1.0'
 ): Promise<RAGResult> {
   const lang = preferredLanguage || detectLanguage(userInput);
   const vectorStoreId = lang === "en" ? ENGLISH_VECTOR_STORE : TAMIL_VECTOR_STORE;
+  const config = MODEL_CONFIGS[modelMode];
 
   try {
     // Parallel: Vector store search + Web search
     const [vectorSearchResults, webResults] = await Promise.all([
       client.vectorStores.search(vectorStoreId, {
         query: userInput,
-        max_num_results: MAX_CHUNKS
+        max_num_results: config.maxChunks
       }).catch(() => ({ data: [] })),
       searchWeb(userInput)
     ]);
@@ -224,8 +254,9 @@ async function retrieveBibleContext(
       snippet: result.snippet
     }));
 
-    // Combine all sources
-    const allSources = [...bibleSources, ...webSources].slice(0, MAX_CHUNKS + 3);
+    // Combine all sources (more for deep analysis mode)
+    const maxWebSources = config.isDeepAnalysis ? 5 : 3;
+    const allSources = [...bibleSources, ...webSources].slice(0, config.maxChunks + maxWebSources);
 
     // Build context: Bible chunks + Web snippets
     const bibleContext = vectorSearchResults.data
@@ -268,22 +299,27 @@ function extractVerseReferences(context: string): string[] {
 }
 
 // Node 2: Meta-Agent
-function getMetaAgentPrompt(ragContext: string, userQuery: string, availableVerses: string[]): string {
+function getMetaAgentPrompt(
+  ragContext: string, 
+  userQuery: string, 
+  availableVerses: string[],
+  isDeepAnalysis: boolean = false
+): string {
   const versesList = availableVerses.length > 0 
-    ? `\n\nAvailable verse references in context:\n${availableVerses.slice(0, 10).join(', ')}`
+    ? `\n\nAvailable verse references in context:\n${availableVerses.slice(0, 20).join(', ')}`
     : '\n\nIMPORTANT: You must find and include at least one Bible verse reference from the context above.';
 
-  return `You are the Bible Aura Meta-Agent.
+  const basePrompt = `You are the Bible Aura Meta-Agent.
 
 Your responsibilities:
 1. Detect language (English/Tamil) - respond in the same language as the user
 2. Detect user mode:
-   - chat → short conversational answer (max 60 words)
+   - chat → conversational answer (${isDeepAnalysis ? 'comprehensive, detailed' : 'brief but informative'})
    - verse → verse analysis format (structured explanation)
    - parable → parable explainer format (story, context, lesson)
    - character → character study (overview, timeline, lessons)
    - topical → topic overview (definition, scriptures, application)
-   - qa → short Q&A format (max 50 words)
+   - qa → Q&A format (${isDeepAnalysis ? 'detailed answer' : 'concise answer'})
 3. Use the Bible context and web sources provided. NEVER hallucinate verses. Only reference verses that exist in the context.
 4. MANDATORY: Every response MUST include at least ONE Bible verse reference (e.g., "John 3:16", "Romans 8:28", "Psalm 23:1"). 
    - If the context contains verse references, use them.
@@ -297,7 +333,20 @@ Your responsibilities:
    - Never use markdown (#, *, **, etc.)
    - Never use code blocks or backticks
    - Format titles with blank lines: \n\n✦ Title\n\n
-6. Produce a clean final answer with proper spacing between titles and sections.
+6. Produce a clean final answer with proper spacing between titles and sections.`;
+
+  const deepAnalysisInstructions = isDeepAnalysis ? `
+
+DEEP ANALYSIS MODE - Additional Instructions:
+- Provide comprehensive, detailed explanations
+- Include historical context, theological significance, and practical applications
+- Reference multiple verses when relevant
+- Explain connections between different passages
+- Provide deeper insights and interpretations
+- Be thorough but remain biblically accurate
+- Use all available context from the retrieved sources` : '';
+
+  return `${basePrompt}${deepAnalysisInstructions}
 
 Bible Context & Web Sources:
 ${ragContext}${versesList}
@@ -308,25 +357,33 @@ Return JSON only:
 {
   "lang": "en" or "ta",
   "mode": "chat" | "verse" | "qa" | "topical" | "parable" | "character",
-  "response": "your formatted answer here with blank lines between titles. MUST include at least one verse reference."
+  "response": "your formatted answer here with blank lines between titles. MUST include at least one verse reference. ${isDeepAnalysis ? 'Provide comprehensive, detailed analysis.' : ''}"
 }`;
 }
 
 async function runMetaAgent(
   ragResult: RAGResult,
-  client: OpenAI
+  client: OpenAI,
+  modelMode: ModelMode = 'aura-1.0'
 ): Promise<z.infer<typeof MetaAgentResponseSchema>> {
   try {
+    const config = MODEL_CONFIGS[modelMode];
+    
     // Extract verse references from context
     const availableVerses = extractVerseReferences(ragResult.context);
-    const prompt = getMetaAgentPrompt(ragResult.context, ragResult.query, availableVerses);
+    const prompt = getMetaAgentPrompt(
+      ragResult.context, 
+      ragResult.query, 
+      availableVerses,
+      config.isDeepAnalysis
+    );
 
     const completion = await client.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
-          content: "You are the Bible Aura Meta-Agent. Always return valid JSON matching the required schema. Every response MUST include at least one Bible verse reference."
+          content: `You are the Bible Aura Meta-Agent. Always return valid JSON matching the required schema. Every response MUST include at least one Bible verse reference. ${config.isDeepAnalysis ? 'Provide comprehensive, detailed analysis with deep theological insights.' : ''}`
         },
         {
           role: "user",
@@ -334,9 +391,9 @@ async function runMetaAgent(
         }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
-      top_p: 0.7,
-      max_tokens: 512,
+      temperature: config.temperature,
+      top_p: config.topP,
+      max_tokens: config.maxTokens,
       stream: false
     });
 
@@ -506,25 +563,28 @@ async function validateVerseReferences(
 async function runFastRAGPipeline(
   userInput: string,
   preferredMode?: string,
-  preferredLanguage?: string
+  preferredLanguage?: string,
+  modelMode: ModelMode = 'aura-1.0'
 ): Promise<AgentResponse> {
   const client = getOpenAIClient();
+  const config = MODEL_CONFIGS[modelMode];
 
   // Node 1: RAG Retriever
   const ragResult = await retrieveBibleContext(
     userInput,
     client,
-    preferredLanguage as "en" | "ta" | undefined
+    preferredLanguage as "en" | "ta" | undefined,
+    modelMode
   );
 
   // Node 2: Meta-Agent
-  const metaAgentResult = await runMetaAgent(ragResult, client);
+  const metaAgentResult = await runMetaAgent(ragResult, client, modelMode);
 
   // Node 3: Global Guardrails
   const safeText = await runGlobalGuardrails(
     metaAgentResult.response,
     client,
-    1000
+    config.isDeepAnalysis ? 2000 : 1000 // Longer timeout for deep analysis
   );
 
   const crossReferences = extractCrossReferences(ragResult.sources);
@@ -533,7 +593,7 @@ async function runFastRAGPipeline(
     text: safeText,
     mode: metaAgentResult.mode,
     lang: metaAgentResult.lang,
-    sources: ragResult.sources.slice(0, 5),
+    sources: ragResult.sources.slice(0, config.isDeepAnalysis ? 10 : 5),
     crossReferences: crossReferences
   };
 }
@@ -590,7 +650,7 @@ export default async function handler(
       return;
     }
 
-    const { message, mode: preferredMode, language: preferredLanguage } = req.body;
+    const { message, mode: preferredMode, language: preferredLanguage, modelMode } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       res.status(400).json({
@@ -601,15 +661,17 @@ export default async function handler(
     }
 
     const sanitizedMessage = message.trim().slice(0, 2000);
+    const selectedModelMode: ModelMode = (modelMode === 'aura-1.0-thinking' ? 'aura-1.0-thinking' : 'aura-1.0');
 
     console.log('[Bible Aura AI] Processing request:', {
       messageLength: sanitizedMessage.length,
       preferredMode,
-      preferredLanguage
+      preferredLanguage,
+      modelMode: selectedModelMode
     });
 
     // Check cache first
-    const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage);
+    const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage, selectedModelMode);
     if (cached) {
       console.log('[Bible Aura AI] Cache hit');
       res.status(200).json(cached);
@@ -619,7 +681,8 @@ export default async function handler(
     const result = await runFastRAGPipeline(
       sanitizedMessage,
       preferredMode,
-      preferredLanguage
+      preferredLanguage,
+      selectedModelMode
     );
 
     // Validate verse references in response
@@ -629,7 +692,7 @@ export default async function handler(
     }
 
     // Cache the result
-    setCachedResponse(sanitizedMessage, result, preferredMode, preferredLanguage);
+    setCachedResponse(sanitizedMessage, result, preferredMode, preferredLanguage, selectedModelMode);
 
     res.status(200).json(result);
 
