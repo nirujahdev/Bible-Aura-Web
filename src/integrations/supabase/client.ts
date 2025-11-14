@@ -21,13 +21,13 @@ if (!hasCredentials) {
 }
 
 // Enhanced validation and debugging (safe - no credential values logged)
-if (import.meta.env.DEV) {
-  console.log('🔧 Supabase Configuration:', {
-    url: SUPABASE_URL ? '✓ SET' : '✗ MISSING',
-    key: SUPABASE_PUBLISHABLE_KEY ? '✓ SET' : '✗ MISSING',
-    environment: import.meta.env.MODE
-  });
-}
+// Log in both dev and production to help diagnose issues
+console.log('🔧 Supabase Configuration:', {
+  url: SUPABASE_URL ? '✓ SET' : '✗ MISSING',
+  key: SUPABASE_PUBLISHABLE_KEY ? '✓ SET' : '✗ MISSING',
+  environment: import.meta.env.MODE,
+  hasCredentials: hasCredentials
+});
 
 // Export credential check helper
 export const hasSupabaseCredentials = hasCredentials;
@@ -102,18 +102,47 @@ export const supabase = createClient(
   }
 );
 
-// Enhanced error handling and logging for development
-if (import.meta.env.DEV) {
-  // Add auth state change logging for debugging
-  supabase.auth.onAuthStateChange((event, session) => {
+// Enhanced error handling and logging
+// Add auth state change logging for debugging (works in both dev and production)
+supabase.auth.onAuthStateChange((event, session) => {
+  if (import.meta.env.DEV) {
     console.log('🔐 Supabase Auth Event:', event, {
       hasSession: !!session,
       hasUser: !!session?.user,
       isFromEmailLink,
       url: window.location.href
     });
-  });
-}
+  }
+  
+  // Log errors in production too (without sensitive data)
+  if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+    console.log('🔐 Auth state changed:', event);
+  }
+});
+
+// Test Supabase connection (only if credentials are available)
+export const testSupabaseConnection = async (): Promise<{ success: boolean; error?: string }> => {
+  if (!hasCredentials) {
+    return { success: false, error: 'Supabase credentials not configured' };
+  }
+  
+  try {
+    // Simple test query to verify connection
+    const { error } = await supabase.from('ai_conversations').select('id').limit(1);
+    
+    if (error) {
+      // Check if it's a table missing error vs connection error
+      if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        return { success: false, error: 'Database table missing. Please run the migration script.' };
+      }
+      return { success: false, error: error.message || 'Connection test failed' };
+    }
+    
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Connection test failed' };
+  }
+};
 
 // Export auth detection helper
 export { isFromEmailLink };
