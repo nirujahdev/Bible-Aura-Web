@@ -1344,9 +1344,41 @@ export function BibleAuraChat() {
             {/* Actions */}
             <div className="p-4 space-y-2">
               {[
-                { name: 'Chat History', icon: History, action: () => { setShowMobileHistory(true); setShowMobileMoreMenu(false); }, description: 'View past conversations' },
-                { name: 'New Chat', icon: Plus, action: () => { createNewConversation(); setShowMobileMoreMenu(false); }, description: 'Start fresh conversation' },
-                { name: 'Clear Chat', icon: Trash2, action: () => { createNewConversation(); setShowMobileMoreMenu(false); }, description: 'Clear current chat' },
+                { 
+                  name: 'Chat History', 
+                  icon: History, 
+                  action: () => { 
+                    setShowMobileHistory(true); 
+                    setShowMobileMoreMenu(false); 
+                  }, 
+                  description: 'View past conversations' 
+                },
+                { 
+                  name: 'New Chat', 
+                  icon: Plus, 
+                  action: () => { 
+                    createNewConversation(); 
+                    setShowMobileMoreMenu(false);
+                    toast({
+                      title: "New Chat",
+                      description: "Started a new conversation",
+                    });
+                  }, 
+                  description: 'Start fresh conversation' 
+                },
+                { 
+                  name: 'Clear Chat', 
+                  icon: Trash2, 
+                  action: () => { 
+                    createNewConversation(); 
+                    setShowMobileMoreMenu(false);
+                    toast({
+                      title: "Chat Cleared",
+                      description: "Current conversation has been cleared",
+                    });
+                  }, 
+                  description: 'Clear current chat' 
+                },
               ].map((action) => (
                 <button
                   key={action.name}
