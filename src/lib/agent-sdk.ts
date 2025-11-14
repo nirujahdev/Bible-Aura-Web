@@ -41,18 +41,17 @@ export interface AgentSDKRequest {
   message: string;
   mode?: string;
   language?: string;
-  modelMode?: 'aura-1.0' | 'aura-1.0-thinking';
 }
 
 /**
  * Send a message to Bible Aura AI using Agent SDK
  * @param message - The user's message to send
- * @param options - Optional mode, language, and model preferences
+ * @param options - Optional mode and language preferences
  * @returns Promise with the Agent SDK response containing text, mode, language, sources, and cross-references
  */
 export async function sendBibleAuraMessage(
   message: string, 
-  options?: { mode?: string; language?: string; modelMode?: 'aura-1.0' | 'aura-1.0-thinking' }
+  options?: { mode?: string; language?: string }
 ): Promise<AgentSDKResponse> {
   // Validate input
   if (!message || typeof message !== 'string' || message.trim() === '') {
@@ -77,8 +76,7 @@ export async function sendBibleAuraMessage(
             body: JSON.stringify({ 
               message: message.trim(),
               mode: options?.mode,
-              language: options?.language,
-              modelMode: options?.modelMode || 'aura-1.0'
+              language: options?.language
             } as AgentSDKRequest),
           });
 

@@ -183,6 +183,16 @@ function detectLanguage(text: string): "en" | "ta" {
   return tamilRegex.test(text) ? "ta" : "en";
 }
 
+// Ensure language preference is respected
+function determineLanguage(userInput: string, preferredLanguage?: "en" | "ta"): "en" | "ta" {
+  // If user explicitly selected a language, use it
+  if (preferredLanguage) {
+    return preferredLanguage;
+  }
+  // Otherwise, detect from input
+  return detectLanguage(userInput);
+}
+
 // Web search function using Tavily API (or fallback to simple search)
 async function searchWeb(query: string): Promise<Array<{ title: string; url: string; snippet: string }>> {
   try {
@@ -224,9 +234,12 @@ async function retrieveBibleContext(
   preferredLanguage?: "en" | "ta",
   modelMode: ModelMode = 'aura-1.0'
 ): Promise<RAGResult> {
-  const lang = preferredLanguage || detectLanguage(userInput);
+  // Always respect preferred language if provided
+  const lang = determineLanguage(userInput, preferredLanguage);
   const vectorStoreId = lang === "en" ? ENGLISH_VECTOR_STORE : TAMIL_VECTOR_STORE;
   const config = MODEL_CONFIGS[modelMode];
+  
+  console.log('[RAG Retriever] Language:', lang, 'Preferred:', preferredLanguage, 'Vector Store:', vectorStoreId);
 
   try {
     // Parallel: Vector store search + Web search
@@ -238,12 +251,20 @@ async function retrieveBibleContext(
       searchWeb(userInput)
     ]);
 
-    // Extract Bible sources
-    const bibleSources = vectorSearchResults.data.map((result) => ({
-      id: result.file_id,
-      filename: result.filename || "Unknown",
-      score: result.score || 0
-    }));
+    // Extract Bible sources - only include actual results with valid filenames and scores
+    const bibleSources = vectorSearchResults.data
+      .filter((result) => {
+        // Only include results with valid filename and meaningful score
+        return result.filename && 
+               result.filename !== "Unknown" && 
+               result.filename.trim() !== "" &&
+               (result.score || 0) > 0;
+      })
+      .map((result) => ({
+        id: result.file_id,
+        filename: result.filename || "Unknown",
+        score: result.score || 0
+      }));
 
     // Add web sources
     const webSources = webResults.map((result, idx) => ({
@@ -521,19 +542,24 @@ async function runGlobalGuardrails(
   }
 }
 
-// Extract cross-references
-function extractCrossReferences(sources: Array<{ filename: string }>): string[] {
+// Extract cross-references - only from actual Bible sources, not web sources
+function extractCrossReferences(sources: Array<{ filename: string; url?: string }>): string[] {
   return sources
     .filter(s => {
+      // Only include Bible sources (no URL), not web sources
+      if (s.url) return false;
       const filename = s.filename;
+      // Must match verse reference pattern: "Book Chapter:Verse" or "Book Chapter"
       return /^\d*\s*[A-Za-z]+\s+\d+/.test(filename) ||
              /^[A-Za-z]+\s+\d+/.test(filename);
     })
     .map(s => s.filename)
+    .filter((ref, idx, arr) => arr.indexOf(ref) === idx) // Remove duplicates
     .slice(0, 5);
 }
 
-// Validate verse references and get full verse text
+// Validate verse references - only return references that appear in the actual response text
+// Don't create fake or placeholder verses
 async function validateVerseReferences(
   text: string,
   language: 'en' | 'ta'
@@ -545,16 +571,17 @@ async function validateVerseReferences(
   verse: number;
 }>> {
   try {
-    // Extract verse references from text
+    // Extract verse references from text - only real ones mentioned in response
     const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/g;
     const matches = [...text.matchAll(versePattern)];
     
     if (matches.length === 0) return [];
     
-    // Get unique references
+    // Get unique references that actually appear in the response
     const uniqueRefs = [...new Set(matches.map(m => m[0]))];
     
-    // Validate each reference (simplified - in production, use actual Bible API)
+    // Only return references that are actually in the text
+    // Don't create placeholder verses - only return what's actually mentioned
     const validatedVerses: Array<{
       reference: string;
       verseText: string;
@@ -563,13 +590,13 @@ async function validateVerseReferences(
       verse: number;
     }> = [];
     
-    // For now, return basic validation - in production, fetch actual verse text
     for (const ref of uniqueRefs.slice(0, 5)) { // Limit to 5 verses
       const match = ref.match(/^(\d*\s*[A-Za-z]+\.?)\s+(\d+):(\d+)$/i);
       if (match) {
+        // Only include if it's a valid format - don't add placeholder text
         validatedVerses.push({
           reference: ref,
-          verseText: `[Verse text for ${ref}]`, // Placeholder - would fetch actual text
+          verseText: `[${ref}]`, // Just show reference, don't fake verse text
           book: match[1].trim(),
           chapter: parseInt(match[2]),
           verse: parseInt(match[3])
