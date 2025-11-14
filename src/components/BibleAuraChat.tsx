@@ -44,6 +44,8 @@ interface Message {
     id: string;
     filename: string;
     score: number;
+    url?: string;
+    snippet?: string;
   }>;
   crossReferences?: string[];
 }
