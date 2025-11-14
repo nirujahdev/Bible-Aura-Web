@@ -60,15 +60,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: userData } = await supabase.auth.getUser();
       const authUser = userData?.user;
 
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+      
+      if (existingProfile) {
+        // Profile exists, just load it
+        await loadUserProfile(userId);
+        return;
+      }
+
       const fallbackName =
         authUser?.user_metadata?.full_name ||
         authUser?.user_metadata?.name ||
+        authUser?.user_metadata?.display_name ||
         authUser?.email?.split('@')[0] ||
         'Bible Aura Member';
 
       const profilePayload = {
         user_id: userId,
         display_name: fallbackName,
+        avatar_url: authUser?.user_metadata?.avatar_url || authUser?.user_metadata?.picture || null,
         phone_number: null,
         age: null,
         denomination: null,
@@ -92,6 +107,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Log detailed error
         if (error.code === 'PGRST301' || error.message?.includes('permission denied')) {
           console.error('RLS policy blocking profile creation. User may need to sign out and back in.');
+          // Try again after a short delay
+          setTimeout(async () => {
+            const { data: retryData, error: retryError } = await supabase
+              .from('profiles')
+              .upsert(profilePayload, { onConflict: 'user_id' })
+              .select()
+              .single();
+            if (!retryError && retryData) {
+              setProfile(retryData as Profile);
+            }
+          }, 1000);
         } else if (error.message?.includes('violates not-null constraint')) {
           console.error('Missing required fields. Check database schema.');
         }
@@ -99,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data) {
+        console.log('Profile created successfully:', data);
         setProfile(data as Profile);
       }
     } catch (creationError) {
@@ -189,11 +216,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (session?.user) {
                 // For OAuth users, ensure profile exists
-                const isOAuthUser = session.user.app_metadata?.provider !== 'email';
+                const isOAuthUser = session.user.app_metadata?.provider !== 'email' || 
+                                   session.user.app_metadata?.providers?.includes('google') ||
+                                   session.user.identities?.some((id: any) => id.provider === 'google');
                 if (isOAuthUser) {
                   // Give trigger a moment to create profile, then load it
                   setTimeout(async () => {
                     await loadUserProfile(session.user.id);
+                    // If profile still doesn't exist after trigger, create it
+                    setTimeout(async () => {
+                      const { data: profileCheck } = await supabase
+                        .from('profiles')
+                        .select('user_id')
+                        .eq('user_id', session.user.id)
+                        .single();
+                      if (!profileCheck) {
+                        console.log('Profile not created by trigger, creating manually...');
+                        await createDefaultProfile(session.user.id);
+                      }
+                    }, 1000);
                   }, 500);
                 } else {
                   await loadUserProfile(session.user.id);
@@ -425,7 +466,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check if Google OAuth is properly configured
       const redirectUrl = `${window.location.origin}/auth`;
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
@@ -433,6 +474,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             access_type: 'offline',
             prompt: 'consent',
           },
+          skipBrowserRedirect: false,
         },
       });
 
@@ -441,10 +483,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         let userFriendlyMessage = 'Google sign-in is currently unavailable. Please try email/password or magic link instead.';
         
-        if (error.message.includes('not configured')) {
+        if (error.message?.includes('not configured') || error.message?.includes('not enabled')) {
           userFriendlyMessage = 'Google sign-in is not properly configured. Please contact support or use email authentication.';
-        } else if (error.message.includes('unauthorized')) {
+        } else if (error.message?.includes('unauthorized') || error.message?.includes('permission')) {
           userFriendlyMessage = 'Google authentication is not authorized for this domain. Please use email authentication instead.';
+        } else if (error.message?.includes('popup')) {
+          userFriendlyMessage = 'Popup was blocked. Please allow popups for this site and try again.';
         }
 
         toast({
@@ -455,15 +499,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return { error: new Error(userFriendlyMessage) };
       } else {
+        // OAuth redirect will happen automatically
         toast({
           title: "Redirecting to Google",
-          description: "Please complete authentication with Google in the popup window.",
+          description: "Please complete authentication with Google.",
         });
         return { error: null };
       }
     } catch (error: unknown) {
       console.error('Google sign-in error:', error);
-      const errorMessage = 'Unable to connect to Google. Please try email/password authentication instead.';
+      const errorMessage = error instanceof Error ? error.message : 'Unable to connect to Google. Please try email/password authentication instead.';
       
       toast({
         title: "Authentication error",
@@ -520,12 +565,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         let userFriendlyMessage = error.message;
         
-        if (error.message.includes('already registered')) {
+        if (error.message?.includes('already registered') || error.message?.includes('already exists') || error.message?.includes('User already registered')) {
           userFriendlyMessage = 'An account with this email already exists. Please sign in instead.';
-        } else if (error.message.includes('weak password')) {
+        } else if (error.message?.includes('weak password') || error.message?.includes('Password')) {
           userFriendlyMessage = 'Please choose a stronger password with at least 8 characters.';
-        } else if (error.message.includes('invalid email')) {
+        } else if (error.message?.includes('invalid email') || error.message?.includes('Email')) {
           userFriendlyMessage = 'Please enter a valid email address.';
+        } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          userFriendlyMessage = 'Unable to create account. Please try again or contact support.';
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          userFriendlyMessage = 'Network error. Please check your connection and try again.';
         }
 
         toast({
@@ -555,15 +604,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
 
           // Try to insert profile, if it fails (already exists), update it
-          const { error: profileError } = await supabase
+          const { error: profileError, data: profileDataResult } = await supabase
             .from('profiles')
-            .upsert(profileData, { onConflict: 'user_id' });
+            .upsert(profileData, { onConflict: 'user_id' })
+            .select()
+            .single();
 
           if (profileError) {
             console.error('Profile creation error:', profileError);
             // Log detailed error for debugging
             if (profileError.code === 'PGRST301' || profileError.message?.includes('permission denied')) {
               console.error('RLS policy issue - user may not have permission to insert profile');
+              // Retry after a short delay
+              setTimeout(async () => {
+                const { error: retryError, data: retryData } = await supabase
+                  .from('profiles')
+                  .upsert(profileData, { onConflict: 'user_id' })
+                  .select()
+                  .single();
+                if (!retryError && retryData) {
+                  setProfile(retryData as Profile);
+                }
+              }, 1000);
             } else if (profileError.message?.includes('violates not-null constraint')) {
               console.error('Missing required fields in profile data');
             }
@@ -571,6 +633,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // User can still sign in and complete profile later
           } else {
             console.log('Profile created successfully with all fields');
+            if (profileDataResult) {
+              setProfile(profileDataResult as Profile);
+            }
           }
         } catch (profileError) {
           console.error('Error creating profile:', profileError);
