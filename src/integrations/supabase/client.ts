@@ -87,6 +87,34 @@ export const supabase = createClient(
       headers: {
         'X-Client-Info': 'bible-aura-web',
         'X-Client-Version': '2.0.0'
+      },
+      // Add fetch with better error handling
+      fetch: (url, options = {}) => {
+        return fetch(url, options).catch((error) => {
+          // Enhanced error logging for fetch failures
+          console.error('❌ Supabase Fetch Error:', {
+            url: typeof url === 'string' ? url : url.toString(),
+            error: error.message,
+            type: error.name,
+            cause: error.cause,
+            hasCredentials: hasCredentials,
+            supabaseUrl: SUPABASE_URL ? 'SET' : 'MISSING'
+          });
+          
+          // Provide helpful error messages
+          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            console.error(
+              '🔍 Network Error Diagnosis:\n' +
+              '1. Check if Supabase project is active (not paused)\n' +
+              '2. Verify VITE_SUPABASE_URL is correct\n' +
+              '3. Check browser console for CORS errors\n' +
+              '4. Ensure Supabase project allows your domain in CORS settings\n' +
+              `Current URL: ${SUPABASE_URL || 'NOT SET'}`
+            );
+          }
+          
+          throw error;
+        });
       }
     },
     
@@ -121,12 +149,44 @@ supabase.auth.onAuthStateChange((event, session) => {
 });
 
 // Test Supabase connection (only if credentials are available)
-export const testSupabaseConnection = async (): Promise<{ success: boolean; error?: string }> => {
+export const testSupabaseConnection = async (): Promise<{ success: boolean; error?: string; details?: any }> => {
   if (!hasCredentials) {
     return { success: false, error: 'Supabase credentials not configured' };
   }
   
   try {
+    // First, test if we can reach the Supabase URL
+    try {
+      const healthCheck = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+        method: 'HEAD',
+        headers: {
+          'apikey': SUPABASE_PUBLISHABLE_KEY || '',
+        }
+      });
+      
+      if (!healthCheck.ok && healthCheck.status !== 404) {
+        return { 
+          success: false, 
+          error: `Cannot reach Supabase (Status: ${healthCheck.status})`,
+          details: {
+            status: healthCheck.status,
+            statusText: healthCheck.statusText,
+            url: SUPABASE_URL
+          }
+        };
+      }
+    } catch (fetchError: any) {
+      return { 
+        success: false, 
+        error: `Network error: ${fetchError.message}`,
+        details: {
+          type: 'network',
+          message: fetchError.message,
+          url: SUPABASE_URL
+        }
+      };
+    }
+    
     // Simple test query to verify connection
     const { error } = await supabase.from('ai_conversations').select('id').limit(1);
     
@@ -135,12 +195,33 @@ export const testSupabaseConnection = async (): Promise<{ success: boolean; erro
       if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return { success: false, error: 'Database table missing. Please run the migration script.' };
       }
-      return { success: false, error: error.message || 'Connection test failed' };
+      
+      // Check for network/fetch errors
+      if (error.message?.includes('fetch') || error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        return { 
+          success: false, 
+          error: 'Network connection failed. Check CORS settings and project status.',
+          details: {
+            code: error.code,
+            message: error.message,
+            hint: 'Your Supabase project might be paused or CORS is not configured correctly.'
+          }
+        };
+      }
+      
+      return { success: false, error: error.message || 'Connection test failed', details: { code: error.code } };
     }
     
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error.message || 'Connection test failed' };
+    return { 
+      success: false, 
+      error: error.message || 'Connection test failed',
+      details: {
+        type: error.name,
+        message: error.message
+      }
+    };
   }
 };
 
