@@ -71,6 +71,87 @@ const CHAT_MODES = {
   'qa-clean': { name: 'Quick Q&A', icon: Brain, description: 'Fast answers' }
 };
 
+// Generate related questions based on the conversation
+function generateRelatedQuestions(lastResponse: string, allMessages: Message[]): string[] {
+  const questions: string[] = [];
+  const responseLower = lastResponse.toLowerCase();
+  const userMessages = allMessages.filter(m => m.role === 'user').map(m => m.content.toLowerCase());
+  const lastUserMessage = userMessages[userMessages.length - 1] || '';
+  
+  // Check for Jesus/Christ mentions
+  if (responseLower.includes('jesus') || responseLower.includes('christ')) {
+    questions.push('Historical evidence for Jesus outside the New Testament');
+    questions.push('Key differences between the historical Jesus and theological claims');
+    questions.push('Major non-Christian sources that mention Jesus and what they say');
+  }
+  
+  // Check for Bible verses
+  const verseMatch = lastResponse.match(/(\d*\s*[A-Za-z]+\s+\d+:\d+)/);
+  if (verseMatch) {
+    const verse = verseMatch[1];
+    questions.push(`What is the historical context of ${verse}?`);
+    questions.push(`How do scholars interpret ${verse}?`);
+  }
+  
+  // Check for theological topics
+  if (responseLower.includes('salvation') || responseLower.includes('saved')) {
+    questions.push('What does the Bible say about how to be saved?');
+    questions.push('What is the difference between grace and works in salvation?');
+  }
+  
+  if (responseLower.includes('trinity') || responseLower.includes('god the father') || responseLower.includes('holy spirit')) {
+    questions.push('What is the biblical basis for the Trinity?');
+    questions.push('How do different Christian denominations understand the Trinity?');
+  }
+  
+  if (responseLower.includes('parable')) {
+    questions.push('What are the main themes in Jesus\' parables?');
+    questions.push('How do parables relate to the Kingdom of God?');
+  }
+  
+  if (responseLower.includes('character') || responseLower.includes('person')) {
+    questions.push('What can we learn from biblical character studies?');
+    questions.push('How do biblical characters demonstrate faith?');
+  }
+  
+  // Generic follow-up questions
+  if (questions.length < 5) {
+    if (lastUserMessage.includes('who is')) {
+      questions.push('What is the historical background of this person?');
+      questions.push('What are the key events in this person\'s life?');
+    } else if (lastUserMessage.includes('what is') || lastUserMessage.includes('what does')) {
+      questions.push('How does this relate to other biblical teachings?');
+      questions.push('What is the practical application of this?');
+    } else if (lastUserMessage.includes('why')) {
+      questions.push('What is the biblical context for this?');
+      questions.push('How do scholars explain this?');
+    } else {
+      questions.push('What are the key biblical passages about this topic?');
+      questions.push('How does this relate to the overall biblical narrative?');
+    }
+  }
+  
+  // Fill remaining slots with generic questions
+  const genericQuestions = [
+    'What are the key biblical passages about this topic?',
+    'How do different Christian traditions interpret this?',
+    'What is the historical context of this?',
+    'How does this apply to modern life?',
+    'What are the theological implications of this?'
+  ];
+  
+  while (questions.length < 5) {
+    const generic = genericQuestions[questions.length % genericQuestions.length];
+    if (!questions.includes(generic)) {
+      questions.push(generic);
+    } else {
+      break;
+    }
+  }
+  
+  return questions.slice(0, 5);
+}
+
 export function BibleAuraChat() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -246,8 +327,9 @@ export function BibleAuraChat() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || input.trim();
+    if (!textToSend || isLoading) return;
     
     if (!user) {
       toast({
@@ -259,8 +341,10 @@ export function BibleAuraChat() {
     }
 
     setIsLoading(true);
-    const userInput = input.trim();
-    setInput('');
+    const userInput = textToSend.trim();
+    if (!messageText) {
+      setInput('');
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -447,86 +531,100 @@ export function BibleAuraChat() {
                 </p>
               </div>
             ) : (
-              messages.map((message) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {message.role === 'assistant' && (
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
-                        <span className="text-white text-lg font-bold drop-shadow-lg">✦</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
-                    {message.role === 'assistant' ? (
-                      <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {message.content}
-                        </div>
-                        
-                        {/* Sources and Cross-References */}
-                        {(message.sources && message.sources.length > 0) || (message.crossReferences && message.crossReferences.length > 0) ? (
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            {/* Cross-References */}
-                            {message.crossReferences && message.crossReferences.length > 0 && (
-                              <div className="mb-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <BookOpen className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xs font-semibold text-gray-700">Cross-References</span>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  {message.crossReferences.map((ref, idx) => (
-                                    <Badge key={idx} variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
-                                      {ref}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Sources */}
-                            {message.sources && message.sources.length > 0 && (
-                              <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Search className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xs font-semibold text-gray-700">Sources</span>
-                                </div>
-                                <div className="space-y-1">
-                                  {message.sources.slice(0, 5).map((source, idx) => (
-                                    <div key={idx} className="flex items-center justify-between text-xs text-gray-600 bg-gray-50 rounded px-2 py-1">
-                                      <span className="truncate flex-1">{source.filename}</span>
-                                      <span className="text-gray-400 ml-2">{(source.score * 100).toFixed(0)}%</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+              messages.map((message, index) => (
+                <React.Fragment key={message.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
+                      {message.role === 'assistant' ? (
+                        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                          <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {message.content}
                           </div>
-                        ) : null}
+                          
+                          {/* Sources and Cross-References */}
+                          {(message.sources && message.sources.length > 0) || (message.crossReferences && message.crossReferences.length > 0) ? (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              {/* Cross-References */}
+                              {message.crossReferences && message.crossReferences.length > 0 && (
+                                <div className="mb-3">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <BookOpen className="h-4 w-4 text-orange-500" />
+                                    <span className="text-xs font-semibold text-gray-700">Cross-References</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {message.crossReferences.map((ref, idx) => (
+                                      <Badge key={idx} variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                        {ref}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Sources */}
+                              {message.sources && message.sources.length > 0 && (
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Search className="h-4 w-4 text-orange-500" />
+                                    <span className="text-xs font-semibold text-gray-700">Sources</span>
+                                  </div>
+                                  <div className="space-y-1">
+                                    {message.sources.slice(0, 5).map((source, idx) => (
+                                      <div key={idx} className="flex items-center justify-between text-xs text-gray-600 bg-gray-50 rounded px-2 py-1">
+                                        <span className="truncate flex-1">{source.filename}</span>
+                                        <span className="text-gray-400 ml-2">{(source.score * 100).toFixed(0)}%</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-lg">
+                          <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                        </div>
+                      )}
+                      <div className="text-[10px] text-gray-400 mt-1 px-2">
+                        {new Date(message.timestamp).toLocaleTimeString()}
                       </div>
-                    ) : (
-                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-lg">
-                        <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-                      </div>
-                    )}
-                    <div className="text-[10px] text-gray-400 mt-1 px-2">
-                      {new Date(message.timestamp).toLocaleTimeString()}
                     </div>
-                  </div>
+                  </motion.div>
                   
-                  {message.role === 'user' && (
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-white" />
+                  {/* Related Questions - Show after assistant messages */}
+                  {message.role === 'assistant' && index === messages.length - 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="mt-4 px-4"
+                    >
+                      <div className="max-w-2xl">
+                        <div className="text-sm font-semibold text-gray-700 mb-3">Related</div>
+                        <div className="space-y-2">
+                          {generateRelatedQuestions(message.content, messages).map((question, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                setInput(question);
+                                handleSendMessage();
+                              }}
+                              className="w-full text-left flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg px-3 py-2 transition-colors group"
+                            >
+                              <span className="text-gray-400 group-hover:text-orange-500">→</span>
+                              <span>{question}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    </motion.div>
                   )}
-                </motion.div>
+                </React.Fragment>
               ))
             )}
             
