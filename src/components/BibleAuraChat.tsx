@@ -205,9 +205,9 @@ export function BibleAuraChat() {
     { id: 'inaccurate', label: 'Inaccurate Information', icon: '⚠️' },
     { id: 'inappropriate', label: 'Inappropriate Content', icon: '🚫' },
     { id: 'offensive', label: 'Offensive Language', icon: '😞' },
-    { id: 'spam', label: 'Spam or Misleading', icon: '📧' },
-    { id: 'other', label: 'Other Issue', icon: '📝' },
-    { id: 'technical', label: 'Technical Problem', icon: '🔧' }
+    { id: 'spam', label: 'Spam or Misleading'},
+    { id: 'other', label: 'Other Issue'},
+    { id: 'technical', label: 'Technical Problem'}
   ];
 
   // Load conversations on mount (with error handling)
@@ -721,10 +721,10 @@ export function BibleAuraChat() {
 
 
         {/* Messages Area - Scrollable */}
-        <ScrollArea className="flex-1 min-h-0 px-2 md:px-4 py-3 md:py-6">
+        <ScrollArea className="flex-1 min-h-0 overflow-auto px-2 md:px-4 py-2 md:py-6">
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-4 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center min-h-full">
+              <div className="text-center py-2 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center">
                 <div className="inline-block mb-2 md:mb-4">
                   <span className="text-xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
                 </div>
@@ -1034,12 +1034,12 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area - Fixed at bottom */}
-        <div className="bg-transparent border-t border-gray-100 px-2 md:px-4 py-2 md:py-4 flex-shrink-0">
+        <div className="bg-transparent border-t border-gray-100 px-2 md:px-4 py-2 md:py-3 flex-shrink-0">
           <div className="max-w-3xl mx-auto">
             {/* Message Input - All controls inside */}
             <div className="relative">
               <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
-                <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2.5">
+                <div className="flex items-center gap-2 px-3 py-2.5">
                   {/* History Button (Mobile) */}
                   <Button
                     variant="ghost"
@@ -1049,17 +1049,17 @@ export function BibleAuraChat() {
                       e.stopPropagation();
                       setShowMobileHistory(true);
                     }}
-                    className="lg:hidden flex-shrink-0 h-7 w-7 md:h-8 md:w-8 p-0 hover:bg-gray-100/50"
+                     className="lg:hidden flex-shrink-0 h-7 w-7 md:h-8 md:w-8 p-0 hover:bg-gray-100/50"
                   >
-                    <History className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500" />
+                    <History className="h-4 w-4 text-gray-500" />
                   </Button>
                   
                   {/* Mode Selector */}
                   <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                    <SelectTrigger className="w-28 md:w-36 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
-                      <div className="flex items-center gap-1">
+                     <SelectTrigger className="w-28 md:w-36 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                      <div className="flex items-center gap-1.5">
                         {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
-                        <span className="truncate text-[10px] md:text-xs">{CHAT_MODES[currentMode]?.name}</span>
+                        <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
                       </div>
                     </SelectTrigger>
                     <SelectContent>
@@ -1076,7 +1076,7 @@ export function BibleAuraChat() {
 
                   {/* Language Selector */}
                   <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                    <SelectTrigger className="w-20 md:w-24 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                     <SelectTrigger className="w-20 md:w-24 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1092,7 +1092,7 @@ export function BibleAuraChat() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything about bible"
-                    className="flex-1 min-h-[20px] md:min-h-[24px] max-h-[200px] py-1 md:py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-xs md:text-sm bg-transparent placeholder:text-gray-400 outline-none"
+                     className="flex-1 min-h-[20px] md:min-h-[24px] max-h-[120px] md:max-h-[200px] py-1 md:py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-xs md:text-sm bg-transparent placeholder:text-gray-400 outline-none"
                     disabled={isLoading}
                     rows={1}
                   />
@@ -1102,15 +1102,15 @@ export function BibleAuraChat() {
                     onClick={() => handleSendMessage()}
                     disabled={isLoading || !input.trim()}
                     size="icon"
-                    className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex-shrink-0"
+                     className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex-shrink-0"
                   >
-                    <Send className="h-3.5 w-3.5 md:h-4 md:w-4 text-white" />
+                    <Send className="h-4 w-4 text-white" />
                   </Button>
                 </div>
               </div>
               
               {/* Disclaimer */}
-              <p className="text-[9px] md:text-xs text-gray-500 text-center mt-1 md:mt-2">
+               <p className="text-[8px] md:text-xs text-gray-500 text-center mt-0.5 md:mt-2">
                 By using bible aura your are agree with our polices
               </p>
             </div>
