@@ -431,7 +431,7 @@ async function runMetaAgent(
       messages: [
         {
           role: "system",
-          content: `You are the Bible Aura Meta-Agent. Always return valid JSON matching the required schema. Every response MUST include at least one Bible verse reference. ${config.isDeepAnalysis ? 'Provide comprehensive, detailed analysis with deep theological insights.' : ''}`
+          content: `You are the Bible Aura Meta-Agent. Always return valid JSON matching the required schema. Every response MUST include at least one Bible verse reference. ${config.isDeepAnalysis ? 'Provide comprehensive, detailed analysis with deep theological insights.' : ''} CRITICAL LANGUAGE REQUIREMENT: You MUST respond in ${ragResult.lang === "ta" ? "Tamil (தமிழ்)" : "English"} language. If the detected language is "ta", write your ENTIRE response in Tamil. If "en", write in English. Never mix languages.`
         },
         {
           role: "user",
