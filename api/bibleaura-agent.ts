@@ -298,7 +298,11 @@ Return JSON only.`,
 });
 
 // Main workflow function
-type WorkflowInput = { input_as_text: string };
+type WorkflowInput = { 
+  input_as_text: string;
+  preferred_mode?: string;
+  preferred_language?: string;
+};
 
 async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<AgentResponse> {
   return await withTrace("Bible Aura AI", async () => {
@@ -321,10 +325,12 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
       }
     });
 
-    // Step 1: Classify language
-    let lang: Language = "en"; // Default to English
+    // Step 1: Classify language (use preference if provided, otherwise detect)
+    let lang: Language = workflow.preferred_language === "ta" ? "ta" : "en";
     
-    try {
+    // Only run language classifier if no preference is provided
+    if (!workflow.preferred_language) {
+      try {
       const languageClassifierResultTemp = await runner.run(
         languageClassifier,
         [
@@ -351,10 +357,11 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
         };
         lang = languageClassifierResult.output_parsed.lang;
       }
-    } catch (langError: any) {
-      console.error('[Agent SDK] Language classification error:', langError.message);
-      // Default to English and continue
-      lang = "en";
+      } catch (langError: any) {
+        console.error('[Agent SDK] Language classification error:', langError.message);
+        // Default to English and continue
+        lang = "en";
+      }
     }
     const vectorStoreId = lang === "en" 
       ? "vs_6914c8f2ecf48191b8c80e0911d335cf"
@@ -369,10 +376,18 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
     // Sources will be extracted from the agent responses if available
     // This simplifies the implementation and avoids API compatibility issues
 
-    // Step 3: Classify mode
-    let mode: Mode = "chat"; // Default to chat mode
+    // Step 3: Classify mode (use preference if provided, otherwise detect)
+    let mode: Mode = workflow.preferred_mode as Mode || "chat";
     
-    try {
+    // Validate mode
+    const validModes: Mode[] = ["chat", "verse", "parable", "character", "topical", "qa"];
+    if (!validModes.includes(mode)) {
+      mode = "chat";
+    }
+    
+    // Only run mode classifier if no preference is provided
+    if (!workflow.preferred_mode) {
+      try {
       const sourcesContext = sources.length > 0 
         ? `Context from Bible search: ${sources.slice(0, 5).map(s => s.filename).join(', ')}`
         : 'No specific Bible references found';
@@ -404,10 +419,11 @@ ${sourcesContext}`
         };
         mode = modeClassifierResult.output_parsed.mode;
       }
-    } catch (modeError: any) {
-      console.error('[Agent SDK] Mode classification error:', modeError.message);
-      // Default to chat mode and continue
-      mode = "chat";
+      } catch (modeError: any) {
+        console.error('[Agent SDK] Mode classification error:', modeError.message);
+        // Default to chat mode and continue
+        mode = "chat";
+      }
     }
 
     // Step 4: Run appropriate agent based on mode
@@ -602,7 +618,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const { message } = req.body;
+    const { message, mode: preferredMode, language: preferredLanguage } = req.body;
 
     // Input validation
     if (!message || typeof message !== 'string') {
@@ -631,7 +647,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Execute workflow
     console.log('[Agent SDK] Starting workflow execution for message:', trimmedMessage.substring(0, 50));
     
-    const result = await runWorkflow({ input_as_text: trimmedMessage }, client);
+    const result = await runWorkflow({ 
+      input_as_text: trimmedMessage,
+      preferred_mode: preferredMode,
+      preferred_language: preferredLanguage
+    }, client);
     
     console.log('[Agent SDK] Workflow completed successfully:', {
       hasText: !!result.text,

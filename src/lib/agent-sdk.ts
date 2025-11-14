@@ -30,14 +30,17 @@ export interface AgentSDKResponse {
 // Request type for Agent SDK API
 export interface AgentSDKRequest {
   message: string;
+  mode?: string;
+  language?: string;
 }
 
 /**
  * Send a message to Bible Aura AI using Agent SDK
  * @param message - The user's message to send
+ * @param options - Optional mode and language preferences
  * @returns Promise with the Agent SDK response containing text, mode, language, sources, and cross-references
  */
-export async function sendBibleAuraMessage(message: string): Promise<AgentSDKResponse> {
+export async function sendBibleAuraMessage(message: string, options?: { mode?: string; language?: string }): Promise<AgentSDKResponse> {
   // Validate input
   if (!message || typeof message !== 'string' || message.trim() === '') {
     throw new Error('Message is required and must be a non-empty string');
@@ -54,12 +57,16 @@ export async function sendBibleAuraMessage(message: string): Promise<AgentSDKRes
     console.log('[Bible Aura AI] Calling Agent SDK API:', apiUrl);
   }
 
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: message.trim() } as AgentSDKRequest),
-    });
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              message: message.trim(),
+              mode: options?.mode,
+              language: options?.language
+            } as AgentSDKRequest),
+          });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

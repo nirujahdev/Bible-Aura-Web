@@ -358,7 +358,14 @@ export function BibleAuraChat() {
     setMessages(newMessages);
 
     try {
-      const aiResponse = await sendBibleAuraMessage(userInput);
+      // Map UI mode to API mode format
+      const apiMode = currentMode.replace('-clean', '');
+      const apiLanguage = currentLanguage === 'english' ? 'en' : 'ta';
+      
+      const aiResponse = await sendBibleAuraMessage(userInput, {
+        mode: apiMode,
+        language: apiLanguage
+      });
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -730,25 +737,31 @@ export function BibleAuraChat() {
               </Select>
             </div>
 
-            {/* Message Input */}
+            {/* Message Input - ChatGPT style curved design */}
             <div className="relative">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask a follow-up question"
-                className="pr-12 min-h-[52px] max-h-32 resize-none border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-300 rounded-xl text-sm shadow-[0_0_25px_rgba(249,115,22,0.15)] hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]"
-                disabled={isLoading}
-              />
-              
-              <Button
-                onClick={handleSendMessage}
-                disabled={isLoading || !input.trim()}
-                className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] disabled:opacity-50"
-              >
-                <Send className="h-4 w-4 text-white" />
-              </Button>
+              <div className="relative bg-white border border-gray-300 rounded-[24px] shadow-sm hover:shadow-md transition-shadow focus-within:border-orange-500 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.1)]">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Message Bible Aura AI..."
+                  className="w-full min-h-[52px] max-h-[200px] py-3 pl-4 pr-14 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400"
+                  disabled={isLoading}
+                  style={{ borderRadius: '24px' }}
+                />
+                
+                <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !input.trim()}
+                    size="icon"
+                    className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                  >
+                    <Send className="h-4 w-4 text-white" />
+                  </Button>
+                </div>
+              </div>
             </div>
             
             {/* Terms */}
