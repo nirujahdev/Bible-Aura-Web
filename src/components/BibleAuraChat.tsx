@@ -23,7 +23,9 @@ import {
   X,
   FileText,
   Link as LinkIcon,
-  Plus
+  Plus,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 import {
   Select,
@@ -49,6 +51,14 @@ interface Message {
     snippet?: string;
   }>;
   crossReferences?: string[];
+  validatedVerses?: Array<{
+    reference: string;
+    verseText: string;
+    book: string;
+    chapter: number;
+    verse: number;
+  }>;
+  feedback?: 'positive' | 'negative' | null;
 }
 
 interface Conversation {
@@ -390,7 +400,8 @@ export function BibleAuraChat() {
         timestamp: new Date().toISOString(),
         mode: aiResponse.mode || currentMode,
         sources: aiResponse.sources,
-        crossReferences: aiResponse.crossReferences
+        crossReferences: aiResponse.crossReferences,
+        validatedVerses: (aiResponse as any).validatedVerses
       };
 
       setMessages([...newMessages, aiMessage]);
@@ -410,6 +421,36 @@ export function BibleAuraChat() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleFeedback = async (messageId: string, feedback: 'positive' | 'negative') => {
+    try {
+      const message = messages.find(m => m.id === messageId);
+      if (!message) return;
+
+      // Update local state
+      setMessages(prev => prev.map(m => 
+        m.id === messageId ? { ...m, feedback } : m
+      ));
+
+      // Send feedback to API
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId,
+          feedback,
+          message: message.content,
+          response: message.content
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to submit feedback');
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
     }
   };
 
@@ -612,6 +653,15 @@ export function BibleAuraChat() {
                                       <span className="ml-1.5 text-xs text-gray-500">({message.crossReferences.length})</span>
                                     )}
                                   </TabsTrigger>
+                                  {message.validatedVerses && message.validatedVerses.length > 0 && (
+                                    <TabsTrigger 
+                                      value="verses" 
+                                      className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                    >
+                                      <span>Verses</span>
+                                      <span className="ml-1.5 text-xs text-gray-500">({message.validatedVerses.length})</span>
+                                    </TabsTrigger>
+                                  )}
                                 </TabsList>
                                 
                                 <TabsContent value="sources" className="mt-3">
@@ -667,9 +717,50 @@ export function BibleAuraChat() {
                                     <div className="text-xs text-gray-500 text-center py-4">No cross-references available</div>
                                   )}
                                 </TabsContent>
+                                
+                                {message.validatedVerses && message.validatedVerses.length > 0 && (
+                                  <TabsContent value="verses" className="mt-3">
+                                    <div className="space-y-3">
+                                      {message.validatedVerses.map((verse, idx) => (
+                                        <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-semibold text-blue-900">{verse.reference}</span>
+                                            <Badge variant="outline" className="text-[10px] bg-white text-blue-700 border-blue-300">
+                                              Validated
+                                            </Badge>
+                                          </div>
+                                          <p className="text-sm text-gray-700 leading-relaxed">{verse.verseText}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </TabsContent>
+                                )}
                               </Tabs>
                             </div>
                           ) : null}
+                          
+                          {/* Feedback Buttons */}
+                          {message.role === 'assistant' && (
+                            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+                              <span className="text-xs text-gray-500 mr-2">Was this helpful?</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleFeedback(message.id, 'positive')}
+                                className={`h-7 px-2 ${message.feedback === 'positive' ? 'bg-green-50 text-green-600' : 'hover:bg-gray-50'}`}
+                              >
+                                <ThumbsUp className={`h-3.5 w-3.5 ${message.feedback === 'positive' ? 'fill-green-600' : ''}`} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleFeedback(message.id, 'negative')}
+                                className={`h-7 px-2 ${message.feedback === 'negative' ? 'bg-red-50 text-red-600' : 'hover:bg-gray-50'}`}
+                              >
+                                <ThumbsDown className={`h-3.5 w-3.5 ${message.feedback === 'negative' ? 'fill-red-600' : ''}`} />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-sm">

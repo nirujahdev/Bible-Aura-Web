@@ -23,8 +23,17 @@ export interface AgentSDKResponse {
     id: string;
     filename: string;
     score: number;
+    url?: string;
+    snippet?: string;
   }>;
   crossReferences?: string[];
+  validatedVerses?: Array<{
+    reference: string;
+    verseText: string;
+    book: string;
+    chapter: number;
+    verse: number;
+  }>;
 }
 
 // Request type for Agent SDK API
