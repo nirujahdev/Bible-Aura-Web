@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
-import { sendBibleAuraMessage } from '@/lib/chatkit';
+import { sendBibleAuraMessage } from '@/lib/agent-sdk';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -38,6 +38,12 @@ interface Message {
   content: string;
   timestamp: string;
   mode?: string;
+  sources?: Array<{
+    id: string;
+    filename: string;
+    score: number;
+  }>;
+  crossReferences?: string[];
 }
 
 interface Conversation {
@@ -275,7 +281,9 @@ export function BibleAuraChat() {
         role: 'assistant',
         content: aiResponse.text,
         timestamp: new Date().toISOString(),
-        mode: currentMode
+        mode: aiResponse.mode || currentMode,
+        sources: aiResponse.sources,
+        crossReferences: aiResponse.crossReferences
       };
 
       setMessages([...newMessages, aiMessage]);
@@ -460,6 +468,46 @@ export function BibleAuraChat() {
                         <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
                           {message.content}
                         </div>
+                        
+                        {/* Sources and Cross-References */}
+                        {(message.sources && message.sources.length > 0) || (message.crossReferences && message.crossReferences.length > 0) ? (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            {/* Cross-References */}
+                            {message.crossReferences && message.crossReferences.length > 0 && (
+                              <div className="mb-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <BookOpen className="h-4 w-4 text-orange-500" />
+                                  <span className="text-xs font-semibold text-gray-700">Cross-References</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {message.crossReferences.map((ref, idx) => (
+                                    <Badge key={idx} variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                      {ref}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Sources */}
+                            {message.sources && message.sources.length > 0 && (
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Search className="h-4 w-4 text-orange-500" />
+                                  <span className="text-xs font-semibold text-gray-700">Sources</span>
+                                </div>
+                                <div className="space-y-1">
+                                  {message.sources.slice(0, 5).map((source, idx) => (
+                                    <div key={idx} className="flex items-center justify-between text-xs text-gray-600 bg-gray-50 rounded px-2 py-1">
+                                      <span className="truncate flex-1">{source.filename}</span>
+                                      <span className="text-gray-400 ml-2">{(source.score * 100).toFixed(0)}%</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                     ) : (
                       <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-lg">

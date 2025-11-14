@@ -7,9 +7,7 @@
   "env": {
     "VITE_SUPABASE_URL": "https://foleepziqgrdgkljedux.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbGVlcHppcWdyZGdrbGplZHV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNzkxNTgsImV4cCI6MjA2NzY1NTE1OH0.XyTKj6ayTYWnoJRUrkKyuNlQSfE6PMGeBHDdafqMs9g",
-    "VITE_CHATKIT_WORKFLOW_ID": "wf_6914dcd45c3c81909293fb24b99295d70aa098ac551088a0",
-    "VITE_CHATKIT_WORKFLOW_VERSION": "2",
-    "VITE_CHATKIT_API_ENDPOINT": "/api/bibleaura-chat",
+    "VITE_CHATKIT_API_ENDPOINT": "/api/bibleaura-agent",
     "VITE_APP_URL": "https://bibleaura.xyz",
     "VITE_APP_NAME": "Bible Aura"
   },
