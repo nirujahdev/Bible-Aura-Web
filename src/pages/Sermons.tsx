@@ -23,6 +23,7 @@ import SermonAIGenerator from '@/components/SermonAIGenerator';
 import SermonAISidebar from '@/components/SermonAISidebar';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -112,6 +113,7 @@ const Sermons = () => {
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   // View states
   const [viewMode, setViewMode] = useState<'dashboard' | 'editor'>('dashboard');
@@ -1032,82 +1034,84 @@ const Sermons = () => {
   // If in editor mode, show the enhanced sermon editor
   if (viewMode === 'editor' && selectedSermon) {
     return (
-      <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-gray-50 flex flex-col`}>
-        {/* Clean Header */}
-        <div className="border-b bg-white px-6 py-4 shadow-sm border-gray-200">
+      <MobileOptimizedLayout className="bg-gray-50">
+        <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-gray-50 flex flex-col`}>
+          {/* Clean Header */}
+          <div className="border-b bg-white px-3 md:px-6 py-3 md:py-4 shadow-sm border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleBackToDashboard}
-                className="hover:bg-orange-50 text-gray-700"
+                className="hover:bg-orange-50 text-gray-700 flex-shrink-0"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Sermons
+                <ArrowLeft className="h-4 w-4 md:mr-2" />
+                {!isMobile && <span>Back to Sermons</span>}
               </Button>
-              <Separator orientation="vertical" className="h-6" />
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-600 rounded-lg">
-                  <PenTool className="h-5 w-5 text-white" />
+              {!isMobile && <Separator orientation="vertical" className="h-6" />}
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                <div className="p-1.5 md:p-2 bg-orange-600 rounded-lg flex-shrink-0">
+                  <PenTool className="h-4 w-4 md:h-5 md:w-5 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-900">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-base md:text-xl font-semibold text-gray-900 truncate">
                     {isEditing ? 'Edit Sermon' : 'New Sermon'}
                   </h1>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs md:text-sm text-gray-600 truncate">
                     {selectedSermon?.title || 'Untitled Sermon'}
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
               {/* AI Generator Button */}
               <Button 
                 variant="outline" 
-                size="sm" 
+                size={isMobile ? "sm" : "sm"}
                 className="hover:bg-purple-50"
                 onClick={() => setShowAIGenerator(true)}
               >
-                <Brain className="h-4 w-4 mr-2" />
-                AI Generator
+                <Brain className="h-4 w-4 md:mr-2" />
+                {!isMobile && <span>AI Generator</span>}
               </Button>
               
               {/* AI Sidebar Toggle */}
               <Button 
                 variant="outline" 
-                size="sm" 
+                size={isMobile ? "sm" : "sm"}
                 className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
                 onClick={() => setShowAISidebar(!showAISidebar)}
               >
-                <Bot className="h-4 w-4 mr-2" />
-                AI Assistant
+                <Bot className="h-4 w-4 md:mr-2" />
+                {!isMobile && <span>AI Assistant</span>}
               </Button>
               
               {/* Bible Reference Button */}
               <Dialog open={showBibleDialog} onOpenChange={setShowBibleDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="hover:bg-blue-50">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Bible
+                  <Button variant="outline" size={isMobile ? "sm" : "sm"} className="hover:bg-blue-50">
+                    <BookOpen className="h-4 w-4 md:mr-2" />
+                    {!isMobile && <span>Bible</span>}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh]">
-                  <DialogHeader className="border-b pb-4">
-                    <DialogTitle className="flex items-center gap-2 text-xl">
-                      <BookOpen className="h-6 w-6 text-blue-600" />
-                      Bible Reference - Enhanced Search & Study
+                <DialogContent className={`${isMobile ? 'max-w-full w-full h-full max-h-full m-0 rounded-none' : 'max-w-[95vw] w-full h-[95vh] max-h-[95vh]'}`}>
+                  <DialogHeader className="border-b pb-3 md:pb-4">
+                    <DialogTitle className="flex items-center gap-2 text-lg md:text-xl">
+                      <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
+                      <span className="hidden sm:inline">Bible Reference - Enhanced Search & Study</span>
+                      <span className="sm:hidden">Bible Reference</span>
                     </DialogTitle>
-                    <p className="text-sm text-gray-600">Search verses, browse chapters, and add references to your sermon</p>
+                    <p className="text-xs md:text-sm text-gray-600 hidden sm:block">Search verses, browse chapters, and add references to your sermon</p>
                   </DialogHeader>
                   
-                  <div className="flex-1 flex flex-col space-y-4 overflow-hidden">
+                  <div className="flex-1 flex flex-col space-y-3 md:space-y-4 overflow-hidden">
                     {/* Enhanced Controls */}
-                    <div className="flex flex-col gap-4 p-2 bg-gray-50 rounded-lg">
-                      <div className="flex flex-wrap gap-4 items-center">
+                    <div className="flex flex-col gap-3 md:gap-4 p-2 bg-gray-50 rounded-lg">
+                      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 md:gap-4 items-stretch sm:items-center">
                         {/* Translation Selector - Now includes Tamil */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 flex-1 sm:flex-initial">
                           <label className="text-xs font-medium text-gray-700">Translation</label>
                           <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => {
                             setSelectedTranslation(value);
@@ -1115,7 +1119,7 @@ const Sermons = () => {
                               loadChapter(selectedBook, selectedChapter);
                             }
                           }}>
-                            <SelectTrigger className="w-56">
+                            <SelectTrigger className="w-full sm:w-56">
                           <SelectValue />
                         </SelectTrigger>
                             <SelectContent className="max-h-60">
@@ -1142,7 +1146,7 @@ const Sermons = () => {
                         </div>
                       
                         {/* Book Selector */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 flex-1 sm:flex-initial">
                           <label className="text-xs font-medium text-gray-700">Book</label>
                       <Select value={selectedBook?.name || ''} onValueChange={(bookName) => {
                         const book = books.find(b => b.name === bookName);
@@ -1152,7 +1156,7 @@ const Sermons = () => {
                           loadChapter(book, 1);
                         }
                       }}>
-                            <SelectTrigger className="w-56">
+                            <SelectTrigger className="w-full sm:w-56">
                           <SelectValue placeholder="Select book" />
                         </SelectTrigger>
                             <SelectContent className="max-h-60">
@@ -1174,7 +1178,7 @@ const Sermons = () => {
                       
                         {/* Chapter Navigation */}
                       {selectedBook && (
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1 flex-1 sm:flex-initial">
                             <label className="text-xs font-medium text-gray-700">Chapter</label>
                         <div className="flex gap-2">
                           <Button
@@ -1182,12 +1186,12 @@ const Sermons = () => {
                             size="sm"
                             onClick={() => loadChapter(selectedBook, Math.max(1, selectedChapter - 1))}
                             disabled={selectedChapter <= 1}
-                                className="h-9"
+                                className="h-9 flex-shrink-0"
                           >
                             <ChevronLeft className="h-4 w-4" />
                           </Button>
                           <Select value={selectedChapter.toString()} onValueChange={(value) => loadChapter(selectedBook, parseInt(value))}>
-                                <SelectTrigger className="w-32 h-9">
+                                <SelectTrigger className="flex-1 sm:w-32 h-9">
                               <SelectValue />
                             </SelectTrigger>
                                 <SelectContent className="max-h-60">
@@ -1203,7 +1207,7 @@ const Sermons = () => {
                             size="sm"
                             onClick={() => loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1))}
                             disabled={selectedChapter >= selectedBook.chapters}
-                                className="h-9"
+                                className="h-9 flex-shrink-0"
                           >
                             <ChevronRight className="h-4 w-4" />
                           </Button>
@@ -1213,29 +1217,31 @@ const Sermons = () => {
                     </div>
 
                                              {/* Enhanced Search */}
-                       <div className="flex flex-col gap-3">
+                       <div className="flex flex-col gap-2 md:gap-3">
                          <div className="flex gap-2">
                            <div className="flex-1 relative">
                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                              <Input
-                               placeholder="Search verses... (e.g., 'love', 'faith', 'hope')"
+                               placeholder={isMobile ? "Search verses..." : "Search verses... (e.g., 'love', 'faith', 'hope')"}
                                value={bibleSearchQuery}
                                onChange={(e) => {
                                  setBibleSearchQuery(e.target.value);
                                  searchBible(e.target.value);
                                }}
-                               className="pl-10 border-gray-300 focus:border-blue-500"
+                               className="pl-10 border-gray-300 focus:border-blue-500 text-sm"
                              />
                            </div>
                            <Button
                              variant="outline"
+                             size="sm"
                              onClick={() => {
                                setBibleSearchQuery('');
                                setSearchResults([]);
                              }}
                              disabled={!bibleSearchQuery}
+                             className="flex-shrink-0"
                            >
-                             Clear
+                             {isMobile ? <X className="h-4 w-4" /> : "Clear"}
                            </Button>
                          </div>
                          
@@ -1391,37 +1397,49 @@ const Sermons = () => {
                 onClick={() => setLeftPanelOpen(!leftPanelOpen)}
                 className="hover:bg-gray-100"
               >
-                <PanelLeftOpen className="h-4 w-4" />
+                {leftPanelOpen ? <PanelRightOpen className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsFullscreen(!isFullscreen)}
-              >
-                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
+              {!isMobile && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsFullscreen(!isFullscreen)}
+                  >
+                    {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  </Button>
+                  <Separator orientation="vertical" className="h-6" />
+                </>
+              )}
               <Button
                 onClick={() => handleSaveSermon(false)}
                 disabled={saving}
+                size={isMobile ? "sm" : "default"}
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 {saving ? (
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  <RefreshCw className="h-4 w-4 md:mr-2 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 md:mr-2" />
                 )}
-                Save
+                {!isMobile && <span>Save</span>}
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
           {/* Enhanced Left Panel */}
           {leftPanelOpen && (
-            <div className="w-80 border-r bg-white flex flex-col shadow-sm">
+            <>
+              {isMobile && (
+                <div 
+                  className="fixed inset-0 bg-black/50 z-40"
+                  onClick={() => setLeftPanelOpen(false)}
+                />
+              )}
+              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-80 max-w-[85vw]' : 'w-80'} border-r bg-white flex flex-col shadow-sm`}>
               <Tabs defaultValue="details" className="flex-1 flex flex-col">
                 <TabsList className="grid grid-cols-2 m-4 mb-0 bg-gray-100">
                   <TabsTrigger value="details" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Details</TabsTrigger>
@@ -1653,10 +1671,11 @@ const Sermons = () => {
 
               </Tabs>
             </div>
+            </>
           )}
 
           {/* Main Editor */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0">
             <SermonToolbar
               editorRef={editorRef}
               onFormatText={handleFormatText}
@@ -1667,15 +1686,15 @@ const Sermons = () => {
               onExport={handleExportSermon}
               onInsertQuickText={handleInsertQuickText}
             />
-            <div className={`flex-1 p-6 ${focusMode ? 'bg-white' : ''}`}>
+            <div className={`flex-1 p-3 md:p-6 ${focusMode ? 'bg-white' : ''}`}>
               <Textarea
                 ref={editorRef}
                 placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
                 value={selectedSermon?.content || ''}
                 onChange={(e) => setSelectedSermon(prev => prev ? { ...prev, content: e.target.value } : null)}
-                className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-8 border border-gray-200' : ''}`}
+                className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-4 md:p-8 border border-gray-200' : ''}`}
                 style={{ 
-                  minHeight: 'calc(100vh - 250px)',
+                  minHeight: isMobile ? 'calc(100vh - 200px)' : 'calc(100vh - 250px)',
                   fontSize: `${fontSize}px`,
                   lineHeight: lineHeight,
                   maxWidth: focusMode ? '800px' : '100%',
@@ -1733,7 +1752,8 @@ const Sermons = () => {
             />
           </div>
         )}
-      </div>
+        </div>
+      </MobileOptimizedLayout>
     );
   }
 
@@ -1741,85 +1761,155 @@ const Sermons = () => {
   return (
     <MobileOptimizedLayout className="bg-gray-50">
       <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-600 rounded-xl">
-              <PenTool className="h-8 w-8 text-white" />
+      <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="p-2 md:p-3 bg-orange-600 rounded-xl">
+              <PenTool className="h-6 w-6 md:h-8 md:w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                 Sermon Studio
               </h1>
-              <p className="text-gray-600">Create powerful sermons with ✦ AI assistance</p>
+              <p className="text-sm md:text-base text-gray-600">Create powerful sermons with ✦ AI assistance</p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
             <Button
               onClick={() => setShowAIGenerator(true)}
-              size="lg"
-              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+              size={isMobile ? "default" : "lg"}
+              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white w-full sm:w-auto"
             >
-              <Brain className="h-5 w-5 mr-2" />
-              AI Generate Sermon
+              <Brain className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              {isMobile ? "AI Generate" : "AI Generate Sermon"}
             </Button>
             <Button
               onClick={handleNewSermon}
-              size="lg"
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              size={isMobile ? "default" : "lg"}
+              className="bg-orange-600 hover:bg-orange-700 text-white w-full sm:w-auto"
             >
-              <Plus className="h-5 w-5 mr-2" />
+              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               New Sermon
             </Button>
           </div>
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row gap-3">
+            {/* Search Bar */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search sermons by title or content..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full"
+              />
+            </div>
+            
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="ready">Ready</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* Series Filter */}
+            {seriesOptions.length > 0 && (
+              <Select value={seriesFilter} onValueChange={setSeriesFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="All Series" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Series</SelectItem>
+                  {seriesOptions.map((series) => (
+                    <SelectItem key={series} value={series}>
+                      {series}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            
+            {/* Clear Filters Button */}
+            {(searchQuery || statusFilter !== 'all' || seriesFilter !== 'all') && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setStatusFilter('all');
+                  setSeriesFilter('all');
+                }}
+                className="w-full md:w-auto"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+            )}
+          </div>
+          
+          {/* Results Count */}
+          {filteredSermons.length !== sermons.length && (
+            <p className="text-sm text-gray-600">
+              Showing {filteredSermons.length} of {sermons.length} sermons
+            </p>
+          )}
+        </div>
+
         {/* Simple Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                  <p className="text-sm text-gray-600">Total Sermons</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Total Sermons</p>
                 </div>
-                <FileText className="h-8 w-8 text-gray-400" />
+                <FileText className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-green-600">{stats.ready}</p>
-                  <p className="text-sm text-gray-600">Ready to Deliver</p>
+                  <p className="text-xl md:text-2xl font-bold text-green-600">{stats.ready}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Ready to Deliver</p>
                 </div>
-                <CheckCircle2 className="h-8 w-8 text-green-400" />
+                <CheckCircle2 className="h-6 w-6 md:h-8 md:w-8 text-green-400" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-orange-600">{stats.delivered}</p>
-                  <p className="text-sm text-gray-600">Delivered</p>
+                  <p className="text-xl md:text-2xl font-bold text-orange-600">{stats.delivered}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Delivered</p>
                 </div>
-                <PenTool className="h-8 w-8 text-orange-400" />
+                <PenTool className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-orange-600">{stats.drafts}</p>
-                  <p className="text-sm text-gray-600">In Progress</p>
+                  <p className="text-xl md:text-2xl font-bold text-orange-600">{stats.drafts}</p>
+                  <p className="text-xs md:text-sm text-gray-600">In Progress</p>
                 </div>
-                <Edit3 className="h-8 w-8 text-orange-400" />
+                <Edit3 className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />
               </div>
             </CardContent>
           </Card>
@@ -1827,7 +1917,7 @@ const Sermons = () => {
 
         {/* Clean Sermons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sermons.map((sermon) => (
+          {filteredSermons.map((sermon) => (
             <Card key={sermon.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
@@ -1909,6 +1999,28 @@ const Sermons = () => {
             </Card>
           ))}
         </div>
+
+        {filteredSermons.length === 0 && sermons.length > 0 && (
+          <div className="text-center py-12">
+            <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              No sermons found
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Try adjusting your search or filters
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setSeriesFilter('all');
+              }}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        )}
 
         {sermons.length === 0 && !loading && (
           <div className="text-center py-20">

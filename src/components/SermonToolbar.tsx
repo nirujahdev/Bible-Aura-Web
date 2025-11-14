@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SermonToolbarProps {
   editorRef: React.RefObject<HTMLTextAreaElement>;
@@ -35,6 +36,7 @@ export default function SermonToolbar({
   onInsertQuickText
 }: SermonToolbarProps) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const formatText = (format: string, value?: string) => {
@@ -174,7 +176,7 @@ export default function SermonToolbar({
         {/* Main Toolbar */}
         <div className="p-2">
           <div className="flex items-center gap-1 justify-between flex-wrap">
-            <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center gap-1 flex-wrap overflow-x-auto">
               {/* Text Formatting */}
               <div className="flex items-center gap-1">
                 <Tooltip>
@@ -195,23 +197,27 @@ export default function SermonToolbar({
                   <TooltipContent>Italic (Ctrl+I)</TooltipContent>
                 </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('underline')}>
-                      <Underline className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Underline</TooltipContent>
-                </Tooltip>
+                {!isMobile && (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" onClick={() => formatText('underline')}>
+                          <Underline className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Underline</TooltipContent>
+                    </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('strikethrough')}>
-                      <Strikethrough className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Strikethrough</TooltipContent>
-                </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" onClick={() => formatText('strikethrough')}>
+                          <Strikethrough className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Strikethrough</TooltipContent>
+                    </Tooltip>
+                  </>
+                )}
               </div>
 
               <Separator orientation="vertical" className="h-6" />
@@ -286,14 +292,16 @@ export default function SermonToolbar({
                   <TooltipContent>Insert Link</TooltipContent>
                 </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('table')}>
-                      <Table className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Insert Table</TooltipContent>
-                </Tooltip>
+                {!isMobile && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" onClick={() => formatText('table')}>
+                        <Table className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Insert Table</TooltipContent>
+                  </Tooltip>
+                )}
               </div>
 
               <Separator orientation="vertical" className="h-6" />
@@ -363,21 +371,25 @@ export default function SermonToolbar({
             </div>
 
             {/* Statistics */}
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm flex-shrink-0">
               <div className="flex items-center gap-1 text-gray-600">
-                <Type className="h-4 w-4" />
-                <span>{wordCount} words</span>
+                <Type className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">{wordCount} words</span>
+                <span className="sm:hidden">{wordCount}</span>
               </div>
               <div className="flex items-center gap-1 text-gray-600">
-                <Clock className="h-4 w-4" />
-                <span>{estimatedTime} min</span>
+                <Clock className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">{estimatedTime} min</span>
+                <span className="sm:hidden">{estimatedTime}m</span>
               </div>
-              <div className="flex items-center gap-1 text-gray-600">
-                <Target className="h-4 w-4" />
-                <Badge variant="outline" className={readingLevel.color}>
-                  {readingLevel.level}
-                </Badge>
-              </div>
+              {!isMobile && (
+                <div className="flex items-center gap-1 text-gray-600">
+                  <Target className="h-4 w-4" />
+                  <Badge variant="outline" className={readingLevel.color}>
+                    {readingLevel.level}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
         </div>
