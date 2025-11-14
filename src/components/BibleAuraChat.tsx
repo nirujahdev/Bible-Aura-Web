@@ -707,11 +707,11 @@ export function BibleAuraChat() {
         {/* Mobile Header */}
         <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-40 flex-shrink-0">
           <div className="flex items-center justify-between px-4 py-3">
-            {/* Left - Hamburger Menu */}
+            {/* Left - Hamburger Menu (Navigation) */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowMobileHistory(true)}
+              onClick={() => setShowMobileNavMenu(true)}
               className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
             >
               <Menu className="h-5 w-5 text-gray-600" />
