@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Textarea as DialogTextarea } from '@/components/ui/textarea';
 import { 
   MessageCircle, 
   Send, 
@@ -25,7 +27,10 @@ import {
   Link as LinkIcon,
   Plus,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  Flag,
+  Copy,
+  Share2
 } from 'lucide-react';
 import {
   Select,
@@ -442,7 +447,8 @@ export function BibleAuraChat() {
           messageId,
           feedback,
           message: message.content,
-          response: message.content
+          response: message.content,
+          userId: user?.id || null
         })
       });
 
@@ -451,6 +457,117 @@ export function BibleAuraChat() {
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
+    }
+  };
+
+  const handleCopy = async (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message) return;
+
+    try {
+      await navigator.clipboard.writeText(message.content);
+      toast({
+        title: "Copied!",
+        description: "Message copied to clipboard",
+      });
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      toast({
+        title: "Error",
+        description: "Failed to copy message",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShare = async (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message) return;
+
+    const shareData = {
+      title: 'Bible Aura AI Response',
+      text: message.content,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`);
+        toast({
+          title: "Link copied!",
+          description: "Share link copied to clipboard",
+        });
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        // Fallback: copy to clipboard
+        try {
+          await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`);
+          toast({
+            title: "Link copied!",
+            description: "Share link copied to clipboard",
+          });
+        } catch (copyError) {
+          console.error('Failed to copy:', copyError);
+        }
+      }
+    }
+  };
+
+  const handleReport = (messageId: string) => {
+    setReportingMessageId(messageId);
+    setReportDialogOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!reportingMessageId || !reportReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a reason for reporting",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const message = messages.find(m => m.id === reportingMessageId);
+    if (!message) return;
+
+    try {
+      // Send report to API (you may want to create a separate report endpoint)
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: reportingMessageId,
+          feedback: 'negative',
+          message: message.content,
+          response: message.content,
+          userId: user?.id || null,
+          reportReason: reportReason.trim()
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Report submitted",
+          description: "Thank you for your feedback. We'll review this content.",
+        });
+        setReportDialogOpen(false);
+        setReportReason('');
+        setReportingMessageId(null);
+      } else {
+        throw new Error('Failed to submit report');
+      }
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -585,16 +702,15 @@ export function BibleAuraChat() {
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
               <div className="text-center py-12">
-                <div className="inline-block mb-6">
-                  <span className="text-6xl text-orange-500 drop-shadow-[0_0_25px_rgba(249,115,22,0.6)]">✦</span>
+                <div className="inline-block mb-4">
+                  <span className="text-3xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  I'm Bible Aura AI, How can I assist you from the Bible?
+                <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-2 px-4">
+                  How can I assist you from the Bible?
                 </h2>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-xs md:text-sm text-gray-600 mb-4 px-4">
                   Ask me anything about Scripture and I'll provide biblical insights
                 </p>
-                
               </div>
             ) : (
               messages.map((message, index) => (
@@ -606,15 +722,15 @@ export function BibleAuraChat() {
                   >
                     <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                       {message.role === 'assistant' ? (
-                        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-4 shadow-sm">
                           <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
                               if (line.trim().startsWith('✦')) {
                                 const titleText = line.replace(/^✦\s*/, '').trim();
                                 return (
-                                  <div key={idx} className="mb-3 mt-3 first:mt-0">
-                                    <strong className="text-gray-900 font-semibold text-base">{titleText}</strong>
+                                  <div key={idx} className="mb-2 md:mb-3 mt-2 md:mt-3 first:mt-0">
+                                    <strong className="text-gray-900 font-semibold text-sm md:text-base">{titleText}</strong>
                                   </div>
                                 );
                               }
@@ -622,13 +738,13 @@ export function BibleAuraChat() {
                               if (line.trim().startsWith('↗')) {
                                 const headingText = line.replace(/^↗\s*/, '').trim();
                                 return (
-                                  <div key={idx} className="mt-2 mb-1">
-                                    <strong className="text-gray-800 font-medium">{headingText}</strong>
+                                  <div key={idx} className="mt-1.5 md:mt-2 mb-1">
+                                    <strong className="text-gray-800 font-medium text-xs md:text-sm">{headingText}</strong>
                                   </div>
                                 );
                               }
                               // Regular line
-                              return <div key={idx} className="mb-1">{line || '\u00A0'}</div>;
+                              return <div key={idx} className="mb-1 text-xs md:text-sm">{line || '\u00A0'}</div>;
                             })}
                           </div>
                           
@@ -639,29 +755,29 @@ export function BibleAuraChat() {
                                 <TabsList className="inline-flex h-auto p-0 bg-transparent gap-0 border-b border-gray-100">
                                   <TabsTrigger 
                                     value="sources" 
-                                    className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                    className="text-xs md:text-sm font-medium text-gray-600 px-2 md:px-4 py-1.5 md:py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
                                   >
                                     <span>Sources</span>
                                     {message.sources && message.sources.length > 0 && (
-                                      <span className="ml-1.5 text-xs text-gray-500">({message.sources.length})</span>
+                                      <span className="ml-1 text-[10px] md:text-xs text-gray-500">({message.sources.length})</span>
                                     )}
                                   </TabsTrigger>
                                   <TabsTrigger 
                                     value="crossrefs" 
-                                    className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                    className="text-xs md:text-sm font-medium text-gray-600 px-2 md:px-4 py-1.5 md:py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
                                   >
                                     <span>Cross-Refs</span>
                                     {message.crossReferences && message.crossReferences.length > 0 && (
-                                      <span className="ml-1.5 text-xs text-gray-500">({message.crossReferences.length})</span>
+                                      <span className="ml-1 text-[10px] md:text-xs text-gray-500">({message.crossReferences.length})</span>
                                     )}
                                   </TabsTrigger>
                                   {message.validatedVerses && message.validatedVerses.length > 0 && (
                                     <TabsTrigger 
                                       value="verses" 
-                                      className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                      className="text-xs md:text-sm font-medium text-gray-600 px-2 md:px-4 py-1.5 md:py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
                                     >
                                       <span>Verses</span>
-                                      <span className="ml-1.5 text-xs text-gray-500">({message.validatedVerses.length})</span>
+                                      <span className="ml-1 text-[10px] md:text-xs text-gray-500">({message.validatedVerses.length})</span>
                                     </TabsTrigger>
                                   )}
                                 </TabsList>
@@ -670,7 +786,7 @@ export function BibleAuraChat() {
                               {message.sources && message.sources.length > 0 ? (
                                 <div className="space-y-2">
                                   {message.sources.map((source, idx) => (
-                                    <div key={idx} className="flex items-center justify-between text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors">
+                                    <div key={idx} className="flex items-center justify-between text-[10px] md:text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg px-2 md:px-3 py-1.5 md:py-2 transition-colors">
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         {source.url ? (
                                           <LinkIcon className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
@@ -741,35 +857,69 @@ export function BibleAuraChat() {
                             </div>
                           ) : null}
                           
-                          {/* Feedback Buttons */}
+                          {/* Feedback and Action Buttons */}
                           {message.role === 'assistant' && (
-                            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
-                              <span className="text-xs text-gray-500 mr-2">Was this helpful?</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleFeedback(message.id, 'positive')}
-                                className={`h-7 px-2 ${message.feedback === 'positive' ? 'bg-green-50 text-green-600' : 'hover:bg-gray-50'}`}
-                              >
-                                <ThumbsUp className={`h-3.5 w-3.5 ${message.feedback === 'positive' ? 'fill-green-600' : ''}`} />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleFeedback(message.id, 'negative')}
-                                className={`h-7 px-2 ${message.feedback === 'negative' ? 'bg-red-50 text-red-600' : 'hover:bg-gray-50'}`}
-                              >
-                                <ThumbsDown className={`h-3.5 w-3.5 ${message.feedback === 'negative' ? 'fill-red-600' : ''}`} />
-                              </Button>
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-[10px] md:text-xs text-gray-500 mr-1">Was this helpful?</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleFeedback(message.id, 'positive')}
+                                  className={`h-6 md:h-7 px-1.5 md:px-2 ${message.feedback === 'positive' ? 'bg-green-50 text-green-600' : 'hover:bg-gray-50'}`}
+                                >
+                                  <ThumbsUp className={`h-3 w-3 md:h-3.5 md:w-3.5 ${message.feedback === 'positive' ? 'fill-green-600' : ''}`} />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleFeedback(message.id, 'negative')}
+                                  className={`h-6 md:h-7 px-1.5 md:px-2 ${message.feedback === 'negative' ? 'bg-red-50 text-red-600' : 'hover:bg-gray-50'}`}
+                                >
+                                  <ThumbsDown className={`h-3 w-3 md:h-3.5 md:w-3.5 ${message.feedback === 'negative' ? 'fill-red-600' : ''}`} />
+                                </Button>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(message.id)}
+                                  className="h-6 md:h-7 px-1.5 md:px-2 text-[10px] md:text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                                  title="Copy message"
+                                >
+                                  <Copy className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
+                                  <span className="hidden sm:inline">Copy</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleShare(message.id)}
+                                  className="h-6 md:h-7 px-1.5 md:px-2 text-[10px] md:text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                                  title="Share message"
+                                >
+                                  <Share2 className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
+                                  <span className="hidden sm:inline">Share</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleReport(message.id)}
+                                  className="h-6 md:h-7 px-1.5 md:px-2 text-[10px] md:text-xs text-gray-500 hover:text-red-600 hover:bg-red-50"
+                                  title="Report inappropriate content"
+                                >
+                                  <Flag className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
+                                  <span className="hidden sm:inline">Report</span>
+                                </Button>
+                              </div>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-sm">
-                          <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-3 md:p-4 shadow-sm">
+                          <div className="whitespace-pre-wrap text-xs md:text-sm">{message.content}</div>
                         </div>
                       )}
-                      <div className="text-[10px] text-gray-400 mt-1 px-2">
+                      <div className="text-[9px] md:text-[10px] text-gray-400 mt-1 px-2">
                         {new Date(message.timestamp).toLocaleTimeString()}
                       </div>
                     </div>
@@ -945,6 +1095,44 @@ export function BibleAuraChat() {
           </div>
         </div>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Report Content</DialogTitle>
+            <DialogDescription>
+              Please tell us why you're reporting this content. This helps us improve our service.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <DialogTextarea
+              placeholder="Describe the issue (e.g., inaccurate information, inappropriate content, etc.)"
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              className="min-h-[100px] text-sm"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReportDialogOpen(false);
+                setReportReason('');
+                setReportingMessageId(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={submitReport}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
