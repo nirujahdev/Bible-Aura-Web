@@ -6,13 +6,17 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error(
-    '❌ Supabase credentials not configured!\n\n' +
+// Use placeholder values if not set to prevent app crash, but log warning
+const hasCredentials = !!(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+
+if (!hasCredentials) {
+  console.error(
+    '⚠️ Supabase credentials not configured!\n\n' +
     'Please set the following environment variables:\n' +
     '- VITE_SUPABASE_URL\n' +
     '- VITE_SUPABASE_ANON_KEY\n\n' +
-    'These should be set in your .env.local file or deployment environment.'
+    'These should be set in your .env.local file or deployment environment.\n' +
+    'The app will continue to load but Supabase features will not work.'
   );
 }
 
@@ -24,6 +28,9 @@ if (import.meta.env.DEV) {
     environment: import.meta.env.MODE
   });
 }
+
+// Export credential check helper
+export const hasSupabaseCredentials = hasCredentials;
 
 // Environment variables are now required (no fallbacks for security)
 
@@ -51,7 +58,11 @@ const isFromEmailLink = typeof window !== 'undefined' && (() => {
 })();
 
 // Enhanced Supabase client configuration
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+// Use placeholder values if credentials are missing to prevent crash
+export const supabase = createClient(
+  SUPABASE_URL || 'https://placeholder.supabase.co',
+  SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
+  {
   auth: {
     // Enable session persistence for better UX and to prevent white screens
     persistSession: true,

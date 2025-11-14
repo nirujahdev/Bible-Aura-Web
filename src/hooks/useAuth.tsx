@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -123,6 +123,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initializeAuth = async () => {
       try {
+        // Skip auth initialization if credentials are not configured
+        if (!hasSupabaseCredentials) {
+          console.warn('⚠️ Supabase credentials not configured - skipping auth initialization');
+          if (isMounted) {
+            setLoading(false);
+            setInitialized(true);
+          }
+          return;
+        }
+
         // Get initial session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
