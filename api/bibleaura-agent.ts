@@ -135,50 +135,38 @@ const ModeClassifierSchema = z.object({ mode: z.enum(["chat", "verse", "parable"
 // Agent definitions
 const languageClassifier = new Agent({
   name: "Language Classifier",
-  instructions: `You are the Bible Aura language detector.
-Identify whether the user's message is written in English or Tamil.
-Respond ONLY with structured JSON.`,
+  instructions: `Detect if message is English or Tamil. Respond with JSON only.`,
   model: "gpt-4.1-nano",
   outputType: LanguageClassifierSchema,
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.1,
+    topP: 0.5,
+    maxTokens: 50,
+    store: false
   }
 });
 
 const chat = new Agent({
   name: "Chat",
-  instructions: `You are Bible Aura's AI Chat assistant.
-Answer warmly and briefly (max 80 words).
-Provide a direct answer in 1-2 sentences, include Scripture reference if relevant, and add a brief encouragement or reflective question.
-Do not use markdown formatting, asterisks, or special symbols. Use plain text only.`,
+  instructions: `Answer briefly (max 60 words). Direct answer, Scripture reference if relevant, brief encouragement. Plain text only.`,
   model: "gpt-4.1-nano",
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.3,
+    topP: 0.7,
+    maxTokens: 256,
+    store: false
   }
 });
 
 const qA = new Agent({
   name: "Q&A",
-  instructions: `You are Bible Aura's Quick Q&A AI.
-Give ultra-fast answers under 100 words.
-Format your answer clearly with:
-Question Topic
-Answer
-Scripture reference
-Why this matters
-Keep it practical, clear, and biblical. Use plain text only, no markdown or special symbols.`,
+  instructions: `Ultra-fast answers under 60 words. Format: Topic, Answer, Scripture, Why. Plain text only.`,
   model: "gpt-4.1-nano",
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.3,
+    topP: 0.7,
+    maxTokens: 256,
+    store: false
   }
 });
 
@@ -195,10 +183,10 @@ Summary
 Be biblically accurate. Use plain text only, no markdown formatting, asterisks, or special symbols.`,
   model: "gpt-4.1-nano",
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.3,
+    topP: 0.7,
+    maxTokens: 512,
+    store: false
   }
 });
 
@@ -215,10 +203,10 @@ Additional Study Resources
 Use plain text only, no markdown formatting or special symbols.`,
   model: "gpt-4.1-nano",
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.3,
+    topP: 0.7,
+    maxTokens: 512,
+    store: false
   }
 });
 
@@ -234,10 +222,10 @@ Modern-Day Example
 Keep it simple and true to Scripture. Use plain text only, no markdown or special symbols.`,
   model: "gpt-4.1-nano",
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.3,
+    topP: 0.7,
+    maxTokens: 512,
+    store: false
   }
 });
 
@@ -253,34 +241,23 @@ Key Scripture References
 Include both strengths and weaknesses. Use plain text only, no markdown formatting or special symbols.`,
   model: "gpt-4.1-nano",
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.3,
+    topP: 0.7,
+    maxTokens: 512,
+    store: false
   }
 });
 
 const modeClassifier = new Agent({
   name: "Mode Classifier",
-  instructions: `You are the Bible Aura mode classification agent.
-The user's query and retrieved Bible text are provided below.
-
-Determine which mode best fits the user's intent:
-- "chat" for simple discussion or guidance
-- "verse" for verse analysis or explanation
-- "parable" for Jesus' parables
-- "character" for people studies
-- "topical" for broad subjects (e.g., love, faith)
-- "qa" for short factual Q&A
-
-Return JSON only.`,
+  instructions: `Classify mode: "chat" (discussion), "verse" (analysis), "parable", "character", "topical", "qa" (factual). Return JSON only.`,
   model: "gpt-4.1-nano",
   outputType: ModeClassifierSchema,
   modelSettings: {
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024,
-    store: true
+    temperature: 0.1,
+    topP: 0.5,
+    maxTokens: 50,
+    store: false
   }
 });
 
@@ -315,10 +292,10 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
     // Step 1: Classify language (use preference if provided, otherwise detect)
     let lang: Language = workflow.preferred_language === "ta" ? "ta" : "en";
     
-    // Only run language classifier if no preference is provided
+    // Only run language classifier if no preference is provided (with timeout)
     if (!workflow.preferred_language) {
       try {
-        const languageClassifierResultTemp = await runner.run(
+        const languagePromise = runner.run(
           languageClassifier,
           [
             {
@@ -332,6 +309,12 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
             }
           ]
         );
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Language classification timeout')), 2000)
+        );
+        
+        const languageClassifierResultTemp = await Promise.race([languagePromise, timeoutPromise]) as any;
 
         if (!languageClassifierResultTemp.finalOutput) {
           console.warn('[Agent SDK] Language classification returned no output, defaulting to English');
@@ -342,7 +325,11 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
           lang = languageClassifierResult.output_parsed.lang;
         }
       } catch (langError: any) {
-        console.error('[Agent SDK] Language classification error:', langError.message);
+        if (langError.message && langError.message.includes('timeout')) {
+          console.warn('[Agent SDK] Language classification timeout, defaulting to English');
+        } else {
+          console.error('[Agent SDK] Language classification error:', langError.message);
+        }
         // Default to English and continue
         lang = "en";
       }
@@ -369,14 +356,10 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
       mode = "chat";
     }
     
-    // Only run mode classifier if no preference is provided
+    // Only run mode classifier if no preference is provided (with timeout)
     if (!workflow.preferred_mode) {
       try {
-        const sourcesContext = sources.length > 0 
-          ? `Context from Bible search: ${sources.slice(0, 5).map(s => s.filename).join(', ')}`
-          : 'No specific Bible references found';
-        
-        const modeClassifierResultTemp = await runner.run(
+        const modePromise = runner.run(
           modeClassifier,
           [
             {
@@ -384,13 +367,18 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
               content: [
                 {
                   type: "input_text",
-                  text: `User query: ${workflow.input_as_text}
-${sourcesContext}`
+                  text: `User query: ${workflow.input_as_text}`
                 }
               ]
             }
           ]
         );
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Mode classification timeout')), 2000)
+        );
+        
+        const modeClassifierResultTemp = await Promise.race([modePromise, timeoutPromise]) as any;
 
         if (!modeClassifierResultTemp.finalOutput) {
           console.warn('[Agent SDK] Mode classification returned no output, defaulting to chat');
@@ -401,7 +389,11 @@ ${sourcesContext}`
           mode = modeClassifierResult.output_parsed.mode;
         }
       } catch (modeError: any) {
-        console.error('[Agent SDK] Mode classification error:', modeError.message);
+        if (modeError.message && modeError.message.includes('timeout')) {
+          console.warn('[Agent SDK] Mode classification timeout, defaulting to chat');
+        } else {
+          console.error('[Agent SDK] Mode classification error:', modeError.message);
+        }
         // Default to chat mode and continue
         mode = "chat";
       }
@@ -459,10 +451,10 @@ ${sourcesContext}`
       
       console.log('[Agent SDK] Running guardrails on agent output...');
       
-      // Set timeout for guardrails (3 seconds max - fast checks only)
+      // Set timeout for guardrails (1 second max - fast checks only)
       const guardrailsPromise = runGuardrails(guardrailsInputtext, guardrailsConfig, context, true);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Guardrails timeout')), 3000)
+        setTimeout(() => reject(new Error('Guardrails timeout')), 1000)
       );
       
       const guardrailsResult = await Promise.race([guardrailsPromise, timeoutPromise]) as any;
