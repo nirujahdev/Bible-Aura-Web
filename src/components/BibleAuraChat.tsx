@@ -552,8 +552,29 @@ export function BibleAuraChat() {
                     <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                       {message.role === 'assistant' ? (
                         <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-                          <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-                            {message.content}
+                          <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                            {message.content.split('\n').map((line, idx) => {
+                              // Check if line starts with ✦ (title marker)
+                              if (line.trim().startsWith('✦')) {
+                                const titleText = line.replace(/^✦\s*/, '').trim();
+                                return (
+                                  <div key={idx} className="mb-3 mt-3 first:mt-0">
+                                    <strong className="text-gray-900 font-semibold text-base">{titleText}</strong>
+                                  </div>
+                                );
+                              }
+                              // Check if line starts with ↗ (section heading)
+                              if (line.trim().startsWith('↗')) {
+                                const headingText = line.replace(/^↗\s*/, '').trim();
+                                return (
+                                  <div key={idx} className="mt-2 mb-1">
+                                    <strong className="text-gray-800 font-medium">{headingText}</strong>
+                                  </div>
+                                );
+                              }
+                              // Regular line
+                              return <div key={idx} className="mb-1">{line || '\u00A0'}</div>;
+                            })}
                           </div>
                           
                           {/* Sources and Cross-References with Tabs - Clean design */}
