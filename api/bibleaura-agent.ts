@@ -730,7 +730,7 @@ export default async function handler(
       return;
     }
 
-    const { message, mode: preferredMode, language: preferredLanguage, modelMode } = req.body;
+    const { message, mode: preferredMode, language: preferredLanguage } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       res.status(400).json({
@@ -741,13 +741,15 @@ export default async function handler(
     }
 
     const sanitizedMessage = message.trim().slice(0, 2000);
-    const selectedModelMode: ModelMode = (modelMode === 'aura-1.0-thinking' ? 'aura-1.0-thinking' : 'aura-1.0');
+    // Always use default model mode (aura-1.0) - model selector removed
+    const selectedModelMode: ModelMode = 'aura-1.0';
 
     console.log('[Bible Aura AI] Processing request:', {
       messageLength: sanitizedMessage.length,
       preferredMode,
       preferredLanguage,
-      modelMode: selectedModelMode
+      detectedLanguage: detectLanguage(sanitizedMessage),
+      usingLanguage: preferredLanguage || detectLanguage(sanitizedMessage)
     });
 
     // Check cache first
@@ -765,7 +767,17 @@ export default async function handler(
       selectedModelMode
     );
 
-    // Validate verse references in response
+    // Only return sources that are actually retrieved (not empty or invalid)
+    if (result.sources) {
+      result.sources = result.sources.filter(s => 
+        s.filename && 
+        s.filename !== "Unknown" && 
+        s.filename.trim() !== ""
+      );
+    }
+
+    // Only validate verses that actually exist in the retrieved context
+    // Don't create fake verse references
     const validatedVerses = await validateVerseReferences(result.text, result.lang);
     if (validatedVerses.length > 0) {
       result.validatedVerses = validatedVerses;
