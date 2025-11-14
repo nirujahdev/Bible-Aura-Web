@@ -1,15 +1,15 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { BibleAuraChat } from '@/components/BibleAuraChat';
-import { Button } from '@/components/ui/button';
-import { Calendar, BookOpen } from 'lucide-react';
+import LoadingScreen from '@/components/LoadingScreen';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const isMobile = useIsMobile();
 
   useSEO({
@@ -18,15 +18,24 @@ export default function Dashboard() {
     keywords: "Bible AI chat, biblical insights, AI Bible study, scripture analysis"
   });
 
+  // Show loading screen while checking authentication
+  if (loading) {
+    return <LoadingScreen message="Loading dashboard..." />;
+  }
+
+  // Redirect to auth if not logged in
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
+  // Wrap in error boundary to catch any component errors
   return (
-    <MobileOptimizedLayout>
-      <div className={isMobile ? "h-[100dvh] mobile-safe-area" : "h-screen"}>
-        <BibleAuraChat />
-      </div>
-    </MobileOptimizedLayout>
+    <ErrorBoundary>
+      <MobileOptimizedLayout>
+        <div className={isMobile ? "h-[100dvh] mobile-safe-area" : "h-screen"}>
+          <BibleAuraChat />
+        </div>
+      </MobileOptimizedLayout>
+    </ErrorBoundary>
   );
 } 

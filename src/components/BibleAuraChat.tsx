@@ -22,7 +22,8 @@ import {
   Trash2,
   X,
   FileText,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Plus
 } from 'lucide-react';
 import {
   Select,
@@ -157,7 +158,7 @@ function generateRelatedQuestions(lastResponse: string, allMessages: Message[]):
 }
 
 export function BibleAuraChat() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   
   // Core state
@@ -178,12 +179,16 @@ export function BibleAuraChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load conversations on mount
+  // Load conversations on mount (with error handling)
   useEffect(() => {
-    if (user) {
-      loadConversations();
+    if (user && !authLoading) {
+      try {
+        loadConversations();
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -228,17 +233,24 @@ export function BibleAuraChat() {
         if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
           console.error('❌ ai_conversations table does not exist. Please run database migration.');
         }
-        return; // Fail silently
+        // Don't throw - just fail silently to prevent crashes
+        return;
       }
       setConversations(data || []);
     } catch (error: any) {
       console.error('Load conversations error:', error);
-      // Removed toast - fail silently
+      // Fail silently to prevent component crashes
+      setConversations([]);
     }
   };
 
   const saveCurrentConversation = async () => {
     if (!user || messages.length === 0) return;
+    
+    // Check if Supabase is properly configured
+    if (!hasSupabaseCredentials) {
+      return; // Fail silently
+    }
     
     try {
       const title = messages[0]?.content.slice(0, 50) + '...' || 'New Conversation';
