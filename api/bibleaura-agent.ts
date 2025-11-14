@@ -342,9 +342,10 @@ Your responsibilities:
    - character → character study (overview, timeline, lessons)
    - topical → topic overview (definition, scriptures, application)
    - qa → Q&A format (${isDeepAnalysis ? 'detailed answer' : 'concise answer'})
-3. Use the Bible context and web sources provided. NEVER hallucinate verses. Only reference verses that exist in the context.
-4. MANDATORY: Every response MUST include at least ONE Bible verse reference (e.g., "John 3:16", "Romans 8:28", "Psalm 23:1"). 
-   - If the context contains verse references, use them.
+3. Use ONLY the Bible context and web sources provided. NEVER hallucinate or make up verses. ONLY reference verses that are explicitly mentioned in the provided context above. If a verse is not in the context, DO NOT reference it.
+4. MANDATORY: Every response MUST include at least ONE Bible verse reference from the context provided above. 
+   - ONLY use verse references that appear in the "Available verse references in context" list or in the Bible Context section.
+   - NEVER create or invent verse references that are not in the context.
    - Format verse references clearly, e.g., "As written in John 3:16..." or "Scripture reference: Romans 8:28"
    - Include the verse reference naturally in your response.
 5. Strict formatting rules:
