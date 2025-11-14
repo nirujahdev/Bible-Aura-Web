@@ -9,7 +9,7 @@ const getEnv = (key: string, fallback = ''): string => {
 
 // Workflow configuration constants sourced from environment variables
 const workflowId = getEnv('VITE_CHATKIT_WORKFLOW_ID');
-const workflowVersion = getEnv('VITE_CHATKIT_WORKFLOW_VERSION', '1');
+const workflowVersion = getEnv('VITE_CHATKIT_WORKFLOW_VERSION', '2');
 const apiEndpoint = getEnv('VITE_CHATKIT_API_ENDPOINT', '/api/bibleaura-chat');
 
 if (import.meta.env.DEV && (!workflowId || workflowId === 'your_workflow_id')) {
@@ -48,12 +48,16 @@ export async function sendBibleAuraMessage(message: string): Promise<ChatKitResp
     throw new Error('Message is required and must be a non-empty string');
   }
 
-  console.log('[Bible Aura AI] Processing message through ChatKit Workflow...');
+  if (import.meta.env.DEV) {
+    console.log('[Bible Aura AI] Processing message through ChatKit Workflow...');
+  }
 
   // Use the same origin to avoid CORS issues
   const apiUrl = `${window.location.origin}${CHATKIT_CONFIG.apiEndpoint}`;
 
-  console.log('[Bible Aura AI] Calling ChatKit Workflow API:', apiUrl);
+  if (import.meta.env.DEV) {
+    console.log('[Bible Aura AI] Calling ChatKit Workflow API:', apiUrl);
+  }
 
   try {
     const response = await fetch(apiUrl, {

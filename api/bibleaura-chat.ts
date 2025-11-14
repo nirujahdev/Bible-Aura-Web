@@ -41,7 +41,7 @@ function resolveChatKitConfig(): ChatKitConfig {
   const version =
     process.env.CHATKIT_WORKFLOW_VERSION ??
     process.env.VITE_CHATKIT_WORKFLOW_VERSION ??
-    '1';
+    '2';
 
   const domainKey =
     process.env.CHATKIT_DOMAIN_KEY ??
@@ -64,25 +64,24 @@ function resolveChatKitConfig(): ChatKitConfig {
   };
 }
 
-// CORS headers helper
+// CORS headers helper - Security: Only allow specific origins
 function setCORSHeaders(res: VercelResponse, origin?: string, allowedOrigin: string = DEFAULT_ALLOWED_ORIGIN) {
-  // Allow requests from the Bible Aura domain and localhost for development
+  // Security: Only allow requests from the configured origin or localhost in development
+  const isDevelopment = process.env.NODE_ENV === 'development';
   const isAllowedOrigin = origin === allowedOrigin || 
-                          origin?.includes('bibleaura.xyz') || 
-                          origin?.includes('localhost') ||
-                          origin?.includes('127.0.0.1') ||
-                          !origin;
+                          (isDevelopment && origin && (origin.includes('localhost') || origin.includes('127.0.0.1')));
   
-  if (isAllowedOrigin) {
-    // Use the origin if it's localhost, otherwise use the allowed origin
-    const corsOrigin = origin?.includes('localhost') || origin?.includes('127.0.0.1') 
-      ? origin 
-      : allowedOrigin;
-    
-    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+  if (isAllowedOrigin && origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    res.setHeader('Vary', 'Origin'); // Security: Prevent cache poisoning
+  } else if (!origin) {
+    // Same-origin requests (no Origin header)
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   }
 }
 
@@ -108,29 +107,66 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const chatKitConfig = resolveChatKitConfig();
 
-    // Validate API key
-    const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+    // Security: Validate API key (prefer server-side env var, never use client-side in production)
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_openai_api_key_here' || apiKey.trim() === '') {
+      console.error('[Security] OpenAI API key not configured or invalid');
       return res.status(500).json({
-        error: 'OpenAI API key not configured',
-        message: 'Please configure OPENAI_API_KEY in your environment variables'
+        error: 'Service unavailable',
+        message: 'API service is not configured'
       });
     }
 
-    // Parse request body
-    const { message } = req.body;
+    // Security: API key format validation (supports both 'sk-' and 'sk-proj-' formats)
+    const isValidKeyFormat = apiKey.startsWith('sk-') || apiKey.startsWith('sk-proj-');
+    if (!isValidKeyFormat || apiKey.length < 20) {
+      console.error('[Security] Invalid API key format detected');
+      return res.status(500).json({
+        error: 'Service unavailable',
+        message: 'API service configuration error'
+      });
+    }
 
-    if (!message || typeof message !== 'string' || message.trim() === '') {
+    // Parse and validate request body
+    if (!req.body || typeof req.body !== 'object') {
       return res.status(400).json({
         error: 'Invalid request',
-        message: 'Message is required and must be a non-empty string'
+        message: 'Request body must be a valid JSON object'
+      });
+    }
+
+    const { message } = req.body;
+
+    // Security: Input validation and sanitization
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Message is required and must be a string'
+      });
+    }
+
+    // Security: Length validation to prevent abuse
+    const trimmedMessage = message.trim();
+    if (trimmedMessage === '') {
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Message cannot be empty'
+      });
+    }
+
+    // Security: Maximum message length to prevent DoS
+    const MAX_MESSAGE_LENGTH = 10000;
+    if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters`
       });
     }
 
     const workflowResult = await executeWorkflow(
       apiKey,
       {
-        input_as_text: message.trim()
+        input_as_text: trimmedMessage
       },
       chatKitConfig
     );
@@ -164,8 +200,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (mode === 'chat' && lang === 'en' && !aiResponse.includes('✦')) {
       // Only classify if response doesn't look like it came from the workflow
       try {
-        lang = await classifyLanguage(message.trim(), apiKey);
-        mode = await classifyMode(message.trim(), lang, apiKey);
+        lang = await classifyLanguage(trimmedMessage, apiKey);
+        mode = await classifyMode(trimmedMessage, lang, apiKey);
       } catch (classifyError) {
         console.error('Classification error:', classifyError);
         // Keep defaults
@@ -186,7 +222,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let errorMessage = error?.message || 'Failed to process chat message';
     
     // Check for specific error types
-    if (errorMessage.toLowerCase().includes('workflow')) {
+    if (errorMessage.toLowerCase().includes('version')) {
+      const chatKitConfig = resolveChatKitConfig();
+      const versionNumber = parseInt(chatKitConfig.version, 10) || 1;
+      errorMessage = `Workflow version ${versionNumber} error: ${errorMessage}. Please verify that version ${versionNumber} exists for your workflow, or try using version 1.`;
+    } else if (errorMessage.toLowerCase().includes('workflow')) {
       errorMessage = 'Workflow execution failed. Please try again or contact support.';
     } else if (errorMessage.includes('API key') || errorMessage.includes('authentication')) {
       errorMessage = 'API authentication failed. Please check your API key configuration.';
@@ -194,10 +234,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       errorMessage = 'Server configuration missing ChatKit workflow details. Please update environment variables.';
     }
     
+    // Security: Don't leak sensitive error details in production
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
     return res.status(500).json({
       error: 'Internal server error',
       message: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      ...(isDevelopment && { details: error.stack })
     });
   }
 }
@@ -215,19 +258,48 @@ async function executeWorkflow(apiKey: string, workflowInput: WorkflowInput, con
     headers['OpenAI-Organization'] = config.domainKey;
   }
 
+  // Convert version to number if it's a string, default to 1 if invalid
+  const versionNumber = parseInt(config.version, 10) || 1;
+  
+  // Log version being used for debugging (without exposing full workflow ID)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[ChatKit] Executing workflow ${config.workflowId.substring(0, 8)}... with version ${versionNumber}`);
+  }
+
+  // Build request body - always include version as OpenAI API may require it
+  const requestBody: any = {
+    input: workflowInput,
+    workflow_id: config.workflowId,
+    version: versionNumber  // Always include version (as number)
+  };
+
   const initialResponse = await fetch(workflowEndpoint, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      input: workflowInput,
-      workflow_id: config.workflowId,
-      version: config.version
-    })
+    body: JSON.stringify(requestBody)
   });
 
   if (!initialResponse.ok) {
     const errorData = await initialResponse.json().catch(() => ({}));
     const errorMessage = errorData.error?.message || errorData.message || `Workflow API error: ${initialResponse.status}`;
+    
+    // Enhanced error logging for version-specific issues (sanitized)
+    console.error(`[ChatKit] Workflow execution failed:`, {
+      status: initialResponse.status,
+      error: errorMessage,
+      workflowId: process.env.NODE_ENV === 'development' ? config.workflowId : config.workflowId.substring(0, 8) + '...',
+      version: versionNumber
+    });
+    
+    // Provide more specific error messages for version-related issues
+    if (errorMessage.toLowerCase().includes('version') || errorMessage.toLowerCase().includes('not found')) {
+      throw new Error(
+        `Workflow version ${versionNumber} error: ${errorMessage}. ` +
+        `Please verify that version ${versionNumber} exists for workflow ${config.workflowId}. ` +
+        `You may need to check your workflow configuration or use version 1.`
+      );
+    }
+    
     throw new Error(errorMessage);
   }
 
