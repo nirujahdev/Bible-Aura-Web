@@ -705,41 +705,43 @@ export function BibleAuraChat() {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full">
-        {/* Mobile Header */}
-        <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-40 flex-shrink-0">
-          <div className="flex items-center justify-between px-4 py-3">
-            {/* Left - Hamburger Menu (Navigation) */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMobileNavMenu(true)}
-              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
-            >
-              <Menu className="h-5 w-5 text-gray-600" />
-            </Button>
-            
-            {/* Center - Logo */}
-            <div className="flex flex-col items-center justify-center leading-tight">
-              <div className="flex items-center gap-2">
-                <span className="text-orange-500 text-xl font-semibold drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">✦</span>
-                <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
+        {/* Mobile Header - Hide when history or menus are open */}
+        {!showMobileHistory && !showMobileNavMenu && !showMobileMoreMenu && (
+          <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-40 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3">
+              {/* Left - Hamburger Menu (Navigation) */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileNavMenu(true)}
+                className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
+              >
+                <Menu className="h-5 w-5 text-gray-600" />
+              </Button>
+              
+              {/* Center - Logo */}
+              <div className="flex flex-col items-center justify-center leading-tight">
+                <div className="flex items-center gap-2">
+                  <span className="text-orange-500 text-xl font-semibold drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">✦</span>
+                  <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
+                  Bible AI Assistance
+                </span>
               </div>
-              <span className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
-                Bible AI Assistance
-              </span>
+              
+              {/* Right - Three Dots Menu (Page Actions) */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileMoreMenu(true)}
+                className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
+              >
+                <MoreVertical className="h-5 w-5 text-gray-600" />
+              </Button>
             </div>
-            
-            {/* Right - Three Dots Menu (Page Actions) */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMobileMoreMenu(true)}
-              className="h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
-            >
-              <MoreVertical className="h-5 w-5 text-gray-600" />
-            </Button>
           </div>
-        </div>
+        )}
 
         {/* Header - Desktop Only */}
         <div className="hidden lg:block bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0">
