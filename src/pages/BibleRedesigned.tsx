@@ -219,35 +219,54 @@ export default function BibleRedesigned() {
     
     try {
       // Load bookmarks
-      const bookmarksData = await BookmarksService.getUserBookmarks(user.id);
-      if (bookmarksData) {
-        setBookmarks(new Set(bookmarksData.map(b => b.verse_id)));
+      try {
+        const bookmarksData = await BookmarksService.getUserBookmarks(user.id);
+        if (bookmarksData && bookmarksData.length > 0) {
+          setBookmarks(new Set(bookmarksData.map(b => b.verse_id)));
+          console.log('✅ Loaded bookmarks:', bookmarksData.length);
+        } else {
+          console.log('ℹ️ No bookmarks found');
+        }
+      } catch (error) {
+        console.error('❌ Error loading bookmarks:', error);
       }
       
       // Load favorites
-      const favoritesData = await FavoritesService.getUserFavorites(user.id);
-      if (favoritesData) {
-        setFavorites(new Set(favoritesData.map(f => f.verse_id)));
+      try {
+        const favoritesData = await FavoritesService.getUserFavorites(user.id);
+        if (favoritesData && favoritesData.length > 0) {
+          setFavorites(new Set(favoritesData.map(f => f.verse_id)));
+          console.log('✅ Loaded favorites:', favoritesData.length);
+        } else {
+          console.log('ℹ️ No favorites found');
+        }
+      } catch (error) {
+        console.error('❌ Error loading favorites:', error);
       }
       
       // Load highlights
-      const { data: highlightsData } = await supabase
-        .from('verse_highlights')
-        .select('verse_id, color')
-        .eq('user_id', user.id);
-      
-      if (highlightsData) {
-        const highlightMap = new Map();
-        highlightsData.forEach(h => highlightMap.set(h.verse_id, h.color));
-        setHighlights(highlightMap);
+      try {
+        const { data: highlightsData, error: highlightsError } = await supabase
+          .from('verse_highlights')
+          .select('verse_id, color')
+          .eq('user_id', user.id);
+        
+        if (highlightsError) {
+          console.error('❌ Error loading highlights:', highlightsError);
+        } else if (highlightsData && highlightsData.length > 0) {
+          const highlightMap = new Map();
+          highlightsData.forEach(h => highlightMap.set(h.verse_id, h.color));
+          setHighlights(highlightMap);
+          console.log('✅ Loaded highlights:', highlightsData.length);
+        } else {
+          console.log('ℹ️ No highlights found');
+        }
+      } catch (error) {
+        console.error('❌ Error loading highlights:', error);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load user data",
-        variant: "destructive"
-      });
+      console.error('❌ Error loading user data:', error);
+      // Don't show toast for background loading errors
     }
   };
 
@@ -456,9 +475,13 @@ export default function BibleRedesigned() {
       setSelectedVerseForHighlight(null);
       
       toast({ title: `Highlighted in ${color}!` });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error highlighting verse:', error);
-      toast({ title: "Error", description: "Failed to highlight verse", variant: "destructive" });
+      toast({ 
+        title: "Error", 
+        description: error?.message || "Failed to highlight verse", 
+        variant: "destructive" 
+      });
     }
   };
 
