@@ -39,7 +39,7 @@ function getOpenAIClient(): OpenAI {
   return new OpenAI({ apiKey });
 }
 
-// Guardrails definitions
+// Guardrails definitions - Optimized for speed (only fast checks)
 const guardrailsConfig = {
   guardrails: [
     {
@@ -66,22 +66,9 @@ const guardrailsConfig = {
           "illicit/violent"
         ]
       }
-    },
-    {
-      name: "Hallucination Detection",
-      config: {
-        model: "gpt-4o-mini",
-        knowledge_source: "vs_6914c8f2ecf48191b8c80e0911d335cf",
-        confidence_threshold: 0.9 // Increased threshold - only block clear hallucinations, allow theological interpretations
-      }
-    },
-    {
-      name: "Jailbreak",
-      config: {
-        model: "gpt-4o-mini",
-        confidence_threshold: 0.7
-      }
     }
+    // REMOVED: Hallucination Detection (too slow, vector store search)
+    // REMOVED: Jailbreak (less critical, can be slow)
   ]
 };
 
@@ -151,7 +138,7 @@ const languageClassifier = new Agent({
   instructions: `You are the Bible Aura language detector.
 Identify whether the user's message is written in English or Tamil.
 Respond ONLY with structured JSON.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   outputType: LanguageClassifierSchema,
   modelSettings: {
     temperature: 0.7,
@@ -167,7 +154,7 @@ const chat = new Agent({
 Answer warmly and briefly (max 80 words).
 Provide a direct answer in 1-2 sentences, include Scripture reference if relevant, and add a brief encouragement or reflective question.
 Do not use markdown formatting, asterisks, or special symbols. Use plain text only.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   modelSettings: {
     temperature: 0.7,
     topP: 0.9,
@@ -186,7 +173,7 @@ Answer
 Scripture reference
 Why this matters
 Keep it practical, clear, and biblical. Use plain text only, no markdown or special symbols.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   modelSettings: {
     temperature: 0.7,
     topP: 0.9,
@@ -206,7 +193,7 @@ Theological Doctrine
 Cross References
 Summary
 Be biblically accurate. Use plain text only, no markdown formatting, asterisks, or special symbols.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   modelSettings: {
     temperature: 0.7,
     topP: 0.9,
@@ -226,7 +213,7 @@ Biblical Commentary
 Real-Life Application
 Additional Study Resources
 Use plain text only, no markdown formatting or special symbols.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   modelSettings: {
     temperature: 0.7,
     topP: 0.9,
@@ -245,7 +232,7 @@ Original Audience & Context
 Core Spiritual Lesson
 Modern-Day Example
 Keep it simple and true to Scripture. Use plain text only, no markdown or special symbols.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   modelSettings: {
     temperature: 0.7,
     topP: 0.9,
@@ -264,7 +251,7 @@ Timeline & Key Events
 Lessons for Today
 Key Scripture References
 Include both strengths and weaknesses. Use plain text only, no markdown formatting or special symbols.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   modelSettings: {
     temperature: 0.7,
     topP: 0.9,
@@ -287,7 +274,7 @@ Determine which mode best fits the user's intent:
 - "qa" for short factual Q&A
 
 Return JSON only.`,
-  model: "gpt-4o-mini",
+  model: "gpt-4.1-nano",
   outputType: ModeClassifierSchema,
   modelSettings: {
     temperature: 0.7,
@@ -463,59 +450,48 @@ ${sourcesContext}`
       throw new Error(`Agent execution failed: ${agentError.message}`);
     }
 
-    // Step 5: Run guardrails
+    // Step 5: Run guardrails (with timeout to prevent blocking)
     let guardrailsOutput: { safe_text: string };
     
     try {
-      const guardrailsInputtext = agentResult.output_text; // Check the agent output, not the input
+      const guardrailsInputtext = agentResult.output_text;
       const context = { guardrailLlm: client };
       
       console.log('[Agent SDK] Running guardrails on agent output...');
-      const guardrailsResult = await runGuardrails(guardrailsInputtext, guardrailsConfig, context, true);
+      
+      // Set timeout for guardrails (3 seconds max - fast checks only)
+      const guardrailsPromise = runGuardrails(guardrailsInputtext, guardrailsConfig, context, true);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Guardrails timeout')), 3000)
+      );
+      
+      const guardrailsResult = await Promise.race([guardrailsPromise, timeoutPromise]) as any;
       const hasTripwire = guardrailsHasTripwire(guardrailsResult);
       const guardrailsAnonymizedtext = getGuardrailSafeText(guardrailsResult, guardrailsInputtext);
       
       if (hasTripwire) {
-        // Check if it's just hallucination detection (which can be too strict for biblical commentary)
-        const hallucinationResult = (guardrailsResult ?? []).find((r: any) => {
-          const info = r?.info ?? {};
-          const name = (info?.guardrail_name ?? info?.guardrailName);
-          return name === "Hallucination Detection";
-        });
-        
-        // If only hallucination detection failed (and it's an "unsupported_claim" type), 
-        // allow it through as biblical commentary is expected to include interpretations
-        if (hallucinationResult && hallucinationResult.tripwireTriggered) {
-          const hallucinationType = hallucinationResult?.info?.hallucination_type;
-          if (hallucinationType === "unsupported_claim") {
-            console.warn('[Agent SDK] Hallucination detection flagged unsupported claims, but allowing through as valid biblical commentary');
-            guardrailsOutput = { safe_text: guardrailsInputtext };
-          } else {
-            // For other hallucination types (fabrication, contradiction), block it
-            console.warn('[Agent SDK] Guardrails triggered, blocking content');
-            throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
-          }
-        } else {
-          // For PII, moderation, or jailbreak, always block
-          console.warn('[Agent SDK] Guardrails triggered, blocking content');
-          throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
-        }
+        // For PII or moderation, always block
+        console.warn('[Agent SDK] Guardrails triggered, blocking content');
+        throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
       } else {
         guardrailsOutput = { safe_text: (guardrailsAnonymizedtext ?? guardrailsInputtext) };
       }
       
       console.log('[Agent SDK] Guardrails passed');
     } catch (guardrailError: any) {
-      // If guardrails fail, check if it's a content block or an error
+      // If guardrails fail, check if it's a content block or an error/timeout
       if (guardrailError.message && guardrailError.message.includes('Content blocked')) {
         throw guardrailError; // Re-throw content blocks
       }
-      console.error('[Agent SDK] Guardrails execution error:', guardrailError.message);
-      console.error('[Agent SDK] Guardrails error details:', {
-        name: guardrailError?.name,
-        stack: guardrailError?.stack?.substring(0, 500)
-      });
-      // If guardrails fail due to error, use the agent output directly
+      
+      // If timeout or error, skip guardrails and use agent output
+      if (guardrailError.message && guardrailError.message.includes('timeout')) {
+        console.warn('[Agent SDK] Guardrails timeout, using agent output directly');
+      } else {
+        console.error('[Agent SDK] Guardrails execution error:', guardrailError.message);
+      }
+      
+      // Use agent output directly if guardrails fail or timeout
       guardrailsOutput = { safe_text: agentResult.output_text };
     }
 
