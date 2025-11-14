@@ -154,9 +154,9 @@ Respond ONLY with structured JSON.`,
   model: "gpt-4o-mini",
   outputType: LanguageClassifierSchema,
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -169,9 +169,9 @@ Provide a direct answer in 1-2 sentences, include Scripture reference if relevan
 Do not use markdown formatting, asterisks, or special symbols. Use plain text only.`,
   model: "gpt-4o-mini",
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -188,9 +188,9 @@ Why this matters
 Keep it practical, clear, and biblical. Use plain text only, no markdown or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -208,9 +208,9 @@ Summary
 Be biblically accurate. Use plain text only, no markdown formatting, asterisks, or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -228,9 +228,9 @@ Additional Study Resources
 Use plain text only, no markdown formatting or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -247,9 +247,9 @@ Modern-Day Example
 Keep it simple and true to Scripture. Use plain text only, no markdown or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -266,9 +266,9 @@ Key Scripture References
 Include both strengths and weaknesses. Use plain text only, no markdown formatting or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -290,9 +290,9 @@ Return JSON only.`,
   model: "gpt-4o-mini",
   outputType: ModeClassifierSchema,
   modelSettings: {
-    temperature: 1,
-    topP: 1,
-    maxTokens: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024,
     store: true
   }
 });
@@ -331,32 +331,29 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
     // Only run language classifier if no preference is provided
     if (!workflow.preferred_language) {
       try {
-      const languageClassifierResultTemp = await runner.run(
-        languageClassifier,
-        [
-          ...conversationHistory,
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: `User query: ${workflow.input_as_text}`
-              }
-            ]
-          }
-        ]
-      );
+        const languageClassifierResultTemp = await runner.run(
+          languageClassifier,
+          [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "input_text",
+                  text: `User query: ${workflow.input_as_text}`
+                }
+              ]
+            }
+          ]
+        );
 
-      conversationHistory.push(...languageClassifierResultTemp.newItems.map((item) => item.rawItem));
-
-      if (!languageClassifierResultTemp.finalOutput) {
-        console.warn('[Agent SDK] Language classification returned no output, defaulting to English');
-      } else {
-        const languageClassifierResult = {
-          output_parsed: languageClassifierResultTemp.finalOutput as { lang: Language }
-        };
-        lang = languageClassifierResult.output_parsed.lang;
-      }
+        if (!languageClassifierResultTemp.finalOutput) {
+          console.warn('[Agent SDK] Language classification returned no output, defaulting to English');
+        } else {
+          const languageClassifierResult = {
+            output_parsed: languageClassifierResultTemp.finalOutput as { lang: Language }
+          };
+          lang = languageClassifierResult.output_parsed.lang;
+        }
       } catch (langError: any) {
         console.error('[Agent SDK] Language classification error:', langError.message);
         // Default to English and continue
@@ -388,37 +385,34 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
     // Only run mode classifier if no preference is provided
     if (!workflow.preferred_mode) {
       try {
-      const sourcesContext = sources.length > 0 
-        ? `Context from Bible search: ${sources.slice(0, 5).map(s => s.filename).join(', ')}`
-        : 'No specific Bible references found';
-      
-      const modeClassifierResultTemp = await runner.run(
-        modeClassifier,
-        [
-          ...conversationHistory,
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: `User query: ${workflow.input_as_text}
+        const sourcesContext = sources.length > 0 
+          ? `Context from Bible search: ${sources.slice(0, 5).map(s => s.filename).join(', ')}`
+          : 'No specific Bible references found';
+        
+        const modeClassifierResultTemp = await runner.run(
+          modeClassifier,
+          [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "input_text",
+                  text: `User query: ${workflow.input_as_text}
 ${sourcesContext}`
-              }
-            ]
-          }
-        ]
-      );
+                }
+              ]
+            }
+          ]
+        );
 
-      conversationHistory.push(...modeClassifierResultTemp.newItems.map((item) => item.rawItem));
-
-      if (!modeClassifierResultTemp.finalOutput) {
-        console.warn('[Agent SDK] Mode classification returned no output, defaulting to chat');
-      } else {
-        const modeClassifierResult = {
-          output_parsed: modeClassifierResultTemp.finalOutput as { mode: Mode }
-        };
-        mode = modeClassifierResult.output_parsed.mode;
-      }
+        if (!modeClassifierResultTemp.finalOutput) {
+          console.warn('[Agent SDK] Mode classification returned no output, defaulting to chat');
+        } else {
+          const modeClassifierResult = {
+            output_parsed: modeClassifierResultTemp.finalOutput as { mode: Mode }
+          };
+          mode = modeClassifierResult.output_parsed.mode;
+        }
       } catch (modeError: any) {
         console.error('[Agent SDK] Mode classification error:', modeError.message);
         // Default to chat mode and continue
