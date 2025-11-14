@@ -604,6 +604,31 @@ export function BibleAuraChat() {
           </div>
         </div>
 
+        {/* Mobile Header - Model Selector */}
+        <div className="lg:hidden bg-white border-b border-gray-100 px-4 py-2">
+          <div className="flex items-center justify-center">
+            <Select value={currentModel} onValueChange={(value) => setCurrentModel(value as 'aura-1.0' | 'aura-1.0-thinking')}>
+              <SelectTrigger className="w-full max-w-xs h-9 text-sm border-gray-200 bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="aura-1.0">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Aura 1.0</span>
+                    <span className="text-xs text-gray-500">Fast & Brief</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="aura-1.0-thinking">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Aura 1.0 Thinking</span>
+                    <span className="text-xs text-gray-500">Deep Analysis</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* Messages Area */}
         <ScrollArea className="flex-1 px-4 py-6">
           <div className="max-w-3xl mx-auto space-y-6">
@@ -615,9 +640,32 @@ export function BibleAuraChat() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
                   I'm Bible Aura AI, How can I assist you from the Bible?
                 </h2>
-                <p className="text-sm text-gray-600 mb-8">
+                <p className="text-sm text-gray-600 mb-4">
                   Ask me anything about Scripture and I'll provide biblical insights
                 </p>
+                
+                {/* Model Selector in Welcome Screen */}
+                <div className="flex justify-center mt-6">
+                  <Select value={currentModel} onValueChange={(value) => setCurrentModel(value as 'aura-1.0' | 'aura-1.0-thinking')}>
+                    <SelectTrigger className="w-64 h-10 text-sm border-gray-200 bg-white hover:bg-gray-50 shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aura-1.0">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Aura 1.0</span>
+                          <span className="text-xs text-gray-500">Fast & Brief</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="aura-1.0-thinking">
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Aura 1.0 Thinking</span>
+                          <span className="text-xs text-gray-500">Deep Analysis</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             ) : (
               messages.map((message, index) => (

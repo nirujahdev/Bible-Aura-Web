@@ -303,7 +303,8 @@ function getMetaAgentPrompt(
   ragContext: string, 
   userQuery: string, 
   availableVerses: string[],
-  isDeepAnalysis: boolean = false
+  isDeepAnalysis: boolean = false,
+  lang: "en" | "ta" = "en"
 ): string {
   const versesList = availableVerses.length > 0 
     ? `\n\nAvailable verse references in context:\n${availableVerses.slice(0, 20).join(', ')}`
@@ -346,7 +347,32 @@ DEEP ANALYSIS MODE - Additional Instructions:
 - Be thorough but remain biblically accurate
 - Use all available context from the retrieved sources` : '';
 
-  return `${basePrompt}${deepAnalysisInstructions}
+  const tamilInstructions = lang === "ta" ? `
+
+IMPORTANT FOR TAMIL RESPONSES:
+- Use correct Tamil biblical terms:
+  * "தேவன்" (not "கடவுள்") for God
+  * "கர்த்தர்" for Lord
+  * "யேசு கிறிஸ்து" (not "கிரிஸ்து") for Jesus Christ
+  * "பரிசுத்த ஆவியார்" (not "பரிசுத்த ஆவி") for Holy Spirit
+  * "பரிசுத்த வேதாகமம்" (not "பைபிள்") for Bible
+  * "வேத வசனம்" for Scripture
+  * "இரட்சிப்பு" for Salvation
+  * "சுவிசேஷம்" for Gospel
+  * "நம்பிக்கை" for Faith
+  * "கிருபை" for Grace
+  * "ஜெபம்" for Prayer
+  * "ஆராதனை" for Worship
+  * "திருச்சபை" for Church
+  * "விசுவாசி" (not "மத விசுவாசி") for Believer
+  * "மேய்ப்பர்" or "பாஸ்டர்" (not "ஆசிரியர்") for Pastor
+  * "ஊழியம்" (not "சேவை") for Ministry
+  * "அத்தியாயம்" for Chapter
+  * "வசனம்" for Verse
+- Always use proper Tamil biblical terminology
+- Avoid English transliterations when proper Tamil terms exist` : '';
+
+  return `${basePrompt}${deepAnalysisInstructions}${tamilInstructions}
 
 Bible Context & Web Sources:
 ${ragContext}${versesList}
@@ -375,7 +401,8 @@ async function runMetaAgent(
       ragResult.context, 
       ragResult.query, 
       availableVerses,
-      config.isDeepAnalysis
+      config.isDeepAnalysis,
+      ragResult.lang
     );
 
     const completion = await client.chat.completions.create({
