@@ -53,7 +53,10 @@ function resolveChatKitConfig(): ChatKitConfig {
     process.env.VITE_APP_URL ??
     DEFAULT_ALLOWED_ORIGIN;
 
-  const apiBaseUrl = (process.env.CHATKIT_API_BASE_URL ?? 'https://api.openai.com').replace(/\/+$/, '');
+  // Fix: Handle empty strings and ensure we always have a valid base URL
+  // If CHATKIT_API_BASE_URL is empty or undefined, use the default OpenAI API URL
+  const apiBaseUrlRaw = process.env.CHATKIT_API_BASE_URL?.trim() || 'https://api.openai.com';
+  const apiBaseUrl = apiBaseUrlRaw.replace(/\/+$/, '');
 
   return {
     workflowId,
