@@ -506,7 +506,7 @@ export function BibleAuraChat() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header - Desktop Only */}
-        <div className="hidden lg:block bg-white border-b border-gray-200 px-4 py-3">
+        <div className="hidden lg:block bg-white border-b border-gray-100 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-orange-500 text-2xl drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">✦</span>
@@ -552,16 +552,16 @@ export function BibleAuraChat() {
                   >
                     <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                       {message.role === 'assistant' ? (
-                        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
                           <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
                             {message.content}
                           </div>
                           
                           {/* Sources and Cross-References with Tabs - Clean design */}
                           {(message.sources && message.sources.length > 0) || (message.crossReferences && message.crossReferences.length > 0) ? (
-                            <div className="mt-4 pt-4 border-t border-gray-200">
+                            <div className="mt-4 pt-4 border-t border-gray-100">
                               <Tabs defaultValue="sources" className="w-full">
-                                <TabsList className="inline-flex h-auto p-0 bg-transparent gap-0 border-b border-gray-200">
+                                <TabsList className="inline-flex h-auto p-0 bg-transparent gap-0 border-b border-gray-100">
                                   <TabsTrigger 
                                     value="sources" 
                                     className="text-sm font-medium text-gray-600 px-4 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
@@ -692,7 +692,7 @@ export function BibleAuraChat() {
                     </motion.span>
                   </div>
                 </div>
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <div className="flex gap-1">
                       <motion.div
@@ -771,7 +771,7 @@ export function BibleAuraChat() {
 
             {/* Message Input - ChatGPT style design */}
             <div className="relative max-w-3xl mx-auto">
-              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 focus-within:border-gray-300 focus-within:shadow-lg">
+              <div className="relative bg-white rounded-2xl border border-gray-200/50 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 focus-within:border-gray-300 focus-within:shadow-lg">
                 <div className="flex items-center gap-2 px-3 py-2.5">
                   {/* Plus Icon */}
                   <button
