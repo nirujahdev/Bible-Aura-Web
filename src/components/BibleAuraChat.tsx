@@ -659,8 +659,9 @@ export function BibleAuraChat() {
       {showMobileHistory && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black/30" onClick={() => setShowMobileHistory(false)}>
           <div className="w-80 h-full bg-white/95 backdrop-blur-sm flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-medium text-gray-700">History</h2>
+            {/* Header - No duplicate, just close button */}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
+              <h2 className="font-medium text-gray-700">Chat History</h2>
               <Button variant="ghost" size="sm" onClick={() => setShowMobileHistory(false)} className="hover:bg-gray-100">
                 <X className="h-4 w-4 text-gray-500" />
               </Button>
