@@ -198,6 +198,17 @@ export function BibleAuraChat() {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  // Report categories
+  const reportCategories = [
+    { id: 'inaccurate', label: 'Inaccurate Information', icon: '⚠️' },
+    { id: 'inappropriate', label: 'Inappropriate Content', icon: '🚫' },
+    { id: 'offensive', label: 'Offensive Language', icon: '😞' },
+    { id: 'spam', label: 'Spam or Misleading', icon: '📧' },
+    { id: 'other', label: 'Other Issue', icon: '📝' },
+    { id: 'technical', label: 'Technical Problem', icon: '🔧' }
+  ];
 
   // Load conversations on mount (with error handling)
   useEffect(() => {
@@ -528,10 +539,10 @@ export function BibleAuraChat() {
   };
 
   const submitReport = async () => {
-    if (!reportingMessageId || !reportReason.trim()) {
+    if (!reportingMessageId || !selectedCategory) {
       toast({
         title: "Error",
-        description: "Please provide a reason for reporting",
+        description: "Please select a report category",
         variant: "destructive",
       });
       return;
@@ -540,8 +551,13 @@ export function BibleAuraChat() {
     const message = messages.find(m => m.id === reportingMessageId);
     if (!message) return;
 
+    const categoryLabel = reportCategories.find(c => c.id === selectedCategory)?.label || selectedCategory;
+    const fullReportReason = reportReason.trim() 
+      ? `${categoryLabel}: ${reportReason.trim()}`
+      : categoryLabel;
+
     try {
-      // Send report to API (you may want to create a separate report endpoint)
+      // Send report to API
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -551,7 +567,8 @@ export function BibleAuraChat() {
           message: message.content,
           response: message.content,
           userId: user?.id || null,
-          reportReason: reportReason.trim()
+          reportReason: fullReportReason,
+          reportCategory: selectedCategory
         })
       });
 
@@ -562,6 +579,7 @@ export function BibleAuraChat() {
         });
         setReportDialogOpen(false);
         setReportReason('');
+        setSelectedCategory('');
         setReportingMessageId(null);
       } else {
         throw new Error('Failed to submit report');
@@ -706,15 +724,17 @@ export function BibleAuraChat() {
         <ScrollArea className="flex-1 px-4 py-6">
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 px-4">
                 <div className="inline-block mb-4">
                   <span className="text-3xl md:text-4xl text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">✦</span>
                 </div>
-                <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-2 px-4">
-                  How can I assist you from the Bible?
+                <h2 className="text-sm md:text-base font-bold text-gray-800 mb-2 max-w-xs md:max-w-md mx-auto leading-tight px-2">
+                  <span className="block md:inline">How can I assist you</span>
+                  <span className="block md:inline"> from the Bible?</span>
                 </h2>
-                <p className="text-xs md:text-sm text-gray-600 mb-4 px-4">
-                  Ask me anything about Scripture and I'll provide biblical insights
+                <p className="text-xs md:text-sm text-gray-600 mb-4 max-w-xs md:max-w-md mx-auto leading-relaxed px-2">
+                  <span className="block md:inline">Ask me anything about Scripture</span>
+                  <span className="block md:inline"> and I'll provide biblical insights</span>
                 </p>
               </div>
             ) : (
@@ -862,16 +882,17 @@ export function BibleAuraChat() {
                             </div>
                           ) : null}
                           
-                          {/* Feedback and Action Buttons */}
+                          {/* Feedback and Action Buttons - All in one line */}
                           {message.role === 'assistant' && (
                             <div className="mt-3 pt-3 border-t border-gray-100">
-                              <div className="flex items-center gap-2 mb-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-[10px] md:text-xs text-gray-500 mr-1">Was this helpful?</span>
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => handleFeedback(message.id, 'positive')}
                                   className={`h-6 md:h-7 px-1.5 md:px-2 ${message.feedback === 'positive' ? 'bg-green-50 text-green-600' : 'hover:bg-gray-50'}`}
+                                  title="Helpful"
                                 >
                                   <ThumbsUp className={`h-3 w-3 md:h-3.5 md:w-3.5 ${message.feedback === 'positive' ? 'fill-green-600' : ''}`} />
                                 </Button>
@@ -880,41 +901,39 @@ export function BibleAuraChat() {
                                   size="sm"
                                   onClick={() => handleFeedback(message.id, 'negative')}
                                   className={`h-6 md:h-7 px-1.5 md:px-2 ${message.feedback === 'negative' ? 'bg-red-50 text-red-600' : 'hover:bg-gray-50'}`}
+                                  title="Not helpful"
                                 >
                                   <ThumbsDown className={`h-3 w-3 md:h-3.5 md:w-3.5 ${message.feedback === 'negative' ? 'fill-red-600' : ''}`} />
                                 </Button>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleCopy(message.id)}
-                                  className="h-6 md:h-7 px-1.5 md:px-2 text-[10px] md:text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                                  title="Copy message"
-                                >
-                                  <Copy className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
-                                  <span className="hidden sm:inline">Copy</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleShare(message.id)}
-                                  className="h-6 md:h-7 px-1.5 md:px-2 text-[10px] md:text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                                  title="Share message"
-                                >
-                                  <Share2 className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
-                                  <span className="hidden sm:inline">Share</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleReport(message.id)}
-                                  className="h-6 md:h-7 px-1.5 md:px-2 text-[10px] md:text-xs text-gray-500 hover:text-red-600 hover:bg-red-50"
-                                  title="Report inappropriate content"
-                                >
-                                  <Flag className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
-                                  <span className="hidden sm:inline">Report</span>
-                                </Button>
+                                <div className="flex items-center gap-1 ml-auto">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleCopy(message.id)}
+                                    className="h-6 md:h-7 px-1.5 md:px-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                                    title="Copy message"
+                                  >
+                                    <Copy className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleShare(message.id)}
+                                    className="h-6 md:h-7 px-1.5 md:px-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                                    title="Share message"
+                                  >
+                                    <Share2 className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleReport(message.id)}
+                                    className="h-6 md:h-7 px-1.5 md:px-2 text-gray-500 hover:text-red-600 hover:bg-red-50"
+                                    title="Report inappropriate content"
+                                  >
+                                    <Flag className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           )}
@@ -1102,21 +1121,55 @@ export function BibleAuraChat() {
       </div>
 
       {/* Report Dialog */}
-      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+      <Dialog open={reportDialogOpen} onOpenChange={(open) => {
+        setReportDialogOpen(open);
+        if (!open) {
+          setReportReason('');
+          setSelectedCategory('');
+          setReportingMessageId(null);
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Report Content</DialogTitle>
             <DialogDescription>
-              Please tell us why you're reporting this content. This helps us improve our service.
+              Please select a category and provide details about the issue.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <DialogTextarea
-              placeholder="Describe the issue (e.g., inaccurate information, inappropriate content, etc.)"
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              className="min-h-[100px] text-sm"
-            />
+            {/* Report Categories */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Select Category</label>
+              <div className="grid grid-cols-2 gap-2">
+                {reportCategories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                      selectedCategory === category.id
+                        ? 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-gray-200 hover:border-gray-300 bg-white text-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{category.icon}</span>
+                      <span className="text-xs font-medium">{category.label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Additional Details */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Additional Details (Optional)</label>
+              <DialogTextarea
+                placeholder="Provide more details about the issue..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="min-h-[80px] text-sm"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -1124,6 +1177,7 @@ export function BibleAuraChat() {
               onClick={() => {
                 setReportDialogOpen(false);
                 setReportReason('');
+                setSelectedCategory('');
                 setReportingMessageId(null);
               }}
             >
@@ -1131,7 +1185,8 @@ export function BibleAuraChat() {
             </Button>
             <Button
               onClick={submitReport}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={!selectedCategory}
+              className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
             >
               Submit Report
             </Button>
