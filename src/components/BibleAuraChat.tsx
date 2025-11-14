@@ -722,65 +722,65 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-100 px-4 py-6">
+        <div className="bg-transparent border-t border-gray-100 px-4 py-6">
           <div className="max-w-3xl mx-auto">
-            {/* Controls */}
-            <div className="flex items-center gap-2 mb-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowMobileHistory(true);
-                }}
-                className="lg:hidden flex-shrink-0 h-9 px-2"
-              >
-                <History className="h-4 w-4" />
-              </Button>
-              
-              <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                <SelectTrigger className="w-40 h-9 text-xs">
-                  <div className="flex items-center gap-2">
-                    {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
-                    <span className="truncate">{CHAT_MODES[currentMode]?.name}</span>
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(CHAT_MODES).map(([key, mode]) => (
-                    <SelectItem key={key} value={key}>
-                      <div className="flex items-center gap-2">
-                        {React.createElement(mode.icon, { className: "h-3 w-3" })}
-                        {mode.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                <SelectTrigger className="w-28 h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="tamil">Tamil</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Message Input - ChatGPT style design */}
-            <div className="relative max-w-3xl mx-auto">
-              <div className="relative bg-white rounded-2xl border border-gray-200/50 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 focus-within:border-gray-300 focus-within:shadow-lg">
+            {/* Message Input - All controls inside */}
+            <div className="relative">
+              <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
                 <div className="flex items-center gap-2 px-3 py-2.5">
                   {/* Plus Icon */}
                   <button
                     onClick={createNewConversation}
-                    className="flex-shrink-0 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="flex-shrink-0 p-1.5 hover:bg-gray-100/50 rounded-lg transition-colors"
                     aria-label="New chat"
                   >
                     <Plus className="h-5 w-5 text-gray-600" />
                   </button>
+                  
+                  {/* History Button (Mobile) */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowMobileHistory(true);
+                    }}
+                    className="lg:hidden flex-shrink-0 h-8 w-8 p-0 hover:bg-gray-100/50"
+                  >
+                    <History className="h-4 w-4 text-gray-500" />
+                  </Button>
+                  
+                  {/* Mode Selector */}
+                  <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
+                    <SelectTrigger className="w-36 h-8 text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                      <div className="flex items-center gap-1.5">
+                        {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
+                        <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(CHAT_MODES).map(([key, mode]) => (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            {React.createElement(mode.icon, { className: "h-3 w-3" })}
+                            {mode.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Language Selector */}
+                  <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
+                    <SelectTrigger className="w-24 h-8 text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="english">English</SelectItem>
+                      <SelectItem value="tamil">Tamil</SelectItem>
+                    </SelectContent>
+                  </Select>
                   
                   {/* Text Input */}
                   <Textarea
@@ -788,7 +788,7 @@ export function BibleAuraChat() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Ask anything"
+                    placeholder="Ask anything about bible"
                     className="flex-1 min-h-[24px] max-h-[200px] py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400 outline-none"
                     disabled={isLoading}
                     rows={1}
@@ -798,7 +798,7 @@ export function BibleAuraChat() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {/* Microphone Icon */}
                     <button
-                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-1.5 hover:bg-gray-100/50 rounded-lg transition-colors"
                       aria-label="Voice input"
                     >
                       <Mic className="h-5 w-5 text-gray-600" />
@@ -825,7 +825,7 @@ export function BibleAuraChat() {
               
               {/* Disclaimer */}
               <p className="text-xs text-gray-500 text-center mt-2">
-                Bible Aura AI can make mistakes. Check important information.
+                By using bible aura your are agree with our polices
               </p>
             </div>
           </div>
