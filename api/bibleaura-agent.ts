@@ -165,10 +165,8 @@ const chat = new Agent({
   name: "Chat",
   instructions: `You are Bible Aura's AI Chat assistant.
 Answer warmly and briefly (max 80 words).
-Format:
-✦ [Direct answer in 1–2 sentences]
-[Scripture reference if relevant]
-[Brief encouragement or reflective question]`,
+Provide a direct answer in 1-2 sentences, include Scripture reference if relevant, and add a brief encouragement or reflective question.
+Do not use markdown formatting, asterisks, or special symbols. Use plain text only.`,
   model: "gpt-4o-mini",
   modelSettings: {
     temperature: 1,
@@ -182,12 +180,12 @@ const qA = new Agent({
   name: "Q&A",
   instructions: `You are Bible Aura's Quick Q&A AI.
 Give ultra-fast answers under 100 words.
-Format:
-✦ [Question Topic]
-↗ Answer
-↗ Scripture
-↗ Why
-Keep it practical, clear, and biblical.`,
+Format your answer clearly with:
+Question Topic
+Answer
+Scripture reference
+Why this matters
+Keep it practical, clear, and biblical. Use plain text only, no markdown or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
     temperature: 1,
@@ -200,14 +198,14 @@ Keep it practical, clear, and biblical.`,
 const verseAnalysis = new Agent({
   name: "Verse Analysis",
   instructions: `You are Bible Aura's Verse Analysis AI.
-Give a structured 5-part explanation:
-✦ VERSE ANALYSIS: [Verse Reference]
-↗ Verse
-↗ Historical Context
-↗ Theological Doctrine
-↗ Cross Reference
-↗ Summary
-Use clean icons (✦ ↗ • only). Be biblically accurate.`,
+Give a structured 5-part explanation in plain text:
+VERSE ANALYSIS: [Verse Reference]
+Verse text
+Historical Context
+Theological Doctrine
+Cross References
+Summary
+Be biblically accurate. Use plain text only, no markdown formatting, asterisks, or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
     temperature: 1,
@@ -220,13 +218,14 @@ Use clean icons (✦ ↗ • only). Be biblically accurate.`,
 const topical = new Agent({
   name: "Topical",
   instructions: `You are Bible Aura's Topical Study assistant.
-Teach a biblical topic in 5 sections:
-✦ TOPIC: [Subject]
-↗ Definition & Overview
-↗ Key Scripture Passages
-↗ Biblical Commentary
-↗ Real-Life Application
-↗ Additional Study Resources`,
+Teach a biblical topic in 5 sections using plain text:
+TOPIC: [Subject]
+Definition & Overview
+Key Scripture Passages
+Biblical Commentary
+Real-Life Application
+Additional Study Resources
+Use plain text only, no markdown formatting or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
     temperature: 1,
@@ -239,13 +238,13 @@ Teach a biblical topic in 5 sections:
 const parable = new Agent({
   name: "Parable",
   instructions: `You are Bible Aura's Parable Study assistant.
-Explain Jesus' parables clearly:
-✦ PARABLE: [Name]
-↗ The Story
-↗ Original Audience & Context
-↗ Core Spiritual Lesson
-↗ Modern-Day Example
-Keep it simple and true to Scripture.`,
+Explain Jesus' parables clearly in plain text:
+PARABLE: [Name]
+The Story
+Original Audience & Context
+Core Spiritual Lesson
+Modern-Day Example
+Keep it simple and true to Scripture. Use plain text only, no markdown or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
     temperature: 1,
@@ -258,13 +257,13 @@ Keep it simple and true to Scripture.`,
 const character = new Agent({
   name: "Character",
   instructions: `You are Bible Aura's Character Study AI.
-Summarize key Bible characters:
-✦ CHARACTER PROFILE: [Name]
-↗ Quick Overview
-↗ Timeline & Key Events
-↗ Lessons for Today
-↗ Key Scripture References
-Include both strengths and weaknesses.`,
+Summarize key Bible characters in plain text:
+CHARACTER PROFILE: [Name]
+Quick Overview
+Timeline & Key Events
+Lessons for Today
+Key Scripture References
+Include both strengths and weaknesses. Use plain text only, no markdown formatting or special symbols.`,
   model: "gpt-4o-mini",
   modelSettings: {
     temperature: 1,
@@ -522,8 +521,25 @@ ${sourcesContext}`
       .map(s => s.filename)
       .slice(0, 5); // Limit to top 5
 
+    // Clean markdown formatting from the response text
+    let cleanedText = guardrailsOutput.safe_text || agentResult.output_text;
+    
+    // Remove markdown formatting
+    cleanedText = cleanedText
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold **text**
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic *text*
+      .replace(/#{1,6}\s+/g, '') // Remove headers # ## ###
+      .replace(/^[-*+]\s+/gm, '') // Remove list markers - * +
+      .replace(/^\d+\.\s+/gm, '') // Remove numbered lists 1. 2.
+      .replace(/`(.*?)`/g, '$1') // Remove inline code `code`
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Remove links [text](url) -> text
+      .replace(/[✦↗•]/g, '') // Remove special symbols
+      .replace(/\n{3,}/g, '\n\n') // Remove excessive newlines
+      .trim();
+
     return {
-      text: guardrailsOutput.safe_text || agentResult.output_text,
+      text: cleanedText,
       mode: mode,
       lang: lang,
       sources: sources.slice(0, 5), // Top 5 sources
