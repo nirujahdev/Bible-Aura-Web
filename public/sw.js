@@ -21,7 +21,7 @@ const API_ENDPOINTS = [
   '/api/daily-verse',
   '/api/user-stats',
   'https://api.bible.com/api',
-  'https://openrouter.ai/api/v1'
+  'https://api.openai.com/v1'
 ];
 
 // Install event - cache static assets

@@ -1,5 +1,4 @@
 // OpenAI API Helper - Reusable function for all OpenAI API calls
-// Replaces DeepSeek API calls throughout the application
 
 export interface OpenAIRequestOptions {
   systemPrompt?: string;
