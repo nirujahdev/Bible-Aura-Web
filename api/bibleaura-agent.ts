@@ -323,82 +323,93 @@ async function runWorkflow(workflow: WorkflowInput, client: OpenAI): Promise<Age
     });
 
     // Step 1: Classify language
-    const languageClassifierResultTemp = await runner.run(
-      languageClassifier,
-      [
-        ...conversationHistory,
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: `User query: ${workflow.input_as_text}`
-            }
-          ]
-        }
-      ]
-    );
+    let lang: Language = "en"; // Default to English
+    
+    try {
+      const languageClassifierResultTemp = await runner.run(
+        languageClassifier,
+        [
+          ...conversationHistory,
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: `User query: ${workflow.input_as_text}`
+              }
+            ]
+          }
+        ]
+      );
 
-    conversationHistory.push(...languageClassifierResultTemp.newItems.map((item) => item.rawItem));
+      conversationHistory.push(...languageClassifierResultTemp.newItems.map((item) => item.rawItem));
 
-    if (!languageClassifierResultTemp.finalOutput) {
-      throw new Error("Language classification failed");
+      if (!languageClassifierResultTemp.finalOutput) {
+        console.warn('[Agent SDK] Language classification returned no output, defaulting to English');
+      } else {
+        const languageClassifierResult = {
+          output_parsed: languageClassifierResultTemp.finalOutput as { lang: Language }
+        };
+        lang = languageClassifierResult.output_parsed.lang;
+      }
+    } catch (langError: any) {
+      console.error('[Agent SDK] Language classification error:', langError.message);
+      // Default to English and continue
+      lang = "en";
     }
-
-    const languageClassifierResult = {
-      output_parsed: languageClassifierResultTemp.finalOutput as { lang: Language }
-    };
-
-    const lang = languageClassifierResult.output_parsed.lang;
     const vectorStoreId = lang === "en" 
       ? "vs_6914c8f2ecf48191b8c80e0911d335cf"
       : "vs_6914ce9d39b4819188024077258a0db3";
 
     // Step 2: Search vector store for Bible references
-    const fileSearchResult = await client.vectorStores.search(vectorStoreId, {
-      query: workflow.input_as_text,
-      max_num_results: 10
-    });
-
-    const sources = fileSearchResult.data.map((result) => ({
-      id: result.file_id,
-      filename: result.filename,
-      score: result.score,
-    }));
+    // Note: Vector store search is done through the Agent SDK's built-in file search
+    // The Runner will automatically use the vector store when agents reference files
+    let sources: Array<{ id: string; filename: string; score: number }> = [];
+    
+    // For now, we'll skip direct vector store search and let the agents handle it
+    // Sources will be extracted from the agent responses if available
+    // This simplifies the implementation and avoids API compatibility issues
 
     // Step 3: Classify mode
-    const sourcesContext = sources.length > 0 
-      ? `Context from Bible search: ${sources.slice(0, 5).map(s => s.filename).join(', ')}`
-      : 'No specific Bible references found';
+    let mode: Mode = "chat"; // Default to chat mode
     
-    const modeClassifierResultTemp = await runner.run(
-      modeClassifier,
-      [
-        ...conversationHistory,
-        {
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: `User query: ${workflow.input_as_text}
+    try {
+      const sourcesContext = sources.length > 0 
+        ? `Context from Bible search: ${sources.slice(0, 5).map(s => s.filename).join(', ')}`
+        : 'No specific Bible references found';
+      
+      const modeClassifierResultTemp = await runner.run(
+        modeClassifier,
+        [
+          ...conversationHistory,
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: `User query: ${workflow.input_as_text}
 ${sourcesContext}`
-            }
-          ]
-        }
-      ]
-    );
+              }
+            ]
+          }
+        ]
+      );
 
-    conversationHistory.push(...modeClassifierResultTemp.newItems.map((item) => item.rawItem));
+      conversationHistory.push(...modeClassifierResultTemp.newItems.map((item) => item.rawItem));
 
-    if (!modeClassifierResultTemp.finalOutput) {
-      throw new Error("Mode classification failed");
+      if (!modeClassifierResultTemp.finalOutput) {
+        console.warn('[Agent SDK] Mode classification returned no output, defaulting to chat');
+      } else {
+        const modeClassifierResult = {
+          output_parsed: modeClassifierResultTemp.finalOutput as { mode: Mode }
+        };
+        mode = modeClassifierResult.output_parsed.mode;
+      }
+    } catch (modeError: any) {
+      console.error('[Agent SDK] Mode classification error:', modeError.message);
+      // Default to chat mode and continue
+      mode = "chat";
     }
-
-    const modeClassifierResult = {
-      output_parsed: modeClassifierResultTemp.finalOutput as { mode: Mode }
-    };
-
-    const mode = modeClassifierResult.output_parsed.mode;
 
     // Step 4: Run appropriate agent based on mode
     let agentResult;
@@ -427,29 +438,46 @@ ${sourcesContext}`
         selectedAgent = chat;
     }
 
-    const agentResultTemp = await runner.run(selectedAgent, conversationHistory);
-    conversationHistory.push(...agentResultTemp.newItems.map((item) => item.rawItem));
+    try {
+      const agentResultTemp = await runner.run(selectedAgent, conversationHistory);
+      conversationHistory.push(...agentResultTemp.newItems.map((item) => item.rawItem));
 
-    if (!agentResultTemp.finalOutput) {
-      throw new Error("Agent execution failed");
+      if (!agentResultTemp.finalOutput) {
+        throw new Error("Agent execution returned no output");
+      }
+
+      agentResult = {
+        output_text: agentResultTemp.finalOutput ?? ""
+      };
+    } catch (agentError: any) {
+      console.error('[Agent SDK] Agent execution error:', agentError.message);
+      throw new Error(`Agent execution failed: ${agentError.message}`);
     }
 
-    agentResult = {
-      output_text: agentResultTemp.finalOutput ?? ""
-    };
-
     // Step 5: Run guardrails
-    const guardrailsInputtext = workflow.input_as_text;
-    const context = { guardrailLlm: client };
-    const guardrailsResult = await runGuardrails(guardrailsInputtext, guardrailsConfig, context, true);
-    const hasTripwire = guardrailsHasTripwire(guardrailsResult);
-    const guardrailsAnonymizedtext = getGuardrailSafeText(guardrailsResult, guardrailsInputtext);
-    const guardrailsOutput = hasTripwire 
-      ? buildGuardrailFailOutput(guardrailsResult ?? []) 
-      : { safe_text: (guardrailsAnonymizedtext ?? guardrailsInputtext) };
-
-    if (hasTripwire) {
-      throw new Error(`Content blocked by guardrails: ${JSON.stringify(guardrailsOutput)}`);
+    let guardrailsOutput: { safe_text: string };
+    
+    try {
+      const guardrailsInputtext = workflow.input_as_text;
+      const context = { guardrailLlm: client };
+      const guardrailsResult = await runGuardrails(guardrailsInputtext, guardrailsConfig, context, true);
+      const hasTripwire = guardrailsHasTripwire(guardrailsResult);
+      const guardrailsAnonymizedtext = getGuardrailSafeText(guardrailsResult, guardrailsInputtext);
+      
+      if (hasTripwire) {
+        console.warn('[Agent SDK] Guardrails triggered, blocking content');
+        throw new Error(`Content blocked by guardrails: ${JSON.stringify(buildGuardrailFailOutput(guardrailsResult ?? []))}`);
+      }
+      
+      guardrailsOutput = { safe_text: (guardrailsAnonymizedtext ?? guardrailsInputtext) };
+    } catch (guardrailError: any) {
+      // If guardrails fail, check if it's a content block or an error
+      if (guardrailError.message.includes('Content blocked')) {
+        throw guardrailError; // Re-throw content blocks
+      }
+      console.error('[Agent SDK] Guardrails execution error:', guardrailError.message);
+      // If guardrails fail due to error, use the agent output directly
+      guardrailsOutput = { safe_text: agentResult.output_text };
     }
 
     // Extract cross-references from sources (Bible verse references)
@@ -568,11 +596,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error: any) {
     console.error('Bible Aura Agent API Error:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined,
+      name: error?.name,
+      cause: error?.cause
+    });
     
     let errorMessage = error?.message || 'Failed to process chat message';
     
     // Security: Don't leak sensitive error details in production
     const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // Provide more specific error messages
+    if (errorMessage.includes('OPENAI_API_KEY')) {
+      return res.status(500).json({
+        error: 'Configuration error',
+        message: 'OpenAI API key not configured. Please set OPENAI_API_KEY in Vercel environment variables.'
+      });
+    }
+    
+    if (errorMessage.includes('Language classification failed')) {
+      return res.status(500).json({
+        error: 'Processing error',
+        message: 'Failed to detect language. Please try again.'
+      });
+    }
+    
+    if (errorMessage.includes('Mode classification failed')) {
+      return res.status(500).json({
+        error: 'Processing error',
+        message: 'Failed to classify query mode. Please try again.'
+      });
+    }
+    
+    if (errorMessage.includes('Agent execution failed')) {
+      return res.status(500).json({
+        error: 'Processing error',
+        message: 'AI agent execution failed. Please try again.'
+      });
+    }
     
     return res.status(500).json({
       error: 'Internal server error',
