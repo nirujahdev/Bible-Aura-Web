@@ -25,16 +25,16 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
   const hasMoreWeeks = weeks.length > 4;
 
   return (
-    <Card className="p-3 md:p-4 rounded-xl md:rounded-lg bg-white border border-gray-200 shadow-sm">
-      <div className="mb-3 md:mb-4">
+    <Card className="p-2 md:p-3 rounded-xl md:rounded-lg bg-white border border-gray-200 shadow-sm">
+      <div className="mb-2 md:mb-3">
         <h3 className="text-sm md:text-base font-bold text-gray-800 flex items-center gap-2">
           <span className="text-orange-500 text-lg md:text-base">✦</span>
           Calendar Overview
         </h3>
-        <p className="text-[11px] md:text-xs text-gray-600 mt-1">Tap any day to mark complete</p>
+        <p className="text-[11px] md:text-xs text-orange-600 mt-1">Tap any day to mark complete</p>
       </div>
 
-      <div className="space-y-2.5 md:space-y-3">
+      <div className="space-y-2 md:space-y-2.5">
         {visibleWeeks.map((week, weekIndex) => {
           const completedCount = week.filter(d => d.completed).length;
           const weekProgress = (completedCount / week.length) * 100;
@@ -48,11 +48,11 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
               className="space-y-1.5"
             >
               <div className="flex items-center justify-between">
-                <div className="text-[10px] md:text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <div className="text-[9px] md:text-xs font-semibold text-orange-600 uppercase tracking-wider">
                   Week {weekIndex + 1}
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-16 md:w-24 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-1 w-12 md:w-20 bg-gray-200 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-full"
                       initial={{ width: 0 }}
@@ -60,12 +60,12 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
                       transition={{ duration: 0.5, delay: weekIndex * 0.1 }}
                     />
                   </div>
-                  <span className="text-[10px] md:text-xs text-gray-500 font-medium">
+                  <span className="text-[9px] md:text-xs text-orange-600 font-medium">
                     {completedCount}/{week.length}
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-7 gap-1.5 md:gap-1.5">
+              <div className="grid grid-cols-7 gap-1 md:gap-1.5">
                 {week.map((day) => (
                   <motion.button
                     key={day.day}
@@ -80,7 +80,7 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
                     title={`Day ${day.day}: ${day.reading.join(', ')}`}
                   >
                     <div className="flex flex-col items-center justify-center gap-0.5 h-full">
-                      <div className={`text-xs md:text-xs font-bold ${day.completed ? 'text-white' : 'text-gray-700'}`}>
+                      <div className={`text-[10px] md:text-xs font-bold ${day.completed ? 'text-white' : 'text-orange-600'}`}>
                         {day.day}
                       </div>
                       {day.completed ? (
@@ -89,10 +89,10 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", stiffness: 200 }}
                         >
-                          <Sparkles className="h-3 w-3 md:h-3 md:w-3 text-white" />
+                          <Sparkles className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" />
                         </motion.div>
                       ) : (
-                        <Circle className="h-3 w-3 md:h-3 md:w-3 text-gray-400" />
+                        <Circle className="h-2.5 w-2.5 md:h-3 md:w-3 text-orange-400" />
                       )}
                     </div>
                   </motion.button>
@@ -111,7 +111,7 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
         {hasMoreWeeks && selectedWeek === null && (
           <motion.button
             onClick={() => setSelectedWeek(weeks.length)}
-            className="w-full py-3 md:py-2 text-xs md:text-sm text-orange-600 hover:text-orange-700 active:text-orange-800 font-semibold md:font-medium border-2 border-orange-200 rounded-xl md:rounded-lg hover:bg-orange-50 active:bg-orange-100 transition-colors touch-manipulation"
+            className="w-full py-2 md:py-1.5 text-xs md:text-sm text-orange-600 hover:text-orange-700 active:text-orange-800 font-semibold md:font-medium border-2 border-orange-200 rounded-xl md:rounded-lg hover:bg-orange-50 active:bg-orange-100 transition-colors touch-manipulation"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -122,7 +122,7 @@ export default function CalendarView({ plan, onToggle }: CalendarViewProps) {
         {selectedWeek !== null && (
           <motion.button
             onClick={() => setSelectedWeek(null)}
-            className="w-full py-3 md:py-2 text-xs md:text-sm text-gray-600 hover:text-gray-700 active:text-gray-800 font-semibold md:font-medium border-2 border-gray-200 rounded-xl md:rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
+            className="w-full py-2 md:py-1.5 text-xs md:text-sm text-orange-600 hover:text-orange-700 active:text-orange-800 font-semibold md:font-medium border-2 border-orange-200 rounded-xl md:rounded-lg hover:bg-orange-50 active:bg-orange-100 transition-colors touch-manipulation"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
