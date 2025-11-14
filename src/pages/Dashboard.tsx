@@ -31,17 +31,11 @@ export default function Dashboard() {
   // Wrap in error boundary to catch any component errors
   return (
     <ErrorBoundary>
-      {isMobile ? (
-        <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+      <MobileOptimizedLayout>
+        <div className={isMobile ? "h-[100dvh] mobile-safe-area" : "h-screen"}>
           <BibleAuraChat />
         </div>
-      ) : (
-        <MobileOptimizedLayout>
-          <div className="h-screen">
-            <BibleAuraChat />
-          </div>
-        </MobileOptimizedLayout>
-      )}
+      </MobileOptimizedLayout>
     </ErrorBoundary>
   );
 } 
