@@ -595,7 +595,7 @@ export function BibleAuraChat() {
   };
 
   return (
-    <div className="flex h-full bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+    <div className="flex h-full w-full bg-gradient-to-br from-gray-50 to-white overflow-hidden">
       {/* Sidebar - Chat History */}
       <div className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col min-h-0 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
@@ -696,7 +696,7 @@ export function BibleAuraChat() {
       )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full">
         {/* Header - Desktop Only */}
         <div className="hidden lg:block bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -1034,12 +1034,12 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area - Fixed at bottom */}
-        <div className="bg-transparent border-t border-gray-100 px-2 md:px-4 py-3 md:py-4 flex-shrink-0">
+        <div className="bg-transparent border-t border-gray-100 px-2 md:px-4 py-2 md:py-4 flex-shrink-0">
           <div className="max-w-3xl mx-auto">
             {/* Message Input - All controls inside */}
             <div className="relative">
               <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
-                <div className="flex items-center gap-2 px-3 py-2.5">
+                <div className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2.5">
                   {/* History Button (Mobile) */}
                   <Button
                     variant="ghost"
@@ -1049,17 +1049,17 @@ export function BibleAuraChat() {
                       e.stopPropagation();
                       setShowMobileHistory(true);
                     }}
-                    className="lg:hidden flex-shrink-0 h-8 w-8 p-0 hover:bg-gray-100/50"
+                    className="lg:hidden flex-shrink-0 h-7 w-7 md:h-8 md:w-8 p-0 hover:bg-gray-100/50"
                   >
-                    <History className="h-4 w-4 text-gray-500" />
+                    <History className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500" />
                   </Button>
                   
                   {/* Mode Selector */}
                   <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
-                    <SelectTrigger className="w-36 h-8 text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
-                      <div className="flex items-center gap-1.5">
+                    <SelectTrigger className="w-28 md:w-36 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                      <div className="flex items-center gap-1">
                         {React.createElement(CHAT_MODES[currentMode]?.icon, { className: "h-3 w-3" })}
-                        <span className="truncate text-xs">{CHAT_MODES[currentMode]?.name}</span>
+                        <span className="truncate text-[10px] md:text-xs">{CHAT_MODES[currentMode]?.name}</span>
                       </div>
                     </SelectTrigger>
                     <SelectContent>
@@ -1076,7 +1076,7 @@ export function BibleAuraChat() {
 
                   {/* Language Selector */}
                   <Select value={currentLanguage} onValueChange={(value) => setCurrentLanguage(value as Language)}>
-                    <SelectTrigger className="w-24 h-8 text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
+                    <SelectTrigger className="w-20 md:w-24 h-7 md:h-8 text-[10px] md:text-xs border-0 bg-transparent hover:bg-gray-100/50 focus:ring-0 shadow-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1092,7 +1092,7 @@ export function BibleAuraChat() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything about bible"
-                    className="flex-1 min-h-[24px] max-h-[200px] py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400 outline-none"
+                    className="flex-1 min-h-[20px] md:min-h-[24px] max-h-[200px] py-1 md:py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-xs md:text-sm bg-transparent placeholder:text-gray-400 outline-none"
                     disabled={isLoading}
                     rows={1}
                   />
@@ -1102,9 +1102,9 @@ export function BibleAuraChat() {
                     onClick={() => handleSendMessage()}
                     disabled={isLoading || !input.trim()}
                     size="icon"
-                    className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                    className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex-shrink-0"
                   >
-                    <Send className="h-4 w-4 text-white" />
+                    <Send className="h-3.5 w-3.5 md:h-4 md:w-4 text-white" />
                   </Button>
                 </div>
               </div>
