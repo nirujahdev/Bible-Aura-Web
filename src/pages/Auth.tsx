@@ -725,68 +725,6 @@ export default function Auth() {
                       {isSubmitting ? "Signing up..." : "Continue with Google"}
                   </Button>
                 </TabsContent>
-                
-                <TabsContent value="reset" className="space-y-4 mt-0">
-                  <form onSubmit={handleUpdatePassword} className="space-y-4">
-                    <div className="text-center mb-4">
-                      <h3 className="text-lg font-semibold text-primary">Set New Password</h3>
-                      <p className="text-sm text-gray-600 mt-1">Enter your new password below</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password" className="text-primary font-medium">New Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="new-password"
-                          name="newPassword"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your new password"
-                          required
-                          disabled={isSubmitting}
-                          minLength={6}
-                          className="border-primary/30 focus:border-primary focus:ring-primary h-11 pr-11"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-11 px-3 hover:bg-transparent text-primary"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                      {formErrors.newPassword && <p className="text-xs text-red-500">{formErrors.newPassword}</p>}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password" className="text-primary font-medium">Confirm Password</Label>
-                      <Input
-                        id="confirm-password"
-                        name="confirmPassword"
-                        type="password"
-                        placeholder="Confirm your new password"
-                        required
-                        disabled={isSubmitting}
-                        minLength={6}
-                        className="border-primary/30 focus:border-primary focus:ring-primary h-11"
-                      />
-                      {formErrors.confirmPassword && <p className="text-xs text-red-500">{formErrors.confirmPassword}</p>}
-                      <p className="text-xs text-muted-foreground">
-                        Password must be at least 6 characters long
-                      </p>
-                    </div>
-                    
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/90 text-white h-11"
-                      disabled={isSubmitting}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {isSubmitting ? "Updating password..." : "Update Password"}
-                    </Button>
-                  </form>
-                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
