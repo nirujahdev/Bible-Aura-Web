@@ -1,6 +1,6 @@
 // Sermon AI Service - Centralized AI operations for sermon features
 // Uses Agent SDK for specialized sermon AI assistance
-import { generateSermonContent, analyzeSermonContent as analyzeWithAgent, getSermonEnhancements as enhanceWithAgent, generateSermonOutline as outlineWithAgent, findSermonScriptures as scripturesWithAgent } from './sermon-agent-sdk';
+// Use dynamic imports to prevent circular dependencies and code-splitting issues
 import { callOpenAIAPI } from './openai-api-helper';
 import { checkAndIncrementUsage } from './ai-limits';
 
@@ -145,6 +145,9 @@ export async function analyzeContent(
   const estimatedDuration = Math.ceil(wordCount / 150);
 
   try {
+    // Dynamically import to prevent circular dependency
+    const { analyzeSermonContent: analyzeWithAgent } = await import('./sermon-agent-sdk');
+    
     // Use Agent SDK for specialized analysis
     const analysisText = await analyzeWithAgent(content, {
       title: context.title,
@@ -231,6 +234,9 @@ export async function enhanceContent(
 
     const agentFocus = focusMap[focus] || 'structure';
     
+    // Dynamically import to prevent circular dependency
+    const { getSermonEnhancements: enhanceWithAgent } = await import('./sermon-agent-sdk');
+    
     // Use Agent SDK for specialized enhancements
     const enhancementText = await enhanceWithAgent(content, agentFocus, {
       title: context.title,
@@ -294,6 +300,9 @@ export async function findRelevantScriptures(
   }
 
   try {
+    // Dynamically import to prevent circular dependency
+    const { findSermonScriptures: scripturesWithAgent } = await import('./sermon-agent-sdk');
+    
     // Use Agent SDK for specialized scripture finding
     const scriptureText = await scripturesWithAgent(topic, {
       content: context.currentContent,
@@ -353,6 +362,9 @@ export async function generateOutline(
   }
 
   try {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonOutline: outlineWithAgent } = await import('./sermon-agent-sdk');
+    
     // Use Agent SDK for specialized outline generation
     const outlineText = await outlineWithAgent(topic, scripture, {
       sermonType: options.sermonType as any,
