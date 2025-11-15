@@ -450,12 +450,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(userFriendlyMessage) };
       } else {
         // Explicitly set user and session from the response
-        if (data?.user && data?.session) {
+        if (data?.user) {
           setUser(data.user);
-          setSession(data.session);
+          if (data.session) {
+            setSession(data.session);
+          } else {
+            // If no session in response, try to get it
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (currentSession) {
+              setSession(currentSession);
+            }
+          }
+          
           // Load profile asynchronously to not block the response
+          // Don't let profile loading errors block sign-in
           loadUserProfile(data.user.id).catch(err => {
             console.error('Error loading profile after sign-in:', err);
+            // Try to create profile if it doesn't exist
+            if (err?.code === 'PGRST116' || err?.message?.includes('not found')) {
+              createDefaultProfile(data.user.id).catch(createErr => {
+                console.error('Error creating profile after sign-in:', createErr);
+              });
+            }
           });
         }
         
@@ -652,27 +668,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
 
+      // CRITICAL: Always set user and session if they exist, even if there's an error
+      // This ensures users can proceed even if profile creation fails
+      if (data?.user) {
+        setUser(data.user);
+        if (data.session) {
+          setSession(data.session);
+        } else {
+          // If no session but user exists, try to get session
+          const { data: { session: newSession } } = await supabase.auth.getSession();
+          if (newSession) {
+            setSession(newSession);
+          }
+        }
+      }
+
       if (error) {
         let userFriendlyMessage = error.message;
         
         // Handle "Database error saving new user" - this usually means trigger had an issue
         // but the user was still created, so we should treat it as success
         if (error.message?.includes('Database error saving new user') || 
-            error.message?.includes('error saving new user')) {
+            error.message?.includes('error saving new user') ||
+            error.message?.includes('saving new user')) {
           // User was likely created, just profile creation had an issue
-          // Check if user exists and continue
           if (data?.user) {
             console.log('User created but profile creation had an issue, will retry...');
-            // Don't return error - let the profile creation retry logic handle it
-            // Set user and session so they can proceed
-            setUser(data.user);
-            if (data.session) {
-              setSession(data.session);
-            }
             // Try to create profile asynchronously
             setTimeout(async () => {
               if (data.user) {
-                await createDefaultProfile(data.user.id);
+                try {
+                  await createDefaultProfile(data.user.id);
+                } catch (profileErr) {
+                  console.error('Error creating profile in background:', profileErr);
+                }
               }
             }, 1000);
             // Return success since user was created
@@ -695,17 +724,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userFriendlyMessage = 'Network error. Please check your connection and try again.';
         }
 
-        toast({
-          title: "Sign up failed",
-          description: userFriendlyMessage,
-          variant: "destructive",
-        });
-        
-        return { error: new Error(userFriendlyMessage) };
+        // Only show error if user wasn't created
+        if (!data?.user) {
+          toast({
+            title: "Sign up failed",
+            description: userFriendlyMessage,
+            variant: "destructive",
+          });
+          return { error: new Error(userFriendlyMessage) };
+        }
+        // If user was created, continue with profile setup below
       }
 
       // If user was created, let trigger create the profile, then update with additional data if provided
-      if (data.user) {
+      if (data?.user) {
         try {
           // Wait for trigger to create the profile (up to 2 seconds with retries)
           let profileExists = false;
@@ -778,12 +810,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Check if email confirmation is required
-      if (data.user && !data.session) {
+      if (data?.user && !data?.session) {
         toast({
           title: "Check your email!",
           description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
         });
-      } else {
+      } else if (data?.user) {
         toast({
           title: "Welcome to Bible Aura!",
           description: "Account created successfully! You can now start exploring.",
