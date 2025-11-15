@@ -983,8 +983,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('New password is required');
       }
 
-      if (newPassword.length < 6) {
-        throw new Error('Password must be at least 6 characters long');
+      if (newPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
       }
 
       const { error } = await supabase.auth.updateUser({
@@ -995,7 +995,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let userFriendlyMessage = error.message;
         
         if (error.message.includes('weak password')) {
-          userFriendlyMessage = 'Please choose a stronger password with at least 6 characters.';
+          userFriendlyMessage = 'Please choose a stronger password with at least 8 characters.';
         } else if (error.message.includes('same password')) {
           userFriendlyMessage = 'Please choose a different password from your current one.';
         }
