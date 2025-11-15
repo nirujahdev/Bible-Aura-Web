@@ -13,8 +13,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { generateSermonContent } from '@/lib/sermon-agent-sdk';
-import { executeAgent, getAllAgents } from '@/lib/sermon-agents';
+// Dynamic imports to prevent module loading errors
 
 interface InlineAIAssistantProps {
   onApplySuggestion?: (suggestion: string, action: 'insert' | 'replace' | 'append') => void;
@@ -53,10 +52,25 @@ export function InlineAIAssistant({
   const [executingAction, setExecutingAction] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Get agents for quick actions
-  const availableAgents = getAllAgents();
+  // Load agents for quick actions
+  const [availableAgents, setAvailableAgents] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        const { getAllAgents } = await import('@/lib/sermon-agents');
+        const agents = getAllAgents();
+        setAvailableAgents(agents);
+      } catch (error) {
+        console.error('Error loading agents:', error);
+        setAvailableAgents([]);
+      }
+    };
+    loadAgents();
+  }, []);
+  
   const quickActionAgents = availableAgents.filter(a => 
-    ['illustration-finder', 'call-to-action', 'sermon-sculptor'].includes(a.id)
+    a && ['illustration-finder', 'call-to-action', 'sermon-sculptor'].includes(a.id)
   );
 
   const quickActions = [
@@ -82,12 +96,15 @@ export function InlineAIAssistant({
 
     setIsLoading(true);
     try {
+      // Dynamically import generateSermonContent
+      const { generateSermonContent } = await import('@/lib/sermon-agent-sdk');
+      
       const prompt = `You are an AI assistant helping to edit or generate sermon content.
 
 Sermon Context:
 - Title: ${state.sermonTitle || 'Not specified'}
 - Scripture: ${state.scriptureReference || 'Not specified'}
-- Current Content: ${state.currentContent.substring(Math.max(0, state.currentContent.length - 500))}
+- Current Content: ${(state.currentContent || '').substring(Math.max(0, (state.currentContent || '').length - 500))}
 
 User Request: ${input}
 
@@ -96,13 +113,17 @@ Provide the requested content or edit. Be concise and practical.`;
       const response = await generateSermonContent({
         message: prompt,
         context: {
-          title: state.sermonTitle,
-          scripture: state.scriptureReference,
-          content: state.currentContent,
-          mainPoints: state.mainPoints
+          title: state.sermonTitle || '',
+          scripture: state.scriptureReference || '',
+          content: state.currentContent || '',
+          mainPoints: state.mainPoints || []
         },
         task: 'enhance'
       });
+
+      if (!response || typeof response !== 'string') {
+        throw new Error('Invalid response from AI');
+      }
 
       setSuggestion(response);
       
@@ -148,16 +169,23 @@ Provide the requested content or edit. Be concise and practical.`;
           return;
         }
 
+        // Dynamically import executeAgent
+        const { executeAgent } = await import('@/lib/sermon-agents');
+        
         const result = await executeAgent(
           actionId,
           {
-            title: state.sermonTitle,
-            scripture: state.scriptureReference,
-            content: state.currentContent,
-            mainPoints: state.mainPoints
+            title: state.sermonTitle || '',
+            scripture: state.scriptureReference || '',
+            content: state.currentContent || '',
+            mainPoints: state.mainPoints || []
           },
           user.id
         );
+
+        if (!result || !result.content) {
+          throw new Error('Invalid response from agent');
+        }
 
         setSuggestion(result.content);
         
@@ -185,16 +213,23 @@ Provide the requested content or edit. Be concise and practical.`;
           return;
         }
 
+        // Dynamically import generateSermonContent
+        const { generateSermonContent } = await import('@/lib/sermon-agent-sdk');
+        
         const response = await generateSermonContent({
           message: prompt,
           context: {
-            title: state.sermonTitle,
-            scripture: state.scriptureReference,
-            content: state.currentContent,
-            mainPoints: state.mainPoints
+            title: state.sermonTitle || '',
+            scripture: state.scriptureReference || '',
+            content: state.currentContent || '',
+            mainPoints: state.mainPoints || []
           },
           task: 'enhance'
         });
+
+        if (!response || typeof response !== 'string') {
+          throw new Error('Invalid response from AI');
+        }
 
         setSuggestion(response);
       }

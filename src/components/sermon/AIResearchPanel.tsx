@@ -65,7 +65,10 @@ export function AIResearchPanel() {
   const [activeTab, setActiveTab] = useState<'chat' | 'tools' | 'history'>('tools');
   const [researchHistory, setResearchHistory] = useState<ResearchHistory[]>([]);
   const [executingAgent, setExecutingAgent] = useState<string | null>(null);
+  const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
+  const [agents, setAgents] = useState<SermonAgent[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
@@ -78,8 +81,23 @@ export function AIResearchPanel() {
     }
   }, [messages, activeTab]);
 
-  // Get available agents
-  const availableAgents = getAllAgents();
+  // Load agents on mount
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        const { getAllAgents } = await import('@/lib/sermon-agents');
+        const allAgents = getAllAgents();
+        setAgents(allAgents);
+      } catch (error) {
+        console.error('Error loading agents:', error);
+        setAgents([]);
+      }
+    };
+    loadAgents();
+  }, []);
+
+  // Use agents from state instead of calling getAllAgents directly
+  const availableAgents = agents.length > 0 ? agents : [];
   
   // Organize agents by category
   const agentsByCategory = availableAgents.reduce((acc, agent) => {
@@ -145,16 +163,23 @@ export function AIResearchPanel() {
     setMessages(newMessages);
 
     try {
+      // Safely import executeAgent
+      const { executeAgent } = await import('@/lib/sermon-agents');
+      
       const agentResult = await executeAgent(
         agentId,
         {
-          title: state.sermonTitle,
-          scripture: state.scriptureReference,
-          content: state.currentContent,
-          mainPoints: state.mainPoints
+          title: state.sermonTitle || '',
+          scripture: state.scriptureReference || '',
+          content: state.currentContent || '',
+          mainPoints: state.mainPoints || []
         },
         user.id
       );
+
+      if (!agentResult || !agentResult.content) {
+        throw new Error('Invalid response from agent');
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -229,12 +254,15 @@ export function AIResearchPanel() {
     setIsLoading(true);
 
     try {
+      // Safely import generateSermonContent
+      const { generateSermonContent } = await import('@/lib/sermon-agent-sdk');
+      
       const contextPrompt = `You are a sermon research assistant (like SermonAI's RA). Help with research, analysis, and sermon preparation.
 
 Sermon Context:
 - Title: ${state.sermonTitle || 'Not specified'}
 - Scripture: ${state.scriptureReference || 'Not specified'}
-- Content Length: ${state.currentContent.length} characters
+- Content Length: ${(state.currentContent || '').length} characters
 
 User Question: ${query}
 
@@ -243,13 +271,17 @@ Provide detailed, helpful research and insights.`;
       const response = await generateSermonContent({
         message: contextPrompt,
         context: {
-          title: state.sermonTitle,
-          scripture: state.scriptureReference,
-          content: state.currentContent,
-          mainPoints: state.mainPoints
+          title: state.sermonTitle || '',
+          scripture: state.scriptureReference || '',
+          content: state.currentContent || '',
+          mainPoints: state.mainPoints || []
         },
         task: 'chat'
       });
+
+      if (!response || typeof response !== 'string') {
+        throw new Error('Invalid response from AI');
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
