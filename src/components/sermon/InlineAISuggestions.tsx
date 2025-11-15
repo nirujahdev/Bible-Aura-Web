@@ -21,7 +21,25 @@ export function InlineAISuggestions({
   onApplyFix,
   enabled = true,
 }: InlineAISuggestionsProps) {
-  const { state } = useSermonAI();
+  let state;
+  try {
+    const sermonAI = useSermonAI();
+    state = sermonAI.state;
+  } catch (error) {
+    console.error('InlineAISuggestions: SermonAI context error:', error);
+    state = {
+      currentContent: '',
+      sermonTitle: '',
+      scriptureReference: '',
+      mainPoints: [],
+      outline: [],
+      conversationHistory: [],
+      analysisResults: null,
+      suggestions: [],
+      isLoading: false,
+    };
+  }
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [issues, setIssues] = useState<GrammarIssue[]>([]);
