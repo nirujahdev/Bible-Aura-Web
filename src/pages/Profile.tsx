@@ -21,7 +21,8 @@ import {
   User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
   Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
   Shield, Mail, Lock, Eye, EyeOff, Settings, Type, 
-  Languages, Bot, Bell, Palette, Moon, Sun, Crown, CreditCard
+  Languages, Bot, Bell, Palette, Moon, Sun, Crown, CreditCard,
+  Trash2, AlertTriangle
 } from "lucide-react";
 import { MobileOptimizedLayout } from "@/components/MobileOptimizedLayout";
 
@@ -48,7 +49,7 @@ interface UserStats {
 }
 
 const Profile = () => {
-  const { user, profile: authProfile, resetPassword } = useAuth();
+  const { user, profile: authProfile, resetPassword, deleteProfile, updatePassword, signOut } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -77,6 +78,21 @@ const Profile = () => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [isResetLoading, setIsResetLoading] = useState(false);
+  
+  // Update password states
+  const [showUpdatePassword, setShowUpdatePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatePasswordLoading, setIsUpdatePasswordLoading] = useState(false);
+  
+  // Delete account states
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   // App Settings states
   const [fontSize, setFontSize] = useState(16);
@@ -116,6 +132,97 @@ const Profile = () => {
       loadProfile();
       loadStats();
       loadSubscriptionInfo();
+      
+      // Set up real-time subscription for profile updates
+      const profileSubscription = supabase
+        .channel('profile-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Profile change detected:', payload);
+            if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+              setProfile(payload.new as UserProfile);
+            } else if (payload.eventType === 'DELETE') {
+              setProfile(null);
+            }
+          }
+        )
+        .subscribe();
+
+      // Set up real-time subscription for stats updates
+      const statsChannels = [
+        supabase
+          .channel('prayer-stats')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'prayer_requests',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              loadStats(); // Reload stats when prayers change
+            }
+          )
+          .subscribe(),
+        supabase
+          .channel('journal-stats')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'journal_entries',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              loadStats(); // Reload stats when journal entries change
+            }
+          )
+          .subscribe(),
+        supabase
+          .channel('bookmark-stats')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'bookmarks',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              loadStats(); // Reload stats when bookmarks change
+            }
+          )
+          .subscribe(),
+        supabase
+          .channel('conversation-stats')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'ai_conversations',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              loadStats(); // Reload stats when conversations change
+            }
+          )
+          .subscribe(),
+      ];
+
+      return () => {
+        profileSubscription.unsubscribe();
+        statsChannels.forEach(channel => channel.unsubscribe());
+      };
     }
   }, [user]);
 
@@ -127,6 +234,7 @@ const Profile = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
+        .is('deleted_at', null) // Only get non-deleted profiles
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -278,6 +386,114 @@ const Profile = () => {
       });
     } finally {
       setIsResetLoading(false);
+    }
+  };
+
+  // Update password function (change password when logged in)
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all password fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUpdatePasswordLoading(true);
+
+    try {
+      const result = await updatePassword(newPassword);
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Password Updated",
+          description: "Your password has been successfully updated",
+        });
+        setShowUpdatePassword(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error) {
+      console.error('Update password error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatePasswordLoading(false);
+    }
+  };
+
+  // Delete account function
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "DELETE") {
+      toast({
+        title: "Error",
+        description: "Please type 'DELETE' to confirm account deletion",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsDeleteLoading(true);
+
+    try {
+      const result = await deleteProfile();
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Account Deleted",
+          description: "Your account has been deleted. You will be signed out.",
+        });
+        
+        // Sign out after a short delay
+        setTimeout(async () => {
+          await signOut();
+          window.location.href = '/auth';
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleteLoading(false);
     }
   };
 
@@ -684,6 +900,200 @@ const Profile = () => {
                       </Button>
                     </div>
                   </form>
+                </div>
+              )}
+
+              {/* Update Password Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Lock className="h-5 w-5 text-gray-600" />
+                  <div>
+                    <p className="font-medium text-sm sm:text-base">Change Password</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Update your password while logged in
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowUpdatePassword(!showUpdatePassword)}
+                  className="w-full sm:w-auto"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  Change Password
+                </Button>
+              </div>
+
+              {showUpdatePassword && (
+                <div className="p-3 sm:p-4 border rounded-lg bg-green-50 border-green-200">
+                  <form onSubmit={handleUpdatePassword} className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium block mb-2">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <Input
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="Enter new password (min 8 characters)"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="w-full pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                        >
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium block mb-2">
+                        Confirm New Password
+                      </label>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm new password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        type="submit" 
+                        disabled={isUpdatePasswordLoading}
+                        className="w-full sm:w-auto"
+                      >
+                        {isUpdatePasswordLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Updating...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="h-4 w-4 mr-2" />
+                            Update Password
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => {
+                          setShowUpdatePassword(false);
+                          setNewPassword("");
+                          setConfirmPassword("");
+                        }}
+                        className="w-full sm:w-auto"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Delete Account Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-red-50 rounded-lg border border-red-200">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <div>
+                    <p className="font-medium text-sm sm:text-base text-red-900">Delete Account</p>
+                    <p className="text-xs sm:text-sm text-red-700">
+                      Permanently delete your account and all associated data
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => setShowDeleteAccount(!showDeleteAccount)}
+                  className="w-full sm:w-auto"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Account
+                </Button>
+              </div>
+
+              {showDeleteAccount && (
+                <div className="p-3 sm:p-4 border rounded-lg bg-red-50 border-red-300">
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-red-900 mb-2">Warning: This action cannot be undone</h4>
+                        <p className="text-sm text-red-800 mb-4">
+                          Deleting your account will:
+                        </p>
+                        <ul className="text-sm text-red-700 space-y-1 mb-4 list-disc list-inside">
+                          <li>Remove your profile and all personal information</li>
+                          <li>Delete all your prayers, journal entries, and bookmarks</li>
+                          <li>Remove all your AI conversations and sermons</li>
+                          <li>Sign you out immediately</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium block mb-2 text-red-900">
+                        Type <span className="font-bold">DELETE</span> to confirm:
+                      </label>
+                      <Input
+                        type="text"
+                        placeholder="Type DELETE to confirm"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        className="w-full border-red-300"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={isDeleteLoading || deleteConfirmText !== "DELETE"}
+                        className="w-full sm:w-auto"
+                      >
+                        {isDeleteLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete My Account
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setShowDeleteAccount(false);
+                          setDeleteConfirmText("");
+                        }}
+                        className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-100"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
