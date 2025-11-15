@@ -119,8 +119,40 @@ const SermonsContent = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Get sermon AI context - should always be available since we're wrapped in SermonAIProvider
-  const sermonAI = useSermonAI();
+  // Get sermon AI context - with defensive error handling
+  let sermonAI;
+  try {
+    sermonAI = useSermonAI();
+  } catch (error) {
+    console.error('SermonsContent: SermonAI context error:', error);
+    // Provide fallback functions if context is unavailable
+    sermonAI = {
+      state: {
+        currentContent: '',
+        sermonTitle: '',
+        scriptureReference: '',
+        mainPoints: [],
+        outline: [],
+        conversationHistory: [],
+        analysisResults: null,
+        suggestions: [],
+        isLoading: false,
+      },
+      updateContent: () => {},
+      updateTitle: () => {},
+      updateScriptureReference: () => {},
+      updateMainPoints: () => {},
+      updateOutline: () => {},
+      addConversationMessage: () => {},
+      clearConversationHistory: () => {},
+      updateAnalysisResults: () => {},
+      addSuggestion: () => {},
+      removeSuggestion: () => {},
+      clearSuggestions: () => {},
+      setLoading: () => {},
+    };
+  }
+  
   const { updateContent, updateTitle, updateScriptureReference, updateMainPoints } = sermonAI;
   const isMobile = useIsMobile();
   
