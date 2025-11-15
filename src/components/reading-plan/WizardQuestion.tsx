@@ -21,7 +21,7 @@ export default function WizardQuestion({
     <div className="space-y-6">
       {/* Step indicator */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-gray-700 font-medium">
           Step {step} of {totalSteps}
         </div>
         <div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export default function WizardQuestion({
                   ? 'w-8 bg-orange-500' 
                   : i + 1 < step
                   ? 'w-2 bg-orange-300'
-                  : 'w-2 bg-gray-600'
+                  : 'w-2 bg-gray-300'
               }`}
             />
           ))}
@@ -42,11 +42,11 @@ export default function WizardQuestion({
 
       {/* Question content */}
       <div className="space-y-3">
-        <h2 className="text-2xl font-semibold text-orange-400 flex items-center gap-2">
+        <h2 className="text-2xl font-semibold text-orange-600 flex items-center gap-2">
           <span className="text-orange-500">✦</span>
           {title}
         </h2>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-600">
           {description}
         </p>
       </div>

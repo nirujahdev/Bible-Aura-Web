@@ -19,12 +19,12 @@ export default function WizardNavigation({
   canProceed = true
 }: WizardNavigationProps) {
   return (
-    <div className="flex items-center justify-between pt-6 border-t border-white/10">
+    <div className="flex items-center justify-between pt-6 border-t border-gray-200">
       <Button
         onClick={onBack}
         disabled={isFirst}
         variant="ghost"
-        className="backdrop-blur-xl bg-white/5 hover:bg-white/10 text-gray-300 border border-white/20 disabled:opacity-30"
+        className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <ChevronLeft className="h-4 w-4 mr-2" />
         Back

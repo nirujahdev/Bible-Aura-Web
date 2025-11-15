@@ -96,7 +96,7 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
   };
 
   return (
-    <Card className="max-w-2xl mx-auto p-8 rounded-2xl backdrop-blur-xl bg-white/10 border border-orange-300/20 shadow-2xl">
+    <Card className="max-w-2xl mx-auto p-8 rounded-2xl bg-white border border-orange-200 shadow-2xl">
       <AnimatePresence mode="wait" custom={1}>
         <motion.div
           key={currentStep}
@@ -124,11 +124,11 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
                     className={`h-auto py-4 justify-start text-left transition-all ${
                       preferences.scope === option
                         ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-lg shadow-orange-500/30'
-                        : 'bg-white/5 hover:bg-white/10 border-white/20 text-gray-300'
+                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-lg">
+                      <span className={`text-lg ${preferences.scope === option ? 'text-white' : 'text-orange-500'}`}>
                         {option === 'Whole Bible' && '📖'}
                         {option === 'New Testament' && '✝️'}
                         {option === 'Old Testament' && '📜'}
@@ -136,15 +136,15 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
                         {themePacks.includes(option) && '✦'}
                       </span>
                       <div>
-                        <div className="font-medium">{option}</div>
-                        {option === 'Whole Bible' && <div className="text-xs opacity-70">All 66 books</div>}
-                        {option === 'New Testament' && <div className="text-xs opacity-70">27 books</div>}
-                        {option === 'Old Testament' && <div className="text-xs opacity-70">39 books</div>}
-                        {option === 'Specific Books' && <div className="text-xs opacity-70">Choose your own</div>}
-                        {option === 'Faith' && <div className="text-xs opacity-70">Hebrews, James, Romans...</div>}
-                        {option === 'Prayer' && <div className="text-xs opacity-70">Psalms, Timothy...</div>}
-                        {option === "Jesus' Teachings" && <div className="text-xs opacity-70">The Four Gospels</div>}
-                        {option === 'Wisdom' && <div className="text-xs opacity-70">Proverbs, Ecclesiastes...</div>}
+                        <div className={`font-medium ${preferences.scope === option ? 'text-white' : 'text-gray-800'}`}>{option}</div>
+                        {option === 'Whole Bible' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>All 66 books</div>}
+                        {option === 'New Testament' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>27 books</div>}
+                        {option === 'Old Testament' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>39 books</div>}
+                        {option === 'Specific Books' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>Choose your own</div>}
+                        {option === 'Faith' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>Hebrews, James, Romans...</div>}
+                        {option === 'Prayer' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>Psalms, Timothy...</div>}
+                        {option === "Jesus' Teachings" && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>The Four Gospels</div>}
+                        {option === 'Wisdom' && <div className={`text-xs ${preferences.scope === option ? 'text-orange-100' : 'text-gray-600'}`}>Proverbs, Ecclesiastes...</div>}
                       </div>
                     </div>
                   </Button>
@@ -154,22 +154,22 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
               {/* Book selection for "Specific Books" */}
               {preferences.scope === 'Specific Books' && (
                 <div className="mt-6">
-                  <div className="mb-3 text-sm text-gray-400">
+                  <div className="mb-3 text-sm text-gray-700">
                     Select books ({preferences.specificBooks?.length || 0} selected):
                   </div>
-                  <ScrollArea className="h-64 rounded-lg border border-white/20 p-4 bg-white/5">
+                  <ScrollArea className="h-64 rounded-lg border border-gray-200 p-4 bg-gray-50">
                     <div className="grid grid-cols-2 gap-2">
                       {allBooks.map((book) => (
                         <label
                           key={book}
-                          className="flex items-center gap-2 p-2 rounded hover:bg-white/10 cursor-pointer transition-colors"
+                          className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 cursor-pointer transition-colors"
                         >
                           <Checkbox
                             checked={preferences.specificBooks?.includes(book)}
                             onCheckedChange={() => toggleBook(book)}
-                            className="border-white/30 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                            className="border-gray-300 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
                           />
-                          <span className="text-sm text-gray-300">{book}</span>
+                          <span className="text-sm text-gray-800">{book}</span>
                         </label>
                       ))}
                     </div>
@@ -196,22 +196,22 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
                     className={`h-auto py-4 flex-col transition-all ${
                       preferences.duration === days
                         ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-lg shadow-orange-500/30'
-                        : 'bg-white/5 hover:bg-white/10 border-white/20 text-gray-300'
+                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800'
                     }`}
                   >
-                    <div className="text-2xl font-bold">{days}</div>
-                    <div className="text-xs opacity-70">days</div>
+                    <div className={`text-2xl font-bold ${preferences.duration === days ? 'text-white' : 'text-gray-800'}`}>{days}</div>
+                    <div className={`text-xs ${preferences.duration === days ? 'text-orange-100' : 'text-gray-600'}`}>days</div>
                   </Button>
                 ))}
                 <div className="col-span-3 md:col-span-6">
-                  <div className="text-sm text-gray-400 mb-2">Or enter custom:</div>
+                  <div className="text-sm text-gray-700 mb-2">Or enter custom:</div>
                   <Input
                     type="number"
                     min="7"
                     max="730"
                     value={preferences.duration}
                     onChange={(e) => updatePreference('duration', parseInt(e.target.value) || 90)}
-                    className="bg-white/5 border-white/20 text-white"
+                    className="bg-white border-gray-200 text-gray-800"
                     placeholder="Custom days"
                   />
                 </div>
@@ -236,12 +236,12 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
                     className={`h-auto py-6 flex-col transition-all ${
                       preferences.daysPerWeek === days
                         ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-lg shadow-orange-500/30'
-                        : 'bg-white/5 hover:bg-white/10 border-white/20 text-gray-300'
+                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800'
                     }`}
                   >
-                    <div className="text-3xl font-bold">{days}</div>
-                    <div className="text-xs opacity-70 mt-1">days/week</div>
-                    <div className="text-xs opacity-50 mt-1">
+                    <div className={`text-3xl font-bold ${preferences.daysPerWeek === days ? 'text-white' : 'text-gray-800'}`}>{days}</div>
+                    <div className={`text-xs mt-1 ${preferences.daysPerWeek === days ? 'text-orange-100' : 'text-gray-600'}`}>days/week</div>
+                    <div className={`text-xs mt-1 ${preferences.daysPerWeek === days ? 'text-orange-100' : 'text-gray-500'}`}>
                       {days === 3 && 'Flexible'}
                       {days === 5 && 'Consistent'}
                       {days === 7 && 'Daily'}
@@ -274,14 +274,14 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
                     className={`h-auto py-4 justify-start text-left transition-all ${
                       preferences.readingSize === option.value
                         ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-lg shadow-orange-500/30'
-                        : 'bg-white/5 hover:bg-white/10 border-white/20 text-gray-300'
+                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{option.icon}</span>
+                      <span className={`text-2xl ${preferences.readingSize === option.value ? 'text-white' : 'text-orange-500'}`}>{option.icon}</span>
                       <div>
-                        <div className="font-medium">{option.label}</div>
-                        <div className="text-xs opacity-70">{option.desc}</div>
+                        <div className={`font-medium ${preferences.readingSize === option.value ? 'text-white' : 'text-gray-800'}`}>{option.label}</div>
+                        <div className={`text-xs ${preferences.readingSize === option.value ? 'text-orange-100' : 'text-gray-600'}`}>{option.desc}</div>
                       </div>
                     </div>
                   </Button>
@@ -310,14 +310,14 @@ export default function ReadingPlanWizard({ onComplete }: ReadingPlanWizardProps
                     className={`h-auto py-6 justify-start text-left transition-all ${
                       preferences.language === option.value
                         ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-400 shadow-lg shadow-orange-500/30'
-                        : 'bg-white/5 hover:bg-white/10 border-white/20 text-gray-300'
+                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-800'
                     }`}
                   >
                     <div className="flex items-center gap-4">
                       <span className="text-4xl">{option.flag}</span>
                       <div>
-                        <div className="font-medium text-lg">{option.label}</div>
-                        <div className="text-xs opacity-70">{option.desc}</div>
+                        <div className={`font-medium text-lg ${preferences.language === option.value ? 'text-white' : 'text-gray-800'}`}>{option.label}</div>
+                        <div className={`text-xs ${preferences.language === option.value ? 'text-orange-100' : 'text-gray-600'}`}>{option.desc}</div>
                       </div>
                     </div>
                   </Button>
