@@ -77,10 +77,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Create default profile for new user
-  const createProfile = async (userId: string): Promise<void> => {
+  // IMPORTANT: This must be called AFTER session is fully established
+  const createProfile = async (userId: string): Promise<{ success: boolean; error?: any }> => {
     try {
+      // Verify we have an active session first (required for RLS)
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !currentSession) {
+        console.error('❌ No active session when creating profile:', sessionError);
+        return { 
+          success: false, 
+          error: new Error('No active session. Cannot create profile without authentication.') 
+        };
+      }
+
+      if (currentSession.user.id !== userId) {
+        console.error('❌ Session user ID mismatch:', {
+          sessionUserId: currentSession.user.id,
+          requestedUserId: userId
+        });
+        return { 
+          success: false, 
+          error: new Error('User ID mismatch. Session not established for this user.') 
+        };
+      }
+
       // Check if profile already exists first
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
@@ -90,23 +113,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (existingProfile) {
         console.log('✅ Profile already exists, loading it...');
         setProfile(existingProfile as Profile);
-        return;
+        return { success: true };
+      }
+
+      // If check returned error other than "not found", log it
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.warn('⚠️ Error checking for existing profile:', checkError);
       }
 
       // Get current user data for defaults
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
       
+      if (userError || !authUser) {
+        console.error('❌ Error getting user data:', userError);
+        return { 
+          success: false, 
+          error: new Error('Cannot get user data for profile creation.') 
+        };
+      }
+
       const displayName = 
-        authUser?.user_metadata?.full_name ||
-        authUser?.user_metadata?.name ||
-        authUser?.user_metadata?.display_name ||
-        authUser?.email?.split('@')[0] ||
+        authUser.user_metadata?.full_name ||
+        authUser.user_metadata?.name ||
+        authUser.user_metadata?.display_name ||
+        authUser.email?.split('@')[0] ||
         'Bible Aura Member';
 
       const profileData = {
         user_id: userId,
         display_name: displayName,
-        avatar_url: authUser?.user_metadata?.avatar_url || authUser?.user_metadata?.picture || null,
+        avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
         phone_number: null,
         age: null,
         denomination: null,
@@ -118,17 +154,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         total_reading_days: 0,
       };
 
+      console.log('🔐 Creating profile with session:', {
+        userId,
+        sessionUserId: currentSession.user.id,
+        hasSession: !!currentSession,
+        displayName
+      });
+
       const { data, error } = await supabase
         .from('profiles')
-        .upsert(profileData, { onConflict: 'user_id' })
+        .insert(profileData)
         .select()
         .single();
 
       if (error) {
         // If profile already exists (duplicate key), just load it
-        if (error.code === '23505' || error.code === 'PGRST116') {
+        if (error.code === '23505') {
+          console.log('Profile already exists (duplicate key), loading...');
           await loadUserProfile(userId);
-          return;
+          return { success: true };
         }
         
         console.error('❌ Error creating profile:', {
@@ -136,21 +180,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           message: error.message,
           details: error.details,
           hint: error.hint,
-          userId
+          userId,
+          sessionUserId: currentSession.user.id,
+          authUid: (await supabase.auth.getUser()).data.user?.id
         });
         
-        // Don't throw - profile can be created later
-        throw error;
+        return { success: false, error };
       }
 
       if (data) {
         setProfile(data as Profile);
         console.log('✅ Profile created successfully:', data.id);
+        return { success: true };
       }
+
+      return { success: false, error: new Error('Profile creation returned no data') };
     } catch (error) {
       console.error('❌ Error in createProfile:', error);
-      // Don't throw - allow sign-up to succeed even if profile creation fails
-      // Profile can be created later through the completion modal
+      return { success: false, error };
     }
   };
 
@@ -197,7 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           async (event, session) => {
             if (!isMounted) return;
 
-            console.log('Auth state changed:', event);
+            console.log('Auth state change:', event);
 
             if (event === 'SIGNED_IN' && session) {
               setSession(session);
@@ -403,6 +450,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const redirectUrl = `${window.location.origin}/auth`;
       
+      console.log('🔐 Starting sign-up process for:', email.toLowerCase().trim());
+      
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
@@ -463,34 +512,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Even if there's an error, check if user was created
           if (data?.user) {
             // User was created, just profile creation had an issue
-            console.log('✅ User created despite error, creating profile...');
-            try {
-              await createProfile(data.user.id);
-              toast({
-                title: "Account created!",
-                description: "Your account has been created successfully. You can now sign in.",
-              });
+            console.log('✅ User created despite error, waiting for session then creating profile...');
+            
+            // Wait for session to be fully established
+            let retries = 0;
+            const maxRetries = 5;
+            let sessionEstablished = false;
+
+            while (!sessionEstablished && retries < maxRetries) {
+              const { data: { session: currentSession } } = await supabase.auth.getSession();
               
-              // Set user and session if available
-              if (data.session) {
-                setSession(data.session);
-                setUser(data.user);
+              if (currentSession && currentSession.user.id === data.user.id) {
+                sessionEstablished = true;
+                setSession(currentSession);
+                setUser(currentSession.user);
+                
+                // Now create profile with established session
+                const profileResult = await createProfile(data.user.id);
+                if (!profileResult.success) {
+                  console.error('❌ Profile creation failed:', profileResult.error);
+                  toast({
+                    title: "Account created!",
+                    description: "Your account was created. Profile setup had an issue but you can sign in and complete it later.",
+                  });
+                } else {
+                  toast({
+                    title: "Account created!",
+                    description: "Your account has been created successfully. You can now sign in.",
+                  });
+                }
+                
+                return { error: null };
               }
               
-              return { error: null };
-            } catch (profileError) {
-              console.error('❌ Profile creation error:', profileError);
+              // Wait before retrying
+              await new Promise(resolve => setTimeout(resolve, 300));
+              retries++;
+            }
+            
+            if (!sessionEstablished) {
+              console.error('❌ Session not established after retries');
               toast({
                 title: "Account created!",
-                description: "Your account was created. Profile setup had an issue but you can sign in and complete it later.",
+                description: "Your account was created. Please sign in to complete setup.",
               });
-              
-              if (data.session) {
-                setSession(data.session);
-                setUser(data.user);
-              }
-              
-              return { error: null }; // Don't fail sign-up if profile creation fails
+              return { error: null }; // Don't fail sign-up if session takes time
             }
           }
           
@@ -539,33 +605,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data?.user) {
         if (data.session) {
           // Session available immediately (no email confirmation required)
+          console.log('✅ User created with session, establishing session then creating profile...');
+          
+          // Set session first
           setSession(data.session);
           setUser(data.user);
           
-          // Create profile immediately
-          await createProfile(data.user.id);
+          // Wait a brief moment to ensure session is fully propagated
+          await new Promise(resolve => setTimeout(resolve, 200));
           
-          toast({
-            title: "Welcome to Bible Aura!",
-            description: "Account created successfully! You can now start exploring.",
-          });
+          // Verify session is established
+          const { data: { session: verifiedSession } } = await supabase.auth.getSession();
+          if (!verifiedSession || verifiedSession.user.id !== data.user.id) {
+            console.error('❌ Session verification failed:', {
+              hasVerifiedSession: !!verifiedSession,
+              verifiedUserId: verifiedSession?.user.id,
+              expectedUserId: data.user.id
+            });
+            
+            // Retry once
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const { data: { session: retrySession } } = await supabase.auth.getSession();
+            if (!retrySession || retrySession.user.id !== data.user.id) {
+              toast({
+                title: "Account created!",
+                description: "Your account was created. Please refresh and sign in to complete setup.",
+              });
+              return { error: null };
+            }
+          }
+          
+          // Create profile with verified session
+          const profileResult = await createProfile(data.user.id);
+          
+          if (!profileResult.success) {
+            console.error('❌ Profile creation failed:', profileResult.error);
+            toast({
+              title: "Account created!",
+              description: "Your account was created. Profile setup had an issue but you can complete it after signing in.",
+            });
+          } else {
+            toast({
+              title: "Welcome to Bible Aura!",
+              description: "Account created successfully! You can now start exploring.",
+            });
+          }
         } else {
           // Email confirmation required
+          console.log('⚠️ Email confirmation required - user created but no session');
           toast({
             title: "Check your email!",
             description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
           });
           
-          // Try to create profile anyway (will complete after email confirmation)
-          if (data.user.id) {
-            await createProfile(data.user.id);
-          }
+          // Don't try to create profile here - wait for email confirmation
+          // Profile will be created when user signs in after confirmation
         }
       }
 
       return { error: null };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+      console.error('❌ Sign-up exception:', error);
       toast({
         title: "Sign up failed",
         description: message,
