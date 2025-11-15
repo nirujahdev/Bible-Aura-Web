@@ -79,6 +79,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Create default profile for new user
   const createProfile = async (userId: string): Promise<void> => {
     try {
+      // Check if profile already exists first
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .single();
+
+      if (existingProfile) {
+        console.log('✅ Profile already exists, loading it...');
+        setProfile(existingProfile as Profile);
+        return;
+      }
+
       // Get current user data for defaults
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
@@ -112,20 +126,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         // If profile already exists (duplicate key), just load it
-        if (error.code === '23505') {
+        if (error.code === '23505' || error.code === 'PGRST116') {
           await loadUserProfile(userId);
           return;
         }
-        console.error('Error creating profile:', error);
-        return;
+        
+        console.error('❌ Error creating profile:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          userId
+        });
+        
+        // Don't throw - profile can be created later
+        throw error;
       }
 
       if (data) {
         setProfile(data as Profile);
-        console.log('✅ Profile created successfully');
+        console.log('✅ Profile created successfully:', data.id);
       }
     } catch (error) {
-      console.error('Error in createProfile:', error);
+      console.error('❌ Error in createProfile:', error);
+      // Don't throw - allow sign-up to succeed even if profile creation fails
+      // Profile can be created later through the completion modal
     }
   };
 
@@ -386,6 +411,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
 
+      // Log detailed error information for debugging
+      if (error) {
+        console.error('❌ Sign up error details:', {
+          message: error.message,
+          status: (error as any).status,
+          code: (error as any).code,
+          hasUserData: !!data?.user,
+          userId: data?.user?.id,
+          email: email.toLowerCase().trim()
+        });
+      }
+
       if (error) {
         let message = error.message;
         let isEmailExists = false;
@@ -400,6 +437,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           'User with this email address has already been registered',
           'duplicate key value',
           'violates unique constraint',
+          'user already exists',
         ];
 
         const lowerMsg = error.message?.toLowerCase() || '';
@@ -419,25 +457,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Handle database errors (user might be created)
         if (error.message?.includes('Database error saving new user') || 
-            error.message?.includes('error saving new user')) {
+            error.message?.includes('error saving new user') ||
+            error.message?.includes('saving new user')) {
+          
+          // Even if there's an error, check if user was created
           if (data?.user) {
             // User was created, just profile creation had an issue
-            await createProfile(data.user.id);
-            toast({
-              title: "Account created!",
-              description: "Your account has been created. Setting up your profile...",
-            });
-            return { error: null };
+            console.log('✅ User created despite error, creating profile...');
+            try {
+              await createProfile(data.user.id);
+              toast({
+                title: "Account created!",
+                description: "Your account has been created successfully. You can now sign in.",
+              });
+              
+              // Set user and session if available
+              if (data.session) {
+                setSession(data.session);
+                setUser(data.user);
+              }
+              
+              return { error: null };
+            } catch (profileError) {
+              console.error('❌ Profile creation error:', profileError);
+              toast({
+                title: "Account created!",
+                description: "Your account was created. Profile setup had an issue but you can sign in and complete it later.",
+              });
+              
+              if (data.session) {
+                setSession(data.session);
+                setUser(data.user);
+              }
+              
+              return { error: null }; // Don't fail sign-up if profile creation fails
+            }
           }
-          message = 'Sign up encountered an error. If your account was created, please try signing in. Otherwise, please try again.';
-        } else if (error.message?.includes('weak password')) {
+          
+          // No user data - check if user exists anyway by trying to sign in
+          console.log('⚠️ Error occurred but no user data. Checking if user exists...');
+          
+          // Try a quick check: attempt to get the user
+          try {
+            const { data: existingUser } = await supabase.auth.getUser();
+            if (existingUser?.user && existingUser.user.email === email.toLowerCase().trim()) {
+              // User exists! Sign them in
+              console.log('✅ User exists, signing in...');
+              const signInResult = await signIn(email, password);
+              return signInResult;
+            }
+          } catch (checkError) {
+            console.error('Error checking existing user:', checkError);
+          }
+          
+          // Generic error message
+          message = 'Unable to create account. Please check your internet connection and try again. If the problem persists, try signing in instead.';
+        } else if (error.message?.includes('weak password') || error.message?.includes('Password')) {
           message = 'Please choose a stronger password with at least 8 characters.';
-        } else if (error.message?.includes('invalid email')) {
+        } else if (error.message?.includes('invalid email') || error.message?.includes('Email')) {
           message = 'Please enter a valid email address.';
         } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
-          message = 'Unable to create account. Please try again or contact support.';
-        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-          message = 'Network error. Please check your connection and try again.';
+          message = 'Unable to create account due to permissions. Please try again or contact support.';
+        } else if (error.message?.includes('network') || error.message?.includes('fetch') || error.message?.includes('Failed to fetch')) {
+          message = 'Network error. Please check your internet connection and try again.';
+        } else if (error.message?.includes('rate limit') || error.message?.includes('too many')) {
+          message = 'Too many sign-up attempts. Please wait a few minutes before trying again.';
+        } else {
+          // Generic error with more helpful message
+          message = `Unable to create account: ${error.message || 'Unknown error'}. Please try again or contact support if the problem persists.`;
         }
 
         toast({
