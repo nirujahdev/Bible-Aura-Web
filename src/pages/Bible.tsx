@@ -96,9 +96,10 @@ export default function Bible() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   
-  // Enhanced AI Chat state (side-by-side sidebar)
-  const [enhancedAiChatOpen, setEnhancedAiChatOpen] = useState(false);
+  // AI Chat state
+  const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
+  
   const [highlightPickerOpen, setHighlightPickerOpen] = useState<string | null>(null);
 
   // Mobile utility functions
@@ -397,12 +398,14 @@ export default function Bible() {
     setNoteModalOpen(true);
   };
 
+
+  // Open AI Chat for a verse
   const openAiChat = (verse: BibleVerse) => {
     setSelectedVerseForAI(verse);
-    setEnhancedAiChatOpen(true);
-    // Automatically switch to AI chat tab in sidebar (desktop only)
+    setAiChatOpen(true);
+    // Switch to AI Chat tab on desktop
     if (!isMobile) {
-      // Tab will automatically switch due to Tabs value prop
+      setActiveTab('ai-chat');
     }
   };
 
@@ -743,19 +746,17 @@ How can I apply this to my life?
                 </div>
               </div>
 
-              <Tabs value={enhancedAiChatOpen && selectedVerseForAI ? 'ai-chat' : activeTab} onValueChange={(value) => {
-                if (value === 'ai-chat') {
-                  // Don't change tab if AI chat is open - it's controlled by verse selection
-                  return;
+              <Tabs value={aiChatOpen && selectedVerseForAI ? 'ai-chat' : activeTab} onValueChange={(value) => {
+                if (value === 'ai-chat' && !selectedVerseForAI) {
+                  return; // Don't allow switching to AI chat if no verse selected
+                }
+                if (value !== 'ai-chat') {
+                  setAiChatOpen(false);
+                  setSelectedVerseForAI(null);
                 }
                 setActiveTab(value);
                 if (value === 'read') {
                   setSearchResults([]);
-                }
-                // Close AI chat if switching to other tabs
-                if (value !== 'ai-chat') {
-                  setEnhancedAiChatOpen(false);
-                  setSelectedVerseForAI(null);
                 }
               }} className="flex-1 flex flex-col h-[calc(100vh-140px)]">
                 <TabsList className="grid w-full grid-cols-3 mx-4 mt-4">
@@ -924,7 +925,7 @@ How can I apply this to my life?
                     )}
                   </TabsContent>
 
-                  {/* AI Chat Tab - Part of sidebar like book/search */}
+                  {/* AI Chat Tab */}
                   <TabsContent value="ai-chat" className="mt-4 flex-1 flex flex-col h-full">
                     {selectedVerseForAI ? (
                       <div className="flex-1 flex flex-col h-full overflow-hidden -mx-4">
@@ -943,7 +944,7 @@ How can I apply this to my life?
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                setEnhancedAiChatOpen(false);
+                                setAiChatOpen(false);
                                 setSelectedVerseForAI(null);
                                 setActiveTab('read');
                               }}
@@ -957,9 +958,9 @@ How can I apply this to my life?
                         <div className="flex-1 min-h-0 overflow-hidden">
                           <BibleVerseAIChat
                             verse={selectedVerseForAI}
-                            isOpen={enhancedAiChatOpen}
+                            isOpen={aiChatOpen}
                             onClose={() => {
-                              setEnhancedAiChatOpen(false);
+                              setAiChatOpen(false);
                               setSelectedVerseForAI(null);
                               setActiveTab('read');
                             }}
@@ -1128,7 +1129,7 @@ How can I apply this to my life?
                             isMobile ? 'opacity-100 -mx-2 px-2' : 'opacity-0 group-hover:opacity-100'
                           } transition-opacity ${isMobile ? 'pb-2' : ''}`}>
                             
-                            {/* Ask AI - Plain Orange Circle with ✦ */}
+                            {/* Ask AI Button */}
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -1145,16 +1146,8 @@ How can I apply this to my life?
                                     </div>
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent className="max-w-xs p-3">
-                                  <div className="font-semibold text-sm mb-2">🤖 Ask AI Assistant</div>
-                                  <div className="text-xs space-y-1">
-                                    <div>🔮 <strong>Theological Analysis</strong> - Deep doctrinal insights</div>
-                                    <div>👥 <strong>Character Study</strong> - Biblical people & lessons</div>
-                                    <div>📖 <strong>Cross References</strong> - Related verses & connections</div>
-                                    <div>💡 <strong>Parables Study</strong> - Meanings & applications</div>
-                                    <div>🕰️ <strong>History & Insights</strong> - Cultural context</div>
-                                    <div>❓ <strong>Q&A Format</strong> - Simple question & answer</div>
-                                  </div>
+                                <TooltipContent>
+                                  <p>Ask AI about this verse</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -1354,8 +1347,8 @@ How can I apply this to my life?
           />
         )}
 
-        {/* Enhanced AI Chat Modal - Mobile Only (desktop uses sidebar tab) */}
-        {enhancedAiChatOpen && selectedVerseForAI && isMobile && (
+        {/* AI Chat Modal - Mobile Only */}
+        {aiChatOpen && selectedVerseForAI && isMobile && (
           <div className="fixed top-0 right-0 h-full w-full bg-white border-l border-gray-200 shadow-2xl flex flex-col transition-transform duration-300 z-50">
             {/* Mobile Header with Close Button */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
@@ -1372,7 +1365,7 @@ How can I apply this to my life?
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setEnhancedAiChatOpen(false);
+                  setAiChatOpen(false);
                   setSelectedVerseForAI(null);
                 }}
                 className="h-8 w-8 p-0"
@@ -1381,14 +1374,14 @@ How can I apply this to my life?
               </Button>
             </div>
             
-            {/* AI Chat Content - Full Height with proper overflow handling */}
+            {/* AI Chat Content */}
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
               <div className="flex-1 min-h-0 overflow-hidden">
                 <BibleVerseAIChat
                   verse={selectedVerseForAI}
-                  isOpen={enhancedAiChatOpen}
+                  isOpen={aiChatOpen}
                   onClose={() => {
-                    setEnhancedAiChatOpen(false);
+                    setAiChatOpen(false);
                     setSelectedVerseForAI(null);
                   }}
                   verseReference={generateVerseReference(selectedVerseForAI)}
@@ -1399,16 +1392,17 @@ How can I apply this to my life?
           </div>
         )}
         
-        {/* Backdrop for Mobile */}
-        {enhancedAiChatOpen && isMobile && (
+        {/* Backdrop for Mobile AI Chat */}
+        {aiChatOpen && isMobile && (
           <div 
             className="fixed inset-0 bg-black/50 z-30"
             onClick={() => {
-              setEnhancedAiChatOpen(false);
+              setAiChatOpen(false);
               setSelectedVerseForAI(null);
             }}
           />
         )}
+
       </div>
     </Layout>
   );
@@ -1424,7 +1418,6 @@ function VerseCard({
   onToggleFavorite, 
   onHighlight, 
   onOpenNote, 
-  onOpenAI, 
   toast,
   getBookDisplayName
 }: any) {
@@ -1522,15 +1515,6 @@ function VerseCard({
             <StickyNote className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
 
-          {/* AI Analysis */}
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => onOpenAI(verse)}
-            className="h-6 w-6 md:h-8 md:w-8 p-0 text-orange-500 hover:text-orange-600"
-          >
-            <span className="text-sm font-bold">✦</span>
-          </Button>
           
           {/* Share */}
           <Button 
