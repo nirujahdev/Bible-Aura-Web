@@ -138,13 +138,25 @@ export default function Auth() {
       
       let errorMessage = 'Authentication failed';
       if (errorDesc) {
-        errorMessage = decodeURIComponent(errorDesc[1].replace(/\+/g, ' '));
+        const decodedError = decodeURIComponent(errorDesc[1].replace(/\+/g, ' '));
+        // Provide user-friendly messages for common errors
+        if (decodedError.includes('Database error saving new user') || 
+            decodedError.includes('saving new user')) {
+          errorMessage = 'There was an issue creating your account. The profile may have been created - please try signing in instead. If the problem persists, please contact support.';
+        } else if (decodedError.includes('already registered') || 
+                   decodedError.includes('already exists')) {
+          errorMessage = 'An account with this email already exists. Please sign in instead.';
+        } else {
+          errorMessage = decodedError;
+        }
       } else if (errorMatch) {
         const errorCode = decodeURIComponent(errorMatch[1]);
         if (errorCode === 'access_denied') {
           errorMessage = 'Access denied. Please try again or use a different sign-in method.';
         } else if (errorCode === 'invalid_request') {
           errorMessage = 'Invalid authentication request. Please try again.';
+        } else if (errorCode === 'server_error' || errorCode === 'unexpected_failure') {
+          errorMessage = 'A server error occurred. Please try again in a moment. If the problem persists, try signing in - your account may have been created.';
         } else {
           errorMessage = `Authentication error: ${errorCode}`;
         }
