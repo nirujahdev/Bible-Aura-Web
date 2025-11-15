@@ -1,4 +1,4 @@
-// Bible page - AI chat features removed
+// Bible page - Clean reading and search interface
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
-  Book, Languages, StickyNote, Brain, 
-  MessageCircle, BookOpen, Target,
+  Book, Languages, StickyNote, BookOpen, Target,
   Copy, Highlighter, FileText,
   ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2, X
 } from 'lucide-react';
@@ -810,12 +809,18 @@ How can I apply this to my life?
                 </div>
               </div>
 
-              <Tabs value={activeTab} onValueChange={(value) => {
-                setActiveTab(value);
-                if (value === 'read') {
-                  setSearchResults([]);
-                }
-              }} className="flex-1 flex flex-col h-[calc(100vh-140px)]">
+              <Tabs 
+                value={activeTab} 
+                onValueChange={(value) => {
+                  // Only allow manual tab switching by user
+                  // Never auto-switch tabs programmatically
+                  setActiveTab(value);
+                  if (value === 'read') {
+                    setSearchResults([]);
+                  }
+                }}
+                className="flex-1 flex flex-col h-[calc(100vh-140px)]"
+              >
                 <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
                   <TabsTrigger value="read">
                     <BookOpen className="h-4 w-4 mr-2" />
@@ -1007,8 +1012,9 @@ How can I apply this to my life?
                                   if (book) {
                                     setSelectedBook(book);
                                     setSelectedChapter(verse.chapter);
-                                    // Keep tab on 'search' - DO NOT switch to 'read' tab
-                                    // User can manually switch tabs if they want to view the book
+                                    // Explicitly keep tab on 'search' - never auto-switch to 'read'
+                                    // User stays on search tab to continue browsing results
+                                    // User can manually switch to 'read' tab if they want to view the book
                                   }
                                 }}
                               >
@@ -1037,7 +1043,7 @@ How can I apply this to my life?
             </div>
           )}
 
-          {/* Main Reading Area - Side-by-side with sidebar (AI chat is now in sidebar tabs) */}
+          {/* Main Reading Area */}
           <div className={cn(
             "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10"
           )}>
@@ -1111,7 +1117,7 @@ How can I apply this to my life?
               )}
             </div>
 
-            {/* Verses Display - Scrollable and fully functional when AI chat is open */}
+            {/* Verses Display - Scrollable */}
             <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden mobile-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loading ? (
                 <div className="flex items-center justify-center h-64">
