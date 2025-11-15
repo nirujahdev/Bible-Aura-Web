@@ -314,7 +314,7 @@ Provide detailed, helpful research and insights.`;
       {/* Header removed per user request */}
 
       {/* Enhanced Tabs - Optimized for mobile and laptop */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
         <TabsList className="grid grid-cols-3 mx-2 sm:mx-4 mt-2 sm:mt-3 h-8 sm:h-9 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1">
           <TabsTrigger value="tools" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <Zap className="h-3 w-3 sm:mr-1" />
@@ -332,7 +332,7 @@ Provide detailed, helpful research and insights.`;
 
         {/* Enhanced Tools Tab - Compact to fit without scroll */}
         <TabsContent value="tools" className="flex-1 overflow-hidden p-2 m-0 min-h-0">
-          <div className="space-y-2.5 h-full overflow-y-auto">
+          <div className="space-y-2.5 h-full overflow-y-auto pb-0">
             {Object.entries(agentsByCategory).map(([category, agents]) => {
               const categoryInfo = categoryLabels[category] || { label: category, icon: Sparkles, color: 'bg-gray-500' };
               const CategoryIcon = categoryInfo.icon;
