@@ -988,7 +988,7 @@ How can I apply this to my life?
             </div>
 
             {/* Verses Display - Scrollable and fully functional when AI chat is open */}
-            <div className="flex-1 min-h-0 overflow-y-auto mobile-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden mobile-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loading ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
@@ -997,7 +997,7 @@ How can I apply this to my life?
                   </div>
                 </div>
               ) : selectedBook && verses.length > 0 ? (
-                <div className={`${isMobile ? 'p-4 pb-6' : 'p-8'} max-w-4xl mx-auto`}>
+                <div className={`${isMobile ? 'p-4 pb-6' : 'p-8'} max-w-4xl mx-auto w-full`}>
                   
                   {/* Mobile Chapter Header - Clean and unified */}
                   {isMobile && (
@@ -1053,10 +1053,10 @@ How can I apply this to my life?
                             </div>
                           </div>
 
-                          {/* Action Buttons - Icons Only */}
-                          <div className={`flex items-center justify-end gap-1 mt-4 ${
-                            isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                          } transition-opacity`}>
+                          {/* Action Buttons - Icons Only - Always visible and scrollable on mobile */}
+                          <div className={`flex items-center justify-end gap-2 mt-4 overflow-x-auto overflow-y-visible ${
+                            isMobile ? 'opacity-100 -mx-2 px-2' : 'opacity-0 group-hover:opacity-100'
+                          } transition-opacity ${isMobile ? 'pb-2' : ''}`}>
                             
                             {/* Ask AI - Plain Orange Circle with ✦ */}
                             <TooltipProvider>
@@ -1066,7 +1066,7 @@ How can I apply this to my life?
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => openAiChat(verse)}
-                                    className={`touch-optimized ${
+                                    className={`touch-optimized flex-shrink-0 ${
                                       isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                                     } p-0 hover:bg-orange-50`}
                                   >
@@ -1094,7 +1094,7 @@ How can I apply this to my life?
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleFavorite(verse)}
-                              className={`touch-optimized ${
+                              className={`touch-optimized flex-shrink-0 ${
                                 isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                               } p-0 ${
                                 isFavorited 
@@ -1113,7 +1113,7 @@ How can I apply this to my life?
                               variant="ghost"
                               size="sm"
                               onClick={() => addToBookmarks(verse)}
-                              className={`touch-optimized ${
+                              className={`touch-optimized flex-shrink-0 ${
                                 isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                               } p-0 ${
                                 isBookmarked 
@@ -1145,7 +1145,7 @@ How can I apply this to my life?
                                         }
                                       }}
                                       className={cn(
-                                        "touch-optimized p-0",
+                                        "touch-optimized flex-shrink-0 p-0",
                                         isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9',
                                         highlightColor 
                                           ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' :
@@ -1171,10 +1171,15 @@ How can I apply this to my life?
                                 </Tooltip>
                               </TooltipProvider>
                               
-                              {/* Color Picker Dropdown */}
+                              {/* Color Picker Dropdown - Better positioning on mobile */}
                               {highlightPickerOpen === verseId && (
                                 <div 
-                                  className="absolute top-full right-0 mt-1 p-2 bg-white border rounded-lg shadow-lg z-50"
+                                  className={cn(
+                                    "absolute p-2 bg-white border rounded-lg shadow-lg z-50",
+                                    isMobile 
+                                      ? "bottom-full right-0 mb-1" // Position above on mobile to avoid off-screen
+                                      : "top-full right-0 mt-1" // Position below on desktop
+                                  )}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <div className="flex flex-wrap gap-2">
@@ -1215,7 +1220,7 @@ How can I apply this to my life?
                               variant="ghost"
                               size="sm"
                               onClick={() => addToJournal(verse)}
-                              className={`touch-optimized ${
+                              className={`touch-optimized flex-shrink-0 ${
                                 isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                               } p-0 text-gray-400 hover:text-green-500`}
                               title="Add to Journal"
