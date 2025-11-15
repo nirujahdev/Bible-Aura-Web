@@ -219,11 +219,20 @@ const SermonsContent = () => {
 
   // Load data
   useEffect(() => {
-    if (user) {
-      loadSermons();
-      loadBooks();
+    if (user?.id) {
+      try {
+        loadSermons();
+        loadBooks();
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+        toast({
+          title: "Loading Error",
+          description: "Failed to load sermons. Please refresh the page.",
+          variant: "destructive"
+        });
+      }
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     calculateStats();
@@ -341,13 +350,18 @@ const SermonsContent = () => {
   const loadBooks = async () => {
     try {
       const bibleBooks = await getAllBooks();
-      setBooks(bibleBooks);
-      if (bibleBooks.length > 0) {
+      if (bibleBooks && Array.isArray(bibleBooks) && bibleBooks.length > 0) {
+        setBooks(bibleBooks);
         setSelectedBook(bibleBooks[0]);
         loadChapter(bibleBooks[0], 1);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading Bible books:', error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to load Bible books",
+        variant: "destructive"
+      });
     }
   };
 
