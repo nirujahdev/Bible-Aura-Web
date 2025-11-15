@@ -1021,16 +1021,17 @@ How can I apply this to my life?
                                 onClick={(e) => {
                                   e.stopPropagation(); // Prevent any parent click handlers
                                   e.preventDefault(); // Prevent any default behavior
+                                  e.nativeEvent.stopImmediatePropagation(); // Prevent all event bubbling
                                   const book = books.find(b => b.name === verse.book_name);
                                   if (book) {
-                                    // Use handleBookSelect but explicitly prevent tab switching
-                                    // by NOT passing forceTab parameter
-                                    const selectedBook = book;
-                                    setSelectedBook(selectedBook);
+                                    // CRITICAL: Load book/chapter WITHOUT changing tabs
+                                    // User clicked from search results, so stay on 'search' tab
+                                    // Do NOT use handleBookSelect (which might switch tabs)
+                                    // Instead, directly set the book/chapter
+                                    setSelectedBook(book);
                                     setSelectedChapter(verse.chapter);
-                                    // CRITICAL: Do NOT call setActiveTab here - stay on 'search' tab
-                                    // User stays on search tab to continue browsing results
-                                    // User can manually switch to 'read' tab if they want to view the book
+                                    // ABSOLUTELY DO NOT call setActiveTab here
+                                    // The tab MUST remain on 'search' so user can continue browsing results
                                   }
                                 }}
                               >
