@@ -22,34 +22,30 @@ export default function Dashboard() {
   });
 
   // Check if profile needs completion
+  // Only show modal in dashboard, NOT during login
   useEffect(() => {
-    if (!loading && user && profile && !hasCheckedProfile) {
+    if (!loading && user && !hasCheckedProfile) {
       setHasCheckedProfile(true);
       
-      // Check if profile is incomplete
-      const isIncomplete = 
+      // Check if profile is incomplete or doesn't exist
+      const isIncomplete = !profile || 
         !profile.display_name ||
         !profile.agreed_to_terms ||
         !profile.agreed_to_privacy ||
         !profile.is_over_13;
 
       // Check if user has seen the modal before (stored in localStorage)
+      // Reset this flag if profile was deleted (soft delete)
       const hasSeenModal = localStorage.getItem(`profile_modal_seen_${user.id}`);
       
+      // Show modal if:
+      // 1. Profile is incomplete AND user hasn't seen modal
+      // 2. Profile doesn't exist AND user hasn't seen modal
       if (isIncomplete && !hasSeenModal) {
-        // Small delay to ensure dashboard is loaded
+        // Small delay to ensure dashboard is loaded (not during login redirect)
         setTimeout(() => {
           setShowProfileModal(true);
-        }, 500);
-      }
-    } else if (!loading && user && !profile) {
-      // Profile doesn't exist yet, show modal
-      setHasCheckedProfile(true);
-      const hasSeenModal = localStorage.getItem(`profile_modal_seen_${user.id}`);
-      if (!hasSeenModal) {
-        setTimeout(() => {
-          setShowProfileModal(true);
-        }, 500);
+        }, 1000);
       }
     }
   }, [user, profile, loading, hasCheckedProfile]);

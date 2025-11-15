@@ -20,6 +20,7 @@ interface Profile {
   favorite_translation: string;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 interface AuthContextType {
@@ -41,6 +42,7 @@ interface AuthContextType {
   }) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
+  deleteProfile: () => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
@@ -321,6 +323,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
+        .is('deleted_at', null) // Only get non-deleted profiles
         .single();
       
       const timeoutPromise = new Promise((_, reject) => 
@@ -781,6 +784,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteProfile = async () => {
+    if (!user) return { error: new Error('No user logged in') };
+
+    try {
+      // Soft delete: set deleted_at timestamp instead of actually deleting
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          deleted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        toast({
+          title: "Delete failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      } else {
+        // Clear profile from state (user won't see it anymore)
+        setProfile(null);
+        
+        // Clear localStorage flag so modal shows again if they log back in
+        localStorage.removeItem(`profile_modal_seen_${user.id}`);
+        
+        toast({
+          title: "Profile deleted",
+          description: "Your profile has been deleted. You can create a new one anytime.",
+        });
+        return { error: null };
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message;
+      toast({
+        title: "Delete failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error: error as Error };
+    }
+  };
+
   const resetPassword = async (email: string) => {
     try {
       if (!email) {
@@ -897,6 +944,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signOut,
     updateProfile,
+    deleteProfile,
     resetPassword,
     updatePassword,
   };
