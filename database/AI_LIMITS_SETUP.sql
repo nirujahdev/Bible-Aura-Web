@@ -113,6 +113,31 @@ DECLARE
   v_today DATE := CURRENT_DATE;
   v_result JSONB;
 BEGIN
+  -- Get the current authenticated user ID
+  v_current_user_id := auth.uid();
+  
+  -- Security check: Ensure the user can only check their own usage
+  IF v_current_user_id IS NULL THEN
+    RETURN jsonb_build_object(
+      'allowed', false,
+      'current_usage', 0,
+      'limit', 0,
+      'remaining', 0,
+      'message', 'Authentication required'
+    );
+  END IF;
+  
+  -- Security check: Ensure user_id matches the authenticated user
+  IF p_user_id IS NULL OR p_user_id != v_current_user_id THEN
+    RETURN jsonb_build_object(
+      'allowed', false,
+      'current_usage', 0,
+      'limit', 0,
+      'remaining', 0,
+      'message', 'Unauthorized: Can only check your own usage'
+    );
+  END IF;
+  
   -- Input validation: Ensure usage_type is valid
   IF p_usage_type NOT IN ('ai_message', 'ai_sermon') THEN
     RETURN jsonb_build_object(
@@ -124,18 +149,7 @@ BEGIN
     );
   END IF;
   
-  -- Input validation: Ensure user_id is not null
-  IF p_user_id IS NULL THEN
-    RETURN jsonb_build_object(
-      'allowed', false,
-      'current_usage', 0,
-      'limit', 0,
-      'remaining', 0,
-      'message', 'User ID is required'
-    );
-  END IF;
-  
-  -- Get user's limit from profile
+  -- Get user's limit from profile (RLS will ensure user can only read their own profile)
   SELECT 
     CASE 
       WHEN p_usage_type = 'ai_message' THEN ai_message_limit
@@ -151,13 +165,13 @@ BEGIN
     v_limit := 0;
   END IF;
   
-  -- Get or create today's usage record
+  -- Get or create today's usage record (RLS will ensure user can only insert/update their own records)
   INSERT INTO public.ai_usage_tracking (user_id, usage_type, usage_date, usage_count)
   VALUES (p_user_id, p_usage_type, v_today, 0)
   ON CONFLICT (user_id, usage_type, usage_date)
   DO NOTHING;
   
-  -- Get current usage count
+  -- Get current usage count (RLS will ensure user can only read their own records)
   SELECT usage_count INTO v_usage_count
   FROM public.ai_usage_tracking
   WHERE user_id = p_user_id 
@@ -174,7 +188,7 @@ BEGIN
       'message', 'AI usage limit reached for today'
     );
   ELSE
-    -- Increment usage
+    -- Increment usage (RLS will ensure user can only update their own records)
     UPDATE public.ai_usage_tracking
     SET usage_count = usage_count + 1,
         updated_at = NOW()
@@ -193,7 +207,7 @@ BEGIN
   
   RETURN v_result;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY INVOKER;
 
 -- 9. Create function to get current usage without incrementing
 CREATE OR REPLACE FUNCTION public.get_ai_usage(
@@ -206,7 +220,31 @@ DECLARE
   v_usage_count INTEGER;
   v_today DATE := CURRENT_DATE;
   v_result JSONB;
+  v_current_user_id UUID;
 BEGIN
+  -- Get the current authenticated user ID
+  v_current_user_id := auth.uid();
+  
+  -- Security check: Ensure the user can only check their own usage
+  IF v_current_user_id IS NULL THEN
+    RETURN jsonb_build_object(
+      'current_usage', 0,
+      'limit', 0,
+      'remaining', 0,
+      'limit_reached', false
+    );
+  END IF;
+  
+  -- Security check: Ensure user_id matches the authenticated user
+  IF p_user_id IS NULL OR p_user_id != v_current_user_id THEN
+    RETURN jsonb_build_object(
+      'current_usage', 0,
+      'limit', 0,
+      'remaining', 0,
+      'limit_reached', false
+    );
+  END IF;
+  
   -- Input validation: Ensure usage_type is valid
   IF p_usage_type NOT IN ('ai_message', 'ai_sermon') THEN
     RETURN jsonb_build_object(
@@ -217,17 +255,7 @@ BEGIN
     );
   END IF;
   
-  -- Input validation: Ensure user_id is not null
-  IF p_user_id IS NULL THEN
-    RETURN jsonb_build_object(
-      'current_usage', 0,
-      'limit', 0,
-      'remaining', 0,
-      'limit_reached', false
-    );
-  END IF;
-  
-  -- Get user's limit from profile
+  -- Get user's limit from profile (RLS will ensure user can only read their own profile)
   SELECT 
     CASE 
       WHEN p_usage_type = 'ai_message' THEN ai_message_limit
@@ -243,7 +271,7 @@ BEGIN
     v_limit := 0;
   END IF;
   
-  -- Get current usage count (default to 0 if no record)
+  -- Get current usage count (RLS will ensure user can only read their own records)
   SELECT COALESCE(usage_count, 0) INTO v_usage_count
   FROM public.ai_usage_tracking
   WHERE user_id = p_user_id 
@@ -259,7 +287,7 @@ BEGIN
   
   RETURN v_result;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY INVOKER;
 
 COMMIT;
 
