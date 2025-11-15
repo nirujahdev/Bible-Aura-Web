@@ -1,5 +1,5 @@
 // Sermon Agent System - Agent-based tool execution (SermonAI-style)
-import { generateSermonContent } from './sermon-agent-sdk';
+// Use dynamic import to prevent circular dependency issues
 import { checkAndIncrementUsage } from './ai-limits';
 
 export interface SermonContext {
@@ -39,6 +39,9 @@ export const historicalContextAgent: SermonAgent = {
   icon: 'Globe',
   category: 'research',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const passage = params?.passage || context.scripture || 'Not specified';
     
     const prompt = `Provide comprehensive historical context for this biblical passage: ${passage}
@@ -79,6 +82,9 @@ export const passageGuideAgent: SermonAgent = {
   icon: 'BookOpen',
   category: 'research',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const passage = params?.passage || context.scripture || 'Not specified';
     
     const prompt = `Provide a comprehensive passage guide for: ${passage}
@@ -120,6 +126,9 @@ export const topicExplorerAgent: SermonAgent = {
   icon: 'Search',
   category: 'research',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const topic = params?.topic || context.title || 'Not specified';
     
     const prompt = `Find and list relevant Bible verses for this topic: ${topic}
@@ -159,6 +168,9 @@ export const quoteFinderAgent: SermonAgent = {
   icon: 'Quote',
   category: 'research',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const topic = params?.topic || context.title || 'Not specified';
     
     const prompt = `Find relevant quotes from Christian theologians, pastors, and authors for this sermon topic: ${topic}
@@ -198,6 +210,9 @@ export const illustrationFinderAgent: SermonAgent = {
   icon: 'Lightbulb',
   category: 'writing',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const topic = params?.topic || context.title || 'Not specified';
     
     const prompt = `Suggest relevant illustrations, stories, or examples for this sermon:
@@ -238,6 +253,9 @@ export const callToActionAgent: SermonAgent = {
   icon: 'Target',
   category: 'writing',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const prompt = `Generate a powerful call to action for this sermon:
 
 Title: ${context.title || 'Not specified'}
@@ -277,6 +295,9 @@ export const sermonSculptorAgent: SermonAgent = {
   icon: 'Wand2',
   category: 'writing',
   execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
     const content = params?.content || context.content || '';
     
     const prompt = `Improve the structure and flow of this sermon content:
