@@ -357,21 +357,16 @@ export default function Auth() {
     setAuthSuccess(null);
   }, [currentTab]);
 
-  // Show loading screen for magic link auth
-  if (loading || isMagicLinkAuth) {
+  // Show loading screen while checking authentication
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary via-primary/90 to-primary/80 flex items-center justify-center">
         <div className="text-center space-y-6">
           <div className="space-y-3">
             <h2 className="text-2xl font-bold text-white">✦Bible Aura</h2>
             <p className="text-lg text-white/90">
-              {isMagicLinkAuth ? 'Authenticating...' : 'Loading your account...'}
+              Loading your account...
             </p>
-            {isMagicLinkAuth && (
-              <p className="text-sm text-white/70">
-                Please wait while we verify your authentication
-              </p>
-            )}
             {authSuccess && (
               <div className="flex items-center justify-center gap-2 text-green-200">
                 <CheckCircle className="h-4 w-4" />
