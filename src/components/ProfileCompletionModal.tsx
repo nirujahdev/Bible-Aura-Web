@@ -108,12 +108,27 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
         is_over_13: formData.isOver13,
       };
 
-      const { error } = await supabase
+      // Save all data directly to Supabase
+      const { error, data } = await supabase
         .from('profiles')
-        .update(updateData)
-        .eq('user_id', user.id);
+        .update({
+          ...updateData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Profile data saved to Supabase:', {
+        user_id: user.id,
+        ...updateData,
+        saved_at: new Date().toISOString()
+      });
 
       // Update profile in auth context (this will reload the profile)
       const result = await updateProfile(updateData);
@@ -158,7 +173,7 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-4 sm:mx-auto" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-auto p-4 sm:p-6" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
