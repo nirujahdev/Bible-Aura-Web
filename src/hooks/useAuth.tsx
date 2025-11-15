@@ -57,24 +57,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [initialized, setInitialized] = useState(false);
   const { toast } = useToast();
 
+  // Helper function to check if profile exists (including soft-deleted)
+  const checkProfileExists = async (userId: string): Promise<{ exists: boolean; isDeleted: boolean }> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, deleted_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" which is fine
+        console.error('Error checking profile existence:', error);
+        return { exists: false, isDeleted: false };
+      }
+      
+      if (!data) {
+        return { exists: false, isDeleted: false };
+      }
+      
+      return { 
+        exists: true, 
+        isDeleted: data.deleted_at !== null 
+      };
+    } catch (error) {
+      console.error('Error in checkProfileExists:', error);
+      return { exists: false, isDeleted: false };
+    }
+  };
+
   const createDefaultProfile = async (userId: string) => {
     try {
       const { data: userData } = await supabase.auth.getUser();
       const authUser = userData?.user;
 
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('user_id', userId)
-        .single();
+      // Check if profile exists (including soft-deleted)
+      const { exists, isDeleted } = await checkProfileExists(userId);
       
-      if (existingProfile) {
-        // Profile exists, just load it
+      if (exists && !isDeleted) {
+        // Profile exists and is not deleted, just load it
+        await loadUserProfile(userId);
+        return;
+      }
+      
+      // If profile is soft-deleted, the trigger will restore it on next login
+      // So we should wait a bit for the trigger to complete, then check again
+      if (exists && isDeleted) {
+        // Wait for trigger to potentially restore it
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { exists: existsAfterWait, isDeleted: isDeletedAfterWait } = await checkProfileExists(userId);
+        if (existsAfterWait && !isDeletedAfterWait) {
+          await loadUserProfile(userId);
+          return;
+        }
+      }
+
+      const fallbackName =
+        authUser?.user_metadata?.full_name ||
+        authUser?.user_metadata?.name ||
+        authUser?.user_metadata?.display_name ||
+        authUser?.email?.split('@')[0] ||
+        'Bible Aura Member';
+
+      // Wait a bit for trigger to potentially create the profile
+      // The trigger should handle profile creation, but if it hasn't, we'll create it
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Check again if profile was created by trigger
+      const { exists: existsAfterWait } = await checkProfileExists(userId);
+      if (existsAfterWait) {
         await loadUserProfile(userId);
         return;
       }
 
+      // If trigger didn't create it, create it manually as fallback
       const fallbackName =
         authUser?.user_metadata?.full_name ||
         authUser?.user_metadata?.name ||
@@ -97,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         total_reading_days: 0,
       };
 
-      // Use upsert instead of insert to handle existing profiles
+      // Use upsert with conflict handling - trigger might have created it
       const { data, error } = await supabase
         .from('profiles')
         .upsert(profilePayload, { onConflict: 'user_id' })
@@ -105,21 +161,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) {
+        // If it's a unique constraint violation, profile was likely created by trigger
+        if (error.code === '23505' || error.message?.includes('duplicate key')) {
+          console.log('Profile already exists (likely created by trigger), loading it...');
+          await loadUserProfile(userId);
+          return;
+        }
+        
         console.error('Error creating default profile:', error);
         // Log detailed error
         if (error.code === 'PGRST301' || error.message?.includes('permission denied')) {
-          console.error('RLS policy blocking profile creation. User may need to sign out and back in.');
-          // Try again after a short delay
-          setTimeout(async () => {
-            const { data: retryData, error: retryError } = await supabase
-              .from('profiles')
-              .upsert(profilePayload, { onConflict: 'user_id' })
-              .select()
-              .single();
-            if (!retryError && retryData) {
-              setProfile(retryData as Profile);
-            }
-          }, 1000);
+          console.error('RLS policy blocking profile creation. Trigger should handle this.');
+          // Don't retry - let trigger handle it or user can complete profile via modal
         } else if (error.message?.includes('violates not-null constraint')) {
           console.error('Missing required fields. Check database schema.');
         }
@@ -628,60 +681,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(userFriendlyMessage) };
       }
 
-      // If user was created, create/update profile with additional data
+      // If user was created, let trigger create the profile, then update with additional data if provided
       if (data.user) {
         try {
-          const profileData = {
-            user_id: data.user.id,
-            display_name: userData?.displayName?.trim() || null,
-            phone_number: userData?.phoneNumber?.trim() || null,
-            age: userData?.age || null,
-            denomination: userData?.denomination || null,
-            agreed_to_terms: userData?.agreedToTerms || false,
-            agreed_to_privacy: userData?.agreedToPrivacy || false,
-            is_over_13: userData?.isOver13 || false,
-            favorite_translation: 'ESV', // Default
-            reading_streak: 0,
-            total_reading_days: 0,
-          };
-
-          // Try to insert profile, if it fails (already exists), update it
-          const { error: profileError, data: profileDataResult } = await supabase
-            .from('profiles')
-            .upsert(profileData, { onConflict: 'user_id' })
-            .select()
-            .single();
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-            // Log detailed error for debugging
-            if (profileError.code === 'PGRST301' || profileError.message?.includes('permission denied')) {
-              console.error('RLS policy issue - user may not have permission to insert profile');
-              // Retry after a short delay
-              setTimeout(async () => {
-                const { error: retryError, data: retryData } = await supabase
-                  .from('profiles')
-                  .upsert(profileData, { onConflict: 'user_id' })
-                  .select()
-                  .single();
-                if (!retryError && retryData) {
-                  setProfile(retryData as Profile);
-                }
-              }, 1000);
-            } else if (profileError.message?.includes('violates not-null constraint')) {
-              console.error('Missing required fields in profile data');
+          // Wait for trigger to create the profile (up to 2 seconds with retries)
+          let profileExists = false;
+          let retries = 0;
+          const maxRetries = 4;
+          
+          while (!profileExists && retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const { exists } = await checkProfileExists(data.user.id);
+            if (exists) {
+              profileExists = true;
+              break;
             }
-            // Don't fail the signup if profile creation fails - it can be updated later
-            // User can still sign in and complete profile later
+            retries++;
+          }
+          
+          // If profile was created by trigger, update it with any additional user data
+          if (profileExists && (userData?.displayName || userData?.phoneNumber || userData?.age || userData?.denomination || userData?.agreedToTerms || userData?.agreedToPrivacy || userData?.isOver13)) {
+            const updateData: Partial<Profile> = {};
+            
+            if (userData?.displayName) updateData.display_name = userData.displayName.trim();
+            if (userData?.phoneNumber) updateData.phone_number = userData.phoneNumber.trim();
+            if (userData?.age) updateData.age = userData.age;
+            if (userData?.denomination !== undefined) updateData.denomination = userData.denomination;
+            if (userData?.agreedToTerms !== undefined) updateData.agreed_to_terms = userData.agreedToTerms;
+            if (userData?.agreedToPrivacy !== undefined) updateData.agreed_to_privacy = userData.agreedToPrivacy;
+            if (userData?.isOver13 !== undefined) updateData.is_over_13 = userData.isOver13;
+            
+            // Only update if there's data to update
+            if (Object.keys(updateData).length > 0) {
+              const { error: updateError, data: updatedProfile } = await supabase
+                .from('profiles')
+                .update(updateData)
+                .eq('user_id', data.user.id)
+                .is('deleted_at', null)
+                .select()
+                .single();
+              
+              if (!updateError && updatedProfile) {
+                setProfile(updatedProfile as Profile);
+                console.log('Profile updated with user data:', updatedProfile);
+              } else if (updateError) {
+                console.error('Error updating profile with user data:', updateError);
+                // Load profile anyway if update fails
+                await loadUserProfile(data.user.id);
+              }
+            } else {
+              // Just load the profile created by trigger
+              await loadUserProfile(data.user.id);
+            }
+          } else if (profileExists) {
+            // Profile exists but no additional data to update
+            await loadUserProfile(data.user.id);
           } else {
-            console.log('Profile created successfully with all fields');
-            if (profileDataResult) {
-              setProfile(profileDataResult as Profile);
-            }
+            // Trigger didn't create profile (shouldn't happen, but fallback)
+            console.warn('Profile not created by trigger, creating manually as fallback');
+            await createDefaultProfile(data.user.id);
           }
         } catch (profileError) {
-          console.error('Error creating profile:', profileError);
-          // Continue even if profile creation fails
+          console.error('Error handling profile after signup:', profileError);
+          // Try to load profile anyway in case it was created
+          if (data.user) {
+            try {
+              await loadUserProfile(data.user.id);
+            } catch (loadError) {
+              console.error('Error loading profile:', loadError);
+            }
+          }
         }
       }
 
