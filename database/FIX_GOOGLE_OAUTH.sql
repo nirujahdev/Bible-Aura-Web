@@ -47,11 +47,23 @@ END $$;
 
 -- Step 2: Update the trigger function to handle ALL OAuth providers properly
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
 BEGIN
   -- Create profile for OAuth users (Google, GitHub, etc.)
-  -- Regular email signups will create profile via the signup form
-  IF NEW.raw_user_meta_data->>'provider' IS NOT NULL THEN
+  -- Check multiple ways OAuth provider might be stored in Supabase
+  IF (
+    NEW.raw_user_meta_data->>'provider' IS NOT NULL 
+    OR NEW.app_metadata->>'provider' = 'google'
+    OR EXISTS (
+      SELECT 1 
+      FROM jsonb_array_elements(COALESCE(NEW.identities, '[]'::jsonb)) AS identity
+      WHERE identity->>'provider' = 'google'
+    )
+  ) THEN
     BEGIN
       INSERT INTO public.profiles (
         user_id, 
@@ -73,17 +85,28 @@ BEGIN
           NEW.raw_user_meta_data->>'full_name', 
           NEW.raw_user_meta_data->>'name',
           NEW.raw_user_meta_data->>'display_name',
+          NEW.user_metadata->>'full_name',
+          NEW.user_metadata->>'name',
+          NEW.user_metadata->>'display_name',
           split_part(COALESCE(NEW.email, 'user'), '@', 1),
           'Bible Aura Member'
         ),
-        NEW.raw_user_meta_data->>'avatar_url',
+        COALESCE(
+          NEW.raw_user_meta_data->>'avatar_url',
+          NEW.raw_user_meta_data->>'picture',
+          NEW.user_metadata->>'avatar_url',
+          NEW.user_metadata->>'picture'
+        ),
         NULL, -- Phone number - user can add later
         NULL, -- Age - user can add later
         NULL, -- Denomination - user can add later
         false, -- Needs to agree to terms later
         false, -- Needs to agree to privacy later
         false, -- Needs to confirm age later
-        'KJV', -- Default translation
+        COALESCE(
+          NEW.raw_user_meta_data->>'favorite_translation',
+          'ESV' -- Default translation (matching code expectations)
+        ),
         0, -- Reading streak
         0  -- Total reading days
       )
@@ -99,7 +122,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Step 3: Ensure trigger exists and is active
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;

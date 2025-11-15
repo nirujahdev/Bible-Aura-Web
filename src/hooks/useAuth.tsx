@@ -466,6 +466,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Check if Google OAuth is properly configured
       const redirectUrl = `${window.location.origin}/auth`;
       
+      console.log('Initiating Google OAuth sign-in', { redirectUrl, origin: window.location.origin });
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -480,15 +482,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Google OAuth error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
         
         let userFriendlyMessage = 'Google sign-in is currently unavailable. Please try email/password or magic link instead.';
         
-        if (error.message?.includes('not configured') || error.message?.includes('not enabled')) {
-          userFriendlyMessage = 'Google sign-in is not properly configured. Please contact support or use email authentication.';
-        } else if (error.message?.includes('unauthorized') || error.message?.includes('permission')) {
+        // More specific error handling
+        if (error.message?.includes('not configured') || 
+            error.message?.includes('not enabled') ||
+            error.message?.includes('provider_not_enabled')) {
+          userFriendlyMessage = 'Google sign-in is not properly configured in Supabase. Please contact support or use email authentication.';
+        } else if (error.message?.includes('unauthorized') || 
+                   error.message?.includes('permission') ||
+                   error.message?.includes('access_denied')) {
           userFriendlyMessage = 'Google authentication is not authorized for this domain. Please use email authentication instead.';
-        } else if (error.message?.includes('popup')) {
+        } else if (error.message?.includes('popup') || 
+                   error.message?.includes('blocked')) {
           userFriendlyMessage = 'Popup was blocked. Please allow popups for this site and try again.';
+        } else if (error.message?.includes('redirect_uri_mismatch')) {
+          userFriendlyMessage = 'Redirect URL mismatch. Please check your Google OAuth configuration.';
+        } else if (error.message?.includes('invalid_client')) {
+          userFriendlyMessage = 'Invalid Google OAuth client configuration. Please contact support.';
         }
 
         toast({
@@ -500,6 +517,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(userFriendlyMessage) };
       } else {
         // OAuth redirect will happen automatically
+        console.log('Google OAuth redirect initiated', { data });
         toast({
           title: "Redirecting to Google",
           description: "Please complete authentication with Google.",
