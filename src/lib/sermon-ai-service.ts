@@ -1,4 +1,6 @@
 // Sermon AI Service - Centralized AI operations for sermon features
+// Uses Agent SDK for specialized sermon AI assistance
+import { generateSermonContent, analyzeSermonContent as analyzeWithAgent, getSermonEnhancements as enhanceWithAgent, generateSermonOutline as outlineWithAgent, findSermonScriptures as scripturesWithAgent } from './sermon-agent-sdk';
 import { callOpenAIAPI } from './openai-api-helper';
 import { checkAndIncrementUsage } from './ai-limits';
 
@@ -91,7 +93,7 @@ Return as JSON array: [{"text": "suggestion", "confidence": 0.9, "reason": "why 
       systemPrompt: 'You are an expert sermon writing assistant. Provide helpful, natural text completions.',
       maxTokens: 300,
       temperature: 0.7,
-      model: 'gpt-4.1-mini',
+      model: 'gpt-4o',
     });
 
     try {
@@ -118,6 +120,7 @@ Return as JSON array: [{"text": "suggestion", "confidence": 0.9, "reason": "why 
 
 /**
  * Analyze sermon content for quality and improvements
+ * Uses Agent SDK for specialized sermon analysis
  */
 export async function analyzeContent(
   content: string,
@@ -141,54 +144,37 @@ export async function analyzeContent(
   const wordCount = content.trim().split(/\s+/).filter(w => w.length > 0).length;
   const estimatedDuration = Math.ceil(wordCount / 150);
 
-  const prompt = `Analyze this sermon content for quality, clarity, and theological accuracy:
-
-Title: ${context.title || 'Not specified'}
-Scripture: ${context.scripture || 'Not specified'}
-
-Content:
-${content.substring(0, 3000)}${content.length > 3000 ? '...' : ''}
-
-Provide analysis in JSON format:
-{
-  "clarity": 0-100,
-  "readability": 0-100,
-  "theologicalAccuracy": 0-100,
-  "structure": 0-100,
-  "suggestions": ["improvement 1", "improvement 2"],
-  "issues": [
-    {"type": "grammar|style|theology|structure", "message": "issue description", "position": 123}
-  ]
-}`;
-
   try {
-    const response = await callOpenAIAPI(prompt, {
-      systemPrompt: 'You are an expert sermon analyst. Provide constructive, theologically sound feedback.',
-      maxTokens: 800,
-      temperature: 0.3,
-      model: 'gpt-4.1-mini',
+    // Use Agent SDK for specialized analysis
+    const analysisText = await analyzeWithAgent(content, {
+      title: context.title,
+      scripture: context.scripture
     });
 
-    try {
-      const analysis = JSON.parse(response);
-      return {
-        ...analysis,
-        wordCount,
-        estimatedDuration,
-      };
-    } catch {
-      // Fallback analysis
-      return {
-        clarity: 75,
-        readability: 75,
-        theologicalAccuracy: 80,
-        structure: 70,
-        wordCount,
-        estimatedDuration,
-        suggestions: ['Consider adding more illustrations', 'Strengthen transitions between points'],
-        issues: [],
-      };
-    }
+    // Parse the analysis text to extract scores and suggestions
+    // The Agent SDK returns structured text, we'll parse it
+    const clarityMatch = analysisText.match(/clarity[:\s]+(\d+)/i);
+    const readabilityMatch = analysisText.match(/readability[:\s]+(\d+)/i);
+    const theologyMatch = analysisText.match(/theological[:\s]+accuracy[:\s]+(\d+)/i);
+    const structureMatch = analysisText.match(/structure[:\s]+(\d+)/i);
+
+    const suggestions = analysisText
+      .split(/suggestion|recommendation|improvement/i)
+      .slice(1)
+      .map(s => s.split(/[.!?]/)[0].trim())
+      .filter(s => s.length > 10 && s.length < 200)
+      .slice(0, 5);
+
+    return {
+      clarity: clarityMatch ? parseInt(clarityMatch[1]) : 75,
+      readability: readabilityMatch ? parseInt(readabilityMatch[1]) : 75,
+      theologicalAccuracy: theologyMatch ? parseInt(theologyMatch[1]) : 80,
+      structure: structureMatch ? parseInt(structureMatch[1]) : 70,
+      wordCount,
+      estimatedDuration,
+      suggestions: suggestions.length > 0 ? suggestions : ['Consider adding more illustrations', 'Strengthen transitions between points'],
+      issues: [],
+    };
   } catch (error: any) {
     console.error('Content analysis error:', error);
     // Re-throw API key errors so they can be displayed to the user
@@ -210,6 +196,7 @@ Provide analysis in JSON format:
 
 /**
  * Get content enhancement suggestions
+ * Uses Agent SDK for specialized sermon enhancements
  */
 export async function enhanceContent(
   content: string,
@@ -231,43 +218,48 @@ export async function enhanceContent(
     }
   }
 
-  const focusPrompt = focus === 'all' 
-    ? 'all aspects (clarity, illustrations, transitions, applications, word choice)'
-    : focus;
-
-  const prompt = `Analyze this sermon content and provide specific enhancement suggestions for ${focusPrompt}:
-
-Title: ${context.title || 'Not specified'}
-Scripture: ${context.scripture || 'Not specified'}
-
-Content:
-${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}
-
-Provide 3-5 enhancement suggestions in JSON format:
-[
-  {
-    "type": "clarity|illustration|transition|application|word-choice",
-    "original": "original text",
-    "enhanced": "improved version",
-    "reason": "why this is better",
-    "position": 123
-  }
-]`;
-
   try {
-    const response = await callOpenAIAPI(prompt, {
-      systemPrompt: 'You are an expert sermon editor. Provide specific, actionable enhancement suggestions.',
-      maxTokens: 1000,
-      temperature: 0.5,
-      model: 'gpt-4.1-mini',
+    // Map focus types to agent SDK focus
+    const focusMap: Record<string, 'clarity' | 'illustration' | 'application' | 'structure' | 'theology'> = {
+      'clarity': 'clarity',
+      'illustration': 'illustration',
+      'application': 'application',
+      'transition': 'structure',
+      'word-choice': 'clarity',
+      'all': 'structure'
+    };
+
+    const agentFocus = focusMap[focus] || 'structure';
+    
+    // Use Agent SDK for specialized enhancements
+    const enhancementText = await enhanceWithAgent(content, agentFocus, {
+      title: context.title,
+      scripture: context.scripture
     });
 
-    try {
-      const suggestions = JSON.parse(response);
-      return Array.isArray(suggestions) ? suggestions : [];
-    } catch {
-      return [];
+    // Parse enhancement text into structured suggestions
+    // This is a simplified parser - in production, you might want more sophisticated parsing
+    const suggestions: EnhancementSuggestion[] = [];
+    const lines = enhancementText.split('\n').filter(l => l.trim());
+    
+    let currentSuggestion: Partial<EnhancementSuggestion> | null = null;
+    for (const line of lines) {
+      if (line.match(/original|current/i)) {
+        if (currentSuggestion) suggestions.push(currentSuggestion as EnhancementSuggestion);
+        currentSuggestion = { type: focus === 'all' ? 'clarity' : focus, original: '', enhanced: '', reason: '', position: 0 };
+        const match = line.match(/original[:\s]+(.+)/i);
+        if (match) currentSuggestion.original = match[1].trim();
+      } else if (line.match(/enhanced|improved|better/i) && currentSuggestion) {
+        const match = line.match(/enhanced[:\s]+(.+)/i) || line.match(/improved[:\s]+(.+)/i);
+        if (match) currentSuggestion.enhanced = match[1].trim();
+      } else if (line.match(/reason|why/i) && currentSuggestion) {
+        const match = line.match(/reason[:\s]+(.+)/i);
+        if (match) currentSuggestion.reason = match[1].trim();
+      }
     }
+    if (currentSuggestion) suggestions.push(currentSuggestion as EnhancementSuggestion);
+
+    return suggestions.length > 0 ? suggestions.slice(0, 5) : [];
   } catch (error: any) {
     console.error('Content enhancement error:', error);
     // Re-throw API key errors so they can be displayed to the user
@@ -280,6 +272,7 @@ Provide 3-5 enhancement suggestions in JSON format:
 
 /**
  * Find relevant scriptures based on topic and context
+ * Uses Agent SDK for specialized scripture finding
  */
 export async function findRelevantScriptures(
   topic: string,
@@ -300,37 +293,30 @@ export async function findRelevantScriptures(
     }
   }
 
-  const prompt = `Find 5-7 relevant Bible verses for this sermon topic:
-
-Topic: ${topic}
-${context.currentContent ? `Current Content: ${context.currentContent.substring(0, 500)}` : ''}
-${context.mainPoints ? `Main Points: ${context.mainPoints.join(', ')}` : ''}
-
-Provide verses in JSON format:
-[
-  {
-    "reference": "Book Chapter:Verse",
-    "text": "verse text",
-    "relevance": 0-100,
-    "context": "why this verse is relevant",
-    "crossReferences": ["related verse 1", "related verse 2"]
-  }
-]`;
-
   try {
-    const response = await callOpenAIAPI(prompt, {
-      systemPrompt: 'You are a biblical reference expert. Provide accurate, relevant scripture references.',
-      maxTokens: 800,
-      temperature: 0.4,
-      model: 'gpt-4.1-mini',
+    // Use Agent SDK for specialized scripture finding
+    const scriptureText = await scripturesWithAgent(topic, {
+      content: context.currentContent,
+      mainPoints: context.mainPoints
     });
 
-    try {
-      const scriptures = JSON.parse(response);
-      return Array.isArray(scriptures) ? scriptures : [];
-    } catch {
-      return [];
+    // Parse scripture text into structured suggestions
+    const suggestions: ScriptureSuggestion[] = [];
+    const versePattern = /([1-3]?\s*[A-Z][a-z]+\s+\d+:\d+(?:-\d+)?)/g;
+    const verses = scriptureText.match(versePattern) || [];
+
+    for (const verseRef of verses.slice(0, 7)) {
+      const contextMatch = scriptureText.match(new RegExp(`${verseRef.replace(/[()]/g, '\\$&')}[^\\n]*\\n([^\\n]+)`, 'i'));
+      suggestions.push({
+        reference: verseRef,
+        text: contextMatch?.[1]?.trim() || '',
+        relevance: 85,
+        context: `Relevant to: ${topic}`,
+        crossReferences: []
+      });
     }
+
+    return suggestions;
   } catch (error: any) {
     console.error('Scripture finder error:', error);
     // Re-throw API key errors so they can be displayed to the user
@@ -343,6 +329,7 @@ Provide verses in JSON format:
 
 /**
  * Generate sermon outline with AI assistance
+ * Uses Agent SDK for specialized outline generation
  */
 export async function generateOutline(
   topic: string,
@@ -365,38 +352,53 @@ export async function generateOutline(
     }
   }
 
-  const prompt = `Create a detailed sermon outline:
-
-Topic: ${topic || 'Not specified'}
-Scripture: ${scripture || 'Not specified'}
-Audience: ${options.audienceType || 'general'}
-Type: ${options.sermonType || 'expository'}
-Length: ${options.length || 'medium'}
-
-Provide outline in JSON format:
-[
-  {
-    "title": "Main Point Title",
-    "level": 1,
-    "content": "detailed explanation",
-    "subPoints": ["sub-point 1", "sub-point 2"]
-  }
-]`;
-
   try {
-    const response = await callOpenAIAPI(prompt, {
-      systemPrompt: 'You are an expert sermon outline creator. Provide structured, biblically sound outlines.',
-      maxTokens: 1200,
-      temperature: 0.6,
-      model: 'gpt-4.1-mini',
+    // Use Agent SDK for specialized outline generation
+    const outlineText = await outlineWithAgent(topic, scripture, {
+      sermonType: options.sermonType as any,
+      audience: options.audienceType
     });
 
-    try {
-      const outline = JSON.parse(response);
-      return Array.isArray(outline) ? outline : [];
-    } catch {
-      return [];
-    }
+    // Parse outline text into structured suggestions
+    const suggestions: OutlineSuggestion[] = [];
+    const mainPointPattern = /(?:^|\n)\s*(?:[IVX]+\.|\d+\.|#)\s*([^\n]+)/g;
+    const mainPoints = Array.from(outlineText.matchAll(mainPointPattern));
+
+    mainPoints.forEach((match, index) => {
+      const title = match[1].trim();
+      if (title.length > 5 && title.length < 100) {
+        // Find content after the title
+        const contentStart = match.index! + match[0].length;
+        const nextMatch = mainPoints[index + 1];
+        const contentEnd = nextMatch ? nextMatch.index! : outlineText.length;
+        const content = outlineText.substring(contentStart, contentEnd).trim().substring(0, 300);
+
+        // Find sub-points
+        const subPointPattern = /(?:^|\n)\s*(?:[a-z]\)|[-*•])\s*([^\n]+)/g;
+        const subPoints: string[] = [];
+        const subMatches = Array.from(content.matchAll(subPointPattern));
+        subMatches.forEach(subMatch => {
+          const subPoint = subMatch[1].trim();
+          if (subPoint.length > 5 && subPoint.length < 150) {
+            subPoints.push(subPoint);
+          }
+        });
+
+        suggestions.push({
+          title,
+          level: 1,
+          content: content.split('\n')[0] || '',
+          subPoints: subPoints.length > 0 ? subPoints : undefined
+        });
+      }
+    });
+
+    return suggestions.length > 0 ? suggestions : [{
+      title: topic || 'Main Point',
+      level: 1,
+      content: outlineText.substring(0, 200),
+      subPoints: []
+    }];
   } catch (error: any) {
     console.error('Outline generation error:', error);
     // Re-throw API key errors so they can be displayed to the user
@@ -461,7 +463,7 @@ Return JSON:
       systemPrompt: 'You are a theological accuracy reviewer. Ensure content is biblically sound and doctrinally correct.',
       maxTokens: 600,
       temperature: 0.2,
-      model: 'gpt-4.1-mini',
+      model: 'gpt-4o',
     });
 
     try {

@@ -95,11 +95,17 @@ User Question: ${userMessage.content}
 
 Provide helpful, practical, and theologically sound assistance specific to this sermon.`;
 
-      const response = await callOpenAIAPI(userMessage.content, {
-        systemPrompt: contextPrompt,
-        maxTokens: 1000,
-        temperature: 0.7,
-        model: 'gpt-4.1-mini',
+      // Use Agent SDK for specialized sermon assistance
+      const { generateSermonContent } = await import('@/lib/sermon-agent-sdk');
+      const response = await generateSermonContent({
+        message: userMessage.content,
+        context: {
+          title: state.sermonTitle,
+          scripture: state.scriptureReference,
+          content: state.currentContent,
+          mainPoints: state.mainPoints
+        },
+        task: 'chat'
       });
 
       const aiMessage: Message = {
