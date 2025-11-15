@@ -131,12 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // If trigger didn't create it, create it manually as fallback
-      const fallbackName =
-        authUser?.user_metadata?.full_name ||
-        authUser?.user_metadata?.name ||
-        authUser?.user_metadata?.display_name ||
-        authUser?.email?.split('@')[0] ||
-        'Bible Aura Member';
+      // fallbackName was already declared above, reuse it
 
       const profilePayload = {
         user_id: userId,
