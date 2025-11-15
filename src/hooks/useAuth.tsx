@@ -740,41 +740,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             retries++;
           }
           
-          // If profile was created by trigger, update it with any additional user data
-          if (profileExists && (userData?.displayName || userData?.phoneNumber || userData?.age || userData?.denomination || userData?.agreedToTerms || userData?.agreedToPrivacy || userData?.isOver13)) {
-            const updateData: Partial<Profile> = {};
-            
-            if (userData?.displayName) updateData.display_name = userData.displayName.trim();
-            if (userData?.phoneNumber) updateData.phone_number = userData.phoneNumber.trim();
-            if (userData?.age) updateData.age = userData.age;
-            if (userData?.denomination !== undefined) updateData.denomination = userData.denomination;
-            if (userData?.agreedToTerms !== undefined) updateData.agreed_to_terms = userData.agreedToTerms;
-            if (userData?.agreedToPrivacy !== undefined) updateData.agreed_to_privacy = userData.agreedToPrivacy;
-            if (userData?.isOver13 !== undefined) updateData.is_over_13 = userData.isOver13;
-            
-            // Only update if there's data to update
-            if (Object.keys(updateData).length > 0) {
-              const { error: updateError, data: updatedProfile } = await supabase
-                .from('profiles')
-                .update(updateData)
-                .eq('user_id', data.user.id)
-                .is('deleted_at', null)
-                .select()
-                .single();
-              
-              if (!updateError && updatedProfile) {
-                setProfile(updatedProfile as Profile);
-                console.log('Profile updated with user data:', updatedProfile);
-              } else if (updateError) {
-                console.error('Error updating profile with user data:', updateError);
-                // Load profile anyway if update fails
-                await loadUserProfile(data.user.id);
-              }
-            } else {
-              // Just load the profile created by trigger
-              await loadUserProfile(data.user.id);
-            }
-          } else if (profileExists) {
+          // Profile was created by trigger, just load it
+          if (profileExists) {
             // Profile exists but no additional data to update
             await loadUserProfile(data.user.id);
           } else {
