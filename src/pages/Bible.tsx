@@ -31,6 +31,7 @@ import {
   BIBLE_TRANSLATIONS,
   TranslationCode
 } from '@/lib/local-bible';
+import { highlightSearchTerms } from '@/lib/search-utils';
 import { NoteTaking } from '@/components/NoteTaking';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
@@ -134,7 +135,7 @@ export default function Bible() {
     exactMatch: false
   });
   const [advancedSearchEnabled, setAdvancedSearchEnabled] = useState(false);
-  const [fuzzySearchEnabled, setFuzzySearchEnabled] = useState(false);
+  const [fuzzySearchEnabled, setFuzzySearchEnabled] = useState(true); // Enabled by default for better typo tolerance
   const [visibleResultsCount, setVisibleResultsCount] = useState(50);
   const [fontSize, setFontSize] = useState(16);
   const [lineHeight, setLineHeight] = useState(1.6);
@@ -434,25 +435,18 @@ export default function Bible() {
     }
   };
 
-  // Helper function to highlight search terms in verse text
+  // Helper function to highlight search terms in verse text - Enhanced with fuzzy match support
   const highlightVerseText = (verse: BibleVerse, query: string): string => {
     if (!verse.searchMatch || !verse.searchMatch.matches || verse.searchMatch.matches.length === 0) {
       return verse.text;
     }
 
-    let highlightedText = verse.text;
-    // Sort matches by position (reverse for proper replacement)
-    const sortedMatches = [...verse.searchMatch.matches].sort((a, b) => b.position - a.position);
-    
-    for (const match of sortedMatches) {
-      const before = highlightedText.substring(0, match.position);
-      const matched = highlightedText.substring(match.position, match.position + match.length);
-      const after = highlightedText.substring(match.position + match.length);
-      
-      highlightedText = `${before}<mark class="bg-yellow-200 font-semibold text-gray-900">${matched}</mark>${after}`;
-    }
-    
-    return highlightedText;
+    // Use the improved highlightSearchTerms utility for better fuzzy match handling
+    return highlightSearchTerms(
+      verse.text,
+      verse.searchMatch.matches,
+      'bg-yellow-200 font-semibold text-gray-900'
+    );
   };
 
   const navigateChapter = (direction: 'prev' | 'next') => {
@@ -1012,7 +1006,8 @@ How can I apply this to my life?
                                   if (book) {
                                     setSelectedBook(book);
                                     setSelectedChapter(verse.chapter);
-                                    setActiveTab('read');
+                                    // Keep tab on 'search' - don't switch to 'read'
+                                    // setActiveTab('read'); // Removed: user can manually switch tabs if needed
                                   }
                                 }}
                               >

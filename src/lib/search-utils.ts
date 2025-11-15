@@ -11,7 +11,7 @@ export interface SearchQuery {
 
 export interface SearchMatch {
   score: number;
-  matches: { term: string; position: number; length: number }[];
+  matches: { term: string; position: number; length: number; fuzzy?: boolean; matchedText?: string }[];
   matchCount: number;
 }
 
@@ -124,30 +124,55 @@ function levenshteinDistance(str1: string, str2: string): number {
 }
 
 /**
- * Fuzzy match a word with typo tolerance
+ * Fuzzy match a word with typo tolerance - Enhanced for better name matching
  */
 function fuzzyMatch(word: string, target: string, maxDistance: number = 2): boolean {
-  if (word === target) return true;
+  const wordLower = word.toLowerCase().trim();
+  const targetLower = target.toLowerCase().trim();
   
-  const distance = levenshteinDistance(word.toLowerCase(), target.toLowerCase());
-  const maxLen = Math.max(word.length, target.length);
+  // Exact match (case-insensitive)
+  if (wordLower === targetLower) return true;
+  
+  // Check if one contains the other (good for partial matches)
+  if (wordLower.includes(targetLower) || targetLower.includes(wordLower)) {
+    // Require at least 70% length match for partial contains
+    const minLen = Math.min(wordLower.length, targetLower.length);
+    const maxLen = Math.max(wordLower.length, targetLower.length);
+    if (minLen / maxLen > 0.7) {
+      return true;
+    }
+  }
+  
+  // Calculate Levenshtein distance
+  const distance = levenshteinDistance(wordLower, targetLower);
+  const maxLen = Math.max(wordLower.length, targetLower.length);
+  
+  // For longer words (like names: Priscilla, Prisckilla), be more lenient
+  // Allow 1-2 character differences for words 6+ chars, 1 difference for shorter
+  const allowedDistance = maxLen >= 6 ? Math.max(2, Math.floor(maxLen / 4)) : 1;
+  
+  // Calculate similarity score
   const similarity = 1 - (distance / maxLen);
   
-  // Allow matches if similarity is high enough or distance is small
-  return similarity > 0.7 || distance <= maxDistance;
+  // Allow matches if:
+  // 1. Distance is within allowed threshold (more lenient for longer words)
+  // 2. Similarity is above 75% (was 70%)
+  // 3. For names/important words, be even more lenient
+  return distance <= Math.min(maxDistance, allowedDistance) || similarity > 0.75;
 }
 
 /**
- * Find all word matches in text with fuzzy support
+ * Find all word matches in text with fuzzy support - Enhanced
  */
 function findWordMatches(
   text: string,
   searchTerm: string,
   fuzzy: boolean = false
-): { position: number; length: number; fuzzy: boolean }[] {
-  const matches: { position: number; length: number; fuzzy: boolean }[] = [];
+): { position: number; length: number; fuzzy: boolean; matchedText?: string }[] {
+  const matches: { position: number; length: number; fuzzy: boolean; matchedText?: string }[] = [];
   const textLower = text.toLowerCase();
   const searchLower = searchTerm.toLowerCase();
+  const textOriginal = text; // Keep original for highlighting exact matched text
   
   // Exact word match first (word boundaries)
   const exactRegex = new RegExp(`\\b${searchLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
@@ -157,31 +182,45 @@ function findWordMatches(
     matches.push({
       position: match.index,
       length: match[0].length,
-      fuzzy: false
+      fuzzy: false,
+      matchedText: match[0]
     });
   }
   
-  // Fuzzy match if enabled and no exact matches found
-  if (fuzzy && matches.length === 0) {
-    const words = textLower.split(/\b/);
-    let position = 0;
+  // Fuzzy match if enabled (even if exact matches exist, add fuzzy ones too)
+  if (fuzzy) {
+    // Split text into words while preserving positions
+    const wordPattern = /\b\w+\b/g;
+    let wordMatch;
     
-    for (const word of words) {
-      if (word.trim() && fuzzyMatch(word.trim(), searchLower)) {
-        const wordStart = textLower.indexOf(word, position);
-        if (wordStart !== -1) {
-          matches.push({
-            position: wordStart,
-            length: word.length,
-            fuzzy: true
-          });
-          position = wordStart + word.length;
-        }
+    while ((wordMatch = wordPattern.exec(text)) !== null) {
+      const word = wordMatch[0].toLowerCase();
+      const wordPosition = wordMatch.index;
+      
+      // Skip if exact match already found at this position
+      const exactMatchExists = matches.some(m => 
+        m.position === wordPosition && !m.fuzzy
+      );
+      
+      if (!exactMatchExists && fuzzyMatch(word, searchLower)) {
+        // Get the actual matched word from original text
+        const matchedWord = textOriginal.substring(wordPosition, wordPosition + wordMatch[0].length);
+        matches.push({
+          position: wordPosition,
+          length: wordMatch[0].length,
+          fuzzy: true,
+          matchedText: matchedWord
+        });
       }
     }
   }
   
-  return matches;
+  // Remove duplicates (same position)
+  const uniqueMatches = matches.filter((m, idx, arr) => 
+    arr.findIndex(other => other.position === m.position) === idx
+  );
+  
+  return uniqueMatches;
 }
 
 /**
@@ -327,26 +366,33 @@ export function matchSearchQuery(
 }
 
 /**
- * Highlight search terms in text
+ * Highlight search terms in text - Enhanced to handle fuzzy matches
  */
 export function highlightSearchTerms(
   text: string,
-  matches: { term: string; position: number; length: number }[],
+  matches: { term: string; position: number; length: number; fuzzy?: boolean; matchedText?: string }[],
   className: string = 'bg-yellow-200 font-semibold'
 ): string {
   if (matches.length === 0) return text;
 
-  // Sort matches by position (reverse for proper replacement)
+  // Sort matches by position (reverse for proper replacement to avoid position shifting)
   const sortedMatches = [...matches].sort((a, b) => b.position - a.position);
   
   let highlightedText = text;
   
   for (const match of sortedMatches) {
-    const before = highlightedText.substring(0, match.position);
-    const matched = highlightedText.substring(match.position, match.position + match.length);
-    const after = highlightedText.substring(match.position + match.length);
+    const startPos = match.position;
+    const endPos = match.position + match.length;
     
-    highlightedText = `${before}<mark class="${className}">${matched}</mark>${after}`;
+    // Use matchedText if available (for fuzzy matches), otherwise use substring
+    const matchedText = match.matchedText || highlightedText.substring(startPos, endPos);
+    
+    const before = highlightedText.substring(0, startPos);
+    const after = highlightedText.substring(endPos);
+    
+    // Add a visual indicator for fuzzy matches (dotted underline)
+    const fuzzyClass = match.fuzzy ? ' underline decoration-dotted' : '';
+    highlightedText = `${before}<mark class="${className}${fuzzyClass}" title="${match.fuzzy ? 'Fuzzy match' : 'Exact match'}">${matchedText}</mark>${after}`;
   }
   
   return highlightedText;
