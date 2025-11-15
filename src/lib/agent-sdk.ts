@@ -63,6 +63,11 @@ export async function sendBibleAuraMessage(
   }
 
   // Use the same origin to avoid CORS issues
+  // Check if window is available (SSR safety)
+  if (typeof window === 'undefined') {
+    throw new Error('Agent SDK can only be used in browser environment');
+  }
+  
   const apiUrl = `${window.location.origin}${AGENT_SDK_CONFIG.apiEndpoint}`;
 
   if (import.meta.env.DEV) {
