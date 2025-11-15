@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         agreed_to_terms: false,
         agreed_to_privacy: false,
         is_over_13: false,
-        favorite_translation: 'KJV',
+        favorite_translation: 'ESV',
         reading_streak: 0,
         total_reading_days: 0,
       };
@@ -249,8 +249,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.log('Token refreshed');
               setSession(session);
               setUser(session?.user ?? null);
+              // Reload profile if user exists
+              if (session?.user) {
+                await loadUserProfile(session.user.id);
+              }
+            } else if (event === 'USER_UPDATED') {
+              console.log('User updated');
+              setSession(session);
+              setUser(session?.user ?? null);
+              if (session?.user) {
+                await loadUserProfile(session.user.id);
+              }
             } else {
-              // Handle other events
+              // Handle other events (PASSWORD_RECOVERY, etc.)
               setSession(session);
               setUser(session?.user ?? null);
               
@@ -387,6 +398,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return { error: new Error(userFriendlyMessage) };
       } else {
+        // Explicitly set user and session from the response
+        if (data?.user && data?.session) {
+          setUser(data.user);
+          setSession(data.session);
+          // Load profile asynchronously to not block the response
+          loadUserProfile(data.user.id).catch(err => {
+            console.error('Error loading profile after sign-in:', err);
+          });
+        }
+        
         toast({
           title: "Welcome back!",
           description: "Successfully signed in to your account.",
@@ -616,7 +637,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             agreed_to_terms: userData?.agreedToTerms || false,
             agreed_to_privacy: userData?.agreedToPrivacy || false,
             is_over_13: userData?.isOver13 || false,
-            favorite_translation: 'KJV', // Default
+            favorite_translation: 'ESV', // Default
             reading_streak: 0,
             total_reading_days: 0,
           };
@@ -690,24 +711,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      setLoading(true);
       
-      // Clear local state immediately
-      setSession(null);
+      // Clear local state first for immediate UI feedback
       setUser(null);
+      setSession(null);
       setProfile(null);
       
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out.",
-      });
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+        toast({
+          title: "Sign out failed",
+          description: "There was an issue signing you out. Please try again.",
+          variant: "destructive",
+        });
+        // State already cleared, so user is effectively signed out
+      } else {
+        toast({
+          title: "Signed out",
+          description: "You have been successfully signed out.",
+        });
+      }
     } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Sign out error",
-        description: "There was an issue signing you out. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Sign out error:', error);
+      // State already cleared, so user is effectively signed out
+    } finally {
+      setLoading(false);
     }
   };
 

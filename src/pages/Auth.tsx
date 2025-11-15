@@ -209,6 +209,7 @@ export default function Auth() {
     // Redirect if user OR session exists (session might be available before user state updates)
     const isAuthenticated = (user || session) && !loading;
     
+    // Only redirect if we're on the auth page
     if (isAuthenticated && window.location.pathname === '/auth') {
       console.log('User authenticated, redirecting to dashboard');
       setIsMagicLinkAuth(false);
@@ -223,11 +224,17 @@ export default function Auth() {
       const redirectTo = urlParams.get('redirect');
       const finalRedirect = redirectTo || '/dashboard';
       
-      // Use a small delay to ensure state is updated
+      // Use a small delay to ensure state is updated, but not too long
+      // Also check if we're still authenticated before redirecting
       const redirectTimer = setTimeout(() => {
-        console.log('Navigating to:', finalRedirect);
-        navigate(finalRedirect, { replace: true });
-      }, 100);
+        // Double-check authentication before redirecting
+        if ((user || session) && !loading) {
+          console.log('Navigating to:', finalRedirect);
+          navigate(finalRedirect, { replace: true });
+        } else {
+          console.log('Auth state changed, skipping redirect');
+        }
+      }, 300);
       
       return () => clearTimeout(redirectTimer);
       
@@ -347,7 +354,9 @@ export default function Auth() {
       if (result?.error) {
         setAuthError(result.error.message);
       } else {
-        // Success handled by useEffect
+        // Success - redirect will be handled by useEffect when user/session is set
+        setAuthSuccess('Sign in successful! Redirecting...');
+        // The useEffect hook will handle the redirect once user/session state updates
       }
     } catch (error) {
       console.error('Sign in error:', error);
