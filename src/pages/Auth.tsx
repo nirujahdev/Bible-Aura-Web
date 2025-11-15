@@ -174,10 +174,13 @@ export default function Auth() {
 
   // Handle successful authentication with direct dashboard redirect
   useEffect(() => {
+    // Don't redirect while loading or if already redirected
+    if (loading) return;
+    
     const urlHash = window.location.hash;
     const hasOAuthCallback = urlHash.includes('access_token') || urlHash.includes('refresh_token');
     
-      console.log('Auth state check:', { 
+    console.log('Auth state check:', { 
       user: !!user, 
       session: !!session,
       loading, 
@@ -186,9 +189,9 @@ export default function Auth() {
     });
     
     // Redirect if user OR session exists (session might be available before user state updates)
-    const isAuthenticated = (user || session) && !loading;
+    const isAuthenticated = user || session;
     
-    // Only redirect if we're on the auth page
+    // Only redirect if we're on the auth page and authenticated
     if (isAuthenticated && window.location.pathname === '/auth') {
       console.log('User authenticated, redirecting to dashboard');
       setAuthSuccess('Authentication successful! Redirecting...');
@@ -200,22 +203,19 @@ export default function Auth() {
       
       const urlParams = new URLSearchParams(window.location.search);
       const redirectTo = urlParams.get('redirect');
-      const finalRedirect = redirectTo || '/dashboard';
+      const finalRedirect = redirectTo ? decodeURIComponent(redirectTo) : '/dashboard';
       
-      // Use a small delay to ensure state is updated, but not too long
-      // Also check if we're still authenticated before redirecting
+      // Use a small delay to ensure state is updated and UI shows success message
       const redirectTimer = setTimeout(() => {
         // Double-check authentication before redirecting
-        if ((user || session) && !loading) {
+        if (user || session) {
           console.log('Navigating to:', finalRedirect);
           navigate(finalRedirect, { replace: true });
-        } else {
-          console.log('Auth state changed, skipping redirect');
         }
-      }, 300);
+      }, 500);
       
       return () => clearTimeout(redirectTimer);
-    } else if (hasOAuthCallback && !user && !session && !loading) {
+    } else if (hasOAuthCallback && !user && !session) {
       // OAuth callback detected but user/session not loaded yet
       console.log('OAuth callback detected, waiting for session...');
       setAuthSuccess('Completing Google sign-in... Please wait.');

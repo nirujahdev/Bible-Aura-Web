@@ -413,10 +413,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
-      
       if (!email || !password) {
-        throw new Error('Email and password are required');
+        const errorMsg = 'Email and password are required';
+        toast({
+          title: "Sign in failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
+        return { error: new Error(errorMsg) };
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -426,71 +430,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         let userFriendlyMessage = error.message;
-        let showResetOption = false;
         
         // Provide more user-friendly error messages
-        if (error.message.includes('Invalid login credentials')) {
+        if (error.message.includes('Invalid login credentials') || 
+            error.message.includes('invalid login') ||
+            error.message.includes('Invalid email or password')) {
           userFriendlyMessage = 'Invalid email or password. Please check your credentials and try again.';
-          showResetOption = true;
         } else if (error.message.includes('Email not confirmed')) {
           userFriendlyMessage = 'Please check your email and click the confirmation link before signing in.';
         } else if (error.message.includes('Too many requests')) {
           userFriendlyMessage = 'Too many attempts. Please wait a few minutes before trying again.';
         } else if (error.message.includes('wrong password') || error.message.includes('incorrect password')) {
-          userFriendlyMessage = 'Incorrect password. Would you like to reset your password?';
-          showResetOption = true;
+          userFriendlyMessage = 'Incorrect password. Please check your credentials and try again.';
         }
 
         toast({
           title: "Sign in failed",
-          description: userFriendlyMessage + (showResetOption ? ' Click "Forgot Password?" to reset it.' : ''),
+          description: userFriendlyMessage,
           variant: "destructive",
         });
         
         return { error: new Error(userFriendlyMessage) };
-      } else {
-        // Explicitly set user and session from the response
-        if (data?.user) {
-          setUser(data.user);
-          if (data.session) {
-            setSession(data.session);
-          } else {
-            // If no session in response, try to get it
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
-            if (currentSession) {
-              setSession(currentSession);
-            }
+      }
+      
+      // Explicitly set user and session from the response
+      if (data?.user) {
+        setUser(data.user);
+        if (data.session) {
+          setSession(data.session);
+        } else {
+          // If no session in response, try to get it
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (currentSession) {
+            setSession(currentSession);
           }
-          
-          // Load profile asynchronously to not block the response
-          // Don't let profile loading errors block sign-in
-          loadUserProfile(data.user.id).catch(err => {
-            console.error('Error loading profile after sign-in:', err);
-            // Try to create profile if it doesn't exist
-            if (err?.code === 'PGRST116' || err?.message?.includes('not found')) {
-              createDefaultProfile(data.user.id).catch(createErr => {
-                console.error('Error creating profile after sign-in:', createErr);
-              });
-            }
-          });
         }
         
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to your account.",
+        // Load profile asynchronously to not block the response
+        // Don't let profile loading errors block sign-in
+        loadUserProfile(data.user.id).catch(err => {
+          console.error('Error loading profile after sign-in:', err);
+          // Try to create profile if it doesn't exist
+          if (err?.code === 'PGRST116' || err?.message?.includes('not found')) {
+            createDefaultProfile(data.user.id).catch(createErr => {
+              console.error('Error creating profile after sign-in:', createErr);
+            });
+          }
         });
-        return { error: null };
       }
+      
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in to your account.",
+      });
+      return { error: null };
     } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
       toast({
         title: "Sign in failed",
         description: errorMessage,
         variant: "destructive",
       });
-      return { error: error as Error };
-    } finally {
-      setLoading(false);
+      return { error: new Error(errorMessage) };
     }
   };
 
@@ -628,19 +629,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      setLoading(true);
-      
       if (!email || !password) {
-        throw new Error('Email and password are required');
+        const errorMsg = 'Email and password are required';
+        toast({
+          title: "Sign up failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
+        return { error: new Error(errorMsg) };
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        throw new Error('Please enter a valid email address');
+        const errorMsg = 'Please enter a valid email address';
+        toast({
+          title: "Sign up failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
+        return { error: new Error(errorMsg) };
       }
 
       if (password.length < 8) {
-        throw new Error('Password must be at least 8 characters long');
+        const errorMsg = 'Password must be at least 8 characters long';
+        toast({
+          title: "Sign up failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
+        return { error: new Error(errorMsg) };
       }
 
       const redirectUrl = `${window.location.origin}/auth`;
@@ -722,7 +739,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If user was created, continue with profile setup below
       }
 
-      // If user was created, let trigger create the profile, then update with additional data if provided
+      // If user was created, let trigger create the profile
       if (data?.user) {
         try {
           // Wait for trigger to create the profile (up to 2 seconds with retries)
@@ -742,7 +759,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           // Profile was created by trigger, just load it
           if (profileExists) {
-            // Profile exists but no additional data to update
             await loadUserProfile(data.user.id);
           } else {
             // Trigger didn't create profile (shouldn't happen, but fallback)
@@ -777,15 +793,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return { error: null };
     } catch (error: unknown) {
-      const errorMessage = (error as Error).message;
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
       toast({
         title: "Sign up failed",
         description: errorMessage,
         variant: "destructive",
       });
-      return { error: error as Error };
-    } finally {
-      setLoading(false);
+      return { error: new Error(errorMessage) };
     }
   };
 
@@ -801,12 +815,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('Error signing out:', error);
-        toast({
+      console.error('Error signing out:', error);
+      toast({
           title: "Sign out failed",
-          description: "There was an issue signing you out. Please try again.",
-          variant: "destructive",
-        });
+        description: "There was an issue signing you out. Please try again.",
+        variant: "destructive",
+      });
         // State already cleared, so user is effectively signed out
       } else {
         toast({
