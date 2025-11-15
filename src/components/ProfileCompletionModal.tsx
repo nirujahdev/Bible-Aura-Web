@@ -111,7 +111,15 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
 
       // Use updateProfile from auth context - it handles both insert and update efficiently
       // This is faster than doing separate queries
-      const result = await updateProfile(updateData);
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise<{ error: Error }>((resolve) => 
+        setTimeout(() => resolve({ error: new Error('Request is taking too long. Please check your internet connection.') }), 15000)
+      );
+      
+      const result = await Promise.race([
+        updateProfile(updateData),
+        timeoutPromise
+      ]);
       
       if (result.error) {
         console.error('Profile update error:', result.error);

@@ -53,12 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Load user profile from database
   const loadUserProfile = async (userId: string): Promise<void> => {
     try {
-      const { data, error } = await supabase
+      // Add timeout wrapper
+      const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 8000): Promise<T> => {
+        return Promise.race([
+          promise,
+          new Promise<T>((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout. Please check your internet connection.')), timeoutMs)
+          )
+        ]);
+      };
+
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .is('deleted_at', null)
         .single();
+      
+      const { data, error } = await withTimeout(profilePromise, 8000);
       
       if (error) {
         if (error.code === 'PGRST116') {
@@ -75,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error in loadUserProfile:', error);
+      // Don't throw - allow app to continue even if profile load fails
     }
   };
 
@@ -220,8 +233,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Get initial session from Supabase (reads from localStorage)
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        // Get initial session from Supabase (reads from localStorage) - with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: any }, error: any }>((resolve) => 
+          setTimeout(() => resolve({ data: { session: null }, error: { message: 'Timeout' } }), 5000)
+        );
+        
+        const { data: { session: initialSession }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]);
         
         if (error) {
           console.error('Error getting session:', error);
@@ -235,8 +256,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(initialSession);
           setUser(initialSession.user);
           
-          // Load profile
-          await loadUserProfile(initialSession.user.id);
+          // Load profile (don't block on it)
+          loadUserProfile(initialSession.user.id).catch(err => {
+            console.error('Error loading profile on init:', err);
+          });
         }
         
         if (isMounted) {
@@ -742,13 +765,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // First check if profile exists
-      const { data: existingProfile } = await supabase
+      // Add timeout wrapper for Supabase queries
+      const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> => {
+        return Promise.race([
+          promise,
+          new Promise<T>((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout. Please check your internet connection.')), timeoutMs)
+          )
+        ]);
+      };
+
+      // First check if profile exists (with timeout)
+      const checkProfilePromise = supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .single();
+      
+      const { data: existingProfile } = await withTimeout(checkProfilePromise, 8000);
 
       const profileData = {
         ...updates,
@@ -757,45 +792,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       let error;
       if (existingProfile) {
-        // Update existing profile
-        ({ error } = await supabase
+        // Update existing profile (with timeout)
+        const updatePromise = supabase
           .from('profiles')
           .update(profileData)
           .eq('user_id', user.id)
-          .is('deleted_at', null));
+          .is('deleted_at', null);
+        
+        ({ error } = await withTimeout(updatePromise, 8000));
       } else {
-        // Insert new profile if doesn't exist
-        ({ error } = await supabase
+        // Insert new profile if doesn't exist (with timeout)
+        const insertPromise = supabase
           .from('profiles')
           .insert({
             user_id: user.id,
             ...profileData,
-          }));
+          });
+        
+        ({ error } = await withTimeout(insertPromise, 8000));
       }
 
       if (error) {
         toast({
           title: "Update failed",
-          description: error.message,
+          description: error.message || "Network error. Please check your connection.",
           variant: "destructive",
         });
         return { error };
       }
 
-        await loadUserProfile(user.id);
-        toast({
-          title: "Profile updated",
-          description: "Your profile has been successfully updated.",
-        });
-        return { error: null };
+      // Reload profile (with timeout, but don't block on it)
+      loadUserProfile(user.id).catch(err => {
+        console.error('Error reloading profile after update:', err);
+        // Don't show error toast - update was successful
+      });
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+      return { error: null };
     } catch (error: unknown) {
-      const message = (error as Error).message;
+      const message = error instanceof Error ? error.message : 'Network error. Please check your connection.';
       toast({
         title: "Update failed",
         description: message,
         variant: "destructive",
       });
-      return { error: error as Error };
+      return { error: error instanceof Error ? error : new Error(message) };
     }
   };
 
