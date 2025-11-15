@@ -29,6 +29,8 @@ import { SermonAIProvider, useSermonAI } from '@/contexts/SermonAIContext';
 import { FloatingAIAssistant } from '@/components/sermon/FloatingAIAssistant';
 import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
 import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
+import { AIResearchPanel } from '@/components/sermon/AIResearchPanel';
+import { InlineAIAssistant } from '@/components/sermon/InlineAIAssistant';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -1474,8 +1476,23 @@ const SermonsContent = () => {
         </div>
 
         <div className="flex-1 flex overflow-hidden relative">
-          {/* Enhanced Left Panel */}
+          {/* AI Research Panel (Left Side - SermonAI-style) */}
           {leftPanelOpen && (
+            <>
+              {isMobile && (
+                <div 
+                  className="fixed inset-0 bg-black/50 z-40"
+                  onClick={() => setLeftPanelOpen(false)}
+                />
+              )}
+              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-md' : 'w-[400px]'} border-r bg-gray-50 flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''}`}>
+                <AIResearchPanel />
+              </div>
+            </>
+          )}
+
+          {/* Legacy Left Panel (Hidden by default, can be toggled separately if needed) */}
+          {false && leftPanelOpen && (
             <>
               {isMobile && (
                 <div 
@@ -1799,6 +1816,44 @@ const SermonsContent = () => {
                 enabled={true}
               />
             </div>
+            
+            {/* Inline AI Assistant (Bottom - SermonAI-style) */}
+            <InlineAIAssistant
+              onApplySuggestion={(suggestion, action) => {
+                if (editorRef.current && selectedSermon) {
+                  const start = editorRef.current.selectionStart;
+                  const end = editorRef.current.selectionEnd;
+                  const currentContent = selectedSermon.content || '';
+                  
+                  let newContent = '';
+                  if (action === 'insert') {
+                    newContent = currentContent.substring(0, start) + suggestion + '\n\n' + currentContent.substring(start);
+                  } else if (action === 'replace') {
+                    newContent = currentContent.substring(0, start) + suggestion + currentContent.substring(end);
+                  } else if (action === 'append') {
+                    newContent = currentContent + '\n\n' + suggestion;
+                  }
+                  
+                  setSelectedSermon({ ...selectedSermon, content: newContent });
+                  updateContent(newContent);
+                  
+                  setTimeout(() => {
+                    if (editorRef.current) {
+                      editorRef.current.focus();
+                      if (action === 'insert') {
+                        editorRef.current.setSelectionRange(start + suggestion.length + 2, start + suggestion.length + 2);
+                      } else if (action === 'replace') {
+                        editorRef.current.setSelectionRange(start + suggestion.length, start + suggestion.length);
+                      }
+                    }
+                  }, 0);
+                }
+              }}
+              onQuickAction={(action) => {
+                // Handle quick actions
+                console.log('Quick action:', action);
+              }}
+            />
           </div>
 
 
