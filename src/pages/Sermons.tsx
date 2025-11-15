@@ -1050,7 +1050,7 @@ const SermonsContent = () => {
       <MobileOptimizedLayout className="bg-gray-50">
         <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'h-screen'} bg-gray-50 flex flex-col overflow-hidden`}>
           {/* Clean Header - Mobile Optimized */}
-          <div className="border-b bg-white px-2 sm:px-3 md:px-6 py-2 sm:py-3 md:py-4 shadow-sm border-gray-200 flex-shrink-0 z-30">
+          <div className="border-b bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shadow-sm border-gray-200 flex-shrink-0 z-30">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 flex-1 min-w-0">
               <Button
