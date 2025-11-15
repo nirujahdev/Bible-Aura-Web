@@ -101,6 +101,7 @@ export default function Bible() {
   // Enhanced AI Chat state
   const [enhancedAiChatOpen, setEnhancedAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
+  const [highlightPickerOpen, setHighlightPickerOpen] = useState<string | null>(null);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
@@ -161,6 +162,21 @@ export default function Bible() {
       loadReadingProgress();
     }
   }, [user, selectedLanguage]);
+
+  // Close highlight picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (highlightPickerOpen && !target.closest('[data-highlight-picker]')) {
+        setHighlightPickerOpen(null);
+      }
+    };
+
+    if (highlightPickerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [highlightPickerOpen]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -563,6 +579,29 @@ How can I apply this to my life?
 
     try {
       const verseId = generateVerseId(verse);
+      
+      // If color is empty, remove the highlight
+      if (!color || color.trim() === '') {
+        const { error } = await supabase
+          .from('verse_highlights')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('verse_id', verseId);
+        
+        if (error) throw error;
+        
+        const newHighlights = new Map(highlights);
+        newHighlights.delete(verseId);
+        setHighlights(newHighlights);
+        
+        toast({
+          title: "Highlight Removed",
+          description: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+        });
+        return;
+      }
+      
+      // Add or update highlight
       const { error } = await supabase
         .from('verse_highlights')
         .upsert({
@@ -579,6 +618,8 @@ How can I apply this to my life?
       const newHighlights = new Map(highlights);
       newHighlights.set(verseId, color);
       setHighlights(newHighlights);
+      
+      setHighlightPickerOpen(null); // Close picker after selection
       
       toast({
         title: "Verse Highlighted",
@@ -875,7 +916,7 @@ How can I apply this to my life?
 
           {/* Main Reading Area - Side-by-side with AI Chat on Desktop */}
           <div className={cn(
-            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300",
+            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10",
             enhancedAiChatOpen && !isMobile ? "mr-96" : ""
           )}>
             {/* Header - Mobile optimized */}
@@ -1088,6 +1129,89 @@ How can I apply this to my life?
                               }`} />
                             </Button>
 
+                            {/* Highlight Icon with Color Picker */}
+                            <div className="relative" data-highlight-picker>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        // Toggle color picker
+                                        if (highlightPickerOpen === verseId) {
+                                          setHighlightPickerOpen(null);
+                                        } else {
+                                          setHighlightPickerOpen(verseId);
+                                        }
+                                      }}
+                                      className={cn(
+                                        "touch-optimized p-0",
+                                        isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9',
+                                        highlightColor 
+                                          ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' :
+                                            highlightColor === 'green' ? 'text-green-500 hover:text-green-600 bg-green-50' :
+                                            highlightColor === 'blue' ? 'text-blue-500 hover:text-blue-600 bg-blue-50' :
+                                            highlightColor === 'purple' ? 'text-purple-500 hover:text-purple-600 bg-purple-50' :
+                                            highlightColor === 'red' ? 'text-red-500 hover:text-red-600 bg-red-50' :
+                                            highlightColor === 'pink' ? 'text-pink-500 hover:text-pink-600 bg-pink-50' :
+                                            highlightColor === 'orange' ? 'text-orange-500 hover:text-orange-600 bg-orange-50' :
+                                            'text-gray-400 hover:text-yellow-500'
+                                          : 'text-gray-400 hover:text-yellow-500'
+                                      )}
+                                      title={highlightColor ? `Highlighted (${highlightColor}) - Click to change` : "Highlight verse"}
+                                    >
+                                      <Highlighter className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} ${
+                                        highlightColor ? 'fill-current' : ''
+                                      }`} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{highlightColor ? `Change ${highlightColor} highlight` : 'Highlight verse'}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              {/* Color Picker Dropdown */}
+                              {highlightPickerOpen === verseId && (
+                                <div 
+                                  className="absolute top-full right-0 mt-1 p-2 bg-white border rounded-lg shadow-lg z-50"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="flex flex-wrap gap-2">
+                                    {HIGHLIGHT_COLORS.map(color => (
+                                      <button
+                                        key={color.id}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          highlightVerse(verse, color.id);
+                                        }}
+                                        className={cn(
+                                          "w-8 h-8 rounded border-2 transition-all",
+                                          color.id === highlightColor ? 'border-gray-800 scale-110' : 'border-gray-300',
+                                          color.color
+                                        )}
+                                        title={color.name}
+                                      />
+                                    ))}
+                                    {highlightColor && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          highlightVerse(verse, '');
+                                        }}
+                                        className="w-8 h-8 rounded border-2 border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-xs font-bold"
+                                        title="Remove highlight"
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
                             {/* Journal Icon */}
                             <Button
                               variant="ghost"
@@ -1172,7 +1296,7 @@ How can I apply this to my life?
         {enhancedAiChatOpen && selectedVerseForAI && (
           <div className={cn(
             "fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-2xl flex flex-col transition-transform duration-300",
-            isMobile ? "w-full z-50" : "w-96 z-40" // Lower z-index on desktop to allow Bible interactions
+            isMobile ? "w-full z-50" : "w-96 z-30" // Lower z-index on desktop so Bible remains interactive
           )}>
             {/* Mobile Header with Close Button */}
             {isMobile && (
