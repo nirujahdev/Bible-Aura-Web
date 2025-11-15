@@ -106,48 +106,30 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
         agreed_to_terms: formData.agreedToTerms,
         agreed_to_privacy: formData.agreedToPrivacy,
         is_over_13: formData.isOver13,
+        updated_at: new Date().toISOString(),
       };
 
-      // Save all data directly to Supabase
-      // Only update non-deleted profiles
-      const { error, data } = await supabase
-        .from('profiles')
-        .update({
-          ...updateData,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id)
-        .is('deleted_at', null) // Only update non-deleted profiles
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Supabase update error:', error);
-        throw error;
-      }
-      
-      console.log('✅ Profile data saved to Supabase:', {
-        user_id: user.id,
-        ...updateData,
-        saved_at: new Date().toISOString()
-      });
-
-      // Update profile in auth context (this will reload the profile)
+      // Use updateProfile from auth context - it handles both insert and update efficiently
+      // This is faster than doing separate queries
       const result = await updateProfile(updateData);
       
       if (result.error) {
+        console.error('Profile update error:', result.error);
         throw result.error;
       }
+      
+      console.log('✅ Profile data saved successfully:', {
+        user_id: user.id,
+        ...updateData
+      });
 
       toast({
         title: "Profile completed!",
         description: "Your profile has been saved successfully.",
       });
 
-      // Small delay to ensure profile is reloaded
-      setTimeout(() => {
-        onComplete();
-      }, 300);
+      // Call onComplete immediately - no delay needed
+      onComplete();
     } catch (error: any) {
       console.error('Error saving profile:', error);
       toast({
@@ -175,7 +157,7 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-auto p-4 sm:p-6" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-auto p-4 sm:p-6" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -190,195 +172,205 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 mt-4">
-          {/* Display Name */}
-          <div className="space-y-2">
-            <Label htmlFor="displayName" className="text-sm font-medium">
-              Display Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="displayName"
-              value={formData.displayName}
-              onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-              placeholder="Enter your display name"
-              className={`${errors.displayName ? 'border-red-500' : ''} text-base sm:text-sm`}
-            />
-            {errors.displayName && (
-              <p className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.displayName}
-              </p>
-            )}
-          </div>
-
-          {/* Phone Number */}
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber" className="text-sm font-medium">
-              Phone Number <span className="text-gray-500">(Optional)</span>
-            </Label>
-            <Input
-              id="phoneNumber"
-              type="tel"
-              value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-              placeholder="+1 (555) 123-4567"
-              className={errors.phoneNumber ? 'border-red-500' : ''}
-            />
-            {errors.phoneNumber && (
-              <p className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.phoneNumber}
-              </p>
-            )}
-          </div>
-
-          {/* Age */}
-          <div className="space-y-2">
-            <Label htmlFor="age" className="text-sm font-medium">
-              Age <span className="text-gray-500">(Optional)</span>
-            </Label>
-            <Input
-              id="age"
-              type="number"
-              min="1"
-              max="120"
-              value={formData.age}
-              onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-              placeholder="Enter your age"
-              className={errors.age ? 'border-red-500' : ''}
-            />
-            {errors.age && (
-              <p className="text-sm text-red-500 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.age}
-              </p>
-            )}
-          </div>
-
-          {/* Denomination */}
-          <div className="space-y-2">
-            <Label htmlFor="denomination" className="text-sm font-medium">
-              Denomination <span className="text-gray-500">(Optional)</span>
-            </Label>
-            <Select
-              value={formData.denomination}
-              onValueChange={(value) => setFormData({ ...formData, denomination: value })}
-            >
-              <SelectTrigger id="denomination">
-                <SelectValue placeholder="Select your denomination" />
-              </SelectTrigger>
-              <SelectContent>
-                {denominations.map((denom) => (
-                  <SelectItem key={denom} value={denom}>
-                    {denom}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Terms and Agreements */}
-          <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
-              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-              Required Agreements
-            </h3>
-
-            {/* Terms of Service */}
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="terms"
-                checked={formData.agreedToTerms}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, agreedToTerms: checked as boolean })
-                }
-                className={errors.agreedToTerms ? 'border-red-500' : ''}
-              />
-              <div className="flex-1">
-                <Label
-                  htmlFor="terms"
-                  className="text-sm font-normal cursor-pointer flex items-start gap-2"
-                >
-                  <span>I agree to the</span>
-                  <a
-                    href="/terms-of-service"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Terms of Service
-                  </a>
-                  <span className="text-red-500">*</span>
+        <form onSubmit={handleSubmit} className="mt-4">
+          {/* Two column layout for laptop, single column for mobile */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Left Column */}
+            <div className="space-y-4 sm:space-y-5">
+              {/* Display Name */}
+              <div className="space-y-2">
+                <Label htmlFor="displayName" className="text-sm font-medium">
+                  Display Name <span className="text-red-500">*</span>
                 </Label>
-                {errors.agreedToTerms && (
-                  <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <Input
+                  id="displayName"
+                  value={formData.displayName}
+                  onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                  placeholder="Enter your display name"
+                  className={`${errors.displayName ? 'border-red-500' : ''}`}
+                />
+                {errors.displayName && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.agreedToTerms}
+                    {errors.displayName}
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* Privacy Policy */}
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="privacy"
-                checked={formData.agreedToPrivacy}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, agreedToPrivacy: checked as boolean })
-                }
-                className={errors.agreedToPrivacy ? 'border-red-500' : ''}
-              />
-              <div className="flex-1">
-                <Label
-                  htmlFor="privacy"
-                  className="text-xs sm:text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1 sm:gap-2"
-                >
-                  <span>I agree to the</span>
-                  <a
-                    href="/privacy-policy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium break-words"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Privacy Policy
-                  </a>
-                  <span className="text-red-500">*</span>
+              {/* Phone Number */}
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                  Phone Number <span className="text-gray-500">(Optional)</span>
                 </Label>
-                {errors.agreedToPrivacy && (
-                  <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                  placeholder="+1 (555) 123-4567"
+                  className={errors.phoneNumber ? 'border-red-500' : ''}
+                />
+                {errors.phoneNumber && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.agreedToPrivacy}
+                    {errors.phoneNumber}
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* Age Confirmation */}
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="ageConfirm"
-                checked={formData.isOver13}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isOver13: checked as boolean })
-                }
-                className={errors.isOver13 ? 'border-red-500' : ''}
-              />
-              <div className="flex-1">
-                <Label
-                  htmlFor="ageConfirm"
-                  className="text-xs sm:text-sm font-normal cursor-pointer"
-                >
-                  I confirm that I am over 13 years old <span className="text-red-500">*</span>
+              {/* Age */}
+              <div className="space-y-2">
+                <Label htmlFor="age" className="text-sm font-medium">
+                  Age <span className="text-gray-500">(Optional)</span>
                 </Label>
-                {errors.isOver13 && (
-                  <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                <Input
+                  id="age"
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={formData.age}
+                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  placeholder="Enter your age"
+                  className={errors.age ? 'border-red-500' : ''}
+                />
+                {errors.age && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.isOver13}
+                    {errors.age}
                   </p>
                 )}
+              </div>
+
+              {/* Denomination */}
+              <div className="space-y-2">
+                <Label htmlFor="denomination" className="text-sm font-medium">
+                  Denomination <span className="text-gray-500">(Optional)</span>
+                </Label>
+                <Select
+                  value={formData.denomination}
+                  onValueChange={(value) => setFormData({ ...formData, denomination: value })}
+                >
+                  <SelectTrigger id="denomination">
+                    <SelectValue placeholder="Select your denomination" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {denominations.map((denom) => (
+                      <SelectItem key={denom} value={denom}>
+                        {denom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Right Column - Required Agreements */}
+            <div className="space-y-4 sm:space-y-5">
+
+              {/* Terms and Agreements */}
+              <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 h-full">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  Required Agreements
+                </h3>
+
+                {/* Terms of Service */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="terms"
+                    checked={formData.agreedToTerms}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, agreedToTerms: checked as boolean })
+                    }
+                    className={errors.agreedToTerms ? 'border-red-500' : ''}
+                  />
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="terms"
+                      className="text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1"
+                    >
+                      <span>I agree to the</span>
+                      <a
+                        href="/terms-of-service"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline font-medium"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Terms of Service
+                      </a>
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    {errors.agreedToTerms && (
+                      <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.agreedToTerms}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Privacy Policy */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="privacy"
+                    checked={formData.agreedToPrivacy}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, agreedToPrivacy: checked as boolean })
+                    }
+                    className={errors.agreedToPrivacy ? 'border-red-500' : ''}
+                  />
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="privacy"
+                      className="text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1"
+                    >
+                      <span>I agree to the</span>
+                      <a
+                        href="/privacy-policy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline font-medium break-words"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Privacy Policy
+                      </a>
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    {errors.agreedToPrivacy && (
+                      <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.agreedToPrivacy}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Age Confirmation */}
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="ageConfirm"
+                    checked={formData.isOver13}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isOver13: checked as boolean })
+                    }
+                    className={errors.isOver13 ? 'border-red-500' : ''}
+                  />
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="ageConfirm"
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      I confirm that I am over 13 years old <span className="text-red-500">*</span>
+                    </Label>
+                    {errors.isOver13 && (
+                      <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.isOver13}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

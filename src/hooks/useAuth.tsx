@@ -731,21 +731,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Update profile
+  // Update profile - handles both insert and update efficiently
   const updateProfile = async (updates: Partial<Profile>): Promise<{ error: Error | null }> => {
     if (!user) {
       return { error: new Error('No user logged in') };
     }
 
     try {
-      const { error } = await supabase
+      // First check if profile exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
+        .select('id')
         .eq('user_id', user.id)
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .single();
+
+      const profileData = {
+        ...updates,
+        updated_at: new Date().toISOString(),
+      };
+
+      let error;
+      if (existingProfile) {
+        // Update existing profile
+        ({ error } = await supabase
+          .from('profiles')
+          .update(profileData)
+          .eq('user_id', user.id)
+          .is('deleted_at', null));
+      } else {
+        // Insert new profile if doesn't exist
+        ({ error } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            ...profileData,
+          }));
+      }
 
       if (error) {
         toast({
