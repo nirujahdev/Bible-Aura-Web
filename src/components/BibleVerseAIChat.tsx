@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -416,25 +416,32 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
           </div>
         </ScrollArea>
 
-      {/* Input Area */}
+      {/* Input Area - Matches main chat style */}
       <div className="px-4 sm:px-6 py-4 border-t bg-gray-50 flex-shrink-0">
-        <div className="flex gap-3">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={`Ask about ${verseRef} using ${AI_CHAT_MODES.find(m => m.id === selectedMode)?.name}...`}
-            className="flex-1"
-            disabled={isLoading}
-          />
-          <Button
-            onClick={() => handleSendMessage()}
-            disabled={!input.trim() || isLoading}
-            className="bg-orange-500 hover:bg-orange-600"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
+          <div className="flex items-end gap-2 p-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={`Ask about ${verseRef} using ${AI_CHAT_MODES.find(m => m.id === selectedMode)?.name}...`}
+              className="flex-1 min-h-[36px] max-h-[100px] py-2 px-3 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-white rounded-lg placeholder:text-gray-400 outline-none"
+              disabled={isLoading}
+              rows={1}
+            />
+            <Button
+              onClick={() => handleSendMessage()}
+              disabled={isLoading || !input.trim()}
+              size="icon"
+              className="h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex-shrink-0 mb-0.5"
+            >
+              <Send className="h-4 w-4 text-white" />
+            </Button>
+          </div>
         </div>
+        <p className="text-[8px] text-gray-500 text-center mt-1.5">
+          By using bible aura you agree with our policies
+        </p>
       </div>
     </div>
   );

@@ -31,7 +31,6 @@ import {
   TranslationCode
 } from '@/lib/local-bible';
 import { NoteTaking } from '@/components/NoteTaking';
-import { BibleAIChat } from '@/components/BibleAIChat';
 import BibleVerseAIChat from '@/components/BibleVerseAIChat';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
@@ -95,10 +94,9 @@ export default function Bible() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [highlights, setHighlights] = useState<Map<string, string>>(new Map());
   const [noteModalOpen, setNoteModalOpen] = useState(false);
-  const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   
-  // Enhanced AI Chat state
+  // Enhanced AI Chat state (side-by-side sidebar)
   const [enhancedAiChatOpen, setEnhancedAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
   const [highlightPickerOpen, setHighlightPickerOpen] = useState<string | null>(null);
@@ -1281,17 +1279,6 @@ How can I apply this to my life?
           />
         )}
 
-        {/* AI Chat Modal */}
-        {aiChatOpen && (
-          <BibleAIChat
-            verseId={selectedVerse?.id}
-            verseText={selectedVerse?.text}
-            verseReference={selectedVerse?.reference}
-            isOpen={aiChatOpen}
-            onClose={() => setAiChatOpen(false)}
-          />
-        )}
-
         {/* Enhanced AI Chat Sidebar - Side-by-side on Desktop, Fullscreen on Mobile */}
         {enhancedAiChatOpen && selectedVerseForAI && (
           <div className={cn(
@@ -1324,28 +1311,10 @@ How can I apply this to my life?
               </div>
             )}
             
-            {/* Desktop Close Button - Top Right */}
+            {/* Header for Desktop - Always visible with close button */}
             {!isMobile && (
-              <div className="absolute top-4 right-4 z-10">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setEnhancedAiChatOpen(false);
-                    setSelectedVerseForAI(null);
-                  }}
-                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            
-            {/* AI Chat Content - Full Height with proper overflow handling */}
-            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              {/* Header for Desktop */}
-              {!isMobile && (
-                <div className="flex-shrink-0 px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
+              <div className="flex-shrink-0 px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
                       ✦
@@ -1359,8 +1328,24 @@ How can I apply this to my life?
                       </p>
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEnhancedAiChatOpen(false);
+                      setSelectedVerseForAI(null);
+                    }}
+                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 flex-shrink-0"
+                    title="Close AI Chat"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
+              </div>
+            )}
+            
+            {/* AI Chat Content - Full Height with proper overflow handling */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
               
               {/* AI Chat Component - Takes remaining space */}
               <div className="flex-1 min-h-0 overflow-hidden">
