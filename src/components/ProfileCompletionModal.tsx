@@ -158,22 +158,22 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-4 sm:mx-auto" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <User className="h-6 w-6 text-primary" />
+              <User className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <div>
-              <DialogTitle className="text-2xl">Complete Your Profile</DialogTitle>
-              <DialogDescription className="text-base mt-1">
+            <div className="flex-1">
+              <DialogTitle className="text-xl sm:text-2xl">Complete Your Profile</DialogTitle>
+              <DialogDescription className="text-sm sm:text-base mt-1">
                 Help us personalize your Bible Aura experience
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 mt-4">
           {/* Display Name */}
           <div className="space-y-2">
             <Label htmlFor="displayName" className="text-sm font-medium">
@@ -184,7 +184,7 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
               placeholder="Enter your display name"
-              className={errors.displayName ? 'border-red-500' : ''}
+              className={`${errors.displayName ? 'border-red-500' : ''} text-base sm:text-sm`}
             />
             {errors.displayName && (
               <p className="text-sm text-red-500 flex items-center gap-1">
@@ -261,9 +261,9 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
           </div>
 
           {/* Terms and Agreements */}
-          <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-blue-600" />
+          <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
               Required Agreements
             </h3>
 
@@ -316,14 +316,14 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
               <div className="flex-1">
                 <Label
                   htmlFor="privacy"
-                  className="text-sm font-normal cursor-pointer flex items-start gap-2"
+                  className="text-xs sm:text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1 sm:gap-2"
                 >
                   <span>I agree to the</span>
                   <a
                     href="/privacy-policy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
+                    className="text-primary hover:underline font-medium break-words"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Privacy Policy
@@ -352,7 +352,7 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
               <div className="flex-1">
                 <Label
                   htmlFor="ageConfirm"
-                  className="text-sm font-normal cursor-pointer"
+                  className="text-xs sm:text-sm font-normal cursor-pointer"
                 >
                   I confirm that I am over 13 years old <span className="text-red-500">*</span>
                 </Label>
@@ -367,11 +367,11 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
             <Button
               type="submit"
               disabled={loading}
-              className="min-w-[120px]"
+              className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base"
             >
               {loading ? 'Saving...' : 'Complete Profile'}
             </Button>
