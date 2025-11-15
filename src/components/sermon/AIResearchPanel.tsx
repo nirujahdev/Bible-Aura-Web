@@ -18,8 +18,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { generateSermonContent } from '@/lib/sermon-agent-sdk';
-import { executeAgent, getAllAgents, SermonAgent } from '@/lib/sermon-agents';
+import type { SermonAgent } from '@/lib/sermon-agents';
 
 interface Message {
   id: string;
