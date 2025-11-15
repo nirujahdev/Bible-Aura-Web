@@ -755,7 +755,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...updates,
           updated_at: new Date().toISOString(),
         })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .is('deleted_at', null); // Only update non-deleted profiles
 
       if (error) {
         toast({
