@@ -11,7 +11,13 @@ export interface SearchQuery {
 
 export interface SearchMatch {
   score: number;
-  matches: { term: string; position: number; length: number; fuzzy?: boolean; matchedText?: string }[];
+  matches: Array<{ 
+    term: string; 
+    position: number; 
+    length: number; 
+    fuzzy?: boolean; 
+    matchedText?: string;
+  }>;
   matchCount: number;
 }
 
@@ -187,30 +193,54 @@ function findWordMatches(
     });
   }
   
-  // Fuzzy match if enabled (even if exact matches exist, add fuzzy ones too)
+  // Fuzzy match if enabled - search for similar words when exact match not found
   if (fuzzy) {
-    // Split text into words while preserving positions
-    const wordPattern = /\b\w+\b/g;
-    let wordMatch;
-    
-    while ((wordMatch = wordPattern.exec(text)) !== null) {
-      const word = wordMatch[0].toLowerCase();
-      const wordPosition = wordMatch.index;
+    // If no exact matches found, try fuzzy matching
+    if (matches.length === 0) {
+      // Split text into words while preserving positions
+      const wordPattern = /\b\w+\b/g;
+      let wordMatch;
       
-      // Skip if exact match already found at this position
-      const exactMatchExists = matches.some(m => 
-        m.position === wordPosition && !m.fuzzy
-      );
+      while ((wordMatch = wordPattern.exec(text)) !== null) {
+        const word = wordMatch[0].toLowerCase();
+        const wordPosition = wordMatch.index;
+        
+        // Try fuzzy matching
+        if (fuzzyMatch(word, searchLower)) {
+          // Get the actual matched word from original text (preserves case)
+          const matchedWord = textOriginal.substring(wordPosition, wordPosition + wordMatch[0].length);
+          matches.push({
+            position: wordPosition,
+            length: wordMatch[0].length,
+            fuzzy: true,
+            matchedText: matchedWord
+          });
+        }
+      }
+    } else {
+      // Even if exact matches exist, also check for fuzzy matches at different positions
+      const wordPattern = /\b\w+\b/g;
+      let wordMatch;
       
-      if (!exactMatchExists && fuzzyMatch(word, searchLower)) {
-        // Get the actual matched word from original text
-        const matchedWord = textOriginal.substring(wordPosition, wordPosition + wordMatch[0].length);
-        matches.push({
-          position: wordPosition,
-          length: wordMatch[0].length,
-          fuzzy: true,
-          matchedText: matchedWord
-        });
+      while ((wordMatch = wordPattern.exec(text)) !== null) {
+        const word = wordMatch[0].toLowerCase();
+        const wordPosition = wordMatch.index;
+        
+        // Skip if exact match already found at this position
+        const exactMatchExists = matches.some(m => 
+          m.position === wordPosition && !m.fuzzy
+        );
+        
+        if (!exactMatchExists && fuzzyMatch(word, searchLower)) {
+          // Get the actual matched word from original text (preserves case)
+          const matchedWord = textOriginal.substring(wordPosition, wordPosition + wordMatch[0].length);
+          matches.push({
+            position: wordPosition,
+            length: wordMatch[0].length,
+            fuzzy: true,
+            matchedText: matchedWord
+          });
+        }
       }
     }
   }
@@ -232,7 +262,7 @@ export function matchSearchQuery(
   fuzzyEnabled: boolean = false
 ): SearchMatch | null {
   const textLower = text.toLowerCase();
-  const allMatches: { term: string; position: number; length: number; fuzzy: boolean }[] = [];
+  const allMatches: Array<{ term: string; position: number; length: number; fuzzy?: boolean; matchedText?: string }> = [];
   let score = 0;
   let matchCount = 0;
 
@@ -246,7 +276,8 @@ export function matchSearchQuery(
         term: phrase,
         position: phraseIndex,
         length: phrase.length,
-        fuzzy: false
+        fuzzy: false,
+        matchedText: text.substring(phraseIndex, phraseIndex + phrase.length)
       });
     } else {
       // If exact phrase not found, return null (AND logic)
@@ -270,7 +301,8 @@ export function matchSearchQuery(
         term: term,
         position: m.position,
         length: m.length,
-        fuzzy: m.fuzzy
+        fuzzy: m.fuzzy || false,
+        matchedText: m.matchedText
       });
     });
   }
@@ -290,7 +322,8 @@ export function matchSearchQuery(
             term: term,
             position: m.position,
             length: m.length,
-            fuzzy: m.fuzzy
+            fuzzy: m.fuzzy || false,
+            matchedText: m.matchedText
           });
         });
       }

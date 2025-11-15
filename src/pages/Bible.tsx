@@ -1001,13 +1001,14 @@ How can I apply this to my life?
                               <div
                                 key={verse.id}
                                 className="p-3 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent any parent click handlers
                                   const book = books.find(b => b.name === verse.book_name);
                                   if (book) {
                                     setSelectedBook(book);
                                     setSelectedChapter(verse.chapter);
-                                    // Keep tab on 'search' - don't switch to 'read'
-                                    // setActiveTab('read'); // Removed: user can manually switch tabs if needed
+                                    // Keep tab on 'search' - DO NOT switch to 'read' tab
+                                    // User can manually switch tabs if they want to view the book
                                   }
                                 }}
                               >

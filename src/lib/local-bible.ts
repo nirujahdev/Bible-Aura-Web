@@ -320,8 +320,10 @@ export async function searchVerses(
           for (const [verseNum, text] of Object.entries(chapterData as Record<string, string>)) {
             let searchMatch: SearchMatch | null = null;
 
+            // ALWAYS use advanced matching when fuzzy is enabled OR when query has operators
+            // This ensures fuzzy matching works correctly for typos like "Prisckilla" -> "Priscilla"
             if (isSimpleQuery && !fuzzyEnabled) {
-              // Fast path for simple queries
+              // Fast path ONLY for simple queries when fuzzy is disabled
               const textLower = text.toLowerCase();
               const queryLower = searchQuery.toLowerCase();
               const escapedQuery = queryLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -329,18 +331,39 @@ export async function searchVerses(
               const phraseRegex = new RegExp(escapedQuery.replace(/\s+/g, '\\s+'), 'i');
               
               if (wordRegex.test(text) || phraseRegex.test(textLower)) {
-                // Create simple match for highlighting
-                const matchPos = textLower.indexOf(queryLower);
-                if (matchPos !== -1) {
+                // Find all matches for highlighting (not just first one)
+                const matches: { term: string; position: number; length: number; fuzzy: boolean }[] = [];
+                let match;
+                while ((match = wordRegex.exec(text)) !== null) {
+                  matches.push({
+                    term: queryLower,
+                    position: match.index,
+                    length: match[0].length,
+                    fuzzy: false
+                  });
+                }
+                // Also check phrase matches
+                const phraseMatch = textLower.indexOf(queryLower);
+                if (phraseMatch !== -1 && !matches.some(m => m.position === phraseMatch)) {
+                  matches.push({
+                    term: queryLower,
+                    position: phraseMatch,
+                    length: queryLower.length,
+                    fuzzy: false
+                  });
+                }
+                
+                if (matches.length > 0) {
                   searchMatch = {
-                    score: 100 - (matchPos / 10),
-                    matches: [{ term: queryLower, position: matchPos, length: queryLower.length }],
-                    matchCount: 1
+                    score: 100 - (matches[0].position / 10),
+                    matches: matches.sort((a, b) => a.position - b.position),
+                    matchCount: matches.length
                   };
                 }
               }
             } else {
-              // Advanced query path
+              // Advanced query path - ALWAYS use when fuzzy is enabled or query has operators
+              // This is where fuzzy matching happens for typos
               searchMatch = matchSearchQuery(text, parsedQuery, fuzzyEnabled);
             }
 
@@ -378,8 +401,9 @@ export async function searchVerses(
             for (const verse of chapter.verses) {
               let searchMatch: SearchMatch | null = null;
 
+              // ALWAYS use advanced matching when fuzzy is enabled OR when query has operators
               if (isSimpleQuery && !fuzzyEnabled) {
-                // Fast path for simple queries
+                // Fast path ONLY for simple queries when fuzzy is disabled
                 const textLower = verse.text.toLowerCase();
                 const queryLower = searchQuery.toLowerCase();
                 const escapedQuery = queryLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -387,16 +411,39 @@ export async function searchVerses(
                 const phraseRegex = new RegExp(escapedQuery.replace(/\s+/g, '\\s+'), 'i');
                 
                 if (wordRegex.test(verse.text) || phraseRegex.test(textLower)) {
-                  const matchPos = textLower.indexOf(queryLower);
-                  if (matchPos !== -1) {
+                  // Find all matches for highlighting (not just first one)
+                  const matches: { term: string; position: number; length: number; fuzzy: boolean }[] = [];
+                  let match;
+                  while ((match = wordRegex.exec(verse.text)) !== null) {
+                    matches.push({
+                      term: queryLower,
+                      position: match.index,
+                      length: match[0].length,
+                      fuzzy: false
+                    });
+                  }
+                  // Also check phrase matches
+                  const phraseMatch = textLower.indexOf(queryLower);
+                  if (phraseMatch !== -1 && !matches.some(m => m.position === phraseMatch)) {
+                    matches.push({
+                      term: queryLower,
+                      position: phraseMatch,
+                      length: queryLower.length,
+                      fuzzy: false
+                    });
+                  }
+                  
+                  if (matches.length > 0) {
                     searchMatch = {
-                      score: 100 - (matchPos / 10),
-                      matches: [{ term: queryLower, position: matchPos, length: queryLower.length }],
-                      matchCount: 1
+                      score: 100 - (matches[0].position / 10),
+                      matches: matches.sort((a, b) => a.position - b.position),
+                      matchCount: matches.length
                     };
                   }
                 }
               } else {
+                // Advanced query path - ALWAYS use when fuzzy is enabled or query has operators
+                // This is where fuzzy matching happens for typos
                 searchMatch = matchSearchQuery(verse.text, parsedQuery, fuzzyEnabled);
               }
 
