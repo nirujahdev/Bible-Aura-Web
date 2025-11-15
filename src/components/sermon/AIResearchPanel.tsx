@@ -311,39 +311,22 @@ Provide detailed, helpful research and insights.`;
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-white to-gray-50 border-r overflow-hidden">
-      {/* Enhanced Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-orange-50 to-white">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-orange-500 rounded-lg">
-              <Bot className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-lg text-gray-900">AI Research Assistant</h2>
-              <p className="text-xs text-gray-500">Your personal research ally</p>
-            </div>
-          </div>
-          <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
-            <Sparkles className="h-3 w-3 mr-1" />
-            RA
-          </Badge>
-        </div>
-      </div>
+      {/* Header removed per user request */}
 
-      {/* Enhanced Tabs */}
+      {/* Enhanced Tabs - Optimized for mobile and laptop */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <TabsList className="grid grid-cols-3 mx-4 mt-3 h-9 bg-gray-100 flex-shrink-0">
-          <TabsTrigger value="tools" className="text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <Zap className="h-3 w-3 mr-1" />
-            Tools
+        <TabsList className="grid grid-cols-3 mx-2 sm:mx-4 mt-2 sm:mt-3 h-8 sm:h-9 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1">
+          <TabsTrigger value="tools" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Zap className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Tools</span>
           </TabsTrigger>
-          <TabsTrigger value="chat" className="text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <MessageSquare className="h-3 w-3 mr-1" />
-            Chat
+          <TabsTrigger value="chat" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <MessageSquare className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <History className="h-3 w-3 mr-1" />
-            History
+          <TabsTrigger value="history" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <History className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">History</span>
           </TabsTrigger>
         </TabsList>
 

@@ -27,7 +27,7 @@ import { SermonAIProvider, useSermonAI } from '@/contexts/SermonAIContext';
 import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
 import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
 import { AIResearchPanel } from '@/components/sermon/AIResearchPanel';
-import { InlineAIAssistant } from '@/components/sermon/InlineAIAssistant';
+// InlineAIAssistant removed per user request
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
@@ -1121,11 +1121,24 @@ const SermonsContent = () => {
                   <PenTool className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-sm sm:text-base md:text-xl font-semibold text-gray-900 truncate">
-                    {isEditing ? 'Edit Sermon' : 'New Sermon'}
-                  </h1>
-                  <p className="text-xs text-gray-600 truncate hidden sm:block">
-                    {selectedSermon?.title || 'Untitled Sermon'}
+                  <Input
+                    value={selectedSermon?.title || title || ''}
+                    onChange={(e) => {
+                      const newTitle = e.target.value;
+                      if (selectedSermon) {
+                        setSelectedSermon({ ...selectedSermon, title: newTitle });
+                        updateTitle(newTitle);
+                      } else {
+                        setTitle(newTitle);
+                        updateTitle(newTitle);
+                      }
+                    }}
+                    placeholder="Enter sermon title..."
+                    className="text-sm sm:text-base md:text-xl font-semibold border-0 focus:ring-0 focus-visible:ring-0 p-0 h-auto bg-transparent"
+                    style={{ fontWeight: 600 }}
+                  />
+                  <p className="text-xs text-gray-500 truncate hidden sm:block mt-0.5">
+                    {selectedSermon?.scripture_reference || 'No scripture reference'}
                   </p>
                 </div>
               </div>
@@ -1819,43 +1832,7 @@ const SermonsContent = () => {
               />
             </div>
             
-            {/* Inline AI Assistant (Bottom - SermonAI-style) */}
-            <InlineAIAssistant
-              onApplySuggestion={(suggestion, action) => {
-                if (editorRef.current && selectedSermon) {
-                  const start = editorRef.current.selectionStart;
-                  const end = editorRef.current.selectionEnd;
-                  const currentContent = selectedSermon.content || '';
-                  
-                  let newContent = '';
-                  if (action === 'insert') {
-                    newContent = currentContent.substring(0, start) + suggestion + '\n\n' + currentContent.substring(start);
-                  } else if (action === 'replace') {
-                    newContent = currentContent.substring(0, start) + suggestion + currentContent.substring(end);
-                  } else if (action === 'append') {
-                    newContent = currentContent + '\n\n' + suggestion;
-                  }
-                  
-                  setSelectedSermon({ ...selectedSermon, content: newContent });
-                  updateContent(newContent);
-                  
-                  setTimeout(() => {
-                    if (editorRef.current) {
-                      editorRef.current.focus();
-                      if (action === 'insert') {
-                        editorRef.current.setSelectionRange(start + suggestion.length + 2, start + suggestion.length + 2);
-                      } else if (action === 'replace') {
-                        editorRef.current.setSelectionRange(start + suggestion.length, start + suggestion.length);
-                      }
-                    }
-                  }, 0);
-                }
-              }}
-              onQuickAction={(action) => {
-                // Handle quick actions
-                console.log('Quick action:', action);
-              }}
-            />
+            {/* Inline AI Assistant removed per user request */}
           </div>
 
 

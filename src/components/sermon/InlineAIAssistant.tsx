@@ -280,51 +280,8 @@ Provide the requested content or edit. Be concise and practical.`;
 
   return (
     <div className="border-t bg-gradient-to-b from-white to-gray-50 shadow-lg flex-shrink-0">
-      {/* Quick Actions - Enhanced */}
-      {showQuickActions && (
-        <div className="px-3 pt-2 pb-1.5 border-b bg-white flex-shrink-0">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Quick Actions</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowQuickActions(!showQuickActions)}
-              className="h-6 px-2 text-xs"
-            >
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              const isExecuting = executingAction === action.id;
-              
-              return (
-                <Button
-                  key={action.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(action.id)}
-                  disabled={isLoading}
-                  className={cn(
-                    "text-xs whitespace-nowrap transition-all",
-                    "hover:shadow-md hover:scale-105",
-                    isExecuting && "border-orange-500 bg-orange-50"
-                  )}
-                >
-                  {isExecuting ? (
-                    <Loader2 className="h-3 w-3 mr-1.5 animate-spin text-orange-500" />
-                  ) : (
-                    <Icon className={cn("h-3 w-3 mr-1.5", `text-${action.color.replace('bg-', '')}`)} />
-                  )}
-                  {action.label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      {/* Quick Actions removed per user request */}
+      
       {/* Input Area - Enhanced */}
       <div className="px-3 pb-2.5 pt-2 flex-shrink-0">
         <div className="flex items-end gap-2">
