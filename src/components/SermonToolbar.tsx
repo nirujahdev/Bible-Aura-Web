@@ -172,16 +172,16 @@ export default function SermonToolbar({
 
   return (
     <TooltipProvider>
-      <div className="border-b bg-white">
+      <div className="border-b bg-white sticky top-0 z-20">
         {/* Main Toolbar */}
-        <div className="p-2">
+        <div className="p-1.5 sm:p-2">
           <div className="flex items-center gap-1 justify-between flex-wrap">
-            <div className="flex items-center gap-1 flex-wrap overflow-x-auto">
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {/* Text Formatting */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('bold')}>
+                    <Button variant="ghost" size={isMobile ? "sm" : "sm"} onClick={() => formatText('bold')} className={isMobile ? "h-8 w-8 p-0" : ""}>
                       <Bold className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -371,14 +371,14 @@ export default function SermonToolbar({
             </div>
 
             {/* Statistics */}
-            <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm flex-shrink-0">
-              <div className="flex items-center gap-1 text-gray-600">
-                <Type className="h-3 w-3 md:h-4 md:w-4" />
+            <div className={`flex items-center gap-1.5 sm:gap-2 md:gap-3 text-xs sm:text-sm flex-shrink-0 ${isMobile ? 'ml-auto pl-2' : ''}`}>
+              <div className="flex items-center gap-1 text-gray-600 whitespace-nowrap">
+                <Type className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{wordCount} words</span>
                 <span className="sm:hidden">{wordCount}</span>
               </div>
-              <div className="flex items-center gap-1 text-gray-600">
-                <Clock className="h-3 w-3 md:h-4 md:w-4" />
+              <div className="flex items-center gap-1 text-gray-600 whitespace-nowrap">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{estimatedTime} min</span>
                 <span className="sm:hidden">{estimatedTime}m</span>
               </div>

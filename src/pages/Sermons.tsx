@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,7 +38,7 @@ import {
   ListOrdered, Heading1, Heading2, Heading3, Quote, Link, Image,
   Zap, Globe, Menu, SidebarOpen, SidebarClose, Layout, Heart,
   Bookmark, Tag, MapPin, Music, Palette, CheckCircle2, Circle,
-  GripVertical, Trash, Edit2
+  GripVertical, Trash, Edit2, MoreVertical
 } from "lucide-react";
 import { format } from 'date-fns';
 
@@ -1036,66 +1037,93 @@ const Sermons = () => {
     return (
       <MobileOptimizedLayout className="bg-gray-50">
         <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-gray-50 flex flex-col`}>
-          {/* Clean Header */}
-          <div className="border-b bg-white px-3 md:px-6 py-3 md:py-4 shadow-sm border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+          {/* Clean Header - Mobile Optimized */}
+          <div className="border-b bg-white px-2 sm:px-3 md:px-6 py-2 sm:py-3 md:py-4 shadow-sm border-gray-200 sticky top-0 z-30">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 flex-1 min-w-0">
               <Button
                 variant="ghost"
-                size="sm"
+                size={isMobile ? "sm" : "sm"}
                 onClick={handleBackToDashboard}
-                className="hover:bg-orange-50 text-gray-700 flex-shrink-0"
+                className="hover:bg-orange-50 text-gray-700 flex-shrink-0 h-8 sm:h-9 px-2 sm:px-3"
               >
-                <ArrowLeft className="h-4 w-4 md:mr-2" />
-                {!isMobile && <span>Back to Sermons</span>}
+                <ArrowLeft className="h-4 w-4" />
+                {!isMobile && <span className="ml-2 hidden sm:inline">Back to Sermons</span>}
               </Button>
-              {!isMobile && <Separator orientation="vertical" className="h-6" />}
-              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-                <div className="p-1.5 md:p-2 bg-orange-600 rounded-lg flex-shrink-0">
-                  <PenTool className="h-4 w-4 md:h-5 md:w-5 text-white" />
+              {!isMobile && <Separator orientation="vertical" className="h-6 hidden md:block" />}
+              <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-1">
+                <div className="p-1.5 sm:p-2 bg-orange-600 rounded-lg flex-shrink-0">
+                  <PenTool className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-base md:text-xl font-semibold text-gray-900 truncate">
+                  <h1 className="text-sm sm:text-base md:text-xl font-semibold text-gray-900 truncate">
                     {isEditing ? 'Edit Sermon' : 'New Sermon'}
                   </h1>
-                  <p className="text-xs md:text-sm text-gray-600 truncate">
+                  <p className="text-xs text-gray-600 truncate hidden sm:block">
                     {selectedSermon?.title || 'Untitled Sermon'}
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              {/* AI Generator Button */}
-              <Button 
-                variant="outline" 
-                size={isMobile ? "sm" : "sm"}
-                className="hover:bg-purple-50"
-                onClick={() => setShowAIGenerator(true)}
-              >
-                <Brain className="h-4 w-4 md:mr-2" />
-                {!isMobile && <span>AI Generator</span>}
-              </Button>
-              
-              {/* AI Sidebar Toggle */}
-              <Button 
-                variant="outline" 
-                size={isMobile ? "sm" : "sm"}
-                className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
-                onClick={() => setShowAISidebar(!showAISidebar)}
-              >
-                <Bot className="h-4 w-4 md:mr-2" />
-                {!isMobile && <span>AI Assistant</span>}
-              </Button>
-              
-              {/* Bible Reference Button */}
-              <Dialog open={showBibleDialog} onOpenChange={setShowBibleDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size={isMobile ? "sm" : "sm"} className="hover:bg-blue-50">
-                    <BookOpen className="h-4 w-4 md:mr-2" />
-                    {!isMobile && <span>Bible</span>}
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
+              {/* Mobile: Stack buttons vertically or use dropdown */}
+              {isMobile ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setShowAIGenerator(true)}>
+                      <Brain className="h-4 w-4 mr-2" />
+                      AI Generator
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowAISidebar(!showAISidebar)}>
+                      <Bot className="h-4 w-4 mr-2" />
+                      AI Assistant
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowBibleDialog(true)}>
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Bible Reference
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  {/* AI Generator Button */}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="hover:bg-purple-50"
+                    onClick={() => setShowAIGenerator(true)}
+                  >
+                    <Brain className="h-4 w-4 mr-2" />
+                    <span>AI Generator</span>
                   </Button>
-                </DialogTrigger>
+                  
+                  {/* AI Sidebar Toggle */}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
+                    onClick={() => setShowAISidebar(!showAISidebar)}
+                  >
+                    <Bot className="h-4 w-4 mr-2" />
+                    <span>AI Assistant</span>
+                  </Button>
+                  
+                  {/* Bible Reference Button */}
+                  <Button variant="outline" size="sm" className="hover:bg-blue-50" onClick={() => setShowBibleDialog(true)}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    <span>Bible</span>
+                  </Button>
+                </>
+              )}
+              
+              {/* Bible Dialog */}
+              <Dialog open={showBibleDialog} onOpenChange={setShowBibleDialog}>
                 <DialogContent className={`${isMobile ? 'max-w-full w-full h-full max-h-full m-0 rounded-none' : 'max-w-[95vw] w-full h-[95vh] max-h-[95vh]'}`}>
                   <DialogHeader className="border-b pb-3 md:pb-4">
                     <DialogTitle className="flex items-center gap-2 text-lg md:text-xl">
@@ -1393,9 +1421,10 @@ const Sermons = () => {
               {/* Panel Controls */}
               <Button 
                 variant="ghost"
-                size="sm" 
+                size={isMobile ? "sm" : "sm"}
                 onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-                className="hover:bg-gray-100"
+                className="hover:bg-gray-100 h-8 sm:h-9 w-8 sm:w-9 p-0"
+                title={leftPanelOpen ? "Close panel" : "Open panel"}
               >
                 {leftPanelOpen ? <PanelRightOpen className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
               </Button>
@@ -1416,14 +1445,15 @@ const Sermons = () => {
                 onClick={() => handleSaveSermon(false)}
                 disabled={saving}
                 size={isMobile ? "sm" : "default"}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                className="bg-orange-600 hover:bg-orange-700 text-white h-8 sm:h-9 px-2 sm:px-3 md:px-4"
               >
                 {saving ? (
-                  <RefreshCw className="h-4 w-4 md:mr-2 animate-spin" />
+                  <RefreshCw className="h-4 w-4 sm:mr-2 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 md:mr-2" />
+                  <Save className="h-4 w-4 sm:mr-2" />
                 )}
                 {!isMobile && <span>Save</span>}
+                {isMobile && <span className="ml-1 text-xs">Save</span>}
               </Button>
             </div>
           </div>
@@ -1439,14 +1469,27 @@ const Sermons = () => {
                   onClick={() => setLeftPanelOpen(false)}
                 />
               )}
-              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-80 max-w-[85vw]' : 'w-80'} border-r bg-white flex flex-col shadow-sm`}>
+              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-sm' : 'w-80'} border-r bg-white flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''}`}>
+              <div className="p-2 sm:p-4 border-b flex items-center justify-between bg-gray-50">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900">Sermon Details</h2>
+                {isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setLeftPanelOpen(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <Tabs defaultValue="details" className="flex-1 flex flex-col">
-                <TabsList className="grid grid-cols-2 m-4 mb-0 bg-gray-100">
-                  <TabsTrigger value="details" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Details</TabsTrigger>
-                  <TabsTrigger value="outline" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Outline</TabsTrigger>
+                <TabsList className="grid grid-cols-2 m-2 sm:m-4 mb-0 bg-gray-100 h-9 sm:h-10">
+                  <TabsTrigger value="details" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs sm:text-sm">Details</TabsTrigger>
+                  <TabsTrigger value="outline" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs sm:text-sm">Outline</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="details" className="flex-1 p-4 m-0">
+                <TabsContent value="details" className="flex-1 p-2 sm:p-4 m-0 overflow-y-auto">
                   <ScrollArea className="h-full">
                     <div className="space-y-4">
                       <div>
@@ -1686,19 +1729,21 @@ const Sermons = () => {
               onExport={handleExportSermon}
               onInsertQuickText={handleInsertQuickText}
             />
-            <div className={`flex-1 p-3 md:p-6 ${focusMode ? 'bg-white' : ''}`}>
+            <div className={`flex-1 p-2 sm:p-3 md:p-6 ${focusMode ? 'bg-white' : ''} overflow-hidden`}>
               <Textarea
                 ref={editorRef}
                 placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
                 value={selectedSermon?.content || ''}
                 onChange={(e) => setSelectedSermon(prev => prev ? { ...prev, content: e.target.value } : null)}
-                className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-4 md:p-8 border border-gray-200' : ''}`}
+                className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-3 sm:p-4 md:p-8 border border-gray-200' : 'p-2 sm:p-3 md:p-4'} text-base sm:text-lg`}
                 style={{ 
-                  minHeight: isMobile ? 'calc(100vh - 200px)' : 'calc(100vh - 250px)',
-                  fontSize: `${fontSize}px`,
+                  minHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 250px)',
+                  fontSize: isMobile ? `${Math.max(16, fontSize)}px` : `${fontSize}px`,
                   lineHeight: lineHeight,
-                  maxWidth: focusMode ? '800px' : '100%',
-                  margin: focusMode ? '0 auto' : '0'
+                  maxWidth: focusMode ? (isMobile ? '100%' : '800px') : '100%',
+                  margin: focusMode && !isMobile ? '0 auto' : '0',
+                  paddingTop: isMobile ? '16px' : undefined,
+                  paddingBottom: isMobile ? '16px' : undefined,
                 }}
               />
             </div>
