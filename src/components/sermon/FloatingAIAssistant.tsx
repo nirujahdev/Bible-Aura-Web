@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSermonAI } from '@/contexts/SermonAIContext';
 import { useAuth } from '@/hooks/useAuth';
 import { checkAndIncrementUsage } from '@/lib/ai-limits';
-import { callOpenAIAPI } from '@/lib/openai-api-helper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
