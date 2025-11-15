@@ -313,7 +313,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
   if (!isOpen) return null;
 
   const content = (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
       {/* Header - Only show if not in sidebar mode (sidebar mode has its own header) */}
       {!sidebarMode && (
         <div className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
@@ -368,8 +368,8 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
           </p>
         </div>
 
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 px-4 sm:px-6">
+      {/* Messages Area - Properly sized for scrolling */}
+      <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6">
           <div className="py-4 space-y-4">
             {messages.map((message) => (
               <div

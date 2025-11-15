@@ -13,7 +13,7 @@ import {
   Book, Languages, StickyNote, Brain, 
   MessageCircle, BookOpen, Target,
   Copy, Highlighter, FileText,
-  ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2
+  ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2, X
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
@@ -536,6 +536,21 @@ How can I apply this to my life?
     }
   };
 
+  // Helper function to get highlight color classes
+  const getHighlightClasses = (color: string | undefined) => {
+    if (!color) return 'hover:bg-gray-50';
+    const colorMap: Record<string, string> = {
+      'yellow': 'bg-yellow-100 border-l-4 border-yellow-400',
+      'green': 'bg-green-100 border-l-4 border-green-400',
+      'blue': 'bg-blue-100 border-l-4 border-blue-400',
+      'purple': 'bg-purple-100 border-l-4 border-purple-400',
+      'red': 'bg-red-100 border-l-4 border-red-400',
+      'pink': 'bg-pink-100 border-l-4 border-pink-400',
+      'orange': 'bg-orange-100 border-l-4 border-orange-400',
+    };
+    return colorMap[color] || 'hover:bg-gray-50';
+  };
+
   const highlightVerse = async (verse: BibleVerse, color: string) => {
     if (!user) {
       toast({
@@ -858,13 +873,13 @@ How can I apply this to my life?
             </div>
           )}
 
-          {/* Main Reading Area - Improved mobile experience with AI Sidebar */}
+          {/* Main Reading Area - Side-by-side with AI Chat on Desktop */}
           <div className={cn(
             "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300",
             enhancedAiChatOpen && !isMobile ? "mr-96" : ""
           )}>
             {/* Header - Mobile optimized */}
-            <div className={`p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2' : ''}`}>
+            <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2' : ''}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {selectedBook && (
@@ -933,8 +948,8 @@ How can I apply this to my life?
               )}
             </div>
 
-            {/* Verses Display - Mobile-Optimized Reading Experience */}
-            <div className="flex-1 overflow-y-auto mobile-scroll">
+            {/* Verses Display - Scrollable and fully functional when AI chat is open */}
+            <div className="flex-1 min-h-0 overflow-y-auto mobile-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
               {loading ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
@@ -1153,11 +1168,11 @@ How can I apply this to my life?
           />
         )}
 
-        {/* Enhanced AI Chat Sidebar - Persistent and Interactive */}
+        {/* Enhanced AI Chat Sidebar - Side-by-side on Desktop, Fullscreen on Mobile */}
         {enhancedAiChatOpen && selectedVerseForAI && (
           <div className={cn(
-            "fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-2xl z-50 flex flex-col transition-transform duration-300",
-            isMobile ? "w-full" : "w-96"
+            "fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-2xl flex flex-col transition-transform duration-300",
+            isMobile ? "w-full z-50" : "w-96 z-40" // Lower z-index on desktop to allow Bible interactions
           )}>
             {/* Mobile Header with Close Button */}
             {isMobile && (
@@ -1202,11 +1217,11 @@ How can I apply this to my life?
               </div>
             )}
             
-            {/* AI Chat Content - Full Height */}
-            <div className="flex-1 overflow-hidden flex flex-col">
+            {/* AI Chat Content - Full Height with proper overflow handling */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
               {/* Header for Desktop */}
               {!isMobile && (
-                <div className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
+                <div className="flex-shrink-0 px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
                       ✦
@@ -1223,16 +1238,19 @@ How can I apply this to my life?
                 </div>
               )}
               
-              <BibleVerseAIChat
-                verse={selectedVerseForAI}
-                isOpen={enhancedAiChatOpen}
-                onClose={() => {
-                  setEnhancedAiChatOpen(false);
-                  setSelectedVerseForAI(null);
-                }}
-                verseReference={generateVerseReference(selectedVerseForAI)}
-                sidebarMode={true}
-              />
+              {/* AI Chat Component - Takes remaining space */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <BibleVerseAIChat
+                  verse={selectedVerseForAI}
+                  isOpen={enhancedAiChatOpen}
+                  onClose={() => {
+                    setEnhancedAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  verseReference={generateVerseReference(selectedVerseForAI)}
+                  sidebarMode={true}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -1287,7 +1305,7 @@ function VerseCard({
     <div
       className={`group p-4 md:p-6 rounded-lg transition-all duration-300 hover:shadow-sm ${
         highlightColor 
-          ? getHighlightClass(highlightColor)
+          ? getHighlightClasses(highlightColor)
           : 'border-l-4 border-orange-200 hover:border-orange-400 hover:bg-orange-50/30'
       }`}
       style={{ fontSize: `${fontSize + 2}px`, lineHeight: 1.8 }}
