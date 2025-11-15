@@ -211,93 +211,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // PRIMARY: Get session from Supabase's stored session (most reliable)
-        // This uses localStorage that Supabase manages
+        // STEP 1: Check cached session SYNCHRONOUSLY FIRST (instant load)
+        // This provides immediate UI response for returning users
+        const cachedSession = shouldUseCachedSession() && isSessionValid(getCachedSession()) ? getCachedSession() : null;
+        
+        if (cachedSession && isMounted) {
+          console.log('⚡ Using cached session immediately:', cachedSession.user?.email);
+          setUser(cachedSession.user);
+          setSession(cachedSession);
+          
+          // Set loading to false IMMEDIATELY (no async delay)
+          setLoading(false);
+          setInitialized(true);
+          
+          // Load profile in background (don't block)
+          if (cachedSession.user) {
+            loadUserProfile(cachedSession.user.id).catch(err => {
+              console.error('Error loading profile from cache:', err);
+            });
+          }
+        }
+
+        // STEP 2: Verify with Supabase's actual session (runs in background)
+        // This ensures we have the most up-to-date session from localStorage
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('❌ Session error:', sessionError);
-          // Clear invalid cache
-          clearCachedSession();
-          if (isMounted) {
+          // If we had cached session but Supabase says invalid, clear it
+          if (cachedSession) {
+            clearCachedSession();
+            if (isMounted) {
+              setUser(null);
+              setSession(null);
+            }
+          }
+          if (isMounted && !cachedSession) {
             setLoading(false);
             setInitialized(true);
           }
           return;
         }
 
-        // If we have a valid session from Supabase, use it immediately
+        // STEP 3: If Supabase has a session, use it (overwrites cache if different)
         if (session && isSessionValid(session) && isMounted) {
-          console.log('✅ User found in Supabase session:', session.user?.email);
-          setUser(session.user);
-          setSession(session);
+          // Only update if different from cached (to avoid unnecessary re-renders)
+          if (!cachedSession || cachedSession.user?.id !== session.user.id) {
+            console.log('✅ Using Supabase session:', session.user?.email);
+            setUser(session.user);
+            setSession(session);
+          }
           
           // Update cache with fresh session
           setCachedSession(session);
           
-          // Set loading to false immediately for faster UX
-          setLoading(false);
-          
-          // Load profile in background (don't block)
-          if (session.user) {
-            loadUserProfile(session.user.id).catch(err => {
-              console.error('Error loading profile:', err);
-            });
-          }
-          
-          if (isMounted) {
+          // Set loading/initialized if not already set
+          if (!cachedSession) {
+            setLoading(false);
             setInitialized(true);
+            
+            // Load profile in background
+            if (session.user) {
+              loadUserProfile(session.user.id).catch(err => {
+                console.error('Error loading profile:', err);
+              });
+            }
           }
           return;
         }
 
-        // FALLBACK: Try cached session if Supabase doesn't have one
-        // This might happen if Supabase's localStorage was cleared but our cache wasn't
-        const cachedSession = shouldUseCachedSession() && isSessionValid(getCachedSession()) ? getCachedSession() : null;
-        
-        if (cachedSession && isMounted && !session) {
-          console.log('✅ Using cached session as fallback:', cachedSession.user?.email);
-          setUser(cachedSession.user);
-          setSession(cachedSession);
-          
-          // Try to restore session in Supabase
-          // This will help Supabase manage the session going forward
-          try {
-            // Supabase will handle session restoration automatically through onAuthStateChange
-            // Just ensure our state is set
-          } catch (restoreError) {
-            console.error('Error restoring cached session:', restoreError);
-          }
-          
-          // Set loading to false
-          setLoading(false);
-          
-          // Load profile in background
-          if (cachedSession.user) {
-            loadUserProfile(cachedSession.user.id).catch(err => {
-              console.error('Error loading profile from cache:', err);
-            });
-          }
+        // STEP 4: No valid session found
+        if (!session && !cachedSession) {
+          console.log('ℹ️ No active session found');
+          clearCachedSession();
           
           if (isMounted) {
+            setLoading(false);
             setInitialized(true);
           }
-          return;
-        }
-
-        // No session found
-        console.log('ℹ️ No active session found');
-        clearCachedSession();
-        
-        if (isMounted) {
-          setLoading(false);
-          setInitialized(true);
         }
         
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
-        clearCachedSession();
-        if (isMounted) {
+        // If error but we had cached session, keep it
+        if (!getCachedSession() && isMounted) {
+          clearCachedSession();
           setLoading(false);
           setInitialized(true);
         }

@@ -1,8 +1,7 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { getCachedSession, clearCachedSession, isSessionValid } from '@/lib/auth-cache';
-import { supabase } from '@/integrations/supabase/client';
+import { clearCachedSession } from '@/lib/auth-cache';
 import LoadingScreen from '@/components/LoadingScreen';
 
 interface ProtectedRouteProps {
@@ -11,49 +10,16 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const [hasValidSession, setHasValidSession] = useState<boolean | null>(null);
 
-  // Check Supabase's stored session to verify authentication
-  // Don't rely only on local state - verify with Supabase
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        // Check Supabase's stored session first (most reliable)
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session && isSessionValid(session)) {
-          setHasValidSession(true);
-          return;
-        }
-
-        // Fallback: Check cached session
-        const cachedSession = getCachedSession();
-        if (cachedSession && isSessionValid(cachedSession)) {
-          setHasValidSession(true);
-          return;
-        }
-
-        // No valid session found
-        setHasValidSession(false);
-      } catch (error) {
-        console.error('Error checking session in ProtectedRoute:', error);
-        setHasValidSession(false);
-      }
-    };
-
-    // Only check if loading is false (auth initialization complete)
-    if (!loading) {
-      checkSession();
-    }
-  }, [loading]);
-
-  // Show loading screen while authentication is being determined
-  if (loading || hasValidSession === null) {
+  // Show loading screen ONLY while useAuth is initializing
+  // Trust useAuth's state - it already handles session restoration
+  if (loading) {
     return <LoadingScreen message="Checking your authentication..." />;
   }
 
-  // If not authenticated and no valid session, redirect to auth page
-  if (!user && !hasValidSession) {
+  // If not authenticated, redirect to auth page
+  // Don't double-check session - useAuth already did this
+  if (!user) {
     // Only clear session storage and navigation state
     // DON'T clear Supabase's localStorage - let Supabase manage it
     try {
