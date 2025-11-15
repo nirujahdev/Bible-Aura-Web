@@ -655,7 +655,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         let userFriendlyMessage = error.message;
         
-        if (error.message?.includes('already registered') || error.message?.includes('already exists') || error.message?.includes('User already registered')) {
+        // Handle "Database error saving new user" - this usually means trigger had an issue
+        // but the user was still created, so we should treat it as success
+        if (error.message?.includes('Database error saving new user') || 
+            error.message?.includes('error saving new user')) {
+          // User was likely created, just profile creation had an issue
+          // Check if user exists and continue
+          if (data?.user) {
+            console.log('User created but profile creation had an issue, will retry...');
+            // Don't return error - let the profile creation retry logic handle it
+            // Set user and session so they can proceed
+            setUser(data.user);
+            if (data.session) {
+              setSession(data.session);
+            }
+            // Try to create profile asynchronously
+            setTimeout(async () => {
+              if (data.user) {
+                await createDefaultProfile(data.user.id);
+              }
+            }, 1000);
+            // Return success since user was created
+            toast({
+              title: "Account created!",
+              description: "Your account has been created. Setting up your profile...",
+            });
+            return { error: null };
+          }
+          userFriendlyMessage = 'Account may have been created. Please try signing in.';
+        } else if (error.message?.includes('already registered') || error.message?.includes('already exists') || error.message?.includes('User already registered')) {
           userFriendlyMessage = 'An account with this email already exists. Please sign in instead.';
         } else if (error.message?.includes('weak password') || error.message?.includes('Password')) {
           userFriendlyMessage = 'Please choose a stronger password with at least 8 characters.';
