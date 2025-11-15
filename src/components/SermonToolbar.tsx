@@ -195,9 +195,9 @@ export default function SermonToolbar({
 
   return (
     <TooltipProvider>
-      <div className="border-b bg-white sticky top-0 z-20">
-        {/* Main Toolbar */}
-        <div className="p-1.5 sm:p-2">
+      <div className="border-b bg-white flex-shrink-0 z-20">
+        {/* Main Toolbar - Compact */}
+        <div className="p-1 sm:p-1.5">
           <div className="flex items-center gap-1 justify-between flex-wrap">
             <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {/* Text Formatting */}
@@ -473,8 +473,8 @@ export default function SermonToolbar({
 
         {/* Advanced Tools (Optional) */}
         {showAdvanced && (
-          <div className="px-2 pb-2 border-t bg-gray-50">
-            <div className="flex items-center gap-1 pt-2">
+          <div className="px-2 pb-1.5 border-t bg-gray-50">
+            <div className="flex items-center gap-1 pt-1.5">
               <Button variant="ghost" size="sm" onClick={() => insertQuickText("\n## Prayer Focus\n[Insert prayer points here]\n")}>
                 <Users className="h-4 w-4 mr-1" />
                 Prayer Section
@@ -495,16 +495,16 @@ export default function SermonToolbar({
           </div>
         )}
 
-        {/* Toggle Advanced Tools */}
-        <div className="px-2 pb-1">
+        {/* Toggle Advanced Tools - Compact */}
+        <div className="px-2 pb-1 border-t">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-xs text-gray-500 hover:text-gray-700"
+            className="text-xs text-gray-500 hover:text-gray-700 h-7"
           >
             <Settings className="h-3 w-3 mr-1" />
-            {showAdvanced ? 'Hide' : 'Show'} Advanced Tools
+            {showAdvanced ? 'Hide' : 'Show'} Advanced
           </Button>
         </div>
       </div>

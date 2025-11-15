@@ -19,14 +19,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS, searchVerses } from "@/lib/local-bible";
 import SermonToolbar from '@/components/SermonToolbar';
-import SermonAIAssistant from '@/components/SermonAIAssistant';
 import SermonAIGenerator from '@/components/SermonAIGenerator';
-import SermonAISidebar from '@/components/SermonAISidebar';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SermonAIProvider, useSermonAI } from '@/contexts/SermonAIContext';
-import { FloatingAIAssistant } from '@/components/sermon/FloatingAIAssistant';
 import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
 import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
 import { AIResearchPanel } from '@/components/sermon/AIResearchPanel';
@@ -34,12 +31,12 @@ import { InlineAIAssistant } from '@/components/sermon/InlineAIAssistant';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
-  Brain, Sparkles, Save, Type, AlignLeft, Bold, Italic, List, 
+  Sparkles, Save, Type, AlignLeft, Bold, Italic, List, 
   Presentation, FileDown, Volume2, BarChart, MessageSquare, Copy,
   ChevronDown, ChevronUp, Maximize, Minimize, PaintBucket, Languages,
   PenTool, RefreshCw, Archive, FolderOpen, UserPlus, GitBranch,
   ThumbsUp, TrendingUp, Database, Highlighter, Smartphone, X, Send,
-  Bot, ChevronLeft, ChevronRight, PanelLeftOpen, PanelRightOpen,
+  ChevronLeft, ChevronRight, PanelLeftOpen, PanelRightOpen,
   Maximize2, Minimize2, BarChart3, Award, AlertCircle, ArrowLeft,
   ListOrdered, Heading1, Heading2, Heading3, Quote, Link, Image,
   Zap, Globe, Menu, SidebarOpen, SidebarClose, Layout, Heart,
@@ -181,7 +178,6 @@ const SermonsContent = () => {
   
   // AI features
   const [showAIGenerator, setShowAIGenerator] = useState(false);
-  const [showAISidebar, setShowAISidebar] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -1052,9 +1048,9 @@ const SermonsContent = () => {
   if (viewMode === 'editor' && selectedSermon) {
     return (
       <MobileOptimizedLayout className="bg-gray-50">
-        <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-gray-50 flex flex-col`}>
+        <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'h-screen'} bg-gray-50 flex flex-col overflow-hidden`}>
           {/* Clean Header - Mobile Optimized */}
-          <div className="border-b bg-white px-2 sm:px-3 md:px-6 py-2 sm:py-3 md:py-4 shadow-sm border-gray-200 sticky top-0 z-30">
+          <div className="border-b bg-white px-2 sm:px-3 md:px-6 py-2 sm:py-3 md:py-4 shadow-sm border-gray-200 flex-shrink-0 z-30">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 flex-1 min-w-0">
               <Button
@@ -1083,60 +1079,16 @@ const SermonsContent = () => {
             </div>
             
             <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
-              {/* Mobile: Stack buttons vertically or use dropdown */}
-              {isMobile ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => setShowAIGenerator(true)}>
-                      <Brain className="h-4 w-4 mr-2" />
-                      AI Generator
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowAISidebar(!showAISidebar)}>
-                      <Bot className="h-4 w-4 mr-2" />
-                      AI Assistant
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowBibleDialog(true)}>
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Bible Reference
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <>
-              {/* AI Generator Button */}
+              {/* Bible Reference Button - Only essential button */}
               <Button 
                 variant="outline" 
-                    size="sm"
-                className="hover:bg-purple-50"
-                onClick={() => setShowAIGenerator(true)}
+                size="sm" 
+                className="hover:bg-blue-50 h-8 sm:h-9" 
+                onClick={() => setShowBibleDialog(true)}
               >
-                    <Brain className="h-4 w-4 mr-2" />
-                    <span>AI Generator</span>
+                <BookOpen className="h-4 w-4 sm:mr-2" />
+                {!isMobile && <span>Bible</span>}
               </Button>
-              
-              {/* AI Sidebar Toggle */}
-              <Button 
-                variant="outline" 
-                    size="sm"
-                className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
-                onClick={() => setShowAISidebar(!showAISidebar)}
-              >
-                    <Bot className="h-4 w-4 mr-2" />
-                    <span>AI Assistant</span>
-              </Button>
-              
-              {/* Bible Reference Button */}
-                  <Button variant="outline" size="sm" className="hover:bg-blue-50" onClick={() => setShowBibleDialog(true)}>
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    <span>Bible</span>
-                  </Button>
-                </>
-              )}
               
               {/* Bible Dialog */}
               <Dialog open={showBibleDialog} onOpenChange={setShowBibleDialog}>
@@ -1475,7 +1427,7 @@ const SermonsContent = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 flex overflow-hidden relative h-full">
           {/* AI Research Panel (Left Side - SermonAI-style) */}
           {leftPanelOpen && (
             <>
@@ -1485,7 +1437,7 @@ const SermonsContent = () => {
                   onClick={() => setLeftPanelOpen(false)}
                 />
               )}
-              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-md' : 'w-[400px]'} border-r bg-gray-50 flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''}`}>
+              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-md' : 'w-[380px] flex-shrink-0'} border-r bg-gray-50 flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''} h-full`}>
                 <AIResearchPanel />
               </div>
             </>
@@ -1749,7 +1701,7 @@ const SermonsContent = () => {
           )}
 
           {/* Main Editor */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
             <SermonToolbar
               editorRef={editorRef}
               onFormatText={handleFormatText}
@@ -1760,7 +1712,7 @@ const SermonsContent = () => {
               onExport={handleExportSermon}
               onInsertQuickText={handleInsertQuickText}
             />
-            <div className={`flex-1 p-2 sm:p-3 md:p-6 ${focusMode ? 'bg-white' : ''} overflow-hidden relative`}>
+            <div className={`flex-1 flex flex-col p-2 sm:p-3 md:p-4 ${focusMode ? 'bg-white' : ''} overflow-hidden relative min-h-0`}>
               <Textarea
                 ref={editorRef}
                 placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
@@ -1770,15 +1722,12 @@ const SermonsContent = () => {
                   setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
                   updateContent(newContent);
                 }}
-                className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-3 sm:p-4 md:p-8 border border-gray-200' : 'p-2 sm:p-3 md:p-4'} text-base sm:text-lg`}
+                className={`w-full flex-1 resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-3 sm:p-4 md:p-8 border border-gray-200' : 'p-2 sm:p-3 md:p-4'} text-base sm:text-lg`}
                 style={{ 
-                  minHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 250px)',
                   fontSize: isMobile ? `${Math.max(16, fontSize)}px` : `${fontSize}px`,
                   lineHeight: lineHeight,
                   maxWidth: focusMode ? (isMobile ? '100%' : '800px') : '100%',
                   margin: focusMode && !isMobile ? '0 auto' : '0',
-                  paddingTop: isMobile ? '16px' : undefined,
-                  paddingBottom: isMobile ? '16px' : undefined,
                 }}
               />
               <SermonAutoComplete
@@ -1887,27 +1836,6 @@ const SermonsContent = () => {
           </DialogContent>
         </Dialog>
         
-        {/* AI Sidebar */}
-        {showAISidebar && (
-          <div className="fixed right-0 top-0 h-full z-40">
-            <SermonAISidebar
-              isOpen={showAISidebar}
-              onToggle={() => setShowAISidebar(!showAISidebar)}
-              currentSermonContent={selectedSermon?.content || ''}
-              onContentUpdate={(content) => {
-                if (selectedSermon) {
-                  setSelectedSermon({ ...selectedSermon, content });
-                  updateContent(content);
-                }
-              }}
-              sermonTitle={selectedSermon?.title || ''}
-              scriptureReference={selectedSermon?.scripture_reference || ''}
-            />
-          </div>
-        )}
-
-        {/* Floating AI Assistant */}
-        <FloatingAIAssistant />
         </div>
       </MobileOptimizedLayout>
     );

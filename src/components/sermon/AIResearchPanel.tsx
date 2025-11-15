@@ -261,7 +261,7 @@ Provide detailed, helpful research and insights.`;
   };
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-white to-gray-50 border-r">
+    <div className="h-full flex flex-col bg-gradient-to-b from-white to-gray-50 border-r overflow-hidden">
       {/* Enhanced Header */}
       <div className="p-4 border-b bg-gradient-to-r from-orange-50 to-white">
         <div className="flex items-center justify-between mb-2">
@@ -282,8 +282,8 @@ Provide detailed, helpful research and insights.`;
       </div>
 
       {/* Enhanced Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col">
-        <TabsList className="grid grid-cols-3 mx-4 mt-4 h-auto bg-gray-100">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <TabsList className="grid grid-cols-3 mx-4 mt-3 h-9 bg-gray-100 flex-shrink-0">
           <TabsTrigger value="tools" className="text-xs data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <Zap className="h-3 w-3 mr-1" />
             Tools
@@ -299,7 +299,7 @@ Provide detailed, helpful research and insights.`;
         </TabsList>
 
         {/* Enhanced Tools Tab */}
-        <TabsContent value="tools" className="flex-1 overflow-y-auto p-4 m-0">
+        <TabsContent value="tools" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
           <div className="space-y-4">
             {Object.entries(agentsByCategory).map(([category, agents]) => {
               const categoryInfo = categoryLabels[category] || { label: category, icon: Sparkles, color: 'bg-gray-500' };
@@ -390,8 +390,8 @@ Provide detailed, helpful research and insights.`;
         </TabsContent>
 
         {/* Enhanced Chat Tab */}
-        <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0">
-          <ScrollArea className="flex-1 px-4">
+        <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0 min-h-0 overflow-hidden">
+          <ScrollArea className="flex-1 px-4 min-h-0">
             <div className="space-y-4 py-4">
               {messages.length === 0 && (
                 <div className="text-center py-12 text-sm text-gray-500">
@@ -458,7 +458,7 @@ Provide detailed, helpful research and insights.`;
           </ScrollArea>
 
           {/* Enhanced Input Area */}
-          <div className="p-4 border-t bg-white">
+          <div className="p-3 border-t bg-white flex-shrink-0">
             <div className="flex gap-2">
               <Textarea
                 ref={inputRef}
@@ -490,7 +490,7 @@ Provide detailed, helpful research and insights.`;
         </TabsContent>
 
         {/* Enhanced History Tab */}
-        <TabsContent value="history" className="flex-1 overflow-y-auto p-4">
+        <TabsContent value="history" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
           <div className="space-y-2">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <History className="h-4 w-4 text-orange-500" />

@@ -226,10 +226,10 @@ Provide the requested content or edit. Be concise and practical.`;
   };
 
   return (
-    <div className="border-t bg-gradient-to-b from-white to-gray-50 shadow-lg">
+    <div className="border-t bg-gradient-to-b from-white to-gray-50 shadow-lg flex-shrink-0">
       {/* Quick Actions - Enhanced */}
       {showQuickActions && (
-        <div className="px-4 pt-3 pb-2 border-b bg-white">
+        <div className="px-3 pt-2 pb-1.5 border-b bg-white flex-shrink-0">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Quick Actions</span>
             <Button
@@ -273,7 +273,7 @@ Provide the requested content or edit. Be concise and practical.`;
       )}
 
       {/* Input Area - Enhanced */}
-      <div className="px-4 pb-3 pt-3">
+      <div className="px-3 pb-2.5 pt-2 flex-shrink-0">
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             <Textarea
