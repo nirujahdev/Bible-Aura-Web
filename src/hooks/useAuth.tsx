@@ -626,15 +626,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, userData?: {
-    displayName?: string;
-    phoneNumber?: string;
-    age?: number;
-    denomination?: string | null;
-    agreedToTerms?: boolean;
-    agreedToPrivacy?: boolean;
-    isOver13?: boolean;
-  }) => {
+  const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
       
@@ -659,12 +651,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            display_name: userData?.displayName?.trim() || null,
-            phone_number: userData?.phoneNumber?.trim() || null,
-            age: userData?.age || null,
-            denomination: userData?.denomination || null,
-          },
         },
       });
 
