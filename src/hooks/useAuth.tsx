@@ -18,6 +18,8 @@ interface Profile {
   reading_streak: number;
   total_reading_days: number;
   favorite_translation: string;
+  ai_message_limit?: number;
+  ai_sermon_limit?: number;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -152,6 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         favorite_translation: 'ESV',
         reading_streak: 0,
         total_reading_days: 0,
+        ai_message_limit: 50,
+        ai_sermon_limit: 5,
       };
 
       console.log('🔐 Creating profile with session:', {

@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { sendBibleAuraMessage } from '@/lib/agent-sdk';
+import { checkAndIncrementUsage } from '@/lib/ai-limits';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -389,6 +390,18 @@ export function BibleAuraChat() {
       toast({
         title: "Sign in required",
         description: "Please sign in to chat with AI",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check AI message limit
+    const usageResult = await checkAndIncrementUsage(user.id, 'ai_message');
+    
+    if (!usageResult.allowed) {
+      toast({
+        title: "AI Message Limit Reached",
+        description: `You've reached your daily limit of ${usageResult.limit} AI messages. Please try again tomorrow.`,
         variant: "destructive",
       });
       return;

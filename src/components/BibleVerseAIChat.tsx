@@ -14,6 +14,7 @@ import {
 import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
 import { supabase } from '@/integrations/supabase/client';
 import { callOpenAIAPI } from '@/lib/openai-api-helper';
+import { checkAndIncrementUsage } from '@/lib/ai-limits';
 
 interface BibleVerse {
   book_name: string;
@@ -183,6 +184,18 @@ Choose an analysis mode above and ask me anything about this verse! I can provid
       toast({
         title: "Sign in required",
         description: "Please sign in to chat with AI about Bible verses",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check AI message limit
+    const usageResult = await checkAndIncrementUsage(user.id, 'ai_message');
+    
+    if (!usageResult.allowed) {
+      toast({
+        title: "AI Message Limit Reached",
+        description: `You've reached your daily limit of ${usageResult.limit} AI messages. Please try again tomorrow.`,
         variant: "destructive",
       });
       return;

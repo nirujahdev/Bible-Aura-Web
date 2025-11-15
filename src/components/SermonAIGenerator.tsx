@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { checkAndIncrementUsage } from '@/lib/ai-limits';
 import { 
   Brain, Sparkles, Bot, Target, Users, BookOpen, Church, Clock,
   FileDown, Printer, Share, RefreshCw, Settings, Languages, 
@@ -107,6 +109,7 @@ const SermonAIGenerator: React.FC<SermonAIGeneratorProps> = ({
   isVisible 
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const sermonRef = useRef<HTMLDivElement>(null);
   
   // Form states
@@ -249,6 +252,20 @@ Ensure the sermon is:
         variant: "destructive"
       });
       return;
+    }
+
+    // Check AI sermon limit
+    if (user) {
+      const usageResult = await checkAndIncrementUsage(user.id, 'ai_sermon');
+      
+      if (!usageResult.allowed) {
+        toast({
+          title: "AI Sermon Limit Reached",
+          description: `You've reached your daily limit of ${usageResult.limit} AI sermons. Please try again tomorrow.`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsGenerating(true);

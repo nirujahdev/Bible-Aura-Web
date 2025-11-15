@@ -31,6 +31,8 @@ interface UserProfile {
   favorite_translation: string | null;
   reading_streak: number | null;
   total_reading_days: number | null;
+  ai_message_limit?: number | null;
+  ai_sermon_limit?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -996,6 +998,16 @@ const Profile = () => {
               <div className="flex justify-between">
                 <span className="text-xs sm:text-sm text-muted-foreground">Sermons Created</span>
                 <span className="text-xs sm:text-sm font-medium">{stats.totalSermons}</span>
+              </div>
+              <div className="pt-2 border-t">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs sm:text-sm text-muted-foreground">AI Message Limit</span>
+                  <span className="text-xs sm:text-sm font-medium">{profile?.ai_message_limit || 50}/day</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground">AI Sermon Limit</span>
+                  <span className="text-xs sm:text-sm font-medium">{profile?.ai_sermon_limit || 5}/day</span>
+                </div>
               </div>
             </CardContent>
           </Card>
