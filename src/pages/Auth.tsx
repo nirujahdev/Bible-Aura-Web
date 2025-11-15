@@ -92,7 +92,7 @@ export default function Auth() {
     return () => clearInterval(interval);
   }, [features.length]);
 
-  // Enhanced magic link detection and error handling
+  // Enhanced auth state detection and error handling
   useEffect(() => {
     const urlHash = window.location.hash;
     const urlSearch = window.location.search;
