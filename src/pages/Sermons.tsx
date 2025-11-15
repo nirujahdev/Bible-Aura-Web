@@ -42,7 +42,7 @@ import {
   ListOrdered, Heading1, Heading2, Heading3, Quote, Link, Image,
   Zap, Globe, Menu, SidebarOpen, SidebarClose, Layout, Heart,
   Bookmark, Tag, MapPin, Music, Palette, CheckCircle2, Circle,
-  GripVertical, Trash, Edit2, MoreVertical
+  GripVertical, Trash, Edit2, MoreVertical, Brain
 } from "lucide-react";
 import { format } from 'date-fns';
 
