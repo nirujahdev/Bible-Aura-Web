@@ -54,9 +54,10 @@ export function SmartScriptureFinder({ onVerseSelect, className }: SmartScriptur
       }
     } catch (error: any) {
       console.error('Scripture search error:', error);
+      const errorMessage = error?.message || "Failed to search scriptures";
       toast({
-        title: "Search Error",
-        description: error.message || "Failed to search scriptures",
+        title: error?.message?.includes('API key') ? "API Configuration Error" : "Search Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

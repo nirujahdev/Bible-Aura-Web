@@ -56,9 +56,17 @@ export function SermonAutoComplete({
       } else {
         setShowSuggestions(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auto-complete error:', error);
       setShowSuggestions(false);
+      // Show error toast if it's an API key error
+      if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+        toast({
+          title: "AI Service Error",
+          description: error.message || "OpenAI API key not configured",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

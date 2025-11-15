@@ -93,9 +93,10 @@ export function SermonOutlineBuilder() {
       });
     } catch (error: any) {
       console.error('Outline generation error:', error);
+      const errorMessage = error?.message || "Failed to generate outline";
       toast({
-        title: "Generation Error",
-        description: error.message || "Failed to generate outline",
+        title: error?.message?.includes('API key') ? "API Configuration Error" : "Generation Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

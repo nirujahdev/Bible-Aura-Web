@@ -54,9 +54,10 @@ export function SermonContentEnhancer({
       setSuggestions(results);
     } catch (error: any) {
       console.error('Enhancement error:', error);
+      const errorMessage = error?.message || "Failed to get enhancements";
       toast({
-        title: "Enhancement Error",
-        description: error.message || "Failed to get enhancements",
+        title: error?.message?.includes('API key') ? "API Configuration Error" : "Enhancement Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

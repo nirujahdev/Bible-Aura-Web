@@ -41,11 +41,12 @@ export function SermonContentAnalyzer({ className }: SermonContentAnalyzerProps)
         updateAnalysisResults(analysis);
         setLastAnalysisTime(new Date());
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Analysis error:', error);
+      const errorMessage = error?.message || 'Failed to analyze content. Please try again.';
       toast({
-        title: 'Analysis Error',
-        description: 'Failed to analyze content. Please try again.',
+        title: error?.message?.includes('API key') ? 'API Configuration Error' : 'Analysis Error',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

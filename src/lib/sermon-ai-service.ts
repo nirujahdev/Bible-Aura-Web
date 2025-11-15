@@ -106,8 +106,12 @@ Return as JSON array: [{"text": "suggestion", "confidence": 0.9, "reason": "why 
         reason: 'AI-generated suggestion',
       }));
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Auto-complete error:', error);
+    // Re-throw API key errors so they can be displayed to the user
+    if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+      throw error;
+    }
     return [];
   }
 }
@@ -185,8 +189,12 @@ Provide analysis in JSON format:
         issues: [],
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Content analysis error:', error);
+    // Re-throw API key errors so they can be displayed to the user
+    if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+      throw error;
+    }
     return {
       clarity: 75,
       readability: 75,
@@ -260,8 +268,12 @@ Provide 3-5 enhancement suggestions in JSON format:
     } catch {
       return [];
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Content enhancement error:', error);
+    // Re-throw API key errors so they can be displayed to the user
+    if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+      throw error;
+    }
     return [];
   }
 }
@@ -319,8 +331,12 @@ Provide verses in JSON format:
     } catch {
       return [];
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Scripture finder error:', error);
+    // Re-throw API key errors so they can be displayed to the user
+    if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+      throw error;
+    }
     return [];
   }
 }
@@ -381,8 +397,12 @@ Provide outline in JSON format:
     } catch {
       return [];
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Outline generation error:', error);
+    // Re-throw API key errors so they can be displayed to the user
+    if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+      throw error;
+    }
     return [];
   }
 }
@@ -450,8 +470,12 @@ Return JSON:
     } catch {
       return { accuracy: 85, issues: [], suggestions: [] };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Theological accuracy check error:', error);
+    // Re-throw API key errors so they can be displayed to the user
+    if (error?.message?.includes('API key') || error?.message?.includes('OpenAI')) {
+      throw error;
+    }
     return { accuracy: 85, issues: [], suggestions: [] };
   }
 }

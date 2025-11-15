@@ -344,11 +344,12 @@ Provide helpful, practical, and biblically sound guidance.`;
         description: 'AI assistance has been generated',
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error executing AI tool:', error);
+      const errorMessage = error?.message || "Failed to execute AI tool";
       toast({
-        title: "AI Tool Failed",
-        description: error instanceof Error ? error.message : "Failed to execute AI tool",
+        title: error?.message?.includes('API key') ? "API Configuration Error" : "AI Tool Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -394,10 +395,11 @@ Please provide helpful sermon writing assistance.`;
         description: 'Your custom request has been processed',
       });
 
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to process AI request";
       toast({
-        title: "Request Failed",
-        description: "Failed to process AI request",
+        title: error?.message?.includes('API key') ? "API Configuration Error" : "Request Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

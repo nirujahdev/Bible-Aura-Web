@@ -118,9 +118,10 @@ Provide helpful, practical, and theologically sound assistance specific to this 
       });
     } catch (error: any) {
       console.error('AI chat error:', error);
+      const errorMessage = error?.message || "Failed to get AI response";
       toast({
-        title: "AI Error",
-        description: error.message || "Failed to get AI response",
+        title: error?.message?.includes('API key') ? "API Configuration Error" : "AI Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
