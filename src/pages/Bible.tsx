@@ -13,7 +13,7 @@ import {
   Book, Languages, StickyNote, Brain, 
   MessageCircle, BookOpen, Target,
   Copy, Highlighter, FileText,
-  ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2, X
+  ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2, X, Bot
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
@@ -400,6 +400,10 @@ export default function Bible() {
   const openAiChat = (verse: BibleVerse) => {
     setSelectedVerseForAI(verse);
     setEnhancedAiChatOpen(true);
+    // Automatically switch to AI chat tab in sidebar (desktop only)
+    if (!isMobile) {
+      // Tab will automatically switch due to Tabs value prop
+    }
   };
 
   const addToJournal = async (verse: BibleVerse) => {
@@ -739,13 +743,22 @@ How can I apply this to my life?
                 </div>
               </div>
 
-              <Tabs value={activeTab} onValueChange={(value) => {
+              <Tabs value={enhancedAiChatOpen && selectedVerseForAI ? 'ai-chat' : activeTab} onValueChange={(value) => {
+                if (value === 'ai-chat') {
+                  // Don't change tab if AI chat is open - it's controlled by verse selection
+                  return;
+                }
                 setActiveTab(value);
                 if (value === 'read') {
                   setSearchResults([]);
                 }
+                // Close AI chat if switching to other tabs
+                if (value !== 'ai-chat') {
+                  setEnhancedAiChatOpen(false);
+                  setSelectedVerseForAI(null);
+                }
               }} className="flex-1 flex flex-col h-[calc(100vh-140px)]">
-                <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
+                <TabsList className="grid w-full grid-cols-3 mx-4 mt-4">
                   <TabsTrigger value="read">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Read
@@ -753,6 +766,10 @@ How can I apply this to my life?
                   <TabsTrigger value="search">
                     <Search className="h-4 w-4 mr-2" />
                     Search
+                  </TabsTrigger>
+                  <TabsTrigger value="ai-chat" disabled={!selectedVerseForAI}>
+                    <Bot className="h-4 w-4 mr-2" />
+                    AI Chat
                   </TabsTrigger>
                 </TabsList>
 
@@ -907,15 +924,68 @@ How can I apply this to my life?
                     )}
                   </TabsContent>
 
+                  {/* AI Chat Tab - Part of sidebar like book/search */}
+                  <TabsContent value="ai-chat" className="mt-4 flex-1 flex flex-col h-full">
+                    {selectedVerseForAI ? (
+                      <div className="flex-1 flex flex-col h-full overflow-hidden -mx-4">
+                        <div className="flex-shrink-0 px-4 pb-4 border-b border-gray-200">
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm">
+                                ✦
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-semibold text-gray-900">Bible Aura AI</h3>
+                                <p className="text-xs text-gray-600">{generateVerseReference(selectedVerseForAI)}</p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEnhancedAiChatOpen(false);
+                                setSelectedVerseForAI(null);
+                                setActiveTab('read');
+                              }}
+                              className="h-7 w-7 p-0"
+                              title="Close AI Chat"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                          <BibleVerseAIChat
+                            verse={selectedVerseForAI}
+                            isOpen={enhancedAiChatOpen}
+                            onClose={() => {
+                              setEnhancedAiChatOpen(false);
+                              setSelectedVerseForAI(null);
+                              setActiveTab('read');
+                            }}
+                            verseReference={generateVerseReference(selectedVerseForAI)}
+                            sidebarMode={true}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center p-4">
+                        <div className="text-center text-sm text-gray-500">
+                          <Bot className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                          <p>Click on a verse to start AI chat</p>
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
                 </div>
               </Tabs>
             </div>
           )}
 
-          {/* Main Reading Area - Side-by-side with AI Chat on Desktop */}
+          {/* Main Reading Area - Side-by-side with sidebar (AI chat is now in sidebar tabs) */}
           <div className={cn(
-            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10",
-            enhancedAiChatOpen && !isMobile ? "mr-96" : ""
+            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10"
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2' : ''}`}>
@@ -1284,75 +1354,35 @@ How can I apply this to my life?
           />
         )}
 
-        {/* Enhanced AI Chat Sidebar - Side-by-side on Desktop, Fullscreen on Mobile */}
-        {enhancedAiChatOpen && selectedVerseForAI && (
-          <div className={cn(
-            "fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-2xl flex flex-col transition-transform duration-300",
-            isMobile ? "w-full z-50" : "w-96 z-30" // Lower z-index on desktop so Bible remains interactive
-          )}>
+        {/* Enhanced AI Chat Modal - Mobile Only (desktop uses sidebar tab) */}
+        {enhancedAiChatOpen && selectedVerseForAI && isMobile && (
+          <div className="fixed top-0 right-0 h-full w-full bg-white border-l border-gray-200 shadow-2xl flex flex-col transition-transform duration-300 z-50">
             {/* Mobile Header with Close Button */}
-            {isMobile && (
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">✦</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">Bible Aura AI</h3>
-                    <p className="text-xs text-gray-600">{generateVerseReference(selectedVerseForAI)}</p>
-                  </div>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">✦</span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setEnhancedAiChatOpen(false);
-                    setSelectedVerseForAI(null);
-                  }}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            
-            {/* Header for Desktop - Always visible with close button */}
-            {!isMobile && (
-              <div className="flex-shrink-0 px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
-                      ✦
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900">
-                        Bible Aura AI Assistant
-                      </h2>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Analyzing: <span className="font-semibold">{generateVerseReference(selectedVerseForAI)}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setEnhancedAiChatOpen(false);
-                      setSelectedVerseForAI(null);
-                    }}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 flex-shrink-0"
-                    title="Close AI Chat"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">Bible Aura AI</h3>
+                  <p className="text-xs text-gray-600">{generateVerseReference(selectedVerseForAI)}</p>
                 </div>
               </div>
-            )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setEnhancedAiChatOpen(false);
+                  setSelectedVerseForAI(null);
+                }}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             
             {/* AI Chat Content - Full Height with proper overflow handling */}
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-              
-              {/* AI Chat Component - Takes remaining space */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 <BibleVerseAIChat
                   verse={selectedVerseForAI}
