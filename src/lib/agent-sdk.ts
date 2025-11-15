@@ -69,16 +69,16 @@ export async function sendBibleAuraMessage(
     console.log('[Bible Aura AI] Calling Agent SDK API:', apiUrl);
   }
 
-        try {
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              message: message.trim(),
-              mode: options?.mode,
-              language: options?.language
-            } as AgentSDKRequest),
-          });
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        message: message.trim(),
+        mode: options?.mode,
+        language: options?.language
+      } as AgentSDKRequest),
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -113,7 +113,6 @@ export async function sendBibleAuraMessage(
     }
 
     return data;
-
   } catch (error: any) {
     console.error('[Bible Aura AI] ❌ Agent SDK error:', error);
     
