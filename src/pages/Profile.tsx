@@ -209,7 +209,8 @@ const Profile = () => {
         const { error } = await supabase
           .from('profiles')
           .update(profileData)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .is('deleted_at', null); // Only update non-deleted profiles
         
         if (error) throw error;
       } else {
