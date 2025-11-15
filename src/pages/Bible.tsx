@@ -703,11 +703,16 @@ How can I apply this to my life?
     }
   };
 
-  const handleBookSelect = (bookName: string) => {
+  const handleBookSelect = (bookName: string, forceTab?: string) => {
     const book = books.find(b => b.name === bookName);
     if (book) {
       setSelectedBook(book);
       setSelectedChapter(1);
+      // Only switch tab if explicitly requested (like from Read tab)
+      // Never auto-switch from search results
+      if (forceTab) {
+        setActiveTab(forceTab);
+      }
     }
   };
 
@@ -852,7 +857,7 @@ How can I apply this to my life?
                                 <Button
                                   key={book.id}
                                   variant={selectedBook?.id === book.id ? "default" : "outline"}
-                                  onClick={() => handleBookSelect(book.name)}
+                                  onClick={() => handleBookSelect(book.name, 'read')}
                                   className={`text-xs p-2 h-8 ${
                                     selectedBook?.id === book.id ? 'bg-orange-500' : ''
                                   }`}
@@ -877,7 +882,7 @@ How can I apply this to my life?
                                 <Button
                                   key={book.id}
                                   variant={selectedBook?.id === book.id ? "default" : "outline"}
-                                  onClick={() => handleBookSelect(book.name)}
+                                  onClick={() => handleBookSelect(book.name, 'read')}
                                   className={`text-xs p-2 h-8 ${
                                     selectedBook?.id === book.id ? 'bg-orange-500' : ''
                                   }`}
@@ -1008,11 +1013,15 @@ How can I apply this to my life?
                                 className="p-3 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation(); // Prevent any parent click handlers
+                                  e.preventDefault(); // Prevent any default behavior
                                   const book = books.find(b => b.name === verse.book_name);
                                   if (book) {
-                                    setSelectedBook(book);
+                                    // Use handleBookSelect but explicitly prevent tab switching
+                                    // by NOT passing forceTab parameter
+                                    const selectedBook = book;
+                                    setSelectedBook(selectedBook);
                                     setSelectedChapter(verse.chapter);
-                                    // Explicitly keep tab on 'search' - never auto-switch to 'read'
+                                    // CRITICAL: Do NOT call setActiveTab here - stay on 'search' tab
                                     // User stays on search tab to continue browsing results
                                     // User can manually switch to 'read' tab if they want to view the book
                                   }
