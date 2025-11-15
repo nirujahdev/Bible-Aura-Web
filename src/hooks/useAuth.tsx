@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const createDefaultProfile = async (userId: string) => {
+  const createDefaultProfile = async (userId: string): Promise<{ success: boolean; error?: any }> => {
     try {
       const { data: userData } = await supabase.auth.getUser();
       const authUser = userData?.user;
@@ -98,18 +98,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (exists && !isDeleted) {
         // Profile exists and is not deleted, just load it
         await loadUserProfile(userId);
-        return;
+        return { success: true };
       }
       
-      // If profile is soft-deleted, the trigger will restore it on next login
-      // So we should wait a bit for the trigger to complete, then check again
+      // If profile is soft-deleted, try to restore it first
       if (exists && isDeleted) {
-        // Wait for trigger to potentially restore it
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait briefly for trigger to potentially restore it
+        await new Promise(resolve => setTimeout(resolve, 300));
         const { exists: existsAfterWait, isDeleted: isDeletedAfterWait } = await checkProfileExists(userId);
         if (existsAfterWait && !isDeletedAfterWait) {
           await loadUserProfile(userId);
-          return;
+          return { success: true };
         }
       }
 
@@ -120,20 +119,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authUser?.email?.split('@')[0] ||
         'Bible Aura Member';
 
-      // Wait a bit for trigger to potentially create the profile (reduced delay)
-      // The trigger should handle profile creation, but if it hasn't, we'll create it
-      await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000ms to 500ms
+      // For email/password sign-ups, trigger won't create profile
+      // So we create it immediately without waiting
+      // Only wait briefly if this might be an OAuth user (but we should know from context)
       
-      // Check again if profile was created by trigger
+      // Quick check if trigger created it (for OAuth users)
+      await new Promise(resolve => setTimeout(resolve, 200)); // Very brief wait
       const { exists: existsAfterWait } = await checkProfileExists(userId);
       if (existsAfterWait) {
         await loadUserProfile(userId);
-        return;
+        return { success: true };
       }
 
-      // If trigger didn't create it, create it manually as fallback
-      // fallbackName was already declared above, reuse it
-
+      // Create profile immediately (don't wait for trigger that may not exist)
       const profilePayload = {
         user_id: userId,
         display_name: fallbackName,
@@ -161,26 +159,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error.code === '23505' || error.message?.includes('duplicate key')) {
           console.log('Profile already exists (likely created by trigger), loading it...');
           await loadUserProfile(userId);
-          return;
+          return { success: true };
         }
         
-        console.error('Error creating default profile:', error);
-        // Log detailed error
-        if (error.code === 'PGRST301' || error.message?.includes('permission denied')) {
-          console.error('RLS policy blocking profile creation. Trigger should handle this.');
-          // Don't retry - let trigger handle it or user can complete profile via modal
+        console.error('❌ Error creating default profile:', error);
+        
+        // More detailed error logging
+        if (error.code === 'PGRST301' || error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          console.error('RLS policy blocking profile creation. Check RLS policies.');
+          return { success: false, error: new Error('Permission denied: Unable to create profile. Please contact support.') };
         } else if (error.message?.includes('violates not-null constraint')) {
           console.error('Missing required fields. Check database schema.');
+          return { success: false, error: new Error('Profile creation failed: Missing required fields.') };
         }
-        return;
+        
+        return { success: false, error };
       }
 
       if (data) {
-        console.log('Profile created successfully:', data);
+        console.log('✅ Profile created successfully:', data);
         setProfile(data as Profile);
+        return { success: true };
       }
-    } catch (creationError) {
-      console.error('Error creating default profile:', creationError);
+      
+      return { success: false, error: new Error('Profile creation returned no data') };
+    } catch (creationError: any) {
+      console.error('❌ Error creating default profile:', creationError);
+      return { success: false, error: creationError };
     }
   };
 
@@ -340,7 +345,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       .maybeSingle();
                     if (!profileCheck) {
                       console.log('Profile not created by trigger, creating manually...');
-                      await createDefaultProfile(session.user.id);
+                      const profileResult = await createDefaultProfile(session.user.id);
+                      if (!profileResult.success) {
+                        console.error('❌ Failed to create profile in OAuth callback:', profileResult.error);
+                      }
                     }
                   });
                 } else {
@@ -459,13 +467,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error.code === 'PGRST116') {
           // Profile doesn't exist, create it
           console.log('Profile not found, creating default profile...');
-          await createDefaultProfile(userId);
+          const profileResult = await createDefaultProfile(userId);
+          if (!profileResult.success) {
+            console.error('❌ Failed to create profile after not found error:', profileResult.error);
+          }
         } else {
           console.error('Error fetching profile:', error);
           // Try to create profile anyway if it's a permission error
           if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
             console.log('Permission error, attempting to create profile...');
-            await createDefaultProfile(userId);
+            const profileResult = await createDefaultProfile(userId);
+            if (!profileResult.success) {
+              console.error('❌ Failed to create profile after permission error:', profileResult.error);
+            }
           }
         }
         return;
@@ -477,7 +491,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         // No data returned, create default profile
         console.log('No profile data, creating default profile...');
-        await createDefaultProfile(userId);
+        const profileResult = await createDefaultProfile(userId);
+        if (!profileResult.success) {
+          console.error('❌ Failed to create profile after no data:', profileResult.error);
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -569,8 +586,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error('Error loading profile after sign-in:', err);
             // Try to create profile if it doesn't exist
             if (err?.code === 'PGRST116' || err?.message?.includes('not found')) {
-              createDefaultProfile(finalSession.user.id).catch(createErr => {
-                console.error('Error creating profile after sign-in:', createErr);
+              createDefaultProfile(finalSession.user.id).then(profileResult => {
+                if (!profileResult.success) {
+                  console.error('❌ Error creating profile after sign-in:', profileResult.error);
+                }
+              }).catch(createErr => {
+                console.error('❌ Error creating profile after sign-in (catch):', createErr);
               });
             }
           });
@@ -785,26 +806,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           // Create profile immediately for new email/password users
           // Don't wait for database trigger - create it synchronously
-          try {
-            await createDefaultProfile(data.user.id);
-            console.log('✅ Profile created for new user during sign-up');
-          } catch (profileErr) {
-            console.error('Error creating profile during sign-up:', profileErr);
-            // Don't block sign-up if profile creation fails - user can complete it later
-            // Try again in background
+          const profileResult = await createDefaultProfile(data.user.id);
+          if (!profileResult.success) {
+            console.error('❌ Profile creation failed during sign-up:', profileResult.error);
+            // Don't block sign-up, but try again in background
             setTimeout(async () => {
-              try {
-                await createDefaultProfile(data.user.id);
-              } catch (retryErr) {
-                console.error('Error creating profile in background:', retryErr);
+              const retryResult = await createDefaultProfile(data.user.id);
+              if (!retryResult.success) {
+                console.error('❌ Profile creation retry failed:', retryResult.error);
+                // Show error to user so they know to complete profile
+                toast({
+                  title: "Account created, but profile setup failed",
+                  description: "Your account was created successfully. Please complete your profile in settings.",
+                  variant: "destructive",
+                });
+              } else {
+                console.log('✅ Profile created successfully on retry');
               }
-            }, 500);
+            }, 1000);
+          } else {
+            console.log('✅ Profile created for new user during sign-up');
           }
         } else {
           // No session means email confirmation is required
           // Try to get session with retries (reduced retries)
           let retries = 0;
-          const maxRetries = 3; // Reduced from 5
+          const maxRetries = 3;
           let newSession = null;
           
           while (!newSession && retries < maxRetries) {
@@ -817,29 +844,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setCachedSession(session);
               
               // Create profile if session is available
-              try {
-                await createDefaultProfile(data.user.id);
-              } catch (profileErr) {
-                console.error('Error creating profile:', profileErr);
+              const profileResult = await createDefaultProfile(data.user.id);
+              if (!profileResult.success) {
+                console.error('❌ Profile creation failed:', profileResult.error);
                 // Retry in background
                 setTimeout(async () => {
-                  try {
-                    await createDefaultProfile(data.user.id);
-                  } catch (retryErr) {
-                    console.error('Error creating profile in background:', retryErr);
+                  const retryResult = await createDefaultProfile(data.user.id);
+                  if (!retryResult.success) {
+                    console.error('❌ Profile creation retry failed:', retryResult.error);
                   }
-                }, 500);
+                }, 1000);
               }
               break;
             }
             // Reduced wait time
-            await new Promise(resolve => setTimeout(resolve, 200)); // Reduced from 300ms
+            await new Promise(resolve => setTimeout(resolve, 200));
             retries++;
           }
           
           if (!newSession && retries >= maxRetries) {
             // Email confirmation required - session will be available after email verification
             console.log('Email confirmation required - session will be available after verification');
+            // Try to create profile anyway (for email confirmation flow)
+            setTimeout(async () => {
+              const profileResult = await createDefaultProfile(data.user.id);
+              if (!profileResult.success) {
+                console.error('❌ Profile creation failed for email confirmation flow:', profileResult.error);
+              }
+            }, 1000);
           }
         }
       }
@@ -858,10 +890,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Try to create profile asynchronously
             setTimeout(async () => {
               if (data.user) {
-                try {
-                  await createDefaultProfile(data.user.id);
-                } catch (profileErr) {
-                  console.error('Error creating profile in background:', profileErr);
+                const profileResult = await createDefaultProfile(data.user.id);
+                if (!profileResult.success) {
+                  console.error('❌ Error creating profile in background:', profileResult.error);
+                  toast({
+                    title: "Profile setup incomplete",
+                    description: "Your account was created, but profile setup failed. Please complete your profile in settings.",
+                    variant: "destructive",
+                  });
                 }
               }
             }, 1000);
@@ -897,39 +933,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If user was created, continue with profile setup below
       }
 
-      // Final fallback: If profile wasn't created earlier (email confirmation required case)
-      // Try to create it after a brief wait for trigger, or create it manually
-      if (data?.user && !finalSession) {
-        // Only do this if we don't have a session yet (email confirmation required)
-        // Profile will be created after email confirmation when user signs in
-        // But we'll try once as a fallback
-        setTimeout(async () => {
-          try {
-            const { exists } = await checkProfileExists(data.user.id);
-            if (!exists) {
-              // Profile still doesn't exist, create it (for email confirmation flow)
-              await createDefaultProfile(data.user.id);
-            } else {
-              // Profile exists, just load it
-              await loadUserProfile(data.user.id);
-            }
-          } catch (profileError) {
-            console.error('Error handling profile after signup (email confirmation flow):', profileError);
+      // Success handling - show appropriate message based on session status
+      if (data?.user) {
+        if (finalSession) {
+          // User is signed in immediately
+          toast({
+            title: "Welcome to Bible Aura!",
+            description: "Account created successfully! You can now start exploring.",
+          });
+          
+          // Ensure profile is loaded after sign-up
+          if (data.user.id) {
+            setTimeout(async () => {
+              await loadUserProfile(data.user.id).catch(err => {
+                console.error('Error loading profile after sign-up:', err);
+              });
+            }, 500);
           }
-        }, 1000);
-      }
-
-      // Check if email confirmation is required
-      if (data?.user && !data?.session) {
-        toast({
-          title: "Check your email!",
-          description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
-        });
-      } else if (data?.user) {
-        toast({
-          title: "Welcome to Bible Aura!",
-          description: "Account created successfully! You can now start exploring.",
-        });
+        } else {
+          // Email confirmation required
+          toast({
+            title: "Check your email!",
+            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+          });
+          
+          // Try to create profile for email confirmation flow (will complete after email confirmation)
+          setTimeout(async () => {
+            const profileResult = await createDefaultProfile(data.user.id);
+            if (!profileResult.success) {
+              console.error('❌ Profile creation failed for email confirmation flow:', profileResult.error);
+              // Profile will be created after email confirmation when user signs in
+            }
+          }, 1000);
+        }
       }
       
       return { error: null };
