@@ -1,5 +1,6 @@
 // Local Bible Service - Load Bible data from local JSON files
 import { supabase } from '@/integrations/supabase/client';
+import { parseSearchQuery, matchSearchQuery, calculateRelevanceScore, SearchMatch } from './search-utils';
 
 // Available Bible translations - limited to KJV and Tamil
 export const BIBLE_TRANSLATIONS = [
@@ -18,6 +19,8 @@ export interface BibleVerse {
   text: string;
   language: 'english' | 'tamil';
   translation?: TranslationCode;
+  searchMatch?: SearchMatch; // Match information for highlighting
+  relevanceScore?: number; // Relevance score for sorting
 }
 
 export interface BibleBook {
@@ -270,25 +273,39 @@ export async function getChapterVerses(
   }
 }
 
-// Search verses by text with exact word matching
+// Book popularity map for relevance scoring (more popular books get slight boost)
+const BOOK_POPULARITY = new Map<string, number>([
+  ['Psalms', 5], ['Proverbs', 4], ['John', 5], ['Matthew', 4], ['Romans', 4],
+  ['1 Corinthians', 3], ['Ephesians', 3], ['Philippians', 3], ['Galatians', 3],
+  ['Genesis', 3], ['Exodus', 2], ['Isaiah', 3], ['Jeremiah', 2], ['Acts', 3]
+]);
+
+// Enhanced search verses - now with advanced query parsing, fuzzy matching, and relevance scoring
 export async function searchVerses(
   query: string, 
   language: 'english' | 'tamil' = 'english',
   bookFilter?: string,
-  translationCode: TranslationCode = 'KJV'
+  translationCode: TranslationCode = 'KJV',
+  options?: {
+    fuzzyEnabled?: boolean;
+    maxResults?: number;
+  }
 ): Promise<BibleVerse[]> {
+  const { fuzzyEnabled = false, maxResults = 200 } = options || {};
   const results: BibleVerse[] = [];
-  const searchQuery = query.trim().toLowerCase();
   
-  if (!searchQuery) return results;
+  const searchQuery = query.trim();
+  if (!searchQuery) return [];
 
-  // Create regex for exact word matching
-  // Escape special regex characters and match whole words
-  const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  // Match word boundaries for exact word search
-  const wordRegex = new RegExp(`\\b${escapedQuery}\\b`, 'i');
-  // Also support phrase matching (multiple words)
-  const phraseRegex = new RegExp(escapedQuery.replace(/\s+/g, '\\s+'), 'i');
+  // Parse advanced query
+  const parsedQuery = parseSearchQuery(searchQuery);
+  
+  // If query is simple (no operators), use faster legacy approach for backward compatibility
+  const isSimpleQuery = parsedQuery.exactPhrases.length === 0 && 
+                       parsedQuery.orTerms.length === 0 && 
+                       parsedQuery.notTerms.length === 0 &&
+                       parsedQuery.proximityTerms.length === 0 &&
+                       parsedQuery.andTerms.length <= 2;
 
   try {
     if (language === 'english') {
@@ -301,10 +318,34 @@ export async function searchVerses(
 
         for (const [chapterNum, chapterData] of Object.entries(bookData)) {
           for (const [verseNum, text] of Object.entries(chapterData as Record<string, string>)) {
-            const textLower = text.toLowerCase();
-            // Check for exact word match or phrase match
-            if (wordRegex.test(text) || phraseRegex.test(textLower)) {
-              results.push({
+            let searchMatch: SearchMatch | null = null;
+
+            if (isSimpleQuery && !fuzzyEnabled) {
+              // Fast path for simple queries
+              const textLower = text.toLowerCase();
+              const queryLower = searchQuery.toLowerCase();
+              const escapedQuery = queryLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const wordRegex = new RegExp(`\\b${escapedQuery}\\b`, 'i');
+              const phraseRegex = new RegExp(escapedQuery.replace(/\s+/g, '\\s+'), 'i');
+              
+              if (wordRegex.test(text) || phraseRegex.test(textLower)) {
+                // Create simple match for highlighting
+                const matchPos = textLower.indexOf(queryLower);
+                if (matchPos !== -1) {
+                  searchMatch = {
+                    score: 100 - (matchPos / 10),
+                    matches: [{ term: queryLower, position: matchPos, length: queryLower.length }],
+                    matchCount: 1
+                  };
+                }
+              }
+            } else {
+              // Advanced query path
+              searchMatch = matchSearchQuery(text, parsedQuery, fuzzyEnabled);
+            }
+
+            if (searchMatch) {
+              const verse: BibleVerse = {
                 id: `${bookName}-${chapterNum}-${verseNum}-${translationCode}`,
                 book_id: bookName,
                 book_name: bookName,
@@ -312,14 +353,19 @@ export async function searchVerses(
                 verse: parseInt(verseNum),
                 text,
                 language: 'english',
-                translation: translationCode
-              });
+                translation: translationCode,
+                searchMatch
+              };
+
+              const relevanceScore = calculateRelevanceScore(verse, searchMatch, BOOK_POPULARITY);
+              verse.relevanceScore = relevanceScore;
+              results.push(verse);
             }
           }
         }
       }
     } else {
-      // Tamil search with exact word matching
+      // Tamil search with advanced matching
       const books = await loadTamilBooks();
       const booksToSearch = bookFilter ? 
         books.filter(book => book.name === bookFilter) : books;
@@ -330,10 +376,32 @@ export async function searchVerses(
           
           for (const chapter of tamilBookData.chapters) {
             for (const verse of chapter.verses) {
-              const textLower = verse.text.toLowerCase();
-              // Check for exact word match or phrase match
-              if (wordRegex.test(verse.text) || phraseRegex.test(textLower)) {
-                results.push({
+              let searchMatch: SearchMatch | null = null;
+
+              if (isSimpleQuery && !fuzzyEnabled) {
+                // Fast path for simple queries
+                const textLower = verse.text.toLowerCase();
+                const queryLower = searchQuery.toLowerCase();
+                const escapedQuery = queryLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const wordRegex = new RegExp(`\\b${escapedQuery}\\b`, 'i');
+                const phraseRegex = new RegExp(escapedQuery.replace(/\s+/g, '\\s+'), 'i');
+                
+                if (wordRegex.test(verse.text) || phraseRegex.test(textLower)) {
+                  const matchPos = textLower.indexOf(queryLower);
+                  if (matchPos !== -1) {
+                    searchMatch = {
+                      score: 100 - (matchPos / 10),
+                      matches: [{ term: queryLower, position: matchPos, length: queryLower.length }],
+                      matchCount: 1
+                    };
+                  }
+                }
+              } else {
+                searchMatch = matchSearchQuery(verse.text, parsedQuery, fuzzyEnabled);
+              }
+
+              if (searchMatch) {
+                const verseObj: BibleVerse = {
                   id: `${book.name}-${chapter.chapter}-${verse.verse}-TAMIL`,
                   book_id: book.name,
                   book_name: tamilBookData.book.tamil || book.name,
@@ -341,8 +409,13 @@ export async function searchVerses(
                   verse: parseInt(verse.verse),
                   text: verse.text,
                   language: 'tamil',
-                  translation: 'TAMIL' as TranslationCode
-                });
+                  translation: 'TAMIL' as TranslationCode,
+                  searchMatch
+                };
+
+                const relevanceScore = calculateRelevanceScore(verseObj, searchMatch, BOOK_POPULARITY);
+                verseObj.relevanceScore = relevanceScore;
+                results.push(verseObj);
               }
             }
           }
@@ -355,8 +428,12 @@ export async function searchVerses(
     console.error('Error searching verses:', error);
   }
 
-  return results.slice(0, 50); // Limit results
+  // Sort by relevance score (highest first) and limit results
+  results.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+  
+  return results.slice(0, maxResults);
 }
+
 
 // Get a specific verse
 export async function getVerse(

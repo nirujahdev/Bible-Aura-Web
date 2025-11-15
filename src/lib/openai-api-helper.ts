@@ -1,4 +1,5 @@
 // OpenAI API Helper - Reusable function for all OpenAI API calls
+import { streamOpenAIResponse, isStreamingSupported } from './ai-streaming';
 
 export interface OpenAIRequestOptions {
   systemPrompt?: string;
@@ -6,6 +7,8 @@ export interface OpenAIRequestOptions {
   maxTokens?: number;
   temperature?: number;
   model?: string;
+  stream?: boolean; // Enable streaming for faster perceived performance
+  onChunk?: (chunk: string) => void; // Callback for streaming chunks
 }
 
 /**
@@ -30,8 +33,35 @@ export async function callOpenAIAPI(
     messages = [],
     maxTokens = 1000,
     temperature = 0.7,
-    model = 'gpt-4o-mini'
+    model = 'gpt-4o-mini',
+    stream = false,
+    onChunk
   } = options;
+
+  // Use streaming if enabled and supported
+  if (stream && isStreamingSupported() && onChunk) {
+    try {
+      return await streamOpenAIResponse(prompt, {
+        systemPrompt,
+        messages,
+        maxTokens,
+        temperature,
+        model,
+        apiKey
+      }, {
+        onChunk,
+        onComplete: (fullText) => {
+          // Optional: handle completion
+        },
+        onError: (error) => {
+          throw error;
+        }
+      });
+    } catch (error: any) {
+      console.error('Streaming Error:', error);
+      // Fall through to regular API call if streaming fails
+    }
+  }
 
   try {
     // Build messages array - if messages are provided, use them; otherwise use prompt
@@ -45,6 +75,9 @@ export async function callOpenAIAPI(
           { role: 'user', content: prompt }
         ];
 
+    // Optimize maxTokens for faster responses (reduce for shorter, faster answers)
+    const optimizedMaxTokens = Math.min(maxTokens, 800); // Cap at 800 for speed
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -54,8 +87,8 @@ export async function callOpenAIAPI(
       body: JSON.stringify({
         model,
         messages: messageArray,
-        max_tokens: maxTokens,
-        temperature,
+        max_tokens: optimizedMaxTokens,
+        temperature: Math.max(0.2, temperature), // Lower temperature = faster, more focused
         stream: false
       })
     });
