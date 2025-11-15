@@ -220,17 +220,13 @@ const SermonsContent = () => {
   // Load data
   useEffect(() => {
     if (user?.id) {
-      try {
-        loadSermons();
-        loadBooks();
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-        toast({
-          title: "Loading Error",
-          description: "Failed to load sermons. Please refresh the page.",
-          variant: "destructive"
-        });
-      }
+      // Load data asynchronously - errors are handled within each function
+      loadSermons().catch(error => {
+        console.error('Error in loadSermons:', error);
+      });
+      loadBooks().catch(error => {
+        console.error('Error in loadBooks:', error);
+      });
     }
   }, [user?.id]);
 
