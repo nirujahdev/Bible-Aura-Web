@@ -71,7 +71,7 @@ export default function Dashboard() {
   // Wrap in error boundary to catch any component errors
   return (
     <ErrorBoundary>
-      <MobileOptimizedLayout>
+      <MobileOptimizedLayout hideHeader={true}>
         <div className={isMobile ? "h-[100dvh] mobile-safe-area" : "h-screen"}>
           <BibleAuraChat />
           <ProfileCompletionModal 

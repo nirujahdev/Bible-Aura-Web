@@ -54,11 +54,13 @@ const renderIcon = (icon: NavIcon, className: string): ReactNode => {
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
   className?: string;
+  hideHeader?: boolean;
 }
 
 export function MobileOptimizedLayout({ 
   children, 
-  className = '' 
+  className = '',
+  hideHeader = false
 }: MobileOptimizedLayoutProps) {
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -84,6 +86,7 @@ export function MobileOptimizedLayout({
   return (
     <div className={cn("min-h-screen bg-white flex flex-col pb-[env(safe-area-inset-bottom)]", className)}>
       {/* Mobile Top Header */}
+      {!hideHeader && (
       <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left - Hamburger Menu */}
@@ -118,6 +121,7 @@ export function MobileOptimizedLayout({
           </button>
         </div>
       </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto">

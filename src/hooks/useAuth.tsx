@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getCachedSession, setCachedSession, clearCachedSession, shouldUseCachedSession, isSessionValid } from '@/lib/auth-cache';
 
 interface Profile {
   id: string;
@@ -119,9 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authUser?.email?.split('@')[0] ||
         'Bible Aura Member';
 
-      // Wait a bit for trigger to potentially create the profile
+      // Wait a bit for trigger to potentially create the profile (reduced delay)
       // The trigger should handle profile creation, but if it hasn't, we'll create it
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000ms to 500ms
       
       // Check again if profile was created by trigger
       const { exists: existsAfterWait } = await checkProfileExists(userId);
@@ -189,14 +190,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     console.log('🔐 Auth initialization started');
     
-    // Faster loading timeout to prevent white screens
+    // Faster loading timeout to prevent white screens - reduced to 1s
     const initTimeout = setTimeout(() => {
       if (isMounted && loading) {
         console.log('⚡ Auth initialization timeout - setting loading to false');
         setLoading(false);
         setInitialized(true);
       }
-    }, 2000); // Reduced from default to prevent long white screens
+    }, 1000); // Reduced from 2s to 1s for faster perceived loading
 
     const initializeAuth = async () => {
       try {
@@ -210,11 +211,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Get initial session
+        // PRIMARY: Get session from Supabase's stored session (most reliable)
+        // This uses localStorage that Supabase manages
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('❌ Session error:', sessionError);
+          // Clear invalid cache
+          clearCachedSession();
           if (isMounted) {
             setLoading(false);
             setInitialized(true);
@@ -222,16 +226,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        if (session?.user && isMounted) {
-          console.log('✅ User found in session:', session.user.email);
+        // If we have a valid session from Supabase, use it immediately
+        if (session && isSessionValid(session) && isMounted) {
+          console.log('✅ User found in Supabase session:', session.user?.email);
           setUser(session.user);
           setSession(session);
           
-          // Load profile
-          await loadUserProfile(session.user.id);
-        } else {
-          console.log('ℹ️ No active session found');
+          // Update cache with fresh session
+          setCachedSession(session);
+          
+          // Set loading to false immediately for faster UX
+          setLoading(false);
+          
+          // Load profile in background (don't block)
+          if (session.user) {
+            loadUserProfile(session.user.id).catch(err => {
+              console.error('Error loading profile:', err);
+            });
+          }
+          
+          if (isMounted) {
+            setInitialized(true);
+          }
+          return;
         }
+
+        // FALLBACK: Try cached session if Supabase doesn't have one
+        // This might happen if Supabase's localStorage was cleared but our cache wasn't
+        const cachedSession = shouldUseCachedSession() && isSessionValid(getCachedSession()) ? getCachedSession() : null;
+        
+        if (cachedSession && isMounted && !session) {
+          console.log('✅ Using cached session as fallback:', cachedSession.user?.email);
+          setUser(cachedSession.user);
+          setSession(cachedSession);
+          
+          // Try to restore session in Supabase
+          // This will help Supabase manage the session going forward
+          try {
+            // Supabase will handle session restoration automatically through onAuthStateChange
+            // Just ensure our state is set
+          } catch (restoreError) {
+            console.error('Error restoring cached session:', restoreError);
+          }
+          
+          // Set loading to false
+          setLoading(false);
+          
+          // Load profile in background
+          if (cachedSession.user) {
+            loadUserProfile(cachedSession.user.id).catch(err => {
+              console.error('Error loading profile from cache:', err);
+            });
+          }
+          
+          if (isMounted) {
+            setInitialized(true);
+          }
+          return;
+        }
+
+        // No session found
+        console.log('ℹ️ No active session found');
+        clearCachedSession();
         
         if (isMounted) {
           setLoading(false);
@@ -240,6 +296,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
       } catch (error) {
         console.error('❌ Auth initialization error:', error);
+        clearCachedSession();
         if (isMounted) {
           setLoading(false);
           setInitialized(true);
@@ -263,6 +320,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.log('User signed in successfully');
               setSession(session);
               setUser(session?.user ?? null);
+              // Cache session
+              if (session) {
+                setCachedSession(session);
+              }
               
               if (session?.user) {
                 // For OAuth users, ensure profile exists
@@ -270,22 +331,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                    session.user.app_metadata?.providers?.includes('google') ||
                                    session.user.identities?.some((id: any) => id.provider === 'google');
                 if (isOAuthUser) {
-                  // Give trigger a moment to create profile, then load it
-                  setTimeout(async () => {
-                    await loadUserProfile(session.user.id);
-                    // If profile still doesn't exist after trigger, create it
-                    setTimeout(async () => {
-                      const { data: profileCheck } = await supabase
-                        .from('profiles')
-                        .select('user_id')
-                        .eq('user_id', session.user.id)
-                        .single();
-                      if (!profileCheck) {
-                        console.log('Profile not created by trigger, creating manually...');
-                        await createDefaultProfile(session.user.id);
-                      }
-                    }, 1000);
-                  }, 500);
+                  // Try to load profile first, then create if needed (reduced delays)
+                  loadUserProfile(session.user.id).catch(async () => {
+                    // If profile doesn't exist, wait briefly for trigger, then create
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    const { data: profileCheck } = await supabase
+                      .from('profiles')
+                      .select('user_id')
+                      .eq('user_id', session.user.id)
+                      .maybeSingle();
+                    if (!profileCheck) {
+                      console.log('Profile not created by trigger, creating manually...');
+                      await createDefaultProfile(session.user.id);
+                    }
+                  });
                 } else {
                   await loadUserProfile(session.user.id);
                 }
@@ -295,10 +354,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setSession(null);
               setUser(null);
               setProfile(null);
+              // Clear cache
+              clearCachedSession();
             } else if (event === 'TOKEN_REFRESHED') {
               console.log('Token refreshed');
               setSession(session);
               setUser(session?.user ?? null);
+              // Update cache
+              if (session) {
+                setCachedSession(session);
+              }
               // Reload profile if user exists
               if (session?.user) {
                 await loadUserProfile(session.user.id);
@@ -307,6 +372,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.log('User updated');
               setSession(session);
               setUser(session?.user ?? null);
+              // Update cache
+              if (session) {
+                setCachedSession(session);
+              }
               if (session?.user) {
                 await loadUserProfile(session.user.id);
               }
@@ -314,6 +383,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Handle other events (PASSWORD_RECOVERY, etc.)
               setSession(session);
               setUser(session?.user ?? null);
+              // Update cache
+              if (session) {
+                setCachedSession(session);
+              } else {
+                clearCachedSession();
+              }
               
               if (session?.user && !profile) {
                 await loadUserProfile(session.user.id);
@@ -375,7 +450,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 6000)
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 4000) // Reduced from 6s to 4s
       );
 
       const result = await Promise.race([profilePromise, timeoutPromise]) as any;
@@ -456,24 +531,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Explicitly set user and session from the response
       if (data?.user) {
         setUser(data.user);
+        let finalSession = data.session;
+        
         if (data.session) {
           setSession(data.session);
+          // Cache session immediately
+          setCachedSession(data.session);
         } else {
-          // If no session in response, try to get it with retries
+          // If no session in response, try to get it with retries (reduced retries)
           // This ensures session is available before redirect
           let retries = 0;
-          const maxRetries = 5;
+          const maxRetries = 3; // Reduced from 5 to 3
           let currentSession = null;
           
           while (!currentSession && retries < maxRetries) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
               currentSession = session;
+              finalSession = session;
               setSession(session);
+              // Cache session
+              setCachedSession(session);
               break;
             }
-            // Wait a bit before retrying
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Reduced wait time
+            await new Promise(resolve => setTimeout(resolve, 200)); // Reduced from 300ms
             retries++;
           }
           
@@ -484,15 +566,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Load profile asynchronously to not block the response
         // Don't let profile loading errors block sign-in
-        loadUserProfile(data.user.id).catch(err => {
-          console.error('Error loading profile after sign-in:', err);
-          // Try to create profile if it doesn't exist
-          if (err?.code === 'PGRST116' || err?.message?.includes('not found')) {
-            createDefaultProfile(data.user.id).catch(createErr => {
-              console.error('Error creating profile after sign-in:', createErr);
-            });
-          }
-        });
+        if (finalSession?.user) {
+          loadUserProfile(finalSession.user.id).catch(err => {
+            console.error('Error loading profile after sign-in:', err);
+            // Try to create profile if it doesn't exist
+            if (err?.code === 'PGRST116' || err?.message?.includes('not found')) {
+              createDefaultProfile(finalSession.user.id).catch(createErr => {
+                console.error('Error creating profile after sign-in:', createErr);
+              });
+            }
+          });
+        }
       }
       
       toast({
@@ -687,33 +771,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       });
 
-      // CRITICAL: Always set user and session if they exist, even if there's an error
-      // This ensures users can proceed even if profile creation fails
+      // CRITICAL: Always set user and session if they exist
+      // For new users, session is typically available immediately unless email confirmation is required
+      let finalSession = data?.session;
+      
       if (data?.user) {
         setUser(data.user);
+        
         if (data.session) {
+          // Session is available - user is automatically signed in (no email confirmation needed)
           setSession(data.session);
+          // Cache session immediately for persistence
+          setCachedSession(data.session);
+          finalSession = data.session;
+          
+          // Create profile immediately for new email/password users
+          // Don't wait for database trigger - create it synchronously
+          try {
+            await createDefaultProfile(data.user.id);
+            console.log('✅ Profile created for new user during sign-up');
+          } catch (profileErr) {
+            console.error('Error creating profile during sign-up:', profileErr);
+            // Don't block sign-up if profile creation fails - user can complete it later
+            // Try again in background
+            setTimeout(async () => {
+              try {
+                await createDefaultProfile(data.user.id);
+              } catch (retryErr) {
+                console.error('Error creating profile in background:', retryErr);
+              }
+            }, 500);
+          }
         } else {
-          // If no session but user exists, try to get session with retries
-          // This is important for new users where session might not be immediately available
+          // No session means email confirmation is required
+          // Try to get session with retries (reduced retries)
           let retries = 0;
-          const maxRetries = 5;
+          const maxRetries = 3; // Reduced from 5
           let newSession = null;
           
           while (!newSession && retries < maxRetries) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
               newSession = session;
+              finalSession = session;
               setSession(session);
+              // Cache session
+              setCachedSession(session);
+              
+              // Create profile if session is available
+              try {
+                await createDefaultProfile(data.user.id);
+              } catch (profileErr) {
+                console.error('Error creating profile:', profileErr);
+                // Retry in background
+                setTimeout(async () => {
+                  try {
+                    await createDefaultProfile(data.user.id);
+                  } catch (retryErr) {
+                    console.error('Error creating profile in background:', retryErr);
+                  }
+                }, 500);
+              }
               break;
             }
-            // Wait a bit before retrying
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Reduced wait time
+            await new Promise(resolve => setTimeout(resolve, 200)); // Reduced from 300ms
             retries++;
           }
           
           if (!newSession && retries >= maxRetries) {
-            console.warn('Session not available after signup, but user was created');
+            // Email confirmation required - session will be available after email verification
+            console.log('Email confirmation required - session will be available after verification');
           }
         }
       }
@@ -771,43 +899,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If user was created, continue with profile setup below
       }
 
-      // If user was created, let trigger create the profile
-      if (data?.user) {
-        try {
-          // Wait for trigger to create the profile (up to 2 seconds with retries)
-          let profileExists = false;
-          let retries = 0;
-          const maxRetries = 4;
-          
-          while (!profileExists && retries < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+      // Final fallback: If profile wasn't created earlier (email confirmation required case)
+      // Try to create it after a brief wait for trigger, or create it manually
+      if (data?.user && !finalSession) {
+        // Only do this if we don't have a session yet (email confirmation required)
+        // Profile will be created after email confirmation when user signs in
+        // But we'll try once as a fallback
+        setTimeout(async () => {
+          try {
             const { exists } = await checkProfileExists(data.user.id);
-            if (exists) {
-              profileExists = true;
-              break;
-            }
-            retries++;
-          }
-          
-          // Profile was created by trigger, just load it
-          if (profileExists) {
-            await loadUserProfile(data.user.id);
-          } else {
-            // Trigger didn't create profile (shouldn't happen, but fallback)
-            console.warn('Profile not created by trigger, creating manually as fallback');
-            await createDefaultProfile(data.user.id);
-          }
-        } catch (profileError) {
-          console.error('Error handling profile after signup:', profileError);
-          // Try to load profile anyway in case it was created
-          if (data.user) {
-            try {
+            if (!exists) {
+              // Profile still doesn't exist, create it (for email confirmation flow)
+              await createDefaultProfile(data.user.id);
+            } else {
+              // Profile exists, just load it
               await loadUserProfile(data.user.id);
-            } catch (loadError) {
-              console.error('Error loading profile:', loadError);
             }
+          } catch (profileError) {
+            console.error('Error handling profile after signup (email confirmation flow):', profileError);
           }
-        }
+        }, 1000);
       }
 
       // Check if email confirmation is required
@@ -843,6 +954,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setSession(null);
       setProfile(null);
+      // Clear cache
+      clearCachedSession();
       
       const { error } = await supabase.auth.signOut();
       
@@ -863,6 +976,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Sign out error:', error);
       // State already cleared, so user is effectively signed out
+      clearCachedSession();
     } finally {
       setLoading(false);
     }

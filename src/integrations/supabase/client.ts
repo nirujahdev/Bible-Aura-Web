@@ -64,7 +64,7 @@ export const supabase = createClient(
   SUPABASE_PUBLISHABLE_KEY || 'placeholder-key',
   {
     auth: {
-      // Enable session persistence for better UX and to prevent white screens
+      // Enable session persistence for better UX - stores in localStorage (not sessionStorage)
       persistSession: true,
       
       // Enable auto refresh for seamless authentication
@@ -80,7 +80,44 @@ export const supabase = createClient(
       debug: import.meta.env.DEV ? true : false,
       
       // Storage key prefix for multi-tenancy support
-      storageKey: 'sb-bible-aura-auth-token'
+      storageKey: 'sb-bible-aura-auth-token',
+      
+      // Explicitly use localStorage for persistence (not sessionStorage)
+      // This ensures sessions persist across browser closes
+      storage: typeof window !== 'undefined' ? {
+        getItem: (key: string) => {
+          try {
+            return localStorage.getItem(key);
+          } catch (error) {
+            console.error('Error reading from localStorage:', error);
+            return null;
+          }
+        },
+        setItem: (key: string, value: string) => {
+          try {
+            localStorage.setItem(key, value);
+          } catch (error) {
+            console.error('Error writing to localStorage:', error);
+            // If storage is full, try to clear old items
+            try {
+              const keysToRemove = Object.keys(localStorage).filter(k => 
+                k.startsWith('sb-') && k !== key
+              );
+              keysToRemove.slice(0, 5).forEach(k => localStorage.removeItem(k));
+              localStorage.setItem(key, value);
+            } catch (retryError) {
+              console.error('Error retrying localStorage write:', retryError);
+            }
+          }
+        },
+        removeItem: (key: string) => {
+          try {
+            localStorage.removeItem(key);
+          } catch (error) {
+            console.error('Error removing from localStorage:', error);
+          }
+        }
+      } : undefined
     },
     
     global: {

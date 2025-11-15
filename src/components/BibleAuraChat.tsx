@@ -792,14 +792,14 @@ export function BibleAuraChat() {
                     <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                       {message.role === 'assistant' ? (
                         <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-4 shadow-sm">
-                          <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                          <div className="prose max-w-none text-gray-700 leading-relaxed">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
                               if (line.trim().startsWith('✦')) {
                                 const titleText = line.replace(/^✦\s*/, '').trim();
                                 return (
                                   <div key={idx} className="mb-2 md:mb-3 mt-2 md:mt-3 first:mt-0">
-                                    <strong className="text-gray-900 font-semibold text-sm md:text-base">{titleText}</strong>
+                                    <strong className="text-gray-900 font-semibold text-base md:text-lg">{titleText}</strong>
                                   </div>
                                 );
                               }
@@ -808,12 +808,12 @@ export function BibleAuraChat() {
                                 const headingText = line.replace(/^↗\s*/, '').trim();
                                 return (
                                   <div key={idx} className="mt-1.5 md:mt-2 mb-1">
-                                    <strong className="text-gray-800 font-medium text-xs md:text-sm">{headingText}</strong>
+                                    <strong className="text-gray-800 font-medium text-sm md:text-base">{headingText}</strong>
                                   </div>
                                 );
                               }
                               // Regular line
-                              return <div key={idx} className="mb-1 text-xs md:text-sm">{line || '\u00A0'}</div>;
+                              return <div key={idx} className="mb-1 text-base md:text-lg">{line || '\u00A0'}</div>;
                             })}
                           </div>
                           
