@@ -28,6 +28,7 @@ import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
 import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
 import { AIResearchPanel } from '@/components/sermon/AIResearchPanel';
 import { InlineAIAssistant } from '@/components/sermon/InlineAIAssistant';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -117,7 +118,18 @@ const SermonsContent = () => {
   
   const { user } = useAuth();
   const { toast } = useToast();
-  const { updateContent, updateTitle, updateScriptureReference, updateMainPoints } = useSermonAI();
+  
+  // Safely get sermon AI context with error handling
+  let sermonAI;
+  try {
+    sermonAI = useSermonAI();
+  } catch (error) {
+    console.error('SermonAI context error:', error);
+    // Will be handled by ErrorBoundary
+    throw error;
+  }
+  
+  const { updateContent, updateTitle, updateScriptureReference, updateMainPoints } = sermonAI;
   const isMobile = useIsMobile();
   
   // View states
@@ -243,7 +255,10 @@ const SermonsContent = () => {
   }, [title, content, autoSave, selectedSermon]);
 
   const loadSermons = async () => {
-    if (!user) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     try {
@@ -2161,12 +2176,14 @@ const SermonsContent = () => {
   );
 };
 
-// Wrapper component with AI Provider
+// Wrapper component with AI Provider and Error Boundary
 const Sermons = () => {
   return (
-    <SermonAIProvider>
-      <SermonsContent />
-    </SermonAIProvider>
+    <ErrorBoundary>
+      <SermonAIProvider>
+        <SermonsContent />
+      </SermonAIProvider>
+    </ErrorBoundary>
   );
 };
 

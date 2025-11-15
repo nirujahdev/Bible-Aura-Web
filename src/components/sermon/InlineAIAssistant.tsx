@@ -25,7 +25,25 @@ export function InlineAIAssistant({
   onApplySuggestion,
   onQuickAction 
 }: InlineAIAssistantProps) {
-  const { state } = useSermonAI();
+  let state;
+  try {
+    const sermonAI = useSermonAI();
+    state = sermonAI.state;
+  } catch (error) {
+    console.error('InlineAIAssistant: SermonAI context error:', error);
+    state = {
+      currentContent: '',
+      sermonTitle: '',
+      scriptureReference: '',
+      mainPoints: [],
+      outline: [],
+      conversationHistory: [],
+      analysisResults: null,
+      suggestions: [],
+      isLoading: false,
+    };
+  }
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [input, setInput] = useState('');

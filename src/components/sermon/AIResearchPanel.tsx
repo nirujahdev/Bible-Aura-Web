@@ -38,7 +38,25 @@ interface ResearchHistory {
 }
 
 export function AIResearchPanel() {
-  const { state } = useSermonAI();
+  let state;
+  try {
+    const sermonAI = useSermonAI();
+    state = sermonAI.state;
+  } catch (error) {
+    console.error('AIResearchPanel: SermonAI context error:', error);
+    state = {
+      currentContent: '',
+      sermonTitle: '',
+      scriptureReference: '',
+      mainPoints: [],
+      outline: [],
+      conversationHistory: [],
+      analysisResults: null,
+      suggestions: [],
+      isLoading: false,
+    };
+  }
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
