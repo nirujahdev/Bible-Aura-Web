@@ -547,30 +547,33 @@ How can I apply this to my life?
     }
 
     try {
+      const verseId = generateVerseId(verse);
       const { error } = await supabase
         .from('verse_highlights')
         .upsert({
           user_id: user.id,
-          verse_id: verse.id,
+          verse_id: verseId,
           color: color,
           category: 'highlight'
+        }, {
+          onConflict: 'user_id,verse_id'
         });
       
       if (error) throw error;
       
       const newHighlights = new Map(highlights);
-      newHighlights.set(verse.id, color);
+      newHighlights.set(verseId, color);
       setHighlights(newHighlights);
       
       toast({
         title: "Verse Highlighted",
         description: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error highlighting verse:', error);
       toast({
         title: "Error",
-        description: "Failed to highlight verse",
+        description: error?.message || "Failed to highlight verse",
         variant: "destructive"
       });
     }
@@ -855,8 +858,11 @@ How can I apply this to my life?
             </div>
           )}
 
-          {/* Main Reading Area - Improved mobile experience */}
-          <div className="flex-1 flex flex-col bg-white overflow-hidden">
+          {/* Main Reading Area - Improved mobile experience with AI Sidebar */}
+          <div className={cn(
+            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300",
+            enhancedAiChatOpen && !isMobile ? "mr-96" : ""
+          )}>
             {/* Header - Mobile optimized */}
             <div className={`p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2' : ''}`}>
               <div className="flex items-center justify-between">
@@ -964,11 +970,11 @@ How can I apply this to my life?
                       return (
                         <div
                           key={verse.id}
-                          className={`group relative rounded-xl transition-all duration-200 ${
-                            highlightColor 
-                              ? `bg-${highlightColor}-100 border-l-4 border-${highlightColor}-400 p-4` 
-                              : 'hover:bg-gray-50 p-4'
-                          } ${isMobile ? 'mx-1' : ''}`}
+                          className={cn(
+                            "group relative rounded-xl transition-all duration-200 p-4",
+                            highlightColor ? getHighlightClasses(highlightColor) : 'hover:bg-gray-50',
+                            isMobile && 'mx-1'
+                          )}
                         >
                           {/* Verse Content - Mobile-Optimized */}
                           <div className="flex items-start gap-4">
@@ -1147,16 +1153,98 @@ How can I apply this to my life?
           />
         )}
 
-        {/* Enhanced AI Chat Modal with Multiple Modes */}
+        {/* Enhanced AI Chat Sidebar - Persistent and Interactive */}
         {enhancedAiChatOpen && selectedVerseForAI && (
-          <BibleVerseAIChat
-            verse={selectedVerseForAI}
-            isOpen={enhancedAiChatOpen}
-            onClose={() => {
+          <div className={cn(
+            "fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-2xl z-50 flex flex-col transition-transform duration-300",
+            isMobile ? "w-full" : "w-96"
+          )}>
+            {/* Mobile Header with Close Button */}
+            {isMobile && (
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-red-50">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">✦</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">Bible Aura AI</h3>
+                    <p className="text-xs text-gray-600">{generateVerseReference(selectedVerseForAI)}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setEnhancedAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            
+            {/* Desktop Close Button - Top Right */}
+            {!isMobile && (
+              <div className="absolute top-4 right-4 z-10">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setEnhancedAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            
+            {/* AI Chat Content - Full Height */}
+            <div className="flex-1 overflow-hidden flex flex-col">
+              {/* Header for Desktop */}
+              {!isMobile && (
+                <div className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                      ✦
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">
+                        Bible Aura AI Assistant
+                      </h2>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Analyzing: <span className="font-semibold">{generateVerseReference(selectedVerseForAI)}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <BibleVerseAIChat
+                verse={selectedVerseForAI}
+                isOpen={enhancedAiChatOpen}
+                onClose={() => {
+                  setEnhancedAiChatOpen(false);
+                  setSelectedVerseForAI(null);
+                }}
+                verseReference={generateVerseReference(selectedVerseForAI)}
+                sidebarMode={true}
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Backdrop for Mobile */}
+        {enhancedAiChatOpen && isMobile && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-30"
+            onClick={() => {
               setEnhancedAiChatOpen(false);
               setSelectedVerseForAI(null);
             }}
-            verseReference={generateVerseReference(selectedVerseForAI)}
           />
         )}
       </div>
@@ -1180,15 +1268,19 @@ function VerseCard({
 }: any) {
   const [showHighlighter, setShowHighlighter] = useState(false);
   
-  const getHighlightClass = (color: string) => {
-    const colorMap: any = {
+  // Helper function to get highlight color classes
+  const getHighlightClasses = (color: string | undefined) => {
+    if (!color) return 'hover:bg-gray-50';
+    const colorMap: Record<string, string> = {
       'yellow': 'bg-yellow-100 border-l-4 border-yellow-400',
       'green': 'bg-green-100 border-l-4 border-green-400',
       'blue': 'bg-blue-100 border-l-4 border-blue-400',
       'purple': 'bg-purple-100 border-l-4 border-purple-400',
       'red': 'bg-red-100 border-l-4 border-red-400',
+      'pink': 'bg-pink-100 border-l-4 border-pink-400',
+      'orange': 'bg-orange-100 border-l-4 border-orange-400',
     };
-    return colorMap[color] || '';
+    return colorMap[color] || 'hover:bg-gray-50';
   };
 
   return (

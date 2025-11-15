@@ -36,6 +36,7 @@ interface BibleVerseAIChatProps {
   isOpen: boolean;
   onClose: () => void;
   verseReference?: string;
+  sidebarMode?: boolean; // If true, renders as sidebar without Sheet wrapper
 }
 
 // AI Chat modes with enhanced descriptions and icons
@@ -130,7 +131,7 @@ SPEED PRIORITY: Generate fast, accurate verse-specific responses.`;
   }
 };
 
-export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReference }: BibleVerseAIChatProps) {
+export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReference, sidebarMode = false }: BibleVerseAIChatProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -311,19 +312,20 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
 
   if (!isOpen) return null;
 
-  return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-[90vw] sm:w-[500px] h-full flex flex-col p-0">
-        <SheetHeader className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
+  const content = (
+    <div className="h-full flex flex-col">
+      {/* Header - Only show if not in sidebar mode (sidebar mode has its own header) */}
+      {!sidebarMode && (
+        <div className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
                 ✦
               </div>
               <div>
-                <SheetTitle className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900">
                   Bible Aura AI Assistant
-                </SheetTitle>
+                </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Analyzing: <span className="font-semibold">{verseRef}</span>
                 </p>
@@ -338,7 +340,8 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               <X className="h-4 w-4" />
             </Button>
           </div>
-        </SheetHeader>
+        </div>
+      )}
 
         {/* AI Mode Selection */}
         <div className="px-6 py-3 border-b bg-gray-50">
@@ -365,8 +368,8 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
           </p>
         </div>
 
-        {/* Messages Area */}
-        <ScrollArea className="flex-1 px-6">
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 px-4 sm:px-6">
           <div className="py-4 space-y-4">
             {messages.map((message) => (
               <div
@@ -413,26 +416,39 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
           </div>
         </ScrollArea>
 
-        {/* Input Area */}
-        <div className="px-6 py-4 border-t bg-gray-50">
-          <div className="flex gap-3">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Ask about ${verseRef} using ${AI_CHAT_MODES.find(m => m.id === selectedMode)?.name}...`}
-              className="flex-1"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={() => handleSendMessage()}
-              disabled={!input.trim() || isLoading}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+      {/* Input Area */}
+      <div className="px-4 sm:px-6 py-4 border-t bg-gray-50 flex-shrink-0">
+        <div className="flex gap-3">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder={`Ask about ${verseRef} using ${AI_CHAT_MODES.find(m => m.id === selectedMode)?.name}...`}
+            className="flex-1"
+            disabled={isLoading}
+          />
+          <Button
+            onClick={() => handleSendMessage()}
+            disabled={!input.trim() || isLoading}
+            className="bg-orange-500 hover:bg-orange-600"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
+      </div>
+    </div>
+  );
+
+  // If sidebar mode, return content directly without Sheet wrapper
+  if (sidebarMode) {
+    return content;
+  }
+
+  // Otherwise, wrap in Sheet for modal behavior
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-[90vw] sm:w-[500px] h-full flex flex-col p-0">
+        {content}
       </SheetContent>
     </Sheet>
   );
