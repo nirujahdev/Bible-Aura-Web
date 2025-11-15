@@ -428,7 +428,6 @@ const Sermons = () => {
         // Update the sermons list
         if (savedSermon) {
           setSelectedSermon(savedSermon);
-          setSermons(prev => prev.map(s => s.id === selectedSermon.id ? savedSermon : s));
         }
       } else {
         // Create new sermon
@@ -450,12 +449,16 @@ const Sermons = () => {
             const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
             console.log(`Missing column detected: ${missingColumn}`);
             
-            // Retry with basic data only
+            // Retry with basic data only (minimal required fields)
             const basicData = {
               user_id: user.id,
-              title: title || 'Untitled Sermon',
-              content: content || '',
-              scripture_reference: scriptureRefs || null,
+              title: (title || 'Untitled Sermon').trim(),
+              content: (content || '').trim(),
+              scripture_reference: scriptureRefs?.trim() || null,
+              status: status || 'draft',
+              is_draft: (status || 'draft') === 'draft',
+              language: 'english',
+              category: 'general',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             };
@@ -482,20 +485,20 @@ const Sermons = () => {
           savedSermon = data;
         }
         
-        // Update the sermons list
+        // Update the sermons list for new sermon
         if (savedSermon) {
           setSelectedSermon(savedSermon);
-          setSermons(prev => [savedSermon, ...prev]);
         }
       }
 
-      // Reload profile after save to update stats
+      // Update sermons list once after save (remove duplicate updates)
       if (savedSermon) {
-        // Refresh sermons list to show updated data
         setSermons(prev => {
           if (selectedSermon?.id) {
+            // Update existing sermon in list
             return prev.map(s => s.id === selectedSermon.id ? savedSermon : s);
           } else {
+            // Add new sermon to list
             return [savedSermon, ...prev];
           }
         });
