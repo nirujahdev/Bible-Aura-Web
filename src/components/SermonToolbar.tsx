@@ -5,7 +5,8 @@ import {
   Type, Clock, Underline, Strikethrough, Code, Link, Image, Table,
   AlignLeft, AlignCenter, AlignRight, Indent, Outdent, Download,
   FileDown, Copy, Undo, Redo, Search, Replace, Palette, Zap,
-  BookOpen, Target, Users, Globe, Mic, Volume2, Eye, Settings
+  BookOpen, Target, Users, Globe, Mic, Volume2, Eye, Settings,
+  Sparkles, TrendingUp, Wand2, Brain, Lightbulb, Heart
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSermonAI } from "@/contexts/SermonAIContext";
 
 interface SermonToolbarProps {
   editorRef: React.RefObject<HTMLTextAreaElement>;
@@ -36,8 +38,29 @@ export default function SermonToolbar({
   onInsertQuickText
 }: SermonToolbarProps) {
   const { toast } = useToast();
+  const { state } = useSermonAI();
   const isMobile = useIsMobile();
   const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  // Get analysis score for indicator
+  const getAnalysisScore = () => {
+    if (!state.analysisResults) return null;
+    const avgScore = (
+      state.analysisResults.clarity +
+      state.analysisResults.readability +
+      state.analysisResults.theologicalAccuracy +
+      state.analysisResults.structure
+    ) / 4;
+    return Math.round(avgScore);
+  };
+
+  const analysisScore = getAnalysisScore();
+  const getScoreColor = (score: number | null) => {
+    if (!score) return 'text-gray-400';
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
   const formatText = (format: string, value?: string) => {
     if (!editorRef.current) return;
@@ -306,8 +329,39 @@ export default function SermonToolbar({
 
               <Separator orientation="vertical" className="h-6" />
 
-              {/* Quick Actions */}
+              {/* AI Quick Actions */}
               <div className="flex items-center gap-1">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                          <Sparkles className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>AI Quick Actions</TooltipContent>
+                    </Tooltip>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64">
+                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Introduction\n[AI will generate based on your sermon context]\n")}>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate Introduction
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Illustration\n[AI will suggest relevant stories]\n")}>
+                      <Lightbulb className="h-4 w-4 mr-2" />
+                      Find Illustrations
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Application\n[AI will create practical steps]\n")}>
+                      <Target className="h-4 w-4 mr-2" />
+                      Generate Applications
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Conclusion\n[AI will create powerful closing]\n")}>
+                      <Heart className="h-4 w-4 mr-2" />
+                      Write Conclusion
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Tooltip>
@@ -383,12 +437,35 @@ export default function SermonToolbar({
                 <span className="sm:hidden">{estimatedTime}m</span>
               </div>
               {!isMobile && (
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Target className="h-4 w-4" />
-                  <Badge variant="outline" className={readingLevel.color}>
-                    {readingLevel.level}
-                  </Badge>
-                </div>
+                <>
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <Target className="h-4 w-4" />
+                    <Badge variant="outline" className={readingLevel.color}>
+                      {readingLevel.level}
+                    </Badge>
+                  </div>
+                  {analysisScore !== null && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 cursor-help">
+                          <TrendingUp className={`h-4 w-4 ${getScoreColor(analysisScore)}`} />
+                          <Badge variant="outline" className={`${getScoreColor(analysisScore)} border-current`}>
+                            {analysisScore}%
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="text-xs space-y-1">
+                          <p>AI Analysis Score</p>
+                          <p>Clarity: {state.analysisResults?.clarity}%</p>
+                          <p>Readability: {state.analysisResults?.readability}%</p>
+                          <p>Theology: {state.analysisResults?.theologicalAccuracy}%</p>
+                          <p>Structure: {state.analysisResults?.structure}%</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </>
               )}
             </div>
           </div>

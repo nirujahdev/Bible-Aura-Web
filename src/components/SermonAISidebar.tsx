@@ -15,9 +15,15 @@ import {
   Search, BookOpen, Target, RefreshCw, ChevronDown, ChevronUp,
   PenTool, Quote, List, Heart, Globe, Music, Gift, Award,
   FileText, Edit3, Plus, Settings, X, Send, Copy, Eye,
-  Mic, Volume2, Timer, Calendar, Users, Church, Star
+  Mic, Volume2, Timer, Calendar, Users, Church, Star,
+  TrendingUp
 } from 'lucide-react';
 import { callOpenAIAPI } from '@/lib/openai-api-helper';
+import { SermonContentAnalyzer } from '@/components/sermon/SermonContentAnalyzer';
+import { SermonOutlineBuilder } from '@/components/sermon/SermonOutlineBuilder';
+import { SmartScriptureFinder } from '@/components/sermon/SmartScriptureFinder';
+import { SermonContentEnhancer } from '@/components/sermon/SermonContentEnhancer';
+import { useSermonAI } from '@/contexts/SermonAIContext';
 
 interface SermonAISidebarProps {
   isOpen: boolean;
@@ -45,6 +51,7 @@ const SermonAISidebar: React.FC<SermonAISidebarProps> = ({
   scriptureReference
 }) => {
   const { toast } = useToast();
+  const { updateContent, updateTitle, updateScriptureReference } = useSermonAI();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('tools');
   const [expandedSections, setExpandedSections] = useState<string[]>(['generate']);
@@ -55,6 +62,13 @@ const SermonAISidebar: React.FC<SermonAISidebarProps> = ({
     content: string;
     timestamp: Date;
   }>>([]);
+
+  // Sync context with props
+  React.useEffect(() => {
+    updateContent(currentSermonContent);
+    updateTitle(sermonTitle);
+    updateScriptureReference(scriptureReference);
+  }, [currentSermonContent, sermonTitle, scriptureReference, updateContent, updateTitle, updateScriptureReference]);
 
   // AI Tools Configuration
   const aiTools: AITool[] = [
@@ -463,9 +477,10 @@ Please provide helpful sermon writing assistance.`;
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
+        <TabsList className="grid w-full grid-cols-3 mx-4 mt-4 h-auto">
           <TabsTrigger value="tools" className="text-xs">AI Tools</TabsTrigger>
           <TabsTrigger value="chat" className="text-xs">AI Chat</TabsTrigger>
+          <TabsTrigger value="advanced" className="text-xs">Advanced</TabsTrigger>
         </TabsList>
 
         {/* AI Tools Tab */}
@@ -609,6 +624,54 @@ Please provide helpful sermon writing assistance.`;
               </Button>
             </div>
           </div>
+        </TabsContent>
+
+        {/* Advanced AI Features Tab */}
+        <TabsContent value="advanced" className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full px-4">
+            <div className="space-y-4 pb-4">
+              {/* Real-Time Analysis */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-orange-500" />
+                  <h4 className="font-medium text-sm">Real-Time Analysis</h4>
+                </div>
+                <SermonContentAnalyzer />
+              </div>
+
+              {/* Outline Builder */}
+              <div>
+                <SermonOutlineBuilder />
+              </div>
+
+              {/* Scripture Finder */}
+              <div>
+                <SmartScriptureFinder 
+                  onVerseSelect={(verse) => {
+                    const verseText = `${verse.reference}: ${verse.text}`;
+                    onContentUpdate(currentSermonContent + '\n\n' + verseText);
+                    toast({
+                      title: "Verse Added",
+                      description: `${verse.reference} has been added to your sermon`,
+                    });
+                  }}
+                />
+              </div>
+
+              {/* Content Enhancer */}
+              <div>
+                <SermonContentEnhancer
+                  onApplyEnhancement={(original, enhanced, position) => {
+                    // Apply enhancement to content
+                    const before = currentSermonContent.substring(0, position);
+                    const after = currentSermonContent.substring(position + original.length);
+                    const updated = before + enhanced + after;
+                    onContentUpdate(updated);
+                  }}
+                />
+              </div>
+            </div>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
     </div>

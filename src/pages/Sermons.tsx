@@ -25,6 +25,10 @@ import SermonAISidebar from '@/components/SermonAISidebar';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SermonAIProvider, useSermonAI } from '@/contexts/SermonAIContext';
+import { FloatingAIAssistant } from '@/components/sermon/FloatingAIAssistant';
+import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
+import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
 import { 
   FileText, Plus, Edit3, Trash2, Search, Calendar, BookOpen, Lightbulb, 
   Target, Users, Clock, Mic, Star, Timer, Eye, Printer, Share, Settings,
@@ -109,17 +113,28 @@ interface SermonStats {
   avgRating: number;
 }
 
-const Sermons = () => {
+const SermonsContent = () => {
   useSEO(SEO_CONFIG.SERMONS);
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const { updateContent, updateTitle, updateScriptureReference, updateMainPoints } = useSermonAI();
   const isMobile = useIsMobile();
   
   // View states
   const [viewMode, setViewMode] = useState<'dashboard' | 'editor'>('dashboard');
   const [selectedSermon, setSelectedSermon] = useState<Sermon | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Sync context when sermon changes
+  useEffect(() => {
+    if (selectedSermon) {
+      updateContent(selectedSermon.content || '');
+      updateTitle(selectedSermon.title || '');
+      updateScriptureReference(selectedSermon.scripture_reference || '');
+      updateMainPoints(selectedSermon.main_points || []);
+    }
+  }, [selectedSermon, updateContent, updateTitle, updateScriptureReference, updateMainPoints]);
   
   // Core sermon state
   const [sermons, setSermons] = useState<Sermon[]>([]);
@@ -1728,12 +1743,16 @@ const Sermons = () => {
               onExport={handleExportSermon}
               onInsertQuickText={handleInsertQuickText}
             />
-            <div className={`flex-1 p-2 sm:p-3 md:p-6 ${focusMode ? 'bg-white' : ''} overflow-hidden`}>
+            <div className={`flex-1 p-2 sm:p-3 md:p-6 ${focusMode ? 'bg-white' : ''} overflow-hidden relative`}>
               <Textarea
                 ref={editorRef}
                 placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
                 value={selectedSermon?.content || ''}
-                onChange={(e) => setSelectedSermon(prev => prev ? { ...prev, content: e.target.value } : null)}
+                onChange={(e) => {
+                  const newContent = e.target.value;
+                  setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+                  updateContent(newContent);
+                }}
                 className={`w-full h-full resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-3 sm:p-4 md:p-8 border border-gray-200' : 'p-2 sm:p-3 md:p-4'} text-base sm:text-lg`}
                 style={{ 
                   minHeight: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 250px)',
@@ -1744,6 +1763,40 @@ const Sermons = () => {
                   paddingTop: isMobile ? '16px' : undefined,
                   paddingBottom: isMobile ? '16px' : undefined,
                 }}
+              />
+              <SermonAutoComplete
+                textareaRef={editorRef}
+                onSuggestionSelect={(suggestion) => {
+                  if (editorRef.current && selectedSermon) {
+                    const start = editorRef.current.selectionStart;
+                    const end = editorRef.current.selectionEnd;
+                    const before = (selectedSermon.content || '').substring(0, start);
+                    const after = (selectedSermon.content || '').substring(end);
+                    const newContent = before + suggestion + ' ' + after;
+                    setSelectedSermon({ ...selectedSermon, content: newContent });
+                    updateContent(newContent);
+                    setTimeout(() => {
+                      if (editorRef.current) {
+                        editorRef.current.focus();
+                        editorRef.current.setSelectionRange(start + suggestion.length + 1, start + suggestion.length + 1);
+                      }
+                    }, 0);
+                  }
+                }}
+                enabled={true}
+              />
+              <InlineAISuggestions
+                textareaRef={editorRef}
+                onApplyFix={(original, fixed, position) => {
+                  if (selectedSermon) {
+                    const before = (selectedSermon.content || '').substring(0, position);
+                    const after = (selectedSermon.content || '').substring(position + original.length);
+                    const newContent = before + fixed + after;
+                    setSelectedSermon({ ...selectedSermon, content: newContent });
+                    updateContent(newContent);
+                  }
+                }}
+                enabled={true}
               />
             </div>
           </div>
@@ -1789,6 +1842,7 @@ const Sermons = () => {
               onContentUpdate={(content) => {
                 if (selectedSermon) {
                   setSelectedSermon({ ...selectedSermon, content });
+                  updateContent(content);
                 }
               }}
               sermonTitle={selectedSermon?.title || ''}
@@ -1796,6 +1850,9 @@ const Sermons = () => {
             />
           </div>
         )}
+
+        {/* Floating AI Assistant */}
+        <FloatingAIAssistant />
         </div>
       </MobileOptimizedLayout>
     );
@@ -2118,6 +2175,15 @@ const Sermons = () => {
         </Dialog>
       </div>
     </MobileOptimizedLayout>
+  );
+};
+
+// Wrapper component with AI Provider
+const Sermons = () => {
+  return (
+    <SermonAIProvider>
+      <SermonsContent />
+    </SermonAIProvider>
   );
 };
 
