@@ -877,7 +877,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (error) {
+        // Log the full error for debugging
+        console.error('❌ Sign up error details:', {
+          message: error.message,
+          status: (error as any).status,
+          code: (error as any).code,
+          error: error,
+          userData: data?.user ? 'exists' : 'missing'
+        });
+        
         let userFriendlyMessage = error.message;
+        let isEmailAlreadyRegistered = false;
+        
+        // Check for email already registered errors first (most common case)
+        // Supabase returns various error messages for existing users
+        const emailExistsPatterns = [
+          'already registered',
+          'already exists',
+          'User already registered',
+          'email already registered',
+          'Email address already registered',
+          'An account with this email already exists',
+          'User with this email address has already been registered',
+          'duplicate key value',
+          'violates unique constraint',
+          'email address is already registered',
+          'this email is already registered',
+        ];
+        
+        // Also check error status codes (422 is common for validation/conflict errors)
+        const lowerErrorMsg = error.message?.toLowerCase() || '';
+        isEmailAlreadyRegistered = emailExistsPatterns.some(pattern => 
+          lowerErrorMsg.includes(pattern.toLowerCase())
+        ) || (error as any).status === 422;
+        
+        if (isEmailAlreadyRegistered) {
+          userFriendlyMessage = 'An account with this email already exists. Please sign in instead.';
+          
+          // If we have user data despite the error, it might have been created
+          // but Supabase still returned an error - treat as success
+          if (data?.user) {
+            console.log('User exists but got error - likely already registered, redirecting to sign in');
+            toast({
+              title: "Account already exists",
+              description: "An account with this email already exists. Please sign in instead.",
+              variant: "destructive",
+            });
+            return { error: new Error(userFriendlyMessage) };
+          }
+          
+          // No user data - definitely already registered
+          toast({
+            title: "Sign up failed",
+            description: userFriendlyMessage,
+            variant: "destructive",
+          });
+          return { error: new Error(userFriendlyMessage) };
+        }
         
         // Handle "Database error saving new user" - this usually means trigger had an issue
         // but the user was still created, so we should treat it as success
@@ -908,9 +964,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             return { error: null };
           }
-          userFriendlyMessage = 'Account may have been created. Please try signing in.';
-        } else if (error.message?.includes('already registered') || error.message?.includes('already exists') || error.message?.includes('User already registered')) {
-          userFriendlyMessage = 'An account with this email already exists. Please sign in instead.';
+          // No user data but got this error - unclear state
+          userFriendlyMessage = 'Sign up encountered an error. If your account was created, please try signing in. Otherwise, please try again.';
         } else if (error.message?.includes('weak password') || error.message?.includes('Password')) {
           userFriendlyMessage = 'Please choose a stronger password with at least 8 characters.';
         } else if (error.message?.includes('invalid email') || error.message?.includes('Email')) {
