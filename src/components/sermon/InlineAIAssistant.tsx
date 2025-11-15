@@ -1,5 +1,5 @@
 // Inline AI Assistant - Enhanced bottom input bar with better UX
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSermonAI } from '@/contexts/SermonAIContext';
 import { useAuth } from '@/hooks/useAuth';
 import { checkAndIncrementUsage } from '@/lib/ai-limits';
