@@ -1,5 +1,5 @@
 // Bible page - Clean reading and search interface
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, BookOpen, Target,
@@ -148,8 +149,20 @@ export default function Bible() {
   const [newTestamentExpanded, setNewTestamentExpanded] = useState(false);
   const [showSearchFilters, setShowSearchFilters] = useState(false);
   
+  // Mobile sidebar state - completely independent from tab state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  
   // Mobile detection
   const isMobile = useIsMobile();
+  
+  // CRITICAL: Tab state is completely isolated - NEVER changes except on explicit user click
+  // This ref helps prevent any accidental state changes
+  const tabStateRef = React.useRef<'read' | 'search'>('read');
+  
+  // Sync ref with state
+  React.useEffect(() => {
+    tabStateRef.current = activeTab;
+  }, [activeTab]);
 
   useEffect(() => {
     loadBooks();
@@ -709,14 +722,17 @@ How can I apply this to my life?
     if (book) {
       setSelectedBook(book);
       setSelectedChapter(1);
-      // Only switch tab if explicitly requested from Read tab button clicks
+      // CRITICAL: Only switch tab if explicitly requested from Read tab button clicks
       // NEVER auto-switch when clicking search results - that should stay on 'search'
       // Only switch when user explicitly selects book from Read tab sidebar
-      if (forceTab === 'read' && activeTab !== 'read') {
+      if (forceTab === 'read' && tabStateRef.current !== 'read') {
+        // Double-check using ref to ensure we're not accidentally switching
         // Only switch if not already on read tab
         setActiveTab('read');
+        tabStateRef.current = 'read';
       }
       // If forceTab is 'search' or undefined, do NOT change tabs
+      // This ensures search results clicking never switches tabs
     }
   };
 
@@ -736,6 +752,318 @@ How can I apply this to my life?
 
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
   const newTestamentBooks = books.filter(book => book.testament === 'new');
+
+  // Reusable Sidebar Content Component - Works for both mobile and desktop
+  const renderSidebarContent = (isMobileSidebar = false) => {
+    return (
+      <>
+        {/* Language and Translation Selectors */}
+        <div className={`p-4 border-b border-gray-200 ${isMobileSidebar ? 'bg-white' : ''}`}>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Language</label>
+              <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
+                <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.value} value={lang.value}>
+                      {lang.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedLanguage === 'english' && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Translation</label>
+                <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                  <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ENGLISH_TRANSLATIONS.map((translation) => (
+                      <SelectItem key={translation.code} value={translation.code}>
+                        {translation.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Tabs - Navigation for Read and Search */}
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => {
+            // CRITICAL: This is the ONLY place where activeTab should change
+            // Only called when user explicitly clicks a tab button
+            // NEVER call setActiveTab anywhere else in the code
+            if (value === 'read' || value === 'search') {
+              setActiveTab(value);
+              tabStateRef.current = value;
+              if (value === 'read') {
+                setSearchResults([]);
+              }
+              // Close mobile sidebar after selection for better UX
+              if (isMobileSidebar) {
+                setTimeout(() => setMobileSidebarOpen(false), 150);
+              }
+            }
+          }}
+          className="flex-1 flex flex-col overflow-hidden"
+        >
+          <TabsList className={cn(
+            "grid w-full grid-cols-2",
+            isMobileSidebar ? "mx-4 mt-4 mb-2" : "mx-4 mt-4"
+          )}>
+            <TabsTrigger value="read" className="text-sm">
+              <BookOpen className="h-4 w-4 mr-2" />
+              Read
+            </TabsTrigger>
+            <TabsTrigger value="search" className="text-sm">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex-1 overflow-auto px-4 pb-4">
+            {/* Read Tab Content */}
+            <TabsContent value="read" className="mt-4 space-y-4">
+              {/* Book Selection */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800 mb-3">Select Book</h3>
+                <div className="space-y-3">
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">
+                        <span>Old Testament ({oldTestamentBooks.length})</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-3 gap-1">
+                        {oldTestamentBooks.map((book) => (
+                          <Button
+                            key={book.id}
+                            variant={selectedBook?.id === book.id ? "default" : "outline"}
+                            onClick={() => {
+                              handleBookSelect(book.name, 'read');
+                              if (isMobileSidebar) {
+                                setTimeout(() => setMobileSidebarOpen(false), 200);
+                              }
+                            }}
+                            className={`text-xs p-2 h-8 touch-target ${
+                              selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                            }`}
+                          >
+                            {book.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="outline" className="w-full justify-between">
+                        <span>New Testament ({newTestamentBooks.length})</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-3 gap-1">
+                        {newTestamentBooks.map((book) => (
+                          <Button
+                            key={book.id}
+                            variant={selectedBook?.id === book.id ? "default" : "outline"}
+                            onClick={() => {
+                              handleBookSelect(book.name, 'read');
+                              if (isMobileSidebar) {
+                                setTimeout(() => setMobileSidebarOpen(false), 200);
+                              }
+                            }}
+                            className={`text-xs p-2 h-8 touch-target ${
+                              selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                            }`}
+                          >
+                            {book.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </div>
+
+              {/* Chapter Selection */}
+              {selectedBook && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                    {selectedBook.name} - Chapters
+                  </h3>
+                  <div className="grid grid-cols-6 gap-1 max-h-32 overflow-y-auto">
+                    {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                      <Button
+                        key={chapter}
+                        variant={selectedChapter === chapter ? "default" : "outline"}
+                        onClick={() => {
+                          setSelectedChapter(chapter);
+                          if (isMobileSidebar) {
+                            setTimeout(() => setMobileSidebarOpen(false), 200);
+                          }
+                        }}
+                        className={`h-8 text-xs touch-target ${
+                          selectedChapter === chapter ? 'bg-orange-500' : ''
+                        }`}
+                      >
+                        {chapter}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Search Tab Content */}
+            <TabsContent value="search" className="mt-4 space-y-4">
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder='Search verses...'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch();
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSearch} disabled={loading} className="touch-target min-w-[44px]">
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Select value={searchFilters.testament} onValueChange={(value) => setSearchFilters({...searchFilters, testament: value})}>
+                    <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+                      <SelectValue placeholder="Testament" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="old">Old Testament</SelectItem>
+                      <SelectItem value="new">New Testament</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={searchFilters.book} onValueChange={(value) => setSearchFilters({...searchFilters, book: value})}>
+                    <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+                      <SelectValue placeholder="Book" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Books</SelectItem>
+                      {books.map((book) => (
+                        <SelectItem key={book.id} value={book.name}>
+                          {book.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Advanced Search Options */}
+                <div className="flex items-center gap-4 pt-2 border-t">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer touch-target min-h-[44px]">
+                    <input
+                      type="checkbox"
+                      checked={fuzzySearchEnabled}
+                      onChange={(e) => setFuzzySearchEnabled(e.target.checked)}
+                      className="rounded w-4 h-4"
+                    />
+                    <span>Fuzzy search (typo tolerant)</span>
+                  </label>
+                </div>
+
+                {/* Query Examples - Hidden on mobile to save space */}
+                {!isMobileSidebar && (
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <p className="font-semibold">Examples:</p>
+                    <p>• "love one another" - exact phrase</p>
+                    <p>• love AND faith - both words required</p>
+                    <p>• heaven OR earth - either word</p>
+                    <p>• love -hate - love but not hate</p>
+                  </div>
+                )}
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">Results ({searchResults.length})</h3>
+                    {searchResults.length > visibleResultsCount && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setVisibleResultsCount(prev => Math.min(prev + 50, searchResults.length))}
+                        className="text-xs touch-target"
+                      >
+                        Show More ({searchResults.length - visibleResultsCount})
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {searchResults.slice(0, visibleResultsCount).map((verse) => {
+                      const highlightedText = highlightVerseText(verse, searchQuery);
+                      return (
+                        <div
+                          key={verse.id}
+                          className="p-3 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer touch-target min-h-[60px]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            e.nativeEvent?.stopImmediatePropagation?.();
+                            const book = books.find(b => b.name === verse.book_name);
+                            if (book) {
+                              // CRITICAL: Load book/chapter WITHOUT changing tabs
+                              setSelectedBook(book);
+                              setSelectedChapter(verse.chapter);
+                              // Close mobile sidebar
+                              if (isMobileSidebar) {
+                                setTimeout(() => setMobileSidebarOpen(false), 200);
+                              }
+                              // ABSOLUTELY DO NOT call setActiveTab here
+                            }
+                          }}
+                        >
+                          <div className="font-medium text-orange-600 mb-1">
+                            {verse.book_name} {verse.chapter}:{verse.verse}
+                            {verse.relevanceScore && (
+                              <span className="ml-2 text-xs text-gray-400">
+                                (relevance: {Math.round(verse.relevanceScore)})
+                              </span>
+                            )}
+                          </div>
+                          <div 
+                            className="text-gray-700"
+                            dangerouslySetInnerHTML={{ __html: highlightedText }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </div>
+        </Tabs>
+      </>
+    );
+  };
 
   // Choose layout based on device type
   const Layout = isMobile ? MobileOptimizedLayout : ModernLayout;
@@ -771,292 +1099,41 @@ How can I apply this to my life?
         )}
 
         <div className={cn("flex", isMobile ? "flex-col h-[100dvh]" : "h-screen")}>
-          {/* Desktop Sidebar - Unchanged for desktop */}
+          {/* Desktop Sidebar */}
           {!isMobile && (
-            <div className="w-80 bg-white border-r border-gray-200 overflow-hidden">
-              {/* Desktop sidebar content remains the same */}
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center gap-2 mb-4">
-                  <BookOpen className="h-5 w-5 text-orange-500" />
-                  <h2 className="text-lg font-semibold text-gray-800">Bible Study</h2>
-                </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">Language</label>
-                    <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LANGUAGES.map((lang) => (
-                          <SelectItem key={lang.value} value={lang.value}>
-                            {lang.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <div className="w-80 bg-white border-r border-gray-200 overflow-hidden flex flex-col">
+              {/* Sidebar Content - Shared component for desktop */}
+              {renderSidebarContent()}
+            </div>
+          )}
 
-                  {selectedLanguage === 'english' && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Translation</label>
-                      <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ENGLISH_TRANSLATIONS.map((translation) => (
-                            <SelectItem key={translation.code} value={translation.code}>
-                              {translation.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              </div>
+          {/* Mobile Sidebar - Sheet Drawer */}
+          {isMobile && (
+            <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+              <SheetContent side="left" className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col">
+                <SheetHeader className="px-4 pt-4 pb-3 border-b">
+                  <SheetTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-orange-500" />
+                    <span className="text-lg font-semibold text-gray-800">Bible Study</span>
+                  </SheetTitle>
+                </SheetHeader>
+                {renderSidebarContent(true)}
+              </SheetContent>
+            </Sheet>
+          )}
 
-              <Tabs 
-                value={activeTab} 
-                onValueChange={(value) => {
-                  // CRITICAL: This is the ONLY place where activeTab should change
-                  // Only called when user explicitly clicks a tab button
-                  // NEVER call setActiveTab anywhere else in the code
-                  if (value === 'read' || value === 'search') {
-                    setActiveTab(value);
-                    if (value === 'read') {
-                      setSearchResults([]);
-                    }
-                  }
-                }}
-                className="flex-1 flex flex-col h-[calc(100vh-140px)]"
+          {/* Mobile Sidebar Toggle Button */}
+          {isMobile && (
+            <div className="fixed top-14 left-4 z-30">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMobileSidebarOpen(true)}
+                className="h-10 w-10 p-0 bg-white shadow-md hover:bg-gray-50 rounded-lg border-gray-200"
+                aria-label="Open navigation menu"
               >
-                <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
-                  <TabsTrigger value="read">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Read
-                  </TabsTrigger>
-                  <TabsTrigger value="search">
-                    <Search className="h-4 w-4 mr-2" />
-                    Search
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="flex-1 overflow-auto px-4 pb-4">
-                  {/* Desktop tabs content remains similar to mobile but with better spacing */}
-                  <TabsContent value="read" className="mt-4 space-y-4">
-                    {/* Book Selection */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-800 mb-3">Select Book</h3>
-                      <div className="space-y-3">
-                        <Collapsible>
-                          <CollapsibleTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between">
-                              <span>Old Testament ({oldTestamentBooks.length})</span>
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="mt-2">
-                            <div className="grid grid-cols-3 gap-1">
-                              {oldTestamentBooks.map((book) => (
-                                <Button
-                                  key={book.id}
-                                  variant={selectedBook?.id === book.id ? "default" : "outline"}
-                                  onClick={() => handleBookSelect(book.name, 'read')}
-                                  className={`text-xs p-2 h-8 ${
-                                    selectedBook?.id === book.id ? 'bg-orange-500' : ''
-                                  }`}
-                                >
-                                  {book.name}
-                                </Button>
-                              ))}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        <Collapsible>
-                          <CollapsibleTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between">
-                              <span>New Testament ({newTestamentBooks.length})</span>
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="mt-2">
-                            <div className="grid grid-cols-3 gap-1">
-                              {newTestamentBooks.map((book) => (
-                                <Button
-                                  key={book.id}
-                                  variant={selectedBook?.id === book.id ? "default" : "outline"}
-                                  onClick={() => handleBookSelect(book.name, 'read')}
-                                  className={`text-xs p-2 h-8 ${
-                                    selectedBook?.id === book.id ? 'bg-orange-500' : ''
-                                  }`}
-                                >
-                                  {book.name}
-                                </Button>
-                              ))}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </div>
-                    </div>
-
-                    {/* Chapter Selection */}
-                    {selectedBook && (
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-800 mb-2">
-                          {selectedBook.name} - Chapters
-                        </h3>
-                        <div className="grid grid-cols-6 gap-1 max-h-32 overflow-y-auto">
-                          {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                            <Button
-                              key={chapter}
-                              variant={selectedChapter === chapter ? "default" : "outline"}
-                              onClick={() => setSelectedChapter(chapter)}
-                              className={`h-8 text-xs ${
-                                selectedChapter === chapter ? 'bg-orange-500' : ''
-                              }`}
-                            >
-                              {chapter}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="search" className="mt-4 space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder='Search verses... (use "quotes" for exact phrases, AND, OR, -exclude)'
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              handleSearch();
-                            }
-                          }}
-                          className="flex-1"
-                        />
-                        <Button onClick={handleSearch} disabled={loading}>
-                          <Search className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <Select value={searchFilters.testament} onValueChange={(value) => setSearchFilters({...searchFilters, testament: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Testament" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="old">Old Testament</SelectItem>
-                            <SelectItem value="new">New Testament</SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        <Select value={searchFilters.book} onValueChange={(value) => setSearchFilters({...searchFilters, book: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Book" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Books</SelectItem>
-                            {books.map((book) => (
-                              <SelectItem key={book.id} value={book.name}>
-                                {book.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Advanced Search Options */}
-                      <div className="flex items-center gap-4 pt-2 border-t">
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={fuzzySearchEnabled}
-                            onChange={(e) => setFuzzySearchEnabled(e.target.checked)}
-                            className="rounded"
-                          />
-                          <span>Fuzzy search (typo tolerant)</span>
-                        </label>
-                      </div>
-
-                      {/* Query Examples */}
-                      <div className="text-xs text-gray-500 space-y-1">
-                        <p className="font-semibold">Examples:</p>
-                        <p>• "love one another" - exact phrase</p>
-                        <p>• love AND faith - both words required</p>
-                        <p>• heaven OR earth - either word</p>
-                        <p>• love -hate - love but not hate</p>
-                      </div>
-                    </div>
-
-                    {searchResults.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-semibold">Results ({searchResults.length})</h3>
-                          {searchResults.length > visibleResultsCount && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setVisibleResultsCount(prev => Math.min(prev + 50, searchResults.length))}
-                              className="text-xs"
-                            >
-                              Show More ({searchResults.length - visibleResultsCount} remaining)
-                            </Button>
-                          )}
-                        </div>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                          {searchResults.slice(0, visibleResultsCount).map((verse) => {
-                            const highlightedText = highlightVerseText(verse, searchQuery);
-                            return (
-                              <div
-                                key={verse.id}
-                                className="p-3 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent any parent click handlers
-                                  e.preventDefault(); // Prevent any default behavior
-                                  e.nativeEvent.stopImmediatePropagation(); // Prevent all event bubbling
-                                  const book = books.find(b => b.name === verse.book_name);
-                                  if (book) {
-                                    // CRITICAL: Load book/chapter WITHOUT changing tabs
-                                    // User clicked from search results, so stay on 'search' tab
-                                    // Do NOT use handleBookSelect (which might switch tabs)
-                                    // Instead, directly set the book/chapter
-                                    setSelectedBook(book);
-                                    setSelectedChapter(verse.chapter);
-                                    // ABSOLUTELY DO NOT call setActiveTab here
-                                    // The tab MUST remain on 'search' so user can continue browsing results
-                                  }
-                                }}
-                              >
-                                <div className="font-medium text-orange-600 mb-1">
-                                  {verse.book_name} {verse.chapter}:{verse.verse}
-                                  {verse.relevanceScore && (
-                                    <span className="ml-2 text-xs text-gray-400">
-                                      (relevance: {Math.round(verse.relevanceScore)})
-                                    </span>
-                                  )}
-                                </div>
-                                <div 
-                                  className="text-gray-700"
-                                  dangerouslySetInnerHTML={{ __html: highlightedText }}
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-
-                </div>
-              </Tabs>
+                <Menu className="h-5 w-5 text-gray-700" />
+              </Button>
             </div>
           )}
 
