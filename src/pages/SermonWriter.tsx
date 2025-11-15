@@ -550,7 +550,7 @@ const SermonWriter = () => {
         systemPrompt: "You are a biblical studies assistant helping with sermon preparation. Provide thoughtful, biblically sound insights.",
         maxTokens: 500,
         temperature: 0.7,
-        model: 'gpt-4o-mini'
+        model: 'gpt-4.1-mini'
       });
 
       const data = { choices: [{ message: { content: response } }] };

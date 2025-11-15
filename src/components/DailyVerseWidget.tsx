@@ -80,7 +80,7 @@ Keep it warm, biblical, and uplifting.`;
         systemPrompt: 'You are a Christian devotional writer. Create inspiring, biblical reflections that help people connect God\'s word to their daily lives. Be encouraging, practical, and spiritually uplifting.',
         maxTokens: 200,
         temperature: 0.7,
-        model: 'gpt-4o-mini'
+        model: 'gpt-4.1-mini'
       });
       aiContext = response || aiContext;
     } catch (error) {

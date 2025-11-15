@@ -140,7 +140,7 @@ const SermonAIGenerator: React.FC<SermonAIGeneratorProps> = ({
       systemPrompt: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts.',
       maxTokens: 8000,
       temperature: 0.7,
-      model: 'gpt-4o-mini'
+      model: 'gpt-4.1-mini'
     });
   };
 

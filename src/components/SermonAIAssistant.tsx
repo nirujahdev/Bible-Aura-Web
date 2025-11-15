@@ -47,7 +47,7 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
       systemPrompt: 'You are an expert sermon writing assistant. Help pastors create biblically sound, engaging sermons with practical applications.',
       maxTokens: 3000,
       temperature: 0.7,
-      model: 'gpt-4o-mini'
+      model: 'gpt-4.1-mini'
     });
   };
 
