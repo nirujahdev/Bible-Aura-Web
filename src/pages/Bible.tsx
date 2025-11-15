@@ -125,7 +125,8 @@ export default function Bible() {
   };
   
   // Enhanced features state
-  const [activeTab, setActiveTab] = useState('read');
+  // CRITICAL: activeTab should NEVER change automatically - only on explicit user tab clicks
+  const [activeTab, setActiveTab] = useState<'read' | 'search'>('read');
   const [readingPlan, setReadingPlan] = useState<string | null>(null);
   const [readingProgress, setReadingProgress] = useState(0);
   const [searchFilters, setSearchFilters] = useState({
@@ -703,16 +704,19 @@ How can I apply this to my life?
     }
   };
 
-  const handleBookSelect = (bookName: string, forceTab?: string) => {
+  const handleBookSelect = (bookName: string, forceTab?: 'read' | 'search') => {
     const book = books.find(b => b.name === bookName);
     if (book) {
       setSelectedBook(book);
       setSelectedChapter(1);
-      // Only switch tab if explicitly requested (like from Read tab)
-      // Never auto-switch from search results
-      if (forceTab) {
-        setActiveTab(forceTab);
+      // Only switch tab if explicitly requested from Read tab button clicks
+      // NEVER auto-switch when clicking search results - that should stay on 'search'
+      // Only switch when user explicitly selects book from Read tab sidebar
+      if (forceTab === 'read' && activeTab !== 'read') {
+        // Only switch if not already on read tab
+        setActiveTab('read');
       }
+      // If forceTab is 'search' or undefined, do NOT change tabs
     }
   };
 
@@ -817,11 +821,14 @@ How can I apply this to my life?
               <Tabs 
                 value={activeTab} 
                 onValueChange={(value) => {
-                  // Only allow manual tab switching by user
-                  // Never auto-switch tabs programmatically
-                  setActiveTab(value);
-                  if (value === 'read') {
-                    setSearchResults([]);
+                  // CRITICAL: This is the ONLY place where activeTab should change
+                  // Only called when user explicitly clicks a tab button
+                  // NEVER call setActiveTab anywhere else in the code
+                  if (value === 'read' || value === 'search') {
+                    setActiveTab(value);
+                    if (value === 'read') {
+                      setSearchResults([]);
+                    }
                   }
                 }}
                 className="flex-1 flex flex-col h-[calc(100vh-140px)]"
