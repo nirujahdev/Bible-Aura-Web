@@ -1092,29 +1092,29 @@ const Sermons = () => {
                 </DropdownMenu>
               ) : (
                 <>
-                  {/* AI Generator Button */}
-                  <Button 
-                    variant="outline" 
+              {/* AI Generator Button */}
+              <Button 
+                variant="outline" 
                     size="sm"
-                    className="hover:bg-purple-50"
-                    onClick={() => setShowAIGenerator(true)}
-                  >
+                className="hover:bg-purple-50"
+                onClick={() => setShowAIGenerator(true)}
+              >
                     <Brain className="h-4 w-4 mr-2" />
                     <span>AI Generator</span>
-                  </Button>
-                  
-                  {/* AI Sidebar Toggle */}
-                  <Button 
-                    variant="outline" 
+              </Button>
+              
+              {/* AI Sidebar Toggle */}
+              <Button 
+                variant="outline" 
                     size="sm"
-                    className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
-                    onClick={() => setShowAISidebar(!showAISidebar)}
-                  >
+                className={`${showAISidebar ? 'bg-purple-100' : 'hover:bg-purple-50'}`}
+                onClick={() => setShowAISidebar(!showAISidebar)}
+              >
                     <Bot className="h-4 w-4 mr-2" />
                     <span>AI Assistant</span>
-                  </Button>
-                  
-                  {/* Bible Reference Button */}
+              </Button>
+              
+              {/* Bible Reference Button */}
                   <Button variant="outline" size="sm" className="hover:bg-blue-50" onClick={() => setShowBibleDialog(true)}>
                     <BookOpen className="h-4 w-4 mr-2" />
                     <span>Bible</span>

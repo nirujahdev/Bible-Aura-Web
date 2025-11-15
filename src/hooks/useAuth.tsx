@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', userId)
         .is('deleted_at', null)
         .single();
-
+      
       if (error) {
         if (error.code === 'PGRST116') {
           // Profile doesn't exist - create it
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
-
+      
       if (data) {
         setProfile(data as Profile);
       }
@@ -218,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Get initial session from Supabase (reads from localStorage)
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-
+        
         if (error) {
           console.error('Error getting session:', error);
           if (isMounted) {
@@ -234,24 +234,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Load profile
           await loadUserProfile(initialSession.user.id);
         }
-
+        
         if (isMounted) {
           setLoading(false);
         }
 
         // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            if (!isMounted) return;
-
+        async (event, session) => {
+          if (!isMounted) return;
+          
             console.log('Auth state change:', event);
-
+          
             if (event === 'SIGNED_IN' && session) {
               setSession(session);
               setUser(session.user);
               
               // Ensure profile exists
-              await loadUserProfile(session.user.id);
+                    await loadUserProfile(session.user.id);
             } else if (event === 'SIGNED_OUT') {
               setSession(null);
               setUser(null);
@@ -265,18 +265,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (session.user) {
                 await loadUserProfile(session.user.id);
-              }
             }
           }
-        );
+        }
+      );
 
         authSubscription = subscription;
-      } catch (error) {
+    } catch (error) {
         console.error('Auth initialization error:', error);
-        if (isMounted) {
-          setLoading(false);
-        }
+      if (isMounted) {
+        setLoading(false);
       }
+    }
     };
 
     initializeAuth();
@@ -326,16 +326,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return { error: new Error(message) };
       }
-
+      
       if (data?.session && data?.user) {
-        setSession(data.session);
+          setSession(data.session);
         setUser(data.user);
         await loadUserProfile(data.user.id);
-
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to your account.",
-        });
+      
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in to your account.",
+      });
       }
 
       return { error: null };
@@ -352,18 +352,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Magic link sign-in (kept for interface compatibility, but returns error)
   const signInWithMagicLink = async (email: string): Promise<{ error: Error | null }> => {
-    toast({
+        toast({
       title: "Not available",
       description: "Magic link sign-in is not available. Please use email/password or Google sign-in.",
-      variant: "destructive",
-    });
+          variant: "destructive",
+        });
     return { error: new Error('Magic link sign-in is not available') };
   };
 
   // Sign in with Google OAuth
   const signInWithGoogle = async (): Promise<{ error: Error | null }> => {
     try {
-      const redirectUrl = `${window.location.origin}/auth`;
+      // Get the proper redirect URL - use Site URL from env if available, otherwise use current origin
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+      const redirectUrl = `${siteUrl}/auth`;
+      
+      console.log('📧 OAuth redirect URL:', redirectUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -394,13 +398,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(message) };
       }
 
-      // OAuth redirect will happen automatically
-      toast({
-        title: "Redirecting to Google",
-        description: "Please complete authentication with Google.",
-      });
+        // OAuth redirect will happen automatically
+        toast({
+          title: "Redirecting to Google",
+          description: "Please complete authentication with Google.",
+        });
       
-      return { error: null };
+        return { error: null };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unable to connect to Google. Please try email/password authentication instead.';
       
@@ -448,15 +452,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(errorMsg) };
       }
 
-      const redirectUrl = `${window.location.origin}/auth`;
+      // Get the proper redirect URL - use Site URL from env if available, otherwise use current origin
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+      const redirectUrl = `${siteUrl}/auth`;
       
       console.log('🔐 Starting sign-up process for:', email.toLowerCase().trim());
+      console.log('📧 Email redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
         password,
         options: {
           emailRedirectTo: redirectUrl,
+          // Ensure we capture all email types
+          data: {
+            redirect_to: redirectUrl,
+          },
         },
       });
 
@@ -510,15 +521,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             error.message?.includes('saving new user')) {
           
           // Even if there's an error, check if user was created
-          if (data?.user) {
+      if (data?.user) {
             // User was created, just profile creation had an issue
             console.log('✅ User created despite error, waiting for session then creating profile...');
             
             // Wait for session to be fully established
-            let retries = 0;
-            const maxRetries = 5;
+          let retries = 0;
+          const maxRetries = 5;
             let sessionEstablished = false;
-
+          
             while (!sessionEstablished && retries < maxRetries) {
               const { data: { session: currentSession } } = await supabase.auth.getSession();
               
@@ -546,10 +557,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
               
               // Wait before retrying
-              await new Promise(resolve => setTimeout(resolve, 300));
-              retries++;
-            }
-            
+            await new Promise(resolve => setTimeout(resolve, 300));
+            retries++;
+          }
+          
             if (!sessionEstablished) {
               console.error('❌ Session not established after retries');
               toast({
@@ -593,11 +604,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           message = `Unable to create account: ${error.message || 'Unknown error'}. Please try again or contact support if the problem persists.`;
         }
 
-        toast({
-          title: "Sign up failed",
+          toast({
+            title: "Sign up failed",
           description: message,
-          variant: "destructive",
-        });
+            variant: "destructive",
+          });
         return { error: new Error(message) };
       }
 
@@ -653,16 +664,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           // Email confirmation required
           console.log('⚠️ Email confirmation required - user created but no session');
-          toast({
-            title: "Check your email!",
-            description: "We've sent you a confirmation link. Please check your email and click the link to activate your account.",
+          console.log('📧 User data:', {
+            id: data.user.id,
+            email: data.user.email,
+            email_confirmed: data.user.email_confirmed_at !== null,
+            confirmation_sent_at: data.user.confirmation_sent_at,
           });
+          
+          // Check if email was actually sent
+          if (data.user.confirmation_sent_at) {
+        toast({
+          title: "Check your email!",
+              description: "We've sent you a confirmation link. Please check your inbox (and spam folder) and click the link to activate your account. The link may take a few minutes to arrive.",
+              duration: 8000,
+        });
+          } else {
+        toast({
+              title: "Account created!",
+              description: "Your account was created. If email confirmation is enabled, please check your email. You may also try signing in directly.",
+              duration: 8000,
+        });
+          }
           
           // Don't try to create profile here - wait for email confirmation
           // Profile will be created when user signs in after confirmation
         }
       }
-
+      
       return { error: null };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
@@ -686,12 +714,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('Error signing out:', error);
-        toast({
+      console.error('Error signing out:', error);
+      toast({
           title: "Sign out failed",
-          description: "There was an issue signing you out. Please try again.",
-          variant: "destructive",
-        });
+        description: "There was an issue signing you out. Please try again.",
+        variant: "destructive",
+      });
       } else {
         toast({
           title: "Signed out",
@@ -728,12 +756,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
-      await loadUserProfile(user.id);
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
-      return { error: null };
+        await loadUserProfile(user.id);
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been successfully updated.",
+        });
+        return { error: null };
     } catch (error: unknown) {
       const message = (error as Error).message;
       toast({
@@ -768,15 +796,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return { error };
       }
-
+        
       setProfile(null);
-      localStorage.removeItem(`profile_modal_seen_${user.id}`);
-      
-      toast({
-        title: "Profile deleted",
-        description: "Your profile has been deleted. You can create a new one anytime.",
-      });
-      return { error: null };
+        localStorage.removeItem(`profile_modal_seen_${user.id}`);
+        
+        toast({
+          title: "Profile deleted",
+          description: "Your profile has been deleted. You can create a new one anytime.",
+        });
+        return { error: null };
     } catch (error: unknown) {
       const message = (error as Error).message;
       toast({
@@ -800,7 +828,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Please enter a valid email address');
       }
 
-      const redirectUrl = `${window.location.origin}/auth?tab=reset`;
+      // Get the proper redirect URL - use Site URL from env if available, otherwise use current origin
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+      const redirectUrl = `${siteUrl}/auth?tab=reset`;
+      
+      console.log('📧 Password reset email redirect URL:', redirectUrl);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
@@ -826,11 +858,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(message) };
       }
 
-      toast({
-        title: "Password reset email sent!",
-        description: "Please check your email and click the link to reset your password. The link will expire in 1 hour.",
-      });
-      return { error: null };
+        toast({
+          title: "Password reset email sent!",
+          description: "Please check your email and click the link to reset your password. The link will expire in 1 hour.",
+        });
+        return { error: null };
     } catch (error: unknown) {
       const message = (error as Error).message;
       toast({
@@ -879,11 +911,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error(message) };
       }
 
-      toast({
-        title: "Password updated successfully!",
-        description: "Your password has been changed. Please use your new password for future sign-ins.",
-      });
-      return { error: null };
+        toast({
+          title: "Password updated successfully!",
+          description: "Your password has been changed. Please use your new password for future sign-ins.",
+        });
+        return { error: null };
     } catch (error: unknown) {
       const message = (error as Error).message;
       toast({

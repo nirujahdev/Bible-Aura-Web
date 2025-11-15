@@ -14,10 +14,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  User, Edit3, Camera, BookOpen, Heart, MessageCircle, 
-  Calendar, Award, Target, TrendingUp, Save, Star, Sparkles,
+  User, Edit3, BookOpen, Heart, 
+  Calendar, Award, Target, TrendingUp, Save, Star,
   Shield, Mail, Lock, Eye, EyeOff, Settings, Type, 
-  Languages, Bot, Bell, Palette, Moon, Sun,
+  Languages, Bot, LogOut,
   Trash2, AlertTriangle
 } from "lucide-react";
 import { MobileOptimizedLayout } from "@/components/MobileOptimizedLayout";
@@ -36,12 +36,11 @@ interface UserProfile {
 }
 
 interface UserStats {
-  totalPrayers: number;
-  answeredPrayers: number;
-  totalJournalEntries: number;
   totalSermons: number;
   totalBookmarks: number;
+  totalFavorites: number;
   totalConversations: number;
+  totalHighlights: number;
 }
 
 const Profile = () => {
@@ -50,12 +49,11 @@ const Profile = () => {
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats>({
-    totalPrayers: 0,
-    answeredPrayers: 0,
-    totalJournalEntries: 0,
     totalSermons: 0,
     totalBookmarks: 0,
-    totalConversations: 0
+    totalFavorites: 0,
+    totalConversations: 0,
+    totalHighlights: 0
   });
 
 
@@ -92,9 +90,6 @@ const Profile = () => {
   const [showVerseNumbers, setShowVerseNumbers] = useState(true);
   const [defaultAIMode, setDefaultAIMode] = useState("chat");
   const [defaultLanguage, setDefaultLanguage] = useState("english");
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
   const [activeTab, setActiveTab] = useState("profile");
 
   const translations = [
@@ -149,47 +144,32 @@ const Profile = () => {
       // Set up real-time subscription for stats updates
       const statsChannels = [
         supabase
-          .channel('prayer-stats')
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'prayer_requests',
-              filter: `user_id=eq.${user.id}`
-            },
-            () => {
-              loadStats(); // Reload stats when prayers change
-            }
-          )
-          .subscribe(),
-        supabase
-          .channel('journal-stats')
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'journal_entries',
-              filter: `user_id=eq.${user.id}`
-            },
-            () => {
-              loadStats(); // Reload stats when journal entries change
-            }
-          )
-          .subscribe(),
-        supabase
           .channel('bookmark-stats')
           .on(
             'postgres_changes',
             {
               event: '*',
               schema: 'public',
-              table: 'bookmarks',
+              table: 'user_bible_bookmarks',
               filter: `user_id=eq.${user.id}`
             },
             () => {
               loadStats(); // Reload stats when bookmarks change
+            }
+          )
+          .subscribe(),
+        supabase
+          .channel('favorite-stats')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'user_bible_favorites',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              loadStats(); // Reload stats when favorites change
             }
           )
           .subscribe(),
@@ -205,6 +185,21 @@ const Profile = () => {
             },
             () => {
               loadStats(); // Reload stats when conversations change
+            }
+          )
+          .subscribe(),
+        supabase
+          .channel('sermon-stats')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'sermons',
+              filter: `user_id=eq.${user.id}`
+            },
+            () => {
+              loadStats(); // Reload stats when sermons change
             }
           )
           .subscribe(),
@@ -246,28 +241,25 @@ const Profile = () => {
 
     try {
       const [
-        prayersResponse,
-        answeredPrayersResponse,
-        journalResponse,
         sermonsResponse,
         bookmarksResponse,
-        conversationsResponse
+        favoritesResponse,
+        conversationsResponse,
+        highlightsResponse
       ] = await Promise.all([
-        supabase.from('prayer_requests').select('id', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('prayer_requests').select('id', { count: 'exact' }).eq('user_id', user.id).eq('status', 'answered'),
-        supabase.from('journal_entries').select('id', { count: 'exact' }).eq('user_id', user.id),
         supabase.from('sermons').select('id', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('bookmarks').select('id', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('ai_conversations').select('id', { count: 'exact' }).eq('user_id', user.id)
+        supabase.from('user_bible_bookmarks').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('user_bible_favorites').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('ai_conversations').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('verse_highlights').select('id', { count: 'exact' }).eq('user_id', user.id)
       ]);
 
       setStats({
-        totalPrayers: prayersResponse.count || 0,
-        answeredPrayers: answeredPrayersResponse.count || 0,
-        totalJournalEntries: journalResponse.count || 0,
         totalSermons: sermonsResponse.count || 0,
         totalBookmarks: bookmarksResponse.count || 0,
-        totalConversations: conversationsResponse.count || 0
+        totalFavorites: favoritesResponse.count || 0,
+        totalConversations: conversationsResponse.count || 0,
+        totalHighlights: highlightsResponse.count || 0
       });
     } catch (error) {
       console.error("Failed to load stats:", error);
@@ -476,9 +468,6 @@ const Profile = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const prayerAnswerRate = stats.totalPrayers > 0 
-    ? Math.round((stats.answeredPrayers / stats.totalPrayers) * 100) 
-    : 0;
 
 
   if (!user) {
@@ -505,25 +494,36 @@ const Profile = () => {
             <div className={`p-3 bg-orange-500 rounded-xl ${isMobile ? 'mx-auto sm:mx-0' : ''}`}>
               <User className="h-8 w-8 text-white" />
             </div>
-            <div className={isMobile ? 'text-center sm:text-left' : ''}>
+            <div className={isMobile ? 'text-center sm:text-left flex-1' : 'flex-1'}>
               <h1 className={`font-bold text-gray-900 ${isMobile ? 'text-xl sm:text-2xl' : 'text-2xl'}`}>Profile & Settings</h1>
               <p className={`text-gray-600 ${isMobile ? 'text-sm sm:text-base' : ''}`}>Manage your account, preferences, and spiritual settings</p>
             </div>
+            <Button 
+              variant="destructive" 
+              onClick={async () => {
+                await signOut();
+                window.location.href = '/auth';
+              }}
+              className={`${isMobile ? 'w-full sm:w-auto' : ''}`}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
-        <div className="flex flex-wrap gap-3">
-          <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Calendar className="h-4 w-4 text-white/80" />
-              <span>{profile?.reading_streak || 0} Day Streak</span>
+          <div className="flex flex-wrap gap-3 mb-4">
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Calendar className="h-4 w-4 text-white/80" />
+                <span>{profile?.reading_streak || 0} Day Streak</span>
+              </div>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Star className="h-4 w-4 text-white/80" />
+                <span>Active Member</span>
+              </div>
             </div>
           </div>
-          <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Star className="h-4 w-4 text-white/80" />
-              <span>Active Member</span>
-            </div>
-          </div>
-        </div>
         </div>
 
       {/* Main Content */}
@@ -866,7 +866,7 @@ const Profile = () => {
                         </p>
                         <ul className="text-sm text-red-700 space-y-1 mb-4 list-disc list-inside">
                           <li>Remove your profile and all personal information</li>
-                          <li>Delete all your prayers, journal entries, and bookmarks</li>
+                          <li>Delete all your bookmarks, favorites, and highlights</li>
                           <li>Remove all your AI conversations and sermons</li>
                           <li>Sign you out immediately</li>
                         </ul>
@@ -961,25 +961,22 @@ const Profile = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                <Heart className="h-4 w-4 text-red-500" />
-                Prayer Life
+                <BookOpen className="h-4 w-4 text-blue-500" />
+                Study & Growth
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 sm:space-y-3">
               <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Total Prayers</span>
-                <span className="text-xs sm:text-sm font-medium">{stats.totalPrayers}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Bookmarks</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalBookmarks}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Answered</span>
-                <span className="text-xs sm:text-sm font-medium">{stats.answeredPrayers}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Favorites</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalFavorites}</span>
               </div>
-              <div className="space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">Answer Rate</span>
-                  <span className="text-xs sm:text-sm font-medium">{prayerAnswerRate}%</span>
-                </div>
-                <Progress value={prayerAnswerRate} className="h-2" />
+              <div className="flex justify-between">
+                <span className="text-xs sm:text-sm text-muted-foreground">Highlights</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalHighlights}</span>
               </div>
             </CardContent>
           </Card>
@@ -987,22 +984,18 @@ const Profile = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-blue-500" />
-                Study & Growth
+                <Bot className="h-4 w-4 text-purple-500" />
+                AI & Conversations
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 sm:space-y-3">
               <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Journal Entries</span>
-                <span className="text-xs sm:text-sm font-medium">{stats.totalJournalEntries}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Bookmarks</span>
-                <span className="text-xs sm:text-sm font-medium">{stats.totalBookmarks}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-xs sm:text-sm text-muted-foreground">AI Conversations</span>
                 <span className="text-xs sm:text-sm font-medium">{stats.totalConversations}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-xs sm:text-sm text-muted-foreground">Sermons Created</span>
+                <span className="text-xs sm:text-sm font-medium">{stats.totalSermons}</span>
               </div>
             </CardContent>
           </Card>
@@ -1011,47 +1004,22 @@ const Profile = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <Award className="h-4 w-4 text-yellow-500" />
-                Ministry & Service
+                Activity
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 sm:space-y-3">
               <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Sermons Created</span>
-                <span className="text-xs sm:text-sm font-medium">{stats.totalSermons}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Reading Streak</span>
+                <span className="text-xs sm:text-sm font-medium">{profile?.reading_streak || 0} days</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Active Goals</span>
-                <span className="text-xs sm:text-sm font-medium">0</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-xs sm:text-sm text-muted-foreground">Achievements</span>
-                <span className="text-xs sm:text-sm font-medium">Coming Soon</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">Total Reading Days</span>
+                <span className="text-xs sm:text-sm font-medium">{profile?.total_reading_days || 0}</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
-              Spiritual Goals
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-6 sm:py-8">
-              <Target className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Set Your Spiritual Goals</h3>
-              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 px-2">
-                Track your spiritual growth with personalized goals and milestones.
-              </p>
-              <Button variant="outline" disabled className="w-full sm:w-auto">
-                Coming Soon
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
           </TabsContent>
 
           {/* Settings Tab Content */}
@@ -1147,48 +1115,13 @@ const Profile = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* App Preferences */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-purple-600" />
-                  App Preferences
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Push Notifications</label>
-                    <p className="text-xs text-gray-500">Receive daily verse and prayer reminders</p>
-                  </div>
-                  <Switch checked={notifications} onCheckedChange={setNotifications} />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Dark Mode</label>
-                    <p className="text-xs text-gray-500">Switch to dark theme</p>
-                  </div>
-                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Auto-Save</label>
-                    <p className="text-xs text-gray-500">Automatically save your work</p>
-                  </div>
-                  <Switch checked={autoSave} onCheckedChange={setAutoSave} />
-                </div>
-
-                <div className="pt-4 border-t">
-                  <Button onClick={saveProfile} disabled={loading} className="w-full">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save All Settings
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            
+            <div className="pt-4">
+              <Button onClick={saveProfile} disabled={loading} className="w-full">
+                <Save className="h-4 w-4 mr-2" />
+                Save All Settings
+              </Button>
+            </div>
 
           </TabsContent>
         </Tabs>
