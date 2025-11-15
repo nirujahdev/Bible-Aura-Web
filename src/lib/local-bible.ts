@@ -291,11 +291,18 @@ export async function searchVerses(
     maxResults?: number;
   }
 ): Promise<BibleVerse[]> {
-  const { fuzzyEnabled = false, maxResults = 200 } = options || {};
+  // Reduce default maxResults to prevent memory issues
+  const { fuzzyEnabled = false, maxResults = 100 } = options || {};
   const results: BibleVerse[] = [];
   
   const searchQuery = query.trim();
   if (!searchQuery) return [];
+  
+  // Prevent searching with empty or very short queries that would match too many results
+  if (searchQuery.length < 2) {
+    console.warn('Search query too short, minimum 2 characters required');
+    return [];
+  }
 
   // Parse advanced query
   const parsedQuery = parseSearchQuery(searchQuery);
@@ -313,11 +320,20 @@ export async function searchVerses(
       const booksToSearch = bookFilter ? [bookFilter] : Object.keys(bible);
 
       for (const bookName of booksToSearch) {
+        // Early exit if we have enough results
+        if (results.length >= maxResults) break;
+        
         const bookData = bible[bookName];
         if (!bookData) continue;
 
         for (const [chapterNum, chapterData] of Object.entries(bookData)) {
+          // Early exit if we have enough results
+          if (results.length >= maxResults) break;
+          
           for (const [verseNum, text] of Object.entries(chapterData as Record<string, string>)) {
+            // Early exit if we have enough results (but allow some overage for better sorting)
+            if (results.length >= maxResults * 1.5) break;
+            
             let searchMatch: SearchMatch | null = null;
 
             // ALWAYS use advanced matching when fuzzy is enabled OR when query has operators
@@ -334,6 +350,8 @@ export async function searchVerses(
                 // Find all matches for highlighting (not just first one)
                 const matches: { term: string; position: number; length: number; fuzzy: boolean }[] = [];
                 let match;
+                // Reset regex lastIndex to avoid infinite loop
+                wordRegex.lastIndex = 0;
                 while ((match = wordRegex.exec(text)) !== null) {
                   matches.push({
                     term: queryLower,
@@ -341,6 +359,8 @@ export async function searchVerses(
                     length: match[0].length,
                     fuzzy: false
                   });
+                  // Safety: limit matches to prevent excessive memory usage
+                  if (matches.length >= 50) break;
                 }
                 // Also check phrase matches
                 const phraseMatch = textLower.indexOf(queryLower);
@@ -394,11 +414,20 @@ export async function searchVerses(
         books.filter(book => book.name === bookFilter) : books;
 
       for (const book of booksToSearch) {
+        // Early exit if we have enough results
+        if (results.length >= maxResults) break;
+        
         try {
           const tamilBookData = await loadTamilBook(book.name);
           
           for (const chapter of tamilBookData.chapters) {
+            // Early exit if we have enough results
+            if (results.length >= maxResults) break;
+            
             for (const verse of chapter.verses) {
+              // Early exit if we have enough results (but allow some overage for better sorting)
+              if (results.length >= maxResults * 1.5) break;
+              
               let searchMatch: SearchMatch | null = null;
 
               // ALWAYS use advanced matching when fuzzy is enabled OR when query has operators
@@ -414,6 +443,8 @@ export async function searchVerses(
                   // Find all matches for highlighting (not just first one)
                   const matches: { term: string; position: number; length: number; fuzzy: boolean }[] = [];
                   let match;
+                  // Reset regex lastIndex to avoid infinite loop
+                  wordRegex.lastIndex = 0;
                   while ((match = wordRegex.exec(verse.text)) !== null) {
                     matches.push({
                       term: queryLower,
@@ -421,6 +452,8 @@ export async function searchVerses(
                       length: match[0].length,
                       fuzzy: false
                     });
+                    // Safety: limit matches to prevent excessive memory usage
+                    if (matches.length >= 50) break;
                   }
                   // Also check phrase matches
                   const phraseMatch = textLower.indexOf(queryLower);

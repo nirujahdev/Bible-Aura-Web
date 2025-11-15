@@ -17,7 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS } from "@/lib/local-bible";
+import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS, searchVerses } from "@/lib/local-bible";
 import SermonToolbar from '@/components/SermonToolbar';
 import SermonAIAssistant from '@/components/SermonAIAssistant';
 import SermonAIGenerator from '@/components/SermonAIGenerator';
@@ -489,6 +489,18 @@ const Sermons = () => {
         }
       }
 
+      // Reload profile after save to update stats
+      if (savedSermon) {
+        // Refresh sermons list to show updated data
+        setSermons(prev => {
+          if (selectedSermon?.id) {
+            return prev.map(s => s.id === selectedSermon.id ? savedSermon : s);
+          } else {
+            return [savedSermon, ...prev];
+          }
+        });
+      }
+
       if (!isAutoSave && savedSermon) {
         toast({
           title: "Success",
@@ -497,9 +509,22 @@ const Sermons = () => {
       }
     } catch (error: any) {
       console.error('Error saving sermon:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to save sermon. Please try again.";
+      if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+        errorMessage = "You don't have permission to save sermons. Please sign out and sign back in.";
+      } else if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+        errorMessage = "Database table is missing. Please contact support.";
+      } else if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+        errorMessage = "Database schema issue detected. Some fields may not be saved.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to save sermon. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -632,64 +657,35 @@ const Sermons = () => {
   };
 
   const searchBible = async (query: string) => {
-    if (!query.trim()) {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery || trimmedQuery.length < 2) {
       setSearchResults([]);
       return;
     }
 
     setBibleLoading(true);
     try {
-      // Enhanced search across the entire Bible
-      const results: BibleVerse[] = [];
-      const searchTerm = query.toLowerCase();
-      
-      // Search through current loaded verses first (for instant results)
-      const currentResults = verses.filter(verse => 
-        verse.text.toLowerCase().includes(searchTerm)
-      );
-      results.push(...currentResults);
-      
-      // If we have few results and want to search more extensively,
-      // we could load and search other popular books/chapters
-      if (results.length < 10) {
-        try {
-          // Search through other popular books for better results
-          const popularBooks = ['Genesis', 'Psalms', 'Matthew', 'John', 'Romans', 'Ephesians'];
-          
-          for (const bookName of popularBooks) {
-            if (results.length >= 20) break; // Limit total results
-            
-            const book = books.find(b => b.name === bookName);
-            if (book && book.name !== selectedBook?.name) {
-              // Search first few chapters of popular books
-              const chaptersToSearch = Math.min(3, book.chapters);
-              
-              for (let chapter = 1; chapter <= chaptersToSearch; chapter++) {
-                                 try {
-                   const language = selectedTranslation === 'TAMIL' ? 'tamil' : 'english';
-                   const chapterVerses = await getChapterVerses(book.name, chapter, language, selectedTranslation);
-                   const chapterResults = chapterVerses.filter(verse => 
-                     verse.text.toLowerCase().includes(searchTerm)
-      );
-                   results.push(...chapterResults);
-                  
-                  // Break if we have enough results
-                  if (results.length >= 20) break;
-    } catch (error) {
-                  // Continue to next chapter if one fails
-                  continue;
-    }
-              }
-            }
-          }
-        } catch (error) {
-          console.warn('Extended search failed:', error);
-          // Continue with current results
+      // Use the optimized searchVerses function instead of manual search
+      // This prevents memory issues and provides better results
+      const searchResults = await searchVerses(
+        trimmedQuery,
+        selectedTranslation === 'TAMIL' ? 'tamil' : 'english',
+        undefined, // Search all books
+        selectedTranslation,
+        {
+          maxResults: 50, // Limit results to prevent memory issues
+          fuzzyEnabled: false // Disable fuzzy for performance
         }
-      }
+      );
       
-      // Remove duplicates and sort by relevance
-      const uniqueResults = results.filter((verse, index, self) => 
+      // Also check current loaded verses for instant results
+      const currentResults = verses.filter(verse => 
+        verse.text.toLowerCase().includes(trimmedQuery.toLowerCase())
+      );
+      
+      // Combine and deduplicate
+      const allResults = [...currentResults, ...searchResults];
+      const uniqueResults = allResults.filter((verse, index, self) => 
         index === self.findIndex(v => v.id === verse.id)
       );
       
@@ -710,14 +706,14 @@ const Sermons = () => {
         
         // Finally by verse
         return a.verse - b.verse;
-      });
+      }).slice(0, 50); // Limit to 50 results
       
       setSearchResults(sortedResults);
     } catch (error) {
       console.error('Error searching Bible:', error);
       toast({
         title: "Search Error",
-        description: "Failed to search the Bible. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to search the Bible. Please try again.",
         variant: "destructive"
       });
     } finally {
