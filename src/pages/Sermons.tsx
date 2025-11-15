@@ -119,16 +119,8 @@ const SermonsContent = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Safely get sermon AI context with error handling
-  let sermonAI;
-  try {
-    sermonAI = useSermonAI();
-  } catch (error) {
-    console.error('SermonAI context error:', error);
-    // Will be handled by ErrorBoundary
-    throw error;
-  }
-  
+  // Get sermon AI context - should always be available since we're wrapped in SermonAIProvider
+  const sermonAI = useSermonAI();
   const { updateContent, updateTitle, updateScriptureReference, updateMainPoints } = sermonAI;
   const isMobile = useIsMobile();
   
@@ -360,17 +352,21 @@ const SermonsContent = () => {
   };
 
   const loadChapter = async (book: BibleBook, chapter: number) => {
+    if (!book || !chapter) return;
+    
     setBibleLoading(true);
     try {
       const language = selectedTranslation === 'TAMIL' ? 'tamil' : 'english';
       const chapterVerses = await getChapterVerses(book.name, chapter, language, selectedTranslation);
-      setVerses(chapterVerses);
-      setSelectedChapter(chapter);
-    } catch (error) {
+      if (chapterVerses && Array.isArray(chapterVerses)) {
+        setVerses(chapterVerses);
+        setSelectedChapter(chapter);
+      }
+    } catch (error: any) {
       console.error('Error loading chapter:', error);
       toast({
         title: "Error",
-        description: "Failed to load Bible chapter",
+        description: error?.message || "Failed to load Bible chapter",
         variant: "destructive"
       });
     } finally {
