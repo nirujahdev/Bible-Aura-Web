@@ -459,10 +459,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.session) {
           setSession(data.session);
         } else {
-          // If no session in response, try to get it
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          if (currentSession) {
-            setSession(currentSession);
+          // If no session in response, try to get it with retries
+          // This ensures session is available before redirect
+          let retries = 0;
+          const maxRetries = 5;
+          let currentSession = null;
+          
+          while (!currentSession && retries < maxRetries) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              currentSession = session;
+              setSession(session);
+              break;
+            }
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 300));
+            retries++;
+          }
+          
+          if (!currentSession && retries >= maxRetries) {
+            console.warn('Session not available after sign-in');
           }
         }
         
@@ -678,10 +694,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.session) {
           setSession(data.session);
         } else {
-          // If no session but user exists, try to get session
-          const { data: { session: newSession } } = await supabase.auth.getSession();
-          if (newSession) {
-            setSession(newSession);
+          // If no session but user exists, try to get session with retries
+          // This is important for new users where session might not be immediately available
+          let retries = 0;
+          const maxRetries = 5;
+          let newSession = null;
+          
+          while (!newSession && retries < maxRetries) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              newSession = session;
+              setSession(session);
+              break;
+            }
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 300));
+            retries++;
+          }
+          
+          if (!newSession && retries >= maxRetries) {
+            console.warn('Session not available after signup, but user was created');
           }
         }
       }

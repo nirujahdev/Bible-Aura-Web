@@ -177,6 +177,9 @@ export default function Auth() {
     // Don't redirect while loading or if already redirected
     if (loading) return;
     
+    // Only check redirect if we're on the auth page
+    if (window.location.pathname !== '/auth') return;
+    
     const urlHash = window.location.hash;
     const hasOAuthCallback = urlHash.includes('access_token') || urlHash.includes('refresh_token');
     
@@ -188,38 +191,95 @@ export default function Auth() {
       currentPath: window.location.pathname
     });
     
-    // Redirect if user OR session exists (session might be available before user state updates)
-    const isAuthenticated = user || session;
-    
-    // Only redirect if we're on the auth page and authenticated
-    if (isAuthenticated && window.location.pathname === '/auth') {
-      console.log('User authenticated, redirecting to dashboard');
-      setAuthSuccess('Authentication successful! Redirecting...');
+    // Function to check session and redirect
+    const checkAndRedirect = async () => {
+      let isAuthenticated = user || session;
       
-      // Clean up OAuth callback from URL
-      if (hasOAuthCallback) {
-        window.history.replaceState({}, '', '/auth');
+      // If user/session not in state yet, check directly from Supabase
+      // This is important for new users where state might not be updated yet
+      if (!isAuthenticated) {
+        try {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (currentSession) {
+            isAuthenticated = true;
+            console.log('Session found directly from Supabase:', !!currentSession);
+          }
+        } catch (error) {
+          console.error('Error checking session:', error);
+        }
       }
       
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectTo = urlParams.get('redirect');
-      const finalRedirect = redirectTo ? decodeURIComponent(redirectTo) : '/dashboard';
-      
-      // Use a small delay to ensure state is updated and UI shows success message
-      const redirectTimer = setTimeout(() => {
-        // Double-check authentication before redirecting
-        if (user || session) {
-          console.log('Navigating to:', finalRedirect);
-          navigate(finalRedirect, { replace: true });
+      if (isAuthenticated) {
+        console.log('User authenticated, redirecting to dashboard');
+        setAuthSuccess('Authentication successful! Redirecting...');
+        
+        // Clean up OAuth callback from URL
+        if (hasOAuthCallback) {
+          window.history.replaceState({}, '', '/auth');
         }
-      }, 500);
-      
-      return () => clearTimeout(redirectTimer);
-    } else if (hasOAuthCallback && !user && !session) {
-      // OAuth callback detected but user/session not loaded yet
-      console.log('OAuth callback detected, waiting for session...');
-      setAuthSuccess('Completing Google sign-in... Please wait.');
-    }
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get('redirect');
+        const finalRedirect = redirectTo ? decodeURIComponent(redirectTo) : '/dashboard';
+        
+        // Small delay to show success message, then redirect
+        setTimeout(() => {
+          // Final check before redirecting
+          if (window.location.pathname === '/auth') {
+            console.log('Navigating to:', finalRedirect);
+            navigate(finalRedirect, { replace: true });
+          }
+        }, 800);
+      } else if (hasOAuthCallback && !user && !session) {
+        // OAuth callback detected but user/session not loaded yet
+        console.log('OAuth callback detected, waiting for session...');
+        setAuthSuccess('Completing Google sign-in... Please wait.');
+        
+        // Retry checking session for OAuth callbacks (up to 3 times)
+        let retries = 0;
+        const maxRetries = 3;
+        const retryInterval = setInterval(async () => {
+          retries++;
+          try {
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            if (currentSession) {
+              clearInterval(retryInterval);
+              console.log('OAuth session detected on retry, redirecting...');
+              setAuthSuccess('Authentication successful! Redirecting...');
+              
+              // Clean up URL
+              window.history.replaceState({}, '', '/auth');
+              
+              setTimeout(() => {
+                navigate('/dashboard', { replace: true });
+              }, 500);
+            } else if (retries >= maxRetries) {
+              clearInterval(retryInterval);
+              console.error('OAuth session not found after retries');
+            }
+          } catch (error) {
+            console.error('Error checking OAuth session:', error);
+            if (retries >= maxRetries) {
+              clearInterval(retryInterval);
+            }
+          }
+        }, 1000);
+        
+        return () => clearInterval(retryInterval);
+      }
+    };
+    
+    // Check immediately
+    checkAndRedirect();
+    
+    // Also set up a delayed check for cases where state updates slowly
+    const delayedCheck = setTimeout(() => {
+      if (window.location.pathname === '/auth') {
+        checkAndRedirect();
+      }
+    }, 1500);
+    
+    return () => clearTimeout(delayedCheck);
   }, [user, session, loading, navigate]);
 
   // Enhanced form validation
