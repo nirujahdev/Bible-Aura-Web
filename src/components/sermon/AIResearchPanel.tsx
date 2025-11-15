@@ -330,26 +330,26 @@ Provide detailed, helpful research and insights.`;
           </TabsTrigger>
         </TabsList>
 
-        {/* Enhanced Tools Tab */}
-        <TabsContent value="tools" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
-          <div className="space-y-4">
+        {/* Enhanced Tools Tab - Compact to fit without scroll */}
+        <TabsContent value="tools" className="flex-1 overflow-hidden p-2 m-0 min-h-0">
+          <div className="space-y-2.5 h-full overflow-y-auto">
             {Object.entries(agentsByCategory).map(([category, agents]) => {
               const categoryInfo = categoryLabels[category] || { label: category, icon: Sparkles, color: 'bg-gray-500' };
               const CategoryIcon = categoryInfo.icon;
               
               return (
-                <div key={category} className="space-y-2">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={cn("p-1.5 rounded-lg", categoryInfo.color)}>
-                      <CategoryIcon className="h-4 w-4 text-white" />
+                <div key={category} className="space-y-1.5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={cn("p-1 rounded-lg", categoryInfo.color)}>
+                      <CategoryIcon className="h-3.5 w-3.5 text-white" />
                     </div>
-                    <h3 className="font-semibold text-sm text-gray-700">{categoryInfo.label}</h3>
-                    <Badge variant="outline" className="text-xs ml-auto">
+                    <h3 className="font-semibold text-xs text-gray-700">{categoryInfo.label}</h3>
+                    <Badge variant="outline" className="text-[10px] ml-auto px-1.5 py-0">
                       {agents.length}
                     </Badge>
                   </div>
                   
-                  <div className="grid gap-2">
+                  <div className="grid gap-1.5">
                     {agents.map((agent) => {
                       const iconMap: Record<string, any> = {
                         'Globe': Globe,
@@ -359,6 +359,7 @@ Provide detailed, helpful research and insights.`;
                         'Lightbulb': Lightbulb,
                         'Target': Target,
                         'Wand2': Wand2,
+                        'Sparkles': Sparkles,
                       };
                       const Icon = iconMap[agent.icon] || Sparkles;
                       const isExecuting = executingAgent === agent.id;
@@ -368,41 +369,41 @@ Provide detailed, helpful research and insights.`;
                           key={agent.id}
                           className={cn(
                             "group relative overflow-hidden transition-all duration-200",
-                            "hover:shadow-md hover:border-orange-300 cursor-pointer",
+                            "hover:shadow-sm hover:border-orange-300 cursor-pointer",
                             isExecuting && "border-orange-500 bg-orange-50",
                             !isExecuting && "hover:bg-white"
                           )}
                           onClick={() => handleExecuteAgent(agent.id)}
                         >
-                          <CardContent className="p-3">
-                            <div className="flex items-start gap-3">
+                          <CardContent className="p-2">
+                            <div className="flex items-start gap-2">
                               <div className={cn(
-                                "p-2.5 rounded-lg flex-shrink-0 transition-all",
+                                "p-1.5 rounded-lg flex-shrink-0 transition-all",
                                 isExecuting 
                                   ? "bg-orange-500 animate-pulse" 
                                   : "bg-gradient-to-br from-orange-100 to-orange-50 group-hover:from-orange-200 group-hover:to-orange-100"
                               )}>
                                 <Icon className={cn(
-                                  "h-5 w-5 transition-colors",
+                                  "h-4 w-4 transition-colors",
                                   isExecuting ? "text-white" : "text-orange-600"
                                 )} />
                               </div>
                               
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1">
-                                  <h4 className="font-semibold text-sm text-gray-900">{agent.name}</h4>
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <h4 className="font-semibold text-xs text-gray-900">{agent.name}</h4>
                                   {isExecuting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                                    <Loader2 className="h-3 w-3 animate-spin text-orange-500" />
                                   ) : (
-                                    <Play className="h-4 w-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                                    <Play className="h-3 w-3 text-gray-400 group-hover:text-orange-500 transition-colors" />
                                   )}
                                 </div>
-                                <p className="text-xs text-gray-600 leading-relaxed">{agent.description}</p>
+                                <p className="text-[10px] text-gray-600 leading-tight">{agent.description}</p>
                                 
                                 {isExecuting && (
-                                  <div className="mt-2 flex items-center gap-2 text-xs text-orange-600">
-                                    <Loader2 className="h-3 w-3 animate-spin" />
-                                    <span>Executing agent...</span>
+                                  <div className="mt-1 flex items-center gap-1 text-[10px] text-orange-600">
+                                    <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                    <span>Executing...</span>
                                   </div>
                                 )}
                               </div>

@@ -200,33 +200,34 @@ Provide 3-5 relevant quotes with proper attribution.`;
 };
 
 /**
- * Illustration Finder Agent
- * Finds sermon illustrations and stories
+ * Related Scripture Reference Searcher Agent
+ * Finds related scripture references for sermon topics
  */
-export const illustrationFinderAgent: SermonAgent = {
-  id: 'illustration-finder',
-  name: 'Illustration Finder',
-  description: 'Find sermon illustrations and stories',
-  icon: 'Lightbulb',
-  category: 'writing',
+export const relatedScriptureSearcherAgent: SermonAgent = {
+  id: 'related-scripture-searcher',
+  name: 'Related Scripture Searcher',
+  description: 'Find related scripture references by topic',
+  icon: 'Search',
+  category: 'research',
   execute: async (context, params) => {
     // Dynamically import to prevent circular dependency
     const { generateSermonContent } = await import('./sermon-agent-sdk');
     
     const topic = params?.topic || context.title || 'Not specified';
+    const currentScripture = context.scripture || 'Not specified';
     
-    const prompt = `Suggest relevant illustrations, stories, or examples for this sermon:
+    const prompt = `Find related scripture references for this sermon topic: ${topic}
 
-Topic: ${topic}
-Scripture: ${context.scripture || 'Not specified'}
+Current Scripture: ${currentScripture}
 
-For each illustration, provide:
-1. The illustration/story
-2. How it relates to the scripture
-3. Application point
-4. When to use it in the sermon
+For each related scripture, provide:
+1. Full reference (Book Chapter:Verse)
+2. Verse text
+3. How it relates to the topic
+4. Context and meaning
+5. Cross-references if applicable
 
-Provide 2-3 illustrations that are engaging, relatable, and biblically sound.`;
+Provide 5-10 relevant scripture references organized by theme or relevance.`;
 
     const result = await generateSermonContent({
       message: prompt,
@@ -236,50 +237,137 @@ Provide 2-3 illustrations that are engaging, relatable, and biblically sound.`;
 
     return {
       content: result,
-      action: 'insert',
-      metadata: { topic, type: 'illustration' }
+      action: 'show',
+      metadata: { topic, type: 'related-scripture' }
     };
   }
 };
 
 /**
- * Call to Action Agent
- * Generates impactful conclusions and calls to action
+ * Improve Agent - Quick Action
+ * Improves sermon content for clarity and impact
  */
-export const callToActionAgent: SermonAgent = {
-  id: 'call-to-action',
-  name: 'Call to Action',
-  description: 'Generate impactful conclusions',
-  icon: 'Target',
+export const improveAgent: SermonAgent = {
+  id: 'improve',
+  name: 'Improve',
+  description: 'Improve content for clarity and impact',
+  icon: 'Wand2',
   category: 'writing',
   execute: async (context, params) => {
     // Dynamically import to prevent circular dependency
     const { generateSermonContent } = await import('./sermon-agent-sdk');
     
-    const prompt = `Generate a powerful call to action for this sermon:
+    const content = params?.content || context.content || '';
+    
+    const prompt = `Improve the following sermon content for clarity, engagement, and impact:
+
+${content.substring(Math.max(0, content.length - 1500))}
+
+Provide:
+1. Improved version with better clarity
+2. Enhanced engagement elements
+3. Stronger impact points
+4. Better flow and transitions
 
 Title: ${context.title || 'Not specified'}
-Scripture: ${context.scripture || 'Not specified'}
-Main Points: ${context.mainPoints?.join(', ') || 'Not specified'}
-
-Create:
-1. A compelling summary of key points
-2. A clear, actionable call to action
-3. Practical next steps
-4. A closing prayer or benediction
-
-Make it inspiring, specific, and applicable to daily life.`;
+Scripture: ${context.scripture || 'Not specified'}`;
 
     const result = await generateSermonContent({
       message: prompt,
       context,
-      task: 'generate'
+      task: 'enhance'
     });
 
     return {
       content: result,
-      action: 'append',
-      metadata: { type: 'call-to-action' }
+      action: 'replace',
+      metadata: { type: 'improve' }
+    };
+  }
+};
+
+/**
+ * Enhance Agent - Quick Action
+ * Enhances sermon with better structure and flow
+ */
+export const enhanceAgent: SermonAgent = {
+  id: 'enhance',
+  name: 'Enhance',
+  description: 'Enhance with better structure and flow',
+  icon: 'Sparkles',
+  category: 'writing',
+  execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
+    const content = params?.content || context.content || '';
+    
+    const prompt = `Enhance this sermon content with better structure, flow, and engagement:
+
+${content.substring(Math.max(0, content.length - 1500))}
+
+Provide:
+1. Enhanced version with improved structure
+2. Better transitions between sections
+3. Enhanced flow and progression
+4. More engaging presentation
+
+Title: ${context.title || 'Not specified'}
+Scripture: ${context.scripture || 'Not specified'}`;
+
+    const result = await generateSermonContent({
+      message: prompt,
+      context,
+      task: 'enhance'
+    });
+
+    return {
+      content: result,
+      action: 'replace',
+      metadata: { type: 'enhance' }
+    };
+  }
+};
+
+/**
+ * Find Scripture Agent - Quick Action
+ * Finds relevant scriptures for sermon topic
+ */
+export const findScriptureAgent: SermonAgent = {
+  id: 'find-scripture',
+  name: 'Find Scripture',
+  description: 'Find relevant scriptures by topic',
+  icon: 'BookOpen',
+  category: 'research',
+  execute: async (context, params) => {
+    // Dynamically import to prevent circular dependency
+    const { generateSermonContent } = await import('./sermon-agent-sdk');
+    
+    const topic = params?.topic || context.title || 'Not specified';
+    
+    const prompt = `Find relevant Bible verses for this sermon topic: ${topic}
+
+For each verse, provide:
+1. Full reference (Book Chapter:Verse)
+2. Verse text
+3. Brief explanation of relevance
+4. How it relates to the topic
+5. Context and meaning
+
+Current Scripture: ${context.scripture || 'Not specified'}
+
+List at least 5-10 relevant verses, organized by theme or relevance.`;
+
+    const result = await generateSermonContent({
+      message: prompt,
+      context,
+      task: 'suggest'
+    });
+
+    return {
+      content: result,
+      action: 'show',
+      metadata: { topic, type: 'find-scripture' }
     };
   }
 };
@@ -336,8 +424,10 @@ export function getAllAgents(): SermonAgent[] {
     passageGuideAgent,
     topicExplorerAgent,
     quoteFinderAgent,
-    illustrationFinderAgent,
-    callToActionAgent,
+    relatedScriptureSearcherAgent,
+    improveAgent,
+    enhanceAgent,
+    findScriptureAgent,
     sermonSculptorAgent,
   ];
 }
