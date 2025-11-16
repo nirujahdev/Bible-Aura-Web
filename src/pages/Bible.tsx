@@ -104,6 +104,7 @@ export default function Bible() {
   const [selectedVerseForHighlight, setSelectedVerseForHighlight] = useState<string | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
+  const [targetVerseNumber, setTargetVerseNumber] = useState<number | null>(null);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
