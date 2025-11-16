@@ -65,123 +65,155 @@ export default function SermonToolbar({
   };
 
   const formatText = (format: string, value?: string) => {
-    if (!editorRef.current) return;
+    if (!editorRef.current) {
+      toast({
+        title: "Editor not ready",
+        description: "Please click in the editor first",
+        variant: "destructive"
+      });
+      return;
+    }
 
     // If rich text editor (contentEditable div)
     if (isRichText && editorRef.current instanceof HTMLDivElement) {
-      // Ensure editor is focused
-      editorRef.current.focus();
+      const editor = editorRef.current;
       
-      // Small delay to ensure focus is set
-      setTimeout(() => {
-        if (!editorRef.current) return;
-        
-        switch (format) {
-          case 'bold':
-            document.execCommand('bold', false);
-            break;
-          case 'italic':
-            document.execCommand('italic', false);
-            break;
-          case 'underline':
-            document.execCommand('underline', false);
-            break;
-          case 'strikethrough':
-            document.execCommand('strikethrough', false);
-            break;
-          case 'heading1':
-            document.execCommand('formatBlock', false, '<h1>');
-            break;
-          case 'heading2':
-            document.execCommand('formatBlock', false, '<h2>');
-            break;
-          case 'heading3':
-            document.execCommand('formatBlock', false, '<h3>');
-            break;
-          case 'alignLeft':
-            document.execCommand('justifyLeft', false);
-            break;
-          case 'alignCenter':
-            document.execCommand('justifyCenter', false);
-            break;
-          case 'alignRight':
-            document.execCommand('justifyRight', false);
-            break;
-          case 'alignJustify':
-            document.execCommand('justifyFull', false);
-            break;
-          case 'list':
-            document.execCommand('insertUnorderedList', false);
-            break;
-          case 'orderedList':
-            document.execCommand('insertOrderedList', false);
-            break;
-          case 'quote':
-            document.execCommand('formatBlock', false, '<blockquote>');
-            break;
-          case 'foreColor':
-            if (value) {
-              document.execCommand('foreColor', false, value);
-            }
-            break;
-          case 'backColor':
-            if (value) {
-              document.execCommand('backColor', false, value);
-            }
-            break;
-          case 'fontName':
-            if (value) {
-              document.execCommand('fontName', false, value);
-            }
-            break;
-          case 'fontSize':
-            if (value) {
-              // Use CSS font-size directly for better control
-              const selection = window.getSelection();
-              if (selection && selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
+      // Save current selection
+      const selection = window.getSelection();
+      let savedRange: Range | null = null;
+      
+      if (selection && selection.rangeCount > 0) {
+        savedRange = selection.getRangeAt(0).cloneRange();
+      }
+      
+      // Focus editor first
+      editor.focus();
+      
+      // Restore selection if we had one
+      if (savedRange && selection) {
+        try {
+          selection.removeAllRanges();
+          selection.addRange(savedRange);
+        } catch (e) {
+          // Selection might be invalid, continue anyway
+        }
+      }
+      
+      // Execute command immediately
+      let commandExecuted = false;
+      
+      switch (format) {
+        case 'bold':
+          commandExecuted = document.execCommand('bold', false);
+          break;
+        case 'italic':
+          commandExecuted = document.execCommand('italic', false);
+          break;
+        case 'underline':
+          commandExecuted = document.execCommand('underline', false);
+          break;
+        case 'strikethrough':
+          commandExecuted = document.execCommand('strikethrough', false);
+          break;
+        case 'heading1':
+          commandExecuted = document.execCommand('formatBlock', false, '<h1>');
+          break;
+        case 'heading2':
+          commandExecuted = document.execCommand('formatBlock', false, '<h2>');
+          break;
+        case 'heading3':
+          commandExecuted = document.execCommand('formatBlock', false, '<h3>');
+          break;
+        case 'alignLeft':
+          commandExecuted = document.execCommand('justifyLeft', false);
+          break;
+        case 'alignCenter':
+          commandExecuted = document.execCommand('justifyCenter', false);
+          break;
+        case 'alignRight':
+          commandExecuted = document.execCommand('justifyRight', false);
+          break;
+        case 'alignJustify':
+          commandExecuted = document.execCommand('justifyFull', false);
+          break;
+        case 'list':
+          commandExecuted = document.execCommand('insertUnorderedList', false);
+          break;
+        case 'orderedList':
+          commandExecuted = document.execCommand('insertOrderedList', false);
+          break;
+        case 'quote':
+          commandExecuted = document.execCommand('formatBlock', false, '<blockquote>');
+          break;
+        case 'foreColor':
+          if (value) {
+            commandExecuted = document.execCommand('foreColor', false, value);
+          }
+          break;
+        case 'backColor':
+          if (value) {
+            commandExecuted = document.execCommand('backColor', false, value);
+          }
+          break;
+        case 'fontName':
+          if (value) {
+            commandExecuted = document.execCommand('fontName', false, value);
+          }
+          break;
+        case 'fontSize':
+          if (value && selection && selection.rangeCount > 0) {
+            try {
+              const range = selection.getRangeAt(0);
+              if (!range.collapsed) {
                 const span = document.createElement('span');
                 span.style.fontSize = `${value}px`;
                 try {
                   range.surroundContents(span);
+                  commandExecuted = true;
                 } catch (e) {
-                  // If surroundContents fails, use insertNode
                   const contents = range.extractContents();
                   span.appendChild(contents);
                   range.insertNode(span);
+                  commandExecuted = true;
                 }
-                selection.removeAllRanges();
-                selection.addRange(range);
+              } else {
+                // No selection, apply to current block
+                const block = range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+                  ? range.commonAncestorContainer.parentElement
+                  : range.commonAncestorContainer as HTMLElement;
+                if (block) {
+                  (block as HTMLElement).style.fontSize = `${value}px`;
+                  commandExecuted = true;
+                }
               }
+            } catch (e) {
+              console.error('Font size error:', e);
             }
-            break;
-          case 'link': {
-            const url = value || prompt('Enter URL:');
-            if (url) {
-              document.execCommand('createLink', false, url);
-            }
-            break;
           }
-          case 'removeFormat':
-            document.execCommand('removeFormat', false);
-            break;
-          default:
-            return;
+          break;
+        case 'link': {
+          const url = value || prompt('Enter URL:');
+          if (url) {
+            commandExecuted = document.execCommand('createLink', false, url);
+          }
+          break;
         }
-        
-        // Trigger input event to update content after all commands
-        if (editorRef.current) {
-          // Force a re-render by triggering input event
+        case 'removeFormat':
+          commandExecuted = document.execCommand('removeFormat', false);
+          break;
+        default:
+          return;
+      }
+      
+      // Trigger input event to update content
+      if (commandExecuted && editor) {
+        // Use requestAnimationFrame to ensure DOM is updated
+        requestAnimationFrame(() => {
           const event = new Event('input', { bubbles: true, cancelable: true });
-          editorRef.current.dispatchEvent(event);
-          
-          // Also manually trigger onChange if available
-          if (onFormatText) {
-            const currentContent = editorRef.current.innerHTML;
-            onFormatText(format, currentContent);
-          }
-        }
-      }, 10);
+          editor.dispatchEvent(event);
+        });
+      }
+      
       return;
     }
 

@@ -25,49 +25,88 @@ export function TextSelectionMenu({ editorRef, onReplaceText }: TextSelectionMen
   const { user } = useAuth();
 
   useEffect(() => {
+    let selectionTimeout: NodeJS.Timeout | null = null;
+    let isProcessing = false;
+
     const handleSelection = () => {
-      const selection = window.getSelection();
+      // Prevent multiple simultaneous calls
+      if (isProcessing) return;
       
-      if (!selection || selection.rangeCount === 0 || selection.toString().trim() === '') {
-        setPosition(null);
-        setSelectedText('');
-        return;
+      // Clear any pending timeout
+      if (selectionTimeout) {
+        clearTimeout(selectionTimeout);
       }
 
-      // Check if selection is within our editor
-      if (editorRef.current && !editorRef.current.contains(selection.anchorNode)) {
-        setPosition(null);
-        setSelectedText('');
-        return;
-      }
+      // Debounce selection handling
+      selectionTimeout = setTimeout(() => {
+        isProcessing = true;
+        
+        try {
+          const selection = window.getSelection();
+          
+          if (!selection || selection.rangeCount === 0) {
+            setPosition(null);
+            setSelectedText('');
+            setSelectedRange(null);
+            isProcessing = false;
+            return;
+          }
 
-      const range = selection.getRangeAt(0);
-      const selectedTextContent = selection.toString().trim();
-      
-      if (selectedTextContent.length === 0) {
+          const selectedTextContent = selection.toString().trim();
+          
+          if (selectedTextContent.length === 0) {
+            setPosition(null);
+            setSelectedText('');
+            setSelectedRange(null);
+            isProcessing = false;
+            return;
+          }
+
+          // Check if selection is within our editor
+          if (editorRef.current) {
+            const anchorNode = selection.anchorNode;
+            if (!anchorNode || !editorRef.current.contains(anchorNode)) {
+              setPosition(null);
+              setSelectedText('');
+              setSelectedRange(null);
+              isProcessing = false;
+              return;
+            }
+          }
+
+          const range = selection.getRangeAt(0);
+          
+          setSelectedText(selectedTextContent);
+          setSelectedRange(range.cloneRange());
+
+          // Get position of selection
+          const rect = range.getBoundingClientRect();
+          setPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.top - 10
+          });
+        } catch (error) {
+          console.error('Selection error:', error);
+        } finally {
+          isProcessing = false;
+        }
+      }, 100); // Debounce by 100ms
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      // Only process if mouseup is in the editor
+      if (editorRef.current && editorRef.current.contains(e.target as Node)) {
+        handleSelection();
+      } else {
+        // Clear selection if clicking outside
         setPosition(null);
         setSelectedText('');
         setSelectedRange(null);
-        return;
       }
-
-      setSelectedText(selectedTextContent);
-      setSelectedRange(range.cloneRange());
-
-      // Get position of selection
-      const rect = range.getBoundingClientRect();
-      setPosition({
-        x: rect.left + rect.width / 2,
-        y: rect.top - 10
-      });
-    };
-
-    const handleMouseUp = () => {
-      setTimeout(handleSelection, 10);
     };
 
     const handleClick = (e: MouseEvent) => {
-      // Hide menu if clicking outside
+      // Hide menu if clicking outside editor
       if (position && editorRef.current && !editorRef.current.contains(e.target as Node)) {
         const selection = window.getSelection();
         if (selection) {
@@ -75,19 +114,22 @@ export function TextSelectionMenu({ editorRef, onReplaceText }: TextSelectionMen
         }
         setPosition(null);
         setSelectedText('');
+        setSelectedRange(null);
       }
     };
 
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('selectionchange', handleSelection);
-    document.addEventListener('click', handleClick);
+    // Use mouseup instead of selectionchange for better performance
+    document.addEventListener('mouseup', handleMouseUp, true);
+    document.addEventListener('click', handleClick, true);
 
     return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('selectionchange', handleSelection);
-      document.removeEventListener('click', handleClick);
+      if (selectionTimeout) {
+        clearTimeout(selectionTimeout);
+      }
+      document.removeEventListener('mouseup', handleMouseUp, true);
+      document.removeEventListener('click', handleClick, true);
     };
-  }, [editorRef, position]);
+  }, [editorRef]);
 
   // Load available agents on mount
   useEffect(() => {
