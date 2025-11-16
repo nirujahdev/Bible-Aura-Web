@@ -28,6 +28,7 @@ import { SermonAIProvider, useSermonAI } from '@/contexts/SermonAIContext';
 import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
 import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
 import { AIResearchPanel } from '@/components/sermon/AIResearchPanel';
+import { TextSelectionMenu } from '@/components/TextSelectionMenu';
 // InlineAIAssistant removed per user request
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { 
@@ -1524,7 +1525,15 @@ const SermonsContent = () => {
                 />
               )}
               <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-md' : 'w-[380px] flex-shrink-0'} border-r bg-gray-50 flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''} h-full`}>
-                <AIResearchPanel />
+                <AIResearchPanel 
+                  selectedSermon={selectedSermon}
+                  onUpdateSermon={(updates) => {
+                    if (selectedSermon) {
+                      setSelectedSermon(prev => prev ? { ...prev, ...updates } : null);
+                      // Auto-save will handle the database update
+                    }
+                  }}
+                />
               </div>
             </>
           )}
@@ -1817,6 +1826,37 @@ const SermonsContent = () => {
                   style={{ 
                     fontSize: isMobile ? `${Math.max(16, fontSize)}px` : `${fontSize}px`,
                     lineHeight: lineHeight,
+                  }}
+                />
+                
+                {/* Text Selection Menu */}
+                <TextSelectionMenu
+                  editorRef={editorRef}
+                  onInsertText={(text) => {
+                    if (editorRef.current && selectedSermon) {
+                      editorRef.current.focus();
+                      const selection = window.getSelection();
+                      if (selection && selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        const textNode = document.createTextNode(text);
+                        range.insertNode(textNode);
+                        range.setStartAfter(textNode);
+                        range.collapse(false);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        
+                        // Update content
+                        const newContent = editorRef.current.innerHTML;
+                        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+                        updateContent(newContent);
+                      } else {
+                        // Fallback: append to end
+                        const currentContent = selectedSermon.content || '';
+                        const newContent = currentContent + text;
+                        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+                        updateContent(newContent);
+                      }
+                    }
                   }}
                 />
               </div>

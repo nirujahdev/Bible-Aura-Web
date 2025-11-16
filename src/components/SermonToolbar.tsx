@@ -6,7 +6,8 @@ import {
   AlignLeft, AlignCenter, AlignRight, Indent, Outdent, Download,
   FileDown, Copy, Undo, Redo, Search, Replace, Palette, Zap,
   BookOpen, Target, Users, Globe, Mic, Volume2, Eye, Settings,
-  Sparkles, TrendingUp, Wand2, Brain, Lightbulb, Heart, Highlighter
+  Sparkles, TrendingUp, Wand2, Brain, Lightbulb, Heart, Highlighter,
+  Minus, Plus, X
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -42,7 +43,6 @@ export default function SermonToolbar({
   const { toast } = useToast();
   const { state } = useSermonAI();
   const isMobile = useIsMobile();
-  const [showAdvanced, setShowAdvanced] = useState(false);
   
   // Get analysis score for indicator
   const getAnalysisScore = () => {
@@ -122,6 +122,32 @@ export default function SermonToolbar({
         case 'backColor':
           if (value) {
             document.execCommand('backColor', false, value);
+          }
+          break;
+        case 'fontName':
+          if (value) {
+            document.execCommand('fontName', false, value);
+          }
+          break;
+        case 'fontSize':
+          if (value) {
+            // Use CSS font-size directly for better control
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+              const range = selection.getRangeAt(0);
+              const span = document.createElement('span');
+              span.style.fontSize = `${value}px`;
+              try {
+                range.surroundContents(span);
+              } catch (e) {
+                // If surroundContents fails, use insertNode
+                const contents = range.extractContents();
+                span.appendChild(contents);
+                range.insertNode(span);
+              }
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
           }
           break;
         case 'link': {
@@ -205,10 +231,46 @@ export default function SermonToolbar({
     formatText(type, color);
   };
 
+  const handleFontChange = (fontName: string) => {
+    formatText('fontName', fontName);
+  };
+
+  const handleSizeChange = (size: string) => {
+    formatText('fontSize', size);
+  };
+
   const insertQuickText = (text: string) => {
-    if (onInsertQuickText) {
+    if (isRichText && editorRef.current instanceof HTMLDivElement) {
+      editorRef.current.focus();
+      const selection = window.getSelection();
+      
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        // Convert text to HTML if needed
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = text.replace(/\n/g, '<br>');
+        const fragment = document.createDocumentFragment();
+        while (tempDiv.firstChild) {
+          fragment.appendChild(tempDiv.firstChild);
+        }
+        range.insertNode(fragment);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Trigger input event to update content
+        const event = new Event('input', { bubbles: true });
+        editorRef.current.dispatchEvent(event);
+      } else {
+        // Fallback: append to end
+        if (onInsertQuickText) {
+          onInsertQuickText(text);
+        }
+      }
+    } else if (onInsertQuickText) {
       onInsertQuickText(text);
     }
+    
     toast({
       title: "Text inserted",
       description: "Quick text added to your sermon",
@@ -240,7 +302,27 @@ export default function SermonToolbar({
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(`# ${sermonTitle}\n\n${sermonContent}`);
+      if (isRichText && editorRef.current instanceof HTMLDivElement) {
+        // Copy HTML content
+        const htmlContent = editorRef.current.innerHTML;
+        const textContent = editorRef.current.innerText || editorRef.current.textContent || '';
+        
+        // Try to copy as HTML first, fallback to text
+        const clipboardItem = new ClipboardItem({
+          'text/html': new Blob([htmlContent], { type: 'text/html' }),
+          'text/plain': new Blob([textContent], { type: 'text/plain' })
+        });
+        
+        try {
+          await navigator.clipboard.write([clipboardItem]);
+        } catch {
+          // Fallback to plain text
+          await navigator.clipboard.writeText(textContent);
+        }
+      } else {
+        await navigator.clipboard.writeText(`# ${sermonTitle}\n\n${sermonContent}`);
+      }
+      
       toast({
         title: "Copied to clipboard",
         description: "Your sermon content has been copied",
@@ -430,6 +512,52 @@ export default function SermonToolbar({
 
               <Separator orientation="vertical" className="h-6" />
 
+              {/* Font Family */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" className="text-xs">
+                        <Type className="h-4 w-4 mr-1" />
+                        <span className="hidden sm:inline">Font</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Font Family</TooltipContent>
+                  </Tooltip>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  {['Arial', 'Times New Roman', 'Georgia', 'Verdana', 'Courier New', 'Helvetica', 'Comic Sans MS', 'Trebuchet MS', 'Impact'].map((font) => (
+                    <DropdownMenuItem key={font} onClick={() => handleFontChange(font)}>
+                      <span style={{ fontFamily: font }}>{font}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Font Size */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" className="text-xs">
+                        <span className="hidden sm:inline">Size</span>
+                        <span className="sm:hidden">S</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Font Size</TooltipContent>
+                  </Tooltip>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-32">
+                  {['8', '9', '10', '11', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48', '72'].map((size) => (
+                    <DropdownMenuItem key={size} onClick={() => handleSizeChange(size)}>
+                      <span className="text-sm">{size}px</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Separator orientation="vertical" className="h-6" />
+
               {/* Headings */}
               <div className="flex items-center gap-1">
                 <Tooltip>
@@ -514,59 +642,8 @@ export default function SermonToolbar({
 
               <Separator orientation="vertical" className="h-6" />
 
-              {/* AI Quick Actions */}
+              {/* Utility Actions - Simplified */}
               <div className="flex items-center gap-1">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
-                          <Sparkles className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>AI Quick Actions</TooltipContent>
-                    </Tooltip>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
-                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Introduction\n[AI will generate based on your sermon context]\n")}>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Generate Introduction
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Illustration\n[AI will suggest relevant stories]\n")}>
-                      <Lightbulb className="h-4 w-4 mr-2" />
-                      Find Illustrations
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Application\n[AI will create practical steps]\n")}>
-                      <Target className="h-4 w-4 mr-2" />
-                      Generate Applications
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => insertQuickText("\n## AI-Generated Conclusion\n[AI will create powerful closing]\n")}>
-                      <Heart className="h-4 w-4 mr-2" />
-                      Write Conclusion
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <Zap className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Quick Text</TooltipContent>
-                    </Tooltip>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
-                    {quickTexts.map((text, index) => (
-                      <DropdownMenuItem key={index} onClick={() => insertQuickText(text)}>
-                        {text}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="sm" onClick={copyToClipboard}>
@@ -574,6 +651,15 @@ export default function SermonToolbar({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Copy to Clipboard</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => formatText('removeFormat')}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Clear Formatting</TooltipContent>
                 </Tooltip>
 
                 <DropdownMenu>
@@ -599,10 +685,6 @@ export default function SermonToolbar({
                     <DropdownMenuItem onClick={() => exportSermon('html')}>
                       <FileDown className="h-4 w-4 mr-2" />
                       Export as HTML
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportSermon('pdf')}>
-                      <FileDown className="h-4 w-4 mr-2" />
-                      Export as PDF
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -656,31 +738,7 @@ export default function SermonToolbar({
           </div>
         </div>
 
-        {/* Advanced Tools (Optional) */}
-        {showAdvanced && (
-          <div className="px-2 pb-1.5 border-t bg-gray-50">
-            <div className="flex items-center gap-1 pt-1.5">
-              <Button variant="ghost" size="sm" onClick={() => insertQuickText("\n## Prayer Focus\n[Insert prayer points here]\n")}>
-                <Users className="h-4 w-4 mr-1" />
-                Prayer Section
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => insertQuickText("\n## Application\n1. Personal reflection\n2. Practical steps\n3. Weekly challenge\n")}>
-                <Target className="h-4 w-4 mr-1" />
-                Application Points
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => insertQuickText("\n## Illustration\n[Insert story or example here]\n")}>
-                <BookOpen className="h-4 w-4 mr-1" />
-                Add Illustration
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => insertQuickText("\n## Call to Action\n[Insert specific action steps]\n")}>
-                <Mic className="h-4 w-4 mr-1" />
-                Call to Action
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Advanced Tools toggle removed per user request */}
+        {/* Advanced Tools section removed */}
       </div>
     </TooltipProvider>
   );

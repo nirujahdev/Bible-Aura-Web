@@ -15,7 +15,7 @@ import {
   BookOpen, Search, Quote, Lightbulb, Globe, FileText,
   MessageSquare, Zap, Loader2, Target, Wand2, CheckCircle2,
   Play, Clock, Info, Calendar, Tag, Bookmark, Users, Timer,
-  FileText as FileTextIcon, Award, BarChart, AlertCircle, ListOrdered
+  FileText as FileTextIcon, Award, BarChart, AlertCircle, ListOrdered, MapPin, Edit2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -37,13 +37,32 @@ interface ResearchHistory {
   timestamp: Date;
 }
 
-export function AIResearchPanel() {
+interface AIResearchPanelProps {
+  selectedSermon?: {
+    id?: string;
+    title?: string;
+    scripture_reference?: string | null;
+    sermon_date?: string | null;
+    congregation?: string | null;
+    content?: string | null;
+  } | null;
+  onUpdateSermon?: (updates: {
+    title?: string;
+    scripture_reference?: string;
+    sermon_date?: string;
+    congregation?: string;
+  }) => void;
+}
+
+export function AIResearchPanel({ selectedSermon, onUpdateSermon }: AIResearchPanelProps = {} as AIResearchPanelProps) {
+  let sermonAI;
   let state;
   try {
-    const sermonAI = useSermonAI();
+    sermonAI = useSermonAI();
     state = sermonAI.state;
   } catch (error) {
     console.error('AIResearchPanel: SermonAI context error:', error);
+    sermonAI = null;
     state = {
       currentContent: '',
       sermonTitle: '',
@@ -62,7 +81,7 @@ export function AIResearchPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'tools' | 'history' | 'info'>('tools');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tools' | 'history' | 'info'>('info');
   const [researchHistory, setResearchHistory] = useState<ResearchHistory[]>([]);
   const [executingAgent, setExecutingAgent] = useState<string | null>(null);
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
@@ -327,6 +346,11 @@ Provide detailed, helpful research and insights.`;
       {/* Enhanced Tabs - Optimized for mobile and laptop */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
         <TabsList className="grid grid-cols-4 mx-2 sm:mx-4 mt-2 sm:mt-3 h-8 sm:h-9 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1">
+          {/* Tab order: Info, Tools, Chat, History */}
+          <TabsTrigger value="info" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Info className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Info</span>
+          </TabsTrigger>
           <TabsTrigger value="tools" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <Zap className="h-3 w-3 sm:mr-1" />
             <span className="hidden sm:inline">Tools</span>
@@ -338,10 +362,6 @@ Provide detailed, helpful research and insights.`;
           <TabsTrigger value="history" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <History className="h-3 w-3 sm:mr-1" />
             <span className="hidden sm:inline">History</span>
-          </TabsTrigger>
-          <TabsTrigger value="info" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <Info className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Info</span>
           </TabsTrigger>
         </TabsList>
 
@@ -610,7 +630,7 @@ Provide detailed, helpful research and insights.`;
           </div>
         </TabsContent>
 
-        {/* Info Tab - Sermon Information */}
+        {/* Info Tab - Sermon Information - EDITABLE */}
         <TabsContent value="info" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
           <ScrollArea className="h-full">
             <div className="space-y-4">
@@ -619,37 +639,101 @@ Provide detailed, helpful research and insights.`;
                 <h3 className="text-sm font-semibold text-gray-900">Sermon Information</h3>
               </div>
 
-              {/* Title */}
+              {/* Title - Editable */}
               <Card className="p-3 border-gray-200">
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
                     <FileTextIcon className="h-4 w-4 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Title</p>
-                    <p className="text-sm font-semibold text-gray-900 break-words">
-                      {state.sermonTitle || 'Untitled Sermon'}
-                    </p>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Title</label>
+                    <Input
+                      value={selectedSermon?.title || state.sermonTitle || ''}
+                      onChange={(e) => {
+                        const newTitle = e.target.value;
+                        if (sermonAI) {
+                          sermonAI.updateTitle(newTitle);
+                        }
+                        if (onUpdateSermon) {
+                          onUpdateSermon({ title: newTitle });
+                        }
+                      }}
+                      placeholder="Enter sermon title..."
+                      className="text-sm font-semibold border-gray-300 focus:border-orange-500"
+                    />
                   </div>
                 </div>
               </Card>
 
-              {/* Scripture Reference */}
-              {state.scriptureReference && (
-                <Card className="p-3 border-gray-200">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
-                      <BookOpen className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-500 mb-1">Scripture Reference</p>
-                      <p className="text-sm text-gray-900 break-words">
-                        {state.scriptureReference}
-                      </p>
-                    </div>
+              {/* Scripture Reference - Editable */}
+              <Card className="p-3 border-gray-200">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                    <BookOpen className="h-4 w-4 text-blue-600" />
                   </div>
-                </Card>
-              )}
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Scripture Reference</label>
+                    <Input
+                      value={selectedSermon?.scripture_reference || state.scriptureReference || ''}
+                      onChange={(e) => {
+                        const newRef = e.target.value;
+                        if (sermonAI) {
+                          sermonAI.updateScriptureReference(newRef);
+                        }
+                        if (onUpdateSermon) {
+                          onUpdateSermon({ scripture_reference: newRef });
+                        }
+                      }}
+                      placeholder="e.g., John 3:16"
+                      className="text-sm border-gray-300 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Sermon Date - Editable */}
+              <Card className="p-3 border-gray-200">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                    <Calendar className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Sermon Date</label>
+                    <Input
+                      type="date"
+                      value={selectedSermon?.sermon_date || ''}
+                      onChange={(e) => {
+                        if (onUpdateSermon) {
+                          onUpdateSermon({ sermon_date: e.target.value });
+                        }
+                      }}
+                      className="text-sm border-gray-300 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Place/Location - Editable */}
+              <Card className="p-3 border-gray-200">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                    <MapPin className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Place/Location</label>
+                    <Input
+                      value={selectedSermon?.congregation || ''}
+                      onChange={(e) => {
+                        if (onUpdateSermon) {
+                          onUpdateSermon({ congregation: e.target.value });
+                        }
+                      }}
+                      placeholder="e.g., Sunday Service, Main Sanctuary"
+                      className="text-sm border-gray-300 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+              </Card>
 
               {/* Main Points */}
               {state.mainPoints && state.mainPoints.length > 0 && (
@@ -675,7 +759,7 @@ Provide detailed, helpful research and insights.`;
                 </Card>
               )}
 
-              {/* Content Statistics */}
+              {/* Content Statistics - Read-only */}
               <Card className="p-3 border-gray-200">
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
@@ -687,21 +771,21 @@ Provide detailed, helpful research and insights.`;
                       <div>
                         <p className="text-xs text-gray-500">Word Count</p>
                         <p className="text-sm font-semibold text-gray-900">
-                          {state.currentContent ? state.currentContent.trim().split(/\s+/).filter(w => w.length > 0).length : 0}
+                          {state.currentContent ? state.currentContent.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(w => w.length > 0).length : 0}
                         </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Est. Duration</p>
                         <p className="text-sm font-semibold text-gray-900">
                           {state.currentContent 
-                            ? Math.ceil(state.currentContent.trim().split(/\s+/).filter(w => w.length > 0).length / 150)
+                            ? Math.ceil(state.currentContent.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(w => w.length > 0).length / 150)
                             : 0} min
                         </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Characters</p>
                         <p className="text-sm font-semibold text-gray-900">
-                          {state.currentContent?.length || 0}
+                          {state.currentContent?.replace(/<[^>]*>/g, '').length || 0}
                         </p>
                       </div>
                       <div>
