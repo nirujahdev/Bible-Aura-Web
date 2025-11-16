@@ -876,21 +876,6 @@ How can I apply this to my life?
               </SelectContent>
             </Select>
 
-            {/* Translation Selector - Only for English */}
-            {selectedLanguage === 'english' && (
-              <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
-                <SelectTrigger className="h-9 text-xs flex-1 min-w-0 border-gray-300 hover:border-orange-400 transition-colors">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ENGLISH_TRANSLATIONS.map((translation) => (
-                    <SelectItem key={translation.code} value={translation.code}>
-                      {translation.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
           </div>
 
           {/* Search Input - Clean Design */}
@@ -1299,17 +1284,17 @@ How can I apply this to my life?
                     <>
                       {/* Mobile: Show book name and chapter navigation */}
                       {isMobile ? (
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <h1 className="font-bold text-gray-800 text-base truncate">
-                              {getBookDisplayName(selectedBook.name)}
-                            </h1>
-                            <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
-                              Ch {selectedChapter}
-                            </Badge>
-                          </div>
+                        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+                          {/* Book Name */}
+                          <h1 className="font-bold text-gray-800 text-base flex-shrink-0 truncate">
+                            {getBookDisplayName(selectedBook.name)}
+                          </h1>
+                          {/* Current Chapter Badge */}
+                          <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
+                            Ch {selectedChapter}
+                          </Badge>
                           {/* All Chapters Selection - Horizontal Scroll for Mobile */}
-                          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 flex-1">
+                          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 flex-1 min-w-0">
                             {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
                               <Button
                                 key={chapter}
@@ -1350,17 +1335,17 @@ How can I apply this to my life?
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <h1 className="font-bold text-gray-800 text-xl">
-                                {getBookDisplayName(selectedBook.name)}
-                              </h1>
-                              <Badge className="bg-orange-500 text-white text-xs px-2 py-1">
-                                Ch {selectedChapter}
-                              </Badge>
-                            </div>
+                          <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
+                            {/* Book Name */}
+                            <h1 className="font-bold text-gray-800 text-xl flex-shrink-0">
+                              {getBookDisplayName(selectedBook.name)}
+                            </h1>
+                            {/* Current Chapter Badge */}
+                            <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
+                              Ch {selectedChapter}
+                            </Badge>
                             {/* All Chapters Selection - Horizontal Scroll */}
-                            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide px-2 max-w-md">
+                            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 flex-1 min-w-0">
                               {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
                                 <Button
                                   key={chapter}
@@ -1368,7 +1353,7 @@ How can I apply this to my life?
                                   size="sm"
                                   onClick={() => setSelectedChapter(chapter)}
                                   className={cn(
-                                    "h-7 px-2.5 text-xs font-medium flex-shrink-0 transition-all min-w-[2rem]",
+                                    "h-7 px-2 text-xs font-medium flex-shrink-0 transition-all min-w-[2rem]",
                                     selectedChapter === chapter 
                                       ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
                                       : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
@@ -1609,14 +1594,10 @@ How can I apply this to my life?
                               {/* Old Highlight System - Popup with circular dots */}
                               {selectedVerseForHighlight === verseId && (
                                 <motion.div
-                                  initial={{ opacity: 0, scale: 0.9 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  className={cn(
-                                    "absolute p-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50",
-                                    isMobile 
-                                      ? "bottom-full right-0 mb-2" 
-                                      : "bottom-full right-0 mb-2"
-                                  )}
+                                  initial={{ opacity: 0, scale: 0.9, y: 5 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.9, y: 5 }}
+                                  className="absolute bottom-full right-0 mb-2 p-2 bg-white rounded-lg shadow-xl border border-gray-200 z-[100]"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <div className="flex gap-1.5">
@@ -1625,12 +1606,14 @@ How can I apply this to my life?
                                         key={color.id}
                                         onClick={(e) => {
                                           e.stopPropagation();
+                                          e.preventDefault();
                                           highlightVerse(verse, color.id);
                                           setSelectedVerseForHighlight(null);
                                         }}
+                                        onMouseDown={(e) => e.preventDefault()}
                                         className={cn(
-                                          "w-7 h-7 rounded-full border-2 hover:scale-110 transition-transform",
-                                          color.id === highlightColor ? 'border-gray-800 scale-110' : 'border-gray-300',
+                                          "w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform cursor-pointer",
+                                          color.id === highlightColor ? 'border-gray-800 scale-110 ring-2 ring-offset-1 ring-gray-400' : 'border-gray-300 hover:border-gray-400',
                                           color.dot
                                         )}
                                         title={color.name}
