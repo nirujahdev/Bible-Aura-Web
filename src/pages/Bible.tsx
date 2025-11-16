@@ -1411,15 +1411,11 @@ How can I apply this to my life?
             </Sheet>
           )}
 
-          {/* Right Side Sheet - Opened from 3-dot menu */}
-          {isMobile && (
+          {/* Right Side Sheet - Opened from 3-dot menu - Mobile Only */}
+          {isMobile && rightSidebar && (
             <Sheet 
-              open={rightSidebar?.rightSidebarOpen || false} 
-              onOpenChange={(open) => {
-                if (rightSidebar?.setRightSidebarOpen) {
-                  rightSidebar.setRightSidebarOpen(open);
-                }
-              }}
+              open={rightSidebar.rightSidebarOpen} 
+              onOpenChange={rightSidebar.setRightSidebarOpen}
             >
               <SheetContent side="right" className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col">
                 <SheetHeader className="px-4 pt-4 pb-3 border-b">
@@ -1865,36 +1861,33 @@ How can I apply this to my life?
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Navigation - Bottom Right - Enhanced Design */}
+      {/* Floating Chapter Navigation - Bottom Right - One Line Design */}
       {selectedBook && (
-        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateChapter('prev')}
-            disabled={selectedChapter <= 1}
-            className="h-14 w-14 rounded-full bg-white shadow-xl hover:shadow-2xl border-2 border-gray-200 hover:border-orange-400 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-6 w-6 text-gray-700" />
-          </Button>
-          <div className="relative">
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="flex items-center gap-0 bg-white rounded-full shadow-xl border-2 border-orange-200 hover:border-orange-400 transition-all overflow-hidden">
             <Button
-              className="h-16 w-16 rounded-full bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 hover:from-orange-600 hover:via-orange-700 hover:to-red-600 text-white shadow-2xl hover:shadow-orange-500/50 transition-all flex flex-col items-center justify-center ring-4 ring-orange-200/50"
-              size="lg"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigateChapter('prev')}
+              disabled={selectedChapter <= 1}
+              className="h-10 w-10 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <ChevronLeft className="h-4 w-4 text-gray-700" />
+            </Button>
+            <div className="px-3 py-2 bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white min-w-[60px] text-center">
               <span className="text-xs font-semibold opacity-90">Ch</span>
-              <span className="text-lg font-bold">{selectedChapter}</span>
+              <span className="text-base font-bold ml-1">{selectedChapter}</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigateChapter('next')}
+              disabled={selectedChapter >= (selectedBook.chapters || 1)}
+              className="h-10 w-10 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="h-4 w-4 text-gray-700" />
             </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateChapter('next')}
-            disabled={selectedChapter >= (selectedBook.chapters || 1)}
-            className="h-14 w-14 rounded-full bg-white shadow-xl hover:shadow-2xl border-2 border-gray-200 hover:border-orange-400 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ChevronRight className="h-6 w-6 text-gray-700" />
-          </Button>
         </div>
       )}
     </Layout>
