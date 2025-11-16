@@ -1984,32 +1984,6 @@ const SermonsContent = () => {
                 {/* Text Selection Menu */}
                 <TextSelectionMenu
                   editorRef={editorRef}
-                  onInsertText={(text) => {
-                    if (editorRef.current && selectedSermon) {
-                      editorRef.current.focus();
-                      const selection = window.getSelection();
-                      if (selection && selection.rangeCount > 0) {
-                        const range = selection.getRangeAt(0);
-                        const textNode = document.createTextNode(text);
-                        range.insertNode(textNode);
-                        range.setStartAfter(textNode);
-                        range.collapse(false);
-                        selection.removeAllRanges();
-                        selection.addRange(range);
-                        
-                        // Update content
-                        const newContent = editorRef.current.innerHTML;
-                        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
-                        updateContent(newContent);
-                      } else {
-                        // Fallback: append to end
-                        const currentContent = selectedSermon.content || '';
-                        const newContent = currentContent + text;
-                        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
-                        updateContent(newContent);
-                      }
-                    }
-                  }}
                   onReplaceText={(originalText, newText) => {
                     if (editorRef.current && selectedSermon) {
                       editorRef.current.focus();
