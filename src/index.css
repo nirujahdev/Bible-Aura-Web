@@ -830,11 +830,21 @@ Simple, Clean Design Philosophy
   text-rendering: optimizeLegibility;
 }
 
-/* Fast animations for mobile */
-.fast-transition {
-  transition: all 0.15s ease-out;
-  will-change: transform, opacity;
-}
+  /* Fast animations for mobile */
+  .fast-transition {
+    transition: all 0.15s ease-out;
+    will-change: transform, opacity;
+  }
+
+  /* Scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 
 /* Mobile-first containers */
 .mobile-container {
