@@ -86,6 +86,8 @@ export default function Bible() {
   const { user } = useAuth();
   const { toast } = useToast();
   const rightSidebar = useRightSidebar();
+  const isMobile = useIsMobile();
+  
   const [books, setBooks] = useState<BibleBook[]>([]);
   const [tamilBookNames, setTamilBookNames] = useState<TamilBookName[]>([]);
   const [verses, setVerses] = useState<BibleVerse[]>([]);
@@ -1379,17 +1381,35 @@ How can I apply this to my life?
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 border-b border-gray-200 bg-white ${isMobile ? 'p-3 pt-2' : 'p-4'}`}>
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center gap-2">
                 {selectedBook && (
-                  <div className="flex items-center gap-2">
+                  <>
                     <h1 className="font-bold text-gray-800 text-base sm:text-xl">
                       {getBookDisplayName(selectedBook.name)}
                     </h1>
                     <span className="text-gray-600 text-sm sm:text-base">-</span>
-                    <span className="text-orange-600 font-semibold text-base sm:text-xl">
-                      Chapter {selectedChapter}
-                    </span>
-                  </div>
+                    <Select 
+                      value={selectedChapter.toString()} 
+                      onValueChange={(value) => setSelectedChapter(parseInt(value))}
+                    >
+                      <SelectTrigger className="h-8 sm:h-9 w-auto min-w-[100px] sm:min-w-[120px] border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white">
+                        <SelectValue>
+                          <span className="text-xs sm:text-sm font-medium">Chapter {selectedChapter}</span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                        {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                          <SelectItem 
+                            key={chapter} 
+                            value={chapter.toString()}
+                            className="cursor-pointer text-xs sm:text-sm"
+                          >
+                            Chapter {chapter}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
                 )}
               </div>
 
@@ -1786,7 +1806,7 @@ How can I apply this to my life?
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Navigation - Bottom Right */}
+      {/* Floating Chapter Navigation - Bottom Right - Enhanced Design */}
       {selectedBook && (
         <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
           <Button
@@ -1794,24 +1814,27 @@ How can I apply this to my life?
             size="sm"
             onClick={() => navigateChapter('prev')}
             disabled={selectedChapter <= 1}
-            className="h-12 w-12 rounded-full bg-white shadow-lg hover:shadow-xl border-gray-300 hover:border-orange-400 transition-all flex items-center justify-center"
+            className="h-14 w-14 rounded-full bg-white shadow-xl hover:shadow-2xl border-2 border-gray-200 hover:border-orange-400 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="h-5 w-5 text-gray-700" />
+            <ChevronLeft className="h-6 w-6 text-gray-700" />
           </Button>
-          <Button
-            className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
-            size="lg"
-          >
-            <span className="text-sm font-bold">Ch {selectedChapter}</span>
-          </Button>
+          <div className="relative">
+            <Button
+              className="h-16 w-16 rounded-full bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 hover:from-orange-600 hover:via-orange-700 hover:to-red-600 text-white shadow-2xl hover:shadow-orange-500/50 transition-all flex flex-col items-center justify-center ring-4 ring-orange-200/50"
+              size="lg"
+            >
+              <span className="text-xs font-semibold opacity-90">Ch</span>
+              <span className="text-lg font-bold">{selectedChapter}</span>
+            </Button>
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigateChapter('next')}
             disabled={selectedChapter >= (selectedBook.chapters || 1)}
-            className="h-12 w-12 rounded-full bg-white shadow-lg hover:shadow-xl border-gray-300 hover:border-orange-400 transition-all flex items-center justify-center"
+            className="h-14 w-14 rounded-full bg-white shadow-xl hover:shadow-2xl border-2 border-gray-200 hover:border-orange-400 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronRight className="h-5 w-5 text-gray-700" />
+            <ChevronRight className="h-6 w-6 text-gray-700" />
           </Button>
         </div>
       )}

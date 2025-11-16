@@ -117,10 +117,10 @@ export function MobileOptimizedLayout({
           <div className="flex flex-col items-center justify-center leading-tight">
             <div className="flex items-center gap-2">
               <span className="text-orange-500 text-xl font-semibold">✦</span>
-              <span className="text-lg font-semibold text-gray-900">Bible AI Assistant</span>
+              <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
             </div>
             <span className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
-              Bible AI Assistant
+              BIBLE AI ASSISTANT
             </span>
           </div>
           
