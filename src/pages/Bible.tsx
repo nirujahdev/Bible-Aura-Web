@@ -950,7 +950,7 @@ How can I apply this to my life?
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto scrollbar-hide">
             {/* Read Tab Content - Clean Modern Design */}
             <TabsContent value="read" className="mt-0 p-4 space-y-4 data-[state=active]:animate-in">
               {/* Current Book & Chapter - Modern Card Design */}
@@ -1049,108 +1049,93 @@ How can I apply this to my life?
                 </motion.div>
               )}
 
-              {/* Book Selection - Clean Modern Design */}
+              {/* Book Selection - Ultra Clean List Design */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-1">
-                  Select Book
-                </h3>
-                <div className="space-y-2">
-                  <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
-                    <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-between h-10 text-sm font-medium border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-1 h-4 bg-orange-500 rounded-full" />
-                          <span>Old Testament</span>
-                          <Badge variant="secondary" className="ml-auto text-xs">
-                            {oldTestamentBooks.length}
-                          </Badge>
-                        </div>
-                        <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[320px] overflow-y-auto pr-1">
-                        {oldTestamentBooks.map((book) => (
-                          <motion.div
-                            key={book.id}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Button
-                              variant={selectedBook?.id === book.id ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                handleBookSelect(book.name, 'read');
-                                if (isMobileSidebar) {
-                                  setTimeout(() => setMobileSidebarOpen(false), 200);
-                                }
-                              }}
-                              className={cn(
-                                "w-full h-9 text-xs font-medium transition-all touch-target",
-                                selectedBook?.id === book.id 
-                                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
-                                  : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 hover:text-orange-700'
-                              )}
-                            >
-                              {book.name}
-                            </Button>
-                          </motion.div>
-                        ))}
+                <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-between h-9 text-sm font-semibold text-gray-700 hover:bg-gray-50/50 hover:text-gray-900 transition-colors px-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-5 bg-orange-500 rounded-full" />
+                        <span>Old Testament</span>
+                        <Badge variant="secondary" className="ml-1 text-xs font-normal bg-gray-100 text-gray-600">
+                          {oldTestamentBooks.length}
+                        </Badge>
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                      <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180 text-gray-400" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-1">
+                    <div className="space-y-0.5 max-h-[380px] overflow-y-auto scrollbar-hide">
+                      {oldTestamentBooks.map((book) => (
+                        <Button
+                          key={book.id}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            handleBookSelect(book.name, 'read');
+                            if (isMobileSidebar) {
+                              setTimeout(() => setMobileSidebarOpen(false), 200);
+                            }
+                          }}
+                          className={cn(
+                            "w-full justify-start h-8 text-xs font-medium transition-all touch-target rounded-md px-3",
+                            selectedBook?.id === book.id 
+                              ? 'bg-orange-500 hover:bg-orange-600 text-white font-semibold' 
+                              : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
+                          )}
+                        >
+                          {book.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
 
-                  <Collapsible defaultOpen={!selectedBook || newTestamentBooks.some(b => b.id === selectedBook.id)}>
-                    <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-between h-10 text-sm font-medium border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-1 h-4 bg-blue-500 rounded-full" />
-                          <span>New Testament</span>
-                          <Badge variant="secondary" className="ml-auto text-xs">
-                            {newTestamentBooks.length}
-                          </Badge>
-                        </div>
-                        <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[320px] overflow-y-auto pr-1">
-                        {newTestamentBooks.map((book) => (
-                          <motion.div
-                            key={book.id}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <Button
-                              variant={selectedBook?.id === book.id ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                handleBookSelect(book.name, 'read');
-                                if (isMobileSidebar) {
-                                  setTimeout(() => setMobileSidebarOpen(false), 200);
-                                }
-                              }}
-                              className={cn(
-                                "w-full h-9 text-xs font-medium transition-all touch-target",
-                                selectedBook?.id === book.id 
-                                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
-                                  : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 hover:text-orange-700'
-                              )}
-                            >
-                              {book.name}
-                            </Button>
-                          </motion.div>
-                        ))}
+                <Collapsible defaultOpen={!selectedBook || newTestamentBooks.some(b => b.id === selectedBook.id)}>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-between h-9 text-sm font-semibold text-gray-700 hover:bg-gray-50/50 hover:text-gray-900 transition-colors px-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-5 bg-blue-500 rounded-full" />
+                        <span>New Testament</span>
+                        <Badge variant="secondary" className="ml-1 text-xs font-normal bg-gray-100 text-gray-600">
+                          {newTestamentBooks.length}
+                        </Badge>
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
+                      <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180 text-gray-400" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-1">
+                    <div className="space-y-0.5 max-h-[380px] overflow-y-auto scrollbar-hide">
+                      {newTestamentBooks.map((book) => (
+                        <Button
+                          key={book.id}
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            handleBookSelect(book.name, 'read');
+                            if (isMobileSidebar) {
+                              setTimeout(() => setMobileSidebarOpen(false), 200);
+                            }
+                          }}
+                          className={cn(
+                            "w-full justify-start h-8 text-xs font-medium transition-all touch-target rounded-md px-3",
+                            selectedBook?.id === book.id 
+                              ? 'bg-orange-500 hover:bg-orange-600 text-white font-semibold' 
+                              : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
+                          )}
+                        >
+                          {book.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             </TabsContent>
 
@@ -1272,7 +1257,7 @@ How can I apply this to my life?
                       </Button>
                     )}
                   </div>
-                  <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto scrollbar-hide pr-1">
                     {searchResults.slice(0, visibleResultsCount).map((verse) => {
                       const highlightedText = highlightVerseText(verse, searchQuery);
                       return (
