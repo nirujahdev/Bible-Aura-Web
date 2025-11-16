@@ -59,8 +59,13 @@ export function SermonViewMode({
   }, [onUpdateStickyNotes]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't add note if clicking on an existing note
+    // Don't add note if clicking on an existing note or if not in add mode
     if ((e.target as HTMLElement).closest('.sticky-note')) {
+      return;
+    }
+
+    // Only add note if "Add Note" mode is active
+    if (!isAddingNote) {
       return;
     }
 
@@ -69,8 +74,11 @@ export function SermonViewMode({
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      setNewNotePosition({ x, y });
-      setIsAddingNote(true);
+      // Ensure note doesn't go outside canvas bounds
+      const constrainedX = Math.max(10, Math.min(x - 100, rect.width - 210));
+      const constrainedY = Math.max(10, Math.min(y - 75, rect.height - 160));
+      
+      setNewNotePosition({ x: constrainedX, y: constrainedY });
     }
   };
 
@@ -190,13 +198,23 @@ export function SermonViewMode({
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant={isAddingNote ? "default" : "outline"}
             size="sm"
-            onClick={() => setIsAddingNote(true)}
-            className="text-gray-700 border-gray-300 hover:bg-gray-50"
+            onClick={() => {
+              setIsAddingNote(!isAddingNote);
+              if (isAddingNote) {
+                setNewNotePosition(null);
+              }
+            }}
+            className={cn(
+              "text-gray-700 border-gray-300",
+              isAddingNote 
+                ? "bg-orange-600 hover:bg-orange-700 text-white border-orange-600" 
+                : "hover:bg-gray-50"
+            )}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Note
+            {isAddingNote ? 'Click to Place Note' : 'Add Note'}
           </Button>
         </div>
       </div>
@@ -204,9 +222,11 @@ export function SermonViewMode({
       {/* Interactive Canvas */}
       <div 
         ref={canvasRef}
-        className="flex-1 relative overflow-auto bg-white cursor-crosshair"
+        className={cn(
+          "flex-1 relative overflow-auto bg-white transition-all",
+          isAddingNote && "cursor-crosshair"
+        )}
         onClick={handleCanvasClick}
-        style={{ cursor: isAddingNote ? 'crosshair' : 'default' }}
       >
         {/* Sermon Content - Centered */}
         <div className="absolute inset-0 flex items-center justify-center p-8 pointer-events-none">
@@ -320,7 +340,7 @@ export function SermonViewMode({
         {/* New Note Placeholder */}
         {isAddingNote && newNotePosition && (
           <div
-            className="absolute border-2 border-dashed border-orange-400 rounded-lg bg-orange-50 p-3 z-50"
+            className="absolute border-2 border-dashed border-orange-400 rounded-lg bg-orange-50 p-3 z-50 shadow-lg animate-in fade-in"
             style={{
               left: `${newNotePosition.x}px`,
               top: `${newNotePosition.y}px`,
@@ -328,11 +348,12 @@ export function SermonViewMode({
               minHeight: 150,
             }}
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <Textarea
               autoFocus
               placeholder="Write your note here..."
-              className="w-full min-h-[100px] resize-none border-0 focus:ring-2 focus:ring-orange-400 bg-transparent"
+              className="w-full min-h-[100px] resize-none border-0 focus:ring-2 focus:ring-orange-400 bg-transparent text-gray-800"
               onBlur={(e) => {
                 const content = e.target.value.trim();
                 if (content) {
@@ -353,9 +374,22 @@ export function SermonViewMode({
                 if (e.key === 'Escape') {
                   setIsAddingNote(false);
                   setNewNotePosition(null);
+                } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  // Ctrl/Cmd + Enter to save
+                  e.currentTarget.blur();
                 }
               }}
             />
+            <p className="text-xs text-gray-500 mt-2">Press Escape to cancel</p>
+          </div>
+        )}
+
+        {/* Helper Text when in Add Note mode */}
+        {isAddingNote && !newNotePosition && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-orange-100 border border-orange-300 rounded-lg px-4 py-2 shadow-md z-30">
+            <p className="text-sm text-orange-800 font-medium">
+              Click anywhere on the canvas to place a new note
+            </p>
           </div>
         )}
       </div>
