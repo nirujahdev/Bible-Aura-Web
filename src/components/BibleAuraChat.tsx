@@ -1071,7 +1071,7 @@ export function BibleAuraChat() {
                           <div className="whitespace-pre-wrap text-[15px] leading-[1.75] break-words">{message.content}</div>
                         </div>
                       )}
-                      <div className="text-[9px] md:text-[10px] text-gray-400 mt-1 px-2">
+                      <div className={`text-[9px] md:text-[10px] text-gray-400 mt-1 px-2 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
                         {new Date(message.timestamp).toLocaleTimeString()}
                       </div>
                     </div>
