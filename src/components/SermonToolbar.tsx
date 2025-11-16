@@ -171,8 +171,15 @@ export default function SermonToolbar({
         
         // Trigger input event to update content after all commands
         if (editorRef.current) {
-          const event = new Event('input', { bubbles: true });
+          // Force a re-render by triggering input event
+          const event = new Event('input', { bubbles: true, cancelable: true });
           editorRef.current.dispatchEvent(event);
+          
+          // Also manually trigger onChange if available
+          if (onFormatText) {
+            const currentContent = editorRef.current.innerHTML;
+            onFormatText(format, currentContent);
+          }
         }
       }, 10);
       return;
