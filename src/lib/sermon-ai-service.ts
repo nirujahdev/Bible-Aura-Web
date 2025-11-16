@@ -1,7 +1,7 @@
 // Sermon AI Service - Centralized AI operations for sermon features
-// Uses Agent SDK for specialized sermon AI assistance
+// Uses separate Sermon AI API with GPT-4.1 model
 // Use dynamic imports to prevent circular dependencies and code-splitting issues
-import { callOpenAIAPI } from './openai-api-helper';
+import { callSermonAIAPI } from './sermon-ai-api-helper';
 import { checkAndIncrementUsage } from './ai-limits';
 
 export interface AutoCompleteSuggestion {
@@ -89,11 +89,10 @@ Provide suggestions that are:
 Return as JSON array: [{"text": "suggestion", "confidence": 0.9, "reason": "why this fits"}]`;
 
   try {
-    const response = await callOpenAIAPI(prompt, {
+    const response = await callSermonAIAPI(prompt, {
       systemPrompt: 'You are an expert sermon writing assistant. Provide helpful, natural text completions.',
       maxTokens: 300,
       temperature: 0.7,
-      model: 'gpt-4.1-mini',
     });
 
     try {
@@ -471,11 +470,10 @@ Return JSON:
 }`;
 
   try {
-    const response = await callOpenAIAPI(prompt, {
+    const response = await callSermonAIAPI(prompt, {
       systemPrompt: 'You are a theological accuracy reviewer. Ensure content is biblically sound and doctrinally correct.',
       maxTokens: 600,
       temperature: 0.2,
-      model: 'gpt-4.1-mini',
     });
 
     try {

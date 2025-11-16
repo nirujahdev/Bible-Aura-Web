@@ -4,7 +4,7 @@ import {
   Sparkles, Bot, Target, Users, BookOpen, 
   CheckCircle, RefreshCw, Wand2, Brain
 } from 'lucide-react';
-import { callOpenAIAPI } from '@/lib/openai-api-helper';
+import { callSermonAIAPI } from '@/lib/sermon-ai-api-helper';
 
 interface SermonOutline {
   title: string;
@@ -43,11 +43,10 @@ const SermonAIAssistant: React.FC<SermonAIAssistantProps> = ({
 
   // OpenAI API call for sermon assistant
   const callOpenAIService = async (prompt: string): Promise<string> => {
-    return await callOpenAIAPI(prompt, {
+    return await callSermonAIAPI(prompt, {
       systemPrompt: 'You are an expert sermon writing assistant. Help pastors create biblically sound, engaging sermons with practical applications.',
       maxTokens: 3000,
       temperature: 0.7,
-      model: 'gpt-4.1-mini'
     });
   };
 

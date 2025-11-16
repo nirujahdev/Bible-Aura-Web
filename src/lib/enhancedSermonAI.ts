@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { callOpenAIAPI } from './openai-api-helper';
+import { callSermonAIAPI } from './sermon-ai-api-helper';
 
 interface SermonGenerationRequest {
   topic: string;
@@ -263,14 +263,13 @@ export class EnhancedSermonAI {
   }
 
   // OpenAI API call for sermon generation
-  import { callOpenAIAPI } from './openai-api-helper';
+  import { callSermonAIAPI } from './sermon-ai-api-helper';
   
   private static async callOpenAIService(prompt: string): Promise<string> {
-    return await callOpenAIAPI(prompt, {
+    return await callSermonAIAPI(prompt, {
       systemPrompt: 'You are an expert theological AI assistant specializing in creating comprehensive, biblically-grounded sermons. You excel at crafting engaging, theologically sound, and practically applicable sermons for diverse audiences and denominational contexts. Always respond in valid JSON format.',
       maxTokens: 8000,
-        temperature: 0.7,
-      model: 'gpt-4.1-mini'
+      temperature: 0.7,
     });
   }
 

@@ -1,5 +1,5 @@
 // Sermon AI Editor Utilities - Smart editing features
-import { callOpenAIAPI } from './openai-api-helper';
+import { callSermonAIAPI } from './sermon-ai-api-helper';
 import { checkAndIncrementUsage } from './ai-limits';
 
 export interface GrammarIssue {
@@ -77,11 +77,10 @@ Provide corrections in JSON format:
 }`;
 
   try {
-    const response = await callOpenAIAPI(prompt, {
+    const response = await callSermonAIAPI(prompt, {
       systemPrompt: 'You are an expert editor specializing in sermon writing. Provide clear, helpful corrections.',
       maxTokens: 600,
       temperature: 0.3,
-      model: 'gpt-4.1-mini',
     });
 
     try {
@@ -140,11 +139,10 @@ Return JSON:
 ]`;
 
   try {
-    const response = await callOpenAIAPI(prompt, {
+    const response = await callSermonAIAPI(prompt, {
       systemPrompt: 'You are a Bible reference validator. Verify references and provide accurate verse text.',
       maxTokens: 800,
       temperature: 0.2,
-      model: 'gpt-4.1-mini',
     });
 
     try {
@@ -204,11 +202,10 @@ Text: ${text.substring(0, 1000)}${text.length > 1000 ? '...' : ''}
 Return as JSON array: ["suggestion 1", "suggestion 2", ...]`;
 
   try {
-    const response = await callOpenAIAPI(prompt, {
+    const response = await callSermonAIAPI(prompt, {
       systemPrompt: 'You are an expert sermon editor. Provide specific, actionable improvement suggestions.',
       maxTokens: 400,
       temperature: 0.5,
-      model: 'gpt-4.1-mini',
     });
 
     try {

@@ -18,7 +18,7 @@ import {
   Mic, Volume2, Timer, Calendar, Users, Church, Star,
   TrendingUp
 } from 'lucide-react';
-import { callOpenAIAPI } from '@/lib/openai-api-helper';
+import { callSermonAIAPI } from '@/lib/sermon-ai-api-helper';
 import { SermonContentAnalyzer } from '@/components/sermon/SermonContentAnalyzer';
 import { SermonOutlineBuilder } from '@/components/sermon/SermonOutlineBuilder';
 import { SmartScriptureFinder } from '@/components/sermon/SmartScriptureFinder';
@@ -148,11 +148,10 @@ Current Sermon Context:
 
 Provide helpful, practical, and theologically sound assistance.`;
 
-    return await callOpenAIAPI(prompt, {
+    return await callSermonAIAPI(prompt, {
       systemPrompt,
       maxTokens: 2000,
       temperature: 0.7,
-      model: 'gpt-4.1-mini'
     });
   };
 
