@@ -60,11 +60,13 @@ const ENGLISH_TRANSLATIONS = BIBLE_TRANSLATIONS.filter(t => t.language === 'engl
 // Reading plans removed - focusing on simple Bible reading experience
 
 const HIGHLIGHT_COLORS = [
-  { id: 'yellow', name: 'Yellow', color: 'bg-yellow-200 border-yellow-400' },
-  { id: 'green', name: 'Green', color: 'bg-green-200 border-green-400' },
-  { id: 'blue', name: 'Blue', color: 'bg-blue-200 border-blue-400' },
-  { id: 'purple', name: 'Purple', color: 'bg-purple-200 border-purple-400' },
-  { id: 'red', name: 'Red', color: 'bg-red-200 border-red-400' },
+  { id: 'yellow', name: 'Yellow', color: 'bg-yellow-200 border-yellow-400', dot: 'bg-yellow-400' },
+  { id: 'green', name: 'Green', color: 'bg-green-200 border-green-400', dot: 'bg-green-400' },
+  { id: 'blue', name: 'Blue', color: 'bg-blue-200 border-blue-400', dot: 'bg-blue-400' },
+  { id: 'purple', name: 'Purple', color: 'bg-purple-200 border-purple-400', dot: 'bg-purple-400' },
+  { id: 'red', name: 'Red', color: 'bg-red-200 border-red-400', dot: 'bg-red-400' },
+  { id: 'pink', name: 'Pink', color: 'bg-pink-200 border-pink-400', dot: 'bg-pink-400' },
+  { id: 'orange', name: 'Orange', color: 'bg-orange-200 border-orange-400', dot: 'bg-orange-400' },
 ];
 
 
@@ -99,7 +101,7 @@ export default function Bible() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   
-  const [highlightPickerOpen, setHighlightPickerOpen] = useState<string | null>(null);
+  const [selectedVerseForHighlight, setSelectedVerseForHighlight] = useState<string | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
 
@@ -842,46 +844,66 @@ How can I apply this to my life?
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
   const newTestamentBooks = books.filter(book => book.testament === 'new');
 
-  // Reusable Sidebar Content Component - Works for both mobile and desktop
+  // Reusable Sidebar Content Component - Works for both mobile and desktop - Improved UI
   const renderSidebarContent = (isMobileSidebar = false) => {
     return (
       <>
-        {/* Language and Translation Selectors */}
-        <div className={`p-4 border-b border-gray-200 ${isMobileSidebar ? 'bg-white' : ''}`}>
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Language</label>
-              <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
-                <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+        {/* Compact Header with Language/Translation and Search Toggle */}
+        <div className={`p-3 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50 ${isMobileSidebar ? 'bg-white' : ''}`}>
+          <div className="flex items-center gap-2 mb-3">
+            {/* Language Selector - Compact */}
+            <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
+              <SelectTrigger className="h-9 text-xs flex-shrink-0">
+                <Languages className="h-3 w-3 mr-1.5" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Translation Selector - Only for English */}
+            {selectedLanguage === 'english' && (
+              <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
+                <SelectTrigger className="h-9 text-xs flex-1 min-w-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.value} value={lang.value}>
-                      {lang.label}
+                  {ENGLISH_TRANSLATIONS.map((translation) => (
+                    <SelectItem key={translation.code} value={translation.code}>
+                      {translation.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            {selectedLanguage === 'english' && (
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Translation</label>
-                <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
-                  <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ENGLISH_TRANSLATIONS.map((translation) => (
-                      <SelectItem key={translation.code} value={translation.code}>
-                        {translation.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             )}
+          </div>
+
+          {/* Quick Search Input - Always Visible */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Quick search verses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  setActiveTab('search');
+                  handleSearch();
+                }
+              }}
+              onFocus={() => {
+                if (searchQuery.trim()) {
+                  setActiveTab('search');
+                }
+              }}
+              className="pl-8 h-9 text-sm"
+            />
           </div>
         </div>
 
@@ -889,16 +911,12 @@ How can I apply this to my life?
         <Tabs 
           value={activeTab} 
           onValueChange={(value) => {
-            // CRITICAL: This is the ONLY place where activeTab should change
-            // Only called when user explicitly clicks a tab button
-            // NEVER call setActiveTab anywhere else in the code
             if (value === 'read' || value === 'search') {
               setActiveTab(value);
               tabStateRef.current = value;
               if (value === 'read') {
                 setSearchResults([]);
               }
-              // Close mobile sidebar after selection for better UX
               if (isMobileSidebar) {
                 setTimeout(() => setMobileSidebarOpen(false), 150);
               }
@@ -908,46 +926,133 @@ How can I apply this to my life?
         >
           <TabsList className={cn(
             "grid w-full grid-cols-2",
-            isMobileSidebar ? "mx-4 mt-4 mb-2" : "mx-4 mt-4"
+            isMobileSidebar ? "mx-3 mt-3 mb-2" : "mx-3 mt-3"
           )}>
-            <TabsTrigger value="read" className="text-sm">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Read
+            <TabsTrigger value="read" className="text-xs sm:text-sm">
+              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+              Books
             </TabsTrigger>
-            <TabsTrigger value="search" className="text-sm">
-              <Search className="h-4 w-4 mr-2" />
-              Search
+            <TabsTrigger value="search" className="text-xs sm:text-sm">
+              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+              Results
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-auto px-4 pb-4">
-            {/* Read Tab Content */}
-            <TabsContent value="read" className="mt-4 space-y-4">
-              {/* Book Selection */}
+          <div className="flex-1 overflow-auto px-3 pb-3">
+            {/* Read Tab Content - Improved Layout */}
+            <TabsContent value="read" className="mt-3 space-y-3">
+              {/* Current Book & Chapter - Quick Access */}
+              {selectedBook && (
+                <div className="p-2 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Book className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                      <span className="font-semibold text-sm text-gray-800 truncate">
+                        {getBookDisplayName(selectedBook.name)}
+                      </span>
+                      <Badge variant="outline" className="text-xs flex-shrink-0">
+                        Ch {selectedChapter}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Chapter Navigation - Quick Scroll */}
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                    {Array.from({ length: Math.min(selectedBook.chapters || 1, 20) }, (_, i) => i + 1).map((chapter) => (
+                      <Button
+                        key={chapter}
+                        variant={selectedChapter === chapter ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setSelectedChapter(chapter);
+                          if (isMobileSidebar) {
+                            setTimeout(() => setMobileSidebarOpen(false), 200);
+                          }
+                        }}
+                        className={`h-7 px-2 text-xs flex-shrink-0 ${
+                          selectedChapter === chapter ? 'bg-orange-500 hover:bg-orange-600' : ''
+                        }`}
+                      >
+                        {chapter}
+                      </Button>
+                    ))}
+                    {selectedBook.chapters && selectedBook.chapters > 20 && (
+                      <span className="text-xs text-gray-500 self-center px-2">...</span>
+                    )}
+                  </div>
+                  
+                  {/* Chapter Jump - For books with many chapters */}
+                  {selectedBook.chapters && selectedBook.chapters > 20 && (
+                    <div className="mt-2 pt-2 border-t border-orange-200">
+                      <div className="flex gap-1">
+                        <Input
+                          type="number"
+                          min={1}
+                          max={selectedBook.chapters}
+                          placeholder="Jump to chapter"
+                          className="h-7 text-xs flex-1"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const chapter = parseInt((e.target as HTMLInputElement).value);
+                              if (chapter >= 1 && chapter <= selectedBook.chapters!) {
+                                setSelectedChapter(chapter);
+                                (e.target as HTMLInputElement).value = '';
+                              }
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateChapter('prev')}
+                          disabled={selectedChapter <= 1}
+                          className="h-7 px-2"
+                        >
+                          <ChevronLeft className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateChapter('next')}
+                          disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                          className="h-7 px-2"
+                        >
+                          <ChevronRight className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Book Selection - Improved */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">Select Book</h3>
-                <div className="space-y-3">
-                  <Collapsible>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Books</h3>
+                </div>
+                <div className="space-y-2">
+                  <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
                     <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        <span>Old Testament ({oldTestamentBooks.length})</span>
-                        <ChevronDown className="h-4 w-4" />
+                      <Button variant="outline" className="w-full justify-between h-9 text-xs">
+                        <span className="font-medium">Old Testament ({oldTestamentBooks.length})</span>
+                        <ChevronDown className="h-3.5 w-3.5" />
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2">
-                      <div className="grid grid-cols-3 gap-1.5 max-h-96 overflow-y-auto">
+                    <CollapsibleContent className="mt-1.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-80 overflow-y-auto">
                         {oldTestamentBooks.map((book) => (
                           <Button
                             key={book.id}
                             variant={selectedBook?.id === book.id ? "default" : "outline"}
+                            size="sm"
                             onClick={() => {
                               handleBookSelect(book.name, 'read');
                               if (isMobileSidebar) {
                                 setTimeout(() => setMobileSidebarOpen(false), 200);
                               }
                             }}
-                            className={`text-xs p-2 h-9 touch-target min-h-[44px] ${
-                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600' : ''
+                            className={`text-xs h-8 touch-target ${
+                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''
                             }`}
                           >
                             {book.name}
@@ -957,27 +1062,28 @@ How can I apply this to my life?
                     </CollapsibleContent>
                   </Collapsible>
 
-                  <Collapsible>
+                  <Collapsible defaultOpen={!selectedBook || newTestamentBooks.some(b => b.id === selectedBook.id)}>
                     <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        <span>New Testament ({newTestamentBooks.length})</span>
-                        <ChevronDown className="h-4 w-4" />
+                      <Button variant="outline" className="w-full justify-between h-9 text-xs">
+                        <span className="font-medium">New Testament ({newTestamentBooks.length})</span>
+                        <ChevronDown className="h-3.5 w-3.5" />
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2">
-                      <div className="grid grid-cols-3 gap-1.5 max-h-96 overflow-y-auto">
+                    <CollapsibleContent className="mt-1.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-80 overflow-y-auto">
                         {newTestamentBooks.map((book) => (
                           <Button
                             key={book.id}
                             variant={selectedBook?.id === book.id ? "default" : "outline"}
+                            size="sm"
                             onClick={() => {
                               handleBookSelect(book.name, 'read');
                               if (isMobileSidebar) {
                                 setTimeout(() => setMobileSidebarOpen(false), 200);
                               }
                             }}
-                            className={`text-xs p-2 h-9 touch-target min-h-[44px] ${
-                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600' : ''
+                            className={`text-xs h-8 touch-target ${
+                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''
                             }`}
                           >
                             {book.name}
@@ -988,78 +1094,26 @@ How can I apply this to my life?
                   </Collapsible>
                 </div>
               </div>
-
-              {/* Chapter Selection */}
-              {selectedBook && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-800 mb-2">
-                    {selectedBook.name} - Chapters
-                  </h3>
-                  <div className="grid grid-cols-6 gap-1.5 max-h-64 overflow-y-auto overflow-x-hidden scrollbar-thin">
-                    {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                      <Button
-                        key={chapter}
-                        variant={selectedChapter === chapter ? "default" : "outline"}
-                        onClick={() => {
-                          setSelectedChapter(chapter);
-                          if (isMobileSidebar) {
-                            setTimeout(() => setMobileSidebarOpen(false), 200);
-                          }
-                        }}
-                        className={`h-9 text-xs touch-target min-w-[44px] ${
-                          selectedChapter === chapter ? 'bg-orange-500 hover:bg-orange-600' : ''
-                        }`}
-                      >
-                        {chapter}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </TabsContent>
 
-            {/* Search Tab Content */}
-            <TabsContent value="search" className="mt-4 space-y-4">
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder='Search verses...'
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleSearch();
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleSearch();
-                    }} 
-                    disabled={loading || !searchQuery.trim()} 
-                    className="touch-target min-w-[44px]"
-                  >
-                    <Search className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
+            {/* Search Tab Content - Improved */}
+            <TabsContent value="search" className="mt-3 space-y-3">
+              {/* Search Filters */}
+              <div className="space-y-2">
+                <div className="flex gap-1.5">
                   <Select value={searchFilters.testament} onValueChange={(value) => setSearchFilters({...searchFilters, testament: value})}>
-                    <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+                    <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue placeholder="Testament" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="all">All Testaments</SelectItem>
                       <SelectItem value="old">Old Testament</SelectItem>
                       <SelectItem value="new">New Testament</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <Select value={searchFilters.book} onValueChange={(value) => setSearchFilters({...searchFilters, book: value})}>
-                    <SelectTrigger className={isMobileSidebar ? 'h-10' : ''}>
+                    <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue placeholder="Book" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1073,27 +1127,34 @@ How can I apply this to my life?
                   </Select>
                 </div>
 
-                {/* Advanced Search Options */}
-                <div className="flex items-center gap-4 pt-2 border-t">
-                  <label className="flex items-center gap-2 text-sm cursor-pointer touch-target min-h-[44px]">
+                {/* Search Options */}
+                <div className="flex items-center gap-3 pt-2 border-t">
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
                     <input
                       type="checkbox"
                       checked={fuzzySearchEnabled}
                       onChange={(e) => setFuzzySearchEnabled(e.target.checked)}
-                      className="rounded w-4 h-4"
+                      className="rounded w-3.5 h-3.5"
                     />
-                    <span>Fuzzy search (typo tolerant)</span>
+                    <span>Fuzzy search</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={searchFilters.exactMatch}
+                      onChange={(e) => setSearchFilters({...searchFilters, exactMatch: e.target.checked})}
+                      className="rounded w-3.5 h-3.5"
+                    />
+                    <span>Exact match</span>
                   </label>
                 </div>
 
-                {/* Query Examples - Hidden on mobile to save space */}
+                {/* Search Help - Compact */}
                 {!isMobileSidebar && (
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <p className="font-semibold">Examples:</p>
-                    <p>• "love one another" - exact phrase</p>
-                    <p>• love AND faith - both words required</p>
-                    <p>• heaven OR earth - either word</p>
-                    <p>• love -hate - love but not hate</p>
+                  <div className="text-xs text-gray-500 space-y-0.5 pt-1 border-t">
+                    <p className="font-medium text-gray-700 mb-1">Tips:</p>
+                    <p>• Use quotes for exact phrases</p>
+                    <p>• AND/OR operators supported</p>
                   </div>
                 )}
               </div>
@@ -1491,8 +1552,8 @@ How can I apply this to my life?
                               }`} />
                             </Button>
 
-                            {/* Highlight Icon with Color Picker */}
-                            <div className="relative" data-highlight-picker>
+                            {/* Highlight Icon - Old system with popup */}
+                            <div className="relative">
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -1501,12 +1562,7 @@ How can I apply this to my life?
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        // Toggle color picker
-                                        if (highlightPickerOpen === verseId) {
-                                          setHighlightPickerOpen(null);
-                                        } else {
-                                          setHighlightPickerOpen(verseId);
-                                        }
+                                        setSelectedVerseForHighlight(selectedVerseForHighlight === verseId ? null : verseId);
                                       }}
                                       className={cn(
                                         "touch-optimized flex-shrink-0 p-0",
@@ -1522,7 +1578,7 @@ How can I apply this to my life?
                                             'text-gray-400 hover:text-yellow-500'
                                           : 'text-gray-400 hover:text-yellow-500'
                                       )}
-                                      title={highlightColor ? `Highlighted (${highlightColor}) - Click to change` : "Highlight verse"}
+                                      title="Highlight verse"
                                     >
                                       <Highlighter className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} ${
                                         highlightColor ? 'fill-current' : ''
@@ -1535,49 +1591,56 @@ How can I apply this to my life?
                                 </Tooltip>
                               </TooltipProvider>
                               
-                              {/* Color Picker Dropdown - Better positioning on mobile */}
-                              {highlightPickerOpen === verseId && (
-                                <div 
+                              {/* Old Highlight System - Popup with circular dots */}
+                              {selectedVerseForHighlight === verseId && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
                                   className={cn(
-                                    "absolute p-2 bg-white border rounded-lg shadow-lg z-50",
+                                    "absolute p-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50",
                                     isMobile 
-                                      ? "bottom-full right-0 mb-1" // Position above on mobile to avoid off-screen
-                                      : "top-full right-0 mt-1" // Position below on desktop
+                                      ? "bottom-full right-0 mb-2" 
+                                      : "bottom-full right-0 mb-2"
                                   )}
                                   onClick={(e) => e.stopPropagation()}
                                 >
-                                  <div className="flex flex-wrap gap-2">
+                                  <div className="flex gap-1.5">
                                     {HIGHLIGHT_COLORS.map(color => (
                                       <button
                                         key={color.id}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           highlightVerse(verse, color.id);
+                                          setSelectedVerseForHighlight(null);
                                         }}
                                         className={cn(
-                                          "w-8 h-8 rounded border-2 transition-all",
+                                          "w-7 h-7 rounded-full border-2 hover:scale-110 transition-transform",
                                           color.id === highlightColor ? 'border-gray-800 scale-110' : 'border-gray-300',
-                                          color.color
+                                          color.dot
                                         )}
                                         title={color.name}
                                       />
                                     ))}
-                                    {highlightColor && (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          highlightVerse(verse, '');
-                                        }}
-                                        className="w-8 h-8 rounded border-2 border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-xs font-bold"
-                                        title="Remove highlight"
-                                      >
-                                        ×
-                                      </button>
-                                    )}
                                   </div>
-                                </div>
+                                </motion.div>
                               )}
                             </div>
+
+                            {/* Copy Button */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyVerse(verse);
+                              }}
+                              className={`touch-optimized flex-shrink-0 p-0 ${
+                                isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                              } text-gray-400 hover:text-gray-600`}
+                              title="Copy verse"
+                            >
+                              <Copy className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                            </Button>
 
                           </div>
                         </div>
