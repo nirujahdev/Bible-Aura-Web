@@ -93,7 +93,7 @@ Return as JSON array: [{"text": "suggestion", "confidence": 0.9, "reason": "why 
       systemPrompt: 'You are an expert sermon writing assistant. Provide helpful, natural text completions.',
       maxTokens: 300,
       temperature: 0.7,
-      model: 'gpt-4o-mini',
+      model: 'gpt-4.1-mini',
     });
 
     try {
@@ -475,7 +475,7 @@ Return JSON:
       systemPrompt: 'You are a theological accuracy reviewer. Ensure content is biblically sound and doctrinally correct.',
       maxTokens: 600,
       temperature: 0.2,
-      model: 'gpt-4o-mini',
+      model: 'gpt-4.1-mini',
     });
 
     try {

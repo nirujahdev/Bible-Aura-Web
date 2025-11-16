@@ -28,7 +28,7 @@ export async function streamOpenAIResponse(
     messages = [],
     maxTokens = 1000,
     temperature = 0.7,
-    model = 'gpt-4o-mini',
+    model = 'gpt-4.1-mini',
     apiKey = import.meta.env.VITE_OPENAI_API_KEY
   } = options;
 
