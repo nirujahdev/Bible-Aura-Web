@@ -127,6 +127,9 @@ export default function SermonToolbar({
         case 'fontName':
           if (value) {
             document.execCommand('fontName', false, value);
+            // Trigger input event to update content
+            const event = new Event('input', { bubbles: true });
+            editorRef.current.dispatchEvent(event);
           }
           break;
         case 'fontSize':
@@ -147,6 +150,10 @@ export default function SermonToolbar({
               }
               selection.removeAllRanges();
               selection.addRange(range);
+              
+              // Trigger input event to update content
+              const event = new Event('input', { bubbles: true });
+              editorRef.current.dispatchEvent(event);
             }
           }
           break;
