@@ -37,6 +37,8 @@ import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
 import { ModernLayout } from '@/components/ModernLayout';
 import { cn } from '@/lib/utils';
+import BibleVerseAIChat from '@/components/BibleVerseAIChat';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // New bookmarks and favorites service
 import { 
@@ -98,6 +100,8 @@ export default function Bible() {
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   
   const [highlightPickerOpen, setHighlightPickerOpen] = useState<string | null>(null);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
@@ -1417,6 +1421,36 @@ How can I apply this to my life?
                           <div className={`flex items-center justify-end gap-2 mt-4 overflow-x-auto overflow-y-visible ${
                             isMobile ? 'opacity-100 -mx-2 px-2' : 'opacity-0 group-hover:opacity-100'
                           } transition-opacity ${isMobile ? 'pb-2' : ''}`}>
+                            
+                            {/* AI Chat Icon - Sparkle (✦) */}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedVerseForAI(verse);
+                                      setAiChatOpen(true);
+                                    }}
+                                    className={`touch-optimized flex-shrink-0 p-0 ${
+                                      isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
+                                    } hover:bg-orange-50`}
+                                    title="Ask AI about this verse"
+                                  >
+                                    <div className={`rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 flex items-center justify-center text-white font-bold transition-all ${
+                                      isMobile ? 'w-6 h-6 text-base' : 'w-5 h-5 text-sm'
+                                    }`}>
+                                      ✦
+                                    </div>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Ask AI about this verse</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                             
                             {/* Favorite Icon */}
                             <Button
