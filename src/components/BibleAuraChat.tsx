@@ -873,7 +873,7 @@ export function BibleAuraChat() {
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}
                   >
-                    <div className={`${message.role === 'assistant' ? 'w-full' : 'w-full max-w-[90%]'} sm:max-w-[90%] md:max-w-2xl`}>
+                    <div className={`${message.role === 'assistant' ? 'w-full' : 'max-w-[75%] sm:max-w-[70%] md:max-w-[60%]'} ${message.role === 'assistant' ? 'w-full' : ''}`}>
                       {message.role === 'assistant' ? (
                         <div className="bg-white border-0 sm:border border-gray-100 rounded-none sm:rounded-xl md:rounded-2xl p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
                           <div className="prose max-w-none text-gray-700 leading-relaxed">
