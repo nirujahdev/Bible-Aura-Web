@@ -528,19 +528,12 @@ export default function Bible() {
       
       if (searchFilters.exactMatch) {
         const queryLower = searchQuery.toLowerCase().trim();
-        // For exact match, check if the exact phrase exists as a whole phrase or word
-        const words = queryLower.split(/\s+/).filter(w => w.length > 0);
-        if (words.length === 1) {
-          // Single word - use word boundary
-          const exactMatchRegex = new RegExp(`\\b${words[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-          results = results.filter(verse => exactMatchRegex.test(verse.text.toLowerCase()));
-        } else {
-          // Multiple words - check for exact phrase
-          results = results.filter(verse => {
-            const verseTextLower = verse.text.toLowerCase();
-            return verseTextLower.includes(queryLower);
-          });
-        }
+        // For exact match, check for exact phrase match only (case-insensitive)
+        results = results.filter(verse => {
+          const verseTextLower = verse.text.toLowerCase();
+          // Check if the exact query phrase exists in the verse text
+          return verseTextLower.includes(queryLower);
+        });
       }
       
       // Limit to max results for performance
@@ -1335,9 +1328,9 @@ How can I apply this to my life?
                             value={selectedChapter.toString()} 
                             onValueChange={(value) => setSelectedChapter(parseInt(value))}
                           >
-                            <SelectTrigger className="h-8 w-auto min-w-[80px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0">
+                            <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0">
                               <SelectValue>
-                                <span className="text-xs font-medium">Select Chapter</span>
+                                <span className="text-xs font-medium">Chapter {selectedChapter}</span>
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1391,7 +1384,7 @@ How can I apply this to my life?
                             >
                               <SelectTrigger className="h-9 w-auto min-w-[140px] border-gray-300 hover:border-orange-400 transition-colors">
                                 <SelectValue>
-                                  <span className="text-sm font-medium">Select Chapter</span>
+                                  <span className="text-sm font-medium">Chapter {selectedChapter}</span>
                                 </SelectValue>
                               </SelectTrigger>
                               <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1643,52 +1636,57 @@ How can I apply this to my life?
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.8, y: 10 }}
                                   transition={{ duration: 0.15 }}
-                                  className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[240px]"
+                                  className="absolute bottom-full right-0 mb-2 p-4 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[260px]"
                                   onClick={(e) => e.stopPropagation()}
                                   onMouseDown={(e) => e.stopPropagation()}
                                 >
                                   <div className="flex flex-wrap gap-3 justify-center items-center">
-                                    {HIGHLIGHT_COLORS.map(color => (
-                                      <button
-                                        key={color.id}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          e.preventDefault();
-                                          highlightVerse(verse, color.id);
-                                          setSelectedVerseForHighlight(null);
-                                        }}
-                                        onMouseDown={(e) => {
-                                          e.stopPropagation();
-                                          e.preventDefault();
-                                        }}
-                                        type="button"
-                                        className={cn(
-                                          "w-12 h-12 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center relative",
-                                          color.id === highlightColor 
-                                            ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
-                                            : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
-                                          // Apply the color dot background
-                                          color.dot,
-                                          // Ensure visibility
-                                          'shadow-sm'
-                                        )}
-                                        style={{
-                                          backgroundColor: color.id === 'yellow' ? '#facc15' :
-                                                          color.id === 'green' ? '#4ade80' :
-                                                          color.id === 'blue' ? '#60a5fa' :
-                                                          color.id === 'purple' ? '#a78bfa' :
-                                                          color.id === 'red' ? '#f87171' :
-                                                          color.id === 'pink' ? '#f472b6' :
-                                                          '#fb923c' // orange
-                                        }}
-                                        title={color.name}
-                                        aria-label={`Highlight with ${color.name}`}
-                                      >
-                                        {color.id === highlightColor && (
-                                          <span className="text-sm font-bold text-white drop-shadow-lg absolute">✓</span>
-                                        )}
-                                      </button>
-                                    ))}
+                                    {HIGHLIGHT_COLORS.map(color => {
+                                      const colorStyles = {
+                                        yellow: { bg: '#facc15', border: '#ca8a04' },
+                                        green: { bg: '#4ade80', border: '#16a34a' },
+                                        blue: { bg: '#60a5fa', border: '#2563eb' },
+                                        purple: { bg: '#a78bfa', border: '#7c3aed' },
+                                        red: { bg: '#f87171', border: '#dc2626' },
+                                        pink: { bg: '#f472b6', border: '#db2777' },
+                                        orange: { bg: '#fb923c', border: '#ea580c' }
+                                      };
+                                      const style = colorStyles[color.id as keyof typeof colorStyles];
+                                      
+                                      return (
+                                        <button
+                                          key={color.id}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            highlightVerse(verse, color.id);
+                                            setSelectedVerseForHighlight(null);
+                                          }}
+                                          onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                          }}
+                                          type="button"
+                                          className={cn(
+                                            "w-12 h-12 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center relative",
+                                            color.id === highlightColor 
+                                              ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
+                                              : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
+                                            'shadow-sm'
+                                          )}
+                                          style={{
+                                            backgroundColor: style.bg,
+                                            borderColor: color.id === highlightColor ? '#1f2937' : style.border
+                                          }}
+                                          title={color.name}
+                                          aria-label={`Highlight with ${color.name}`}
+                                        >
+                                          {color.id === highlightColor && (
+                                            <span className="text-base font-bold text-white drop-shadow-lg">✓</span>
+                                          )}
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </motion.div>
                               )}
