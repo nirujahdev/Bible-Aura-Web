@@ -539,18 +539,24 @@ export default function Bible() {
     }
   };
 
-  // Helper function to highlight search terms in verse text - Enhanced with fuzzy match support
+  // Helper function to highlight exact search terms in verse text
   const highlightVerseText = (verse: BibleVerse, query: string): string => {
-    if (!verse.searchMatch || !verse.searchMatch.matches || verse.searchMatch.matches.length === 0) {
-      return verse.text;
-    }
+    if (!query || !query.trim()) return verse.text;
+    
+    const queryWords = query.trim().split(/\s+/).filter(word => word.length > 0);
+    if (queryWords.length === 0) return verse.text;
 
-    // Use the improved highlightSearchTerms utility for better fuzzy match handling
-    return highlightSearchTerms(
-      verse.text,
-      verse.searchMatch.matches,
-      'bg-yellow-200 font-semibold text-gray-900'
-    );
+    let highlightedText = verse.text;
+    
+    // Highlight exact word matches (case-insensitive)
+    queryWords.forEach(word => {
+      const regex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+      highlightedText = highlightedText.replace(regex, (match) => {
+        return `<mark class="bg-yellow-200 font-semibold text-gray-900">${match}</mark>`;
+      });
+    });
+    
+    return highlightedText;
   };
 
   const navigateChapter = (direction: 'prev' | 'next') => {
@@ -953,102 +959,6 @@ How can I apply this to my life?
           <div className="flex-1 overflow-auto scrollbar-hide">
             {/* Read Tab Content - Clean Modern Design */}
             <TabsContent value="read" className="mt-0 p-4 space-y-4 data-[state=active]:animate-in">
-              {/* Current Book & Chapter - Modern Card Design */}
-              {selectedBook && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200/50 shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-2 bg-orange-500/10 rounded-lg">
-                      <Book className="h-4 w-4 text-orange-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-gray-900 truncate">
-                        {getBookDisplayName(selectedBook.name)}
-                      </h3>
-                      <p className="text-xs text-gray-600 mt-0.5">
-                        {selectedBook.chapters || 1} chapters
-                      </p>
-                    </div>
-                    <Badge className="bg-orange-500 text-white text-xs px-2 py-1">
-                      Ch {selectedChapter}
-                    </Badge>
-                  </div>
-                  
-                  {/* Chapter Navigation - Clean Design */}
-                  <div className="space-y-2">
-                    <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
-                      {Array.from({ length: Math.min(selectedBook.chapters || 1, 20) }, (_, i) => i + 1).map((chapter) => (
-                        <Button
-                          key={chapter}
-                          variant={selectedChapter === chapter ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => {
-                            setSelectedChapter(chapter);
-                            if (isMobileSidebar) {
-                              setTimeout(() => setMobileSidebarOpen(false), 200);
-                            }
-                          }}
-                          className={cn(
-                            "h-8 px-3 text-xs font-medium flex-shrink-0 transition-all",
-                            selectedChapter === chapter 
-                              ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
-                              : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
-                          )}
-                        >
-                          {chapter}
-                        </Button>
-                      ))}
-                      {selectedBook.chapters && selectedBook.chapters > 20 && (
-                        <span className="text-xs text-gray-500 self-center px-2">...</span>
-                      )}
-                    </div>
-                    
-                    {/* Chapter Jump & Navigation - For books with many chapters */}
-                    {selectedBook.chapters && selectedBook.chapters > 20 && (
-                      <div className="flex gap-2 pt-2 border-t border-orange-200/50">
-                        <Input
-                          type="number"
-                          min={1}
-                          max={selectedBook.chapters}
-                          placeholder="Jump to..."
-                          className="h-8 text-xs flex-1 border-gray-300 focus:border-orange-400"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              const chapter = parseInt((e.target as HTMLInputElement).value);
-                              if (chapter >= 1 && chapter <= selectedBook.chapters!) {
-                                setSelectedChapter(chapter);
-                                (e.target as HTMLInputElement).value = '';
-                              }
-                            }
-                          }}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigateChapter('prev')}
-                          disabled={selectedChapter <= 1}
-                          className="h-8 px-2 border-gray-300 hover:border-orange-400"
-                        >
-                          <ChevronLeft className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigateChapter('next')}
-                          disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                          className="h-8 px-2 border-gray-300 hover:border-orange-400"
-                        >
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
               {/* Book Selection - Ultra Clean List Design */}
               <div className="space-y-3">
                 <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
@@ -1201,16 +1111,6 @@ How can I apply this to my life?
                   </label>
                 </div>
 
-                {/* Search Help - Clean Tips */}
-                {!isMobileSidebar && (
-                  <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                    <p className="font-medium text-blue-900 text-xs mb-2">Search Tips:</p>
-                    <ul className="text-xs text-blue-700 space-y-1">
-                      <li>• Use quotes for exact phrases</li>
-                      <li>• AND/OR operators supported</li>
-                    </ul>
-                  </div>
-                )}
               </div>
 
               {/* Loading indicator for search - Clean Design */}
@@ -1389,7 +1289,7 @@ How can I apply this to my life?
           {/* Main Reading Area - Adjust when AI chat is open */}
           <div className={cn(
             "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10",
-            aiChatOpen && "mr-[calc(50%)] lg:mr-[420px]"
+            aiChatOpen && "mr-[calc(50%)] lg:mr-[384px]"
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2 px-3' : ''}`}>
@@ -1404,9 +1304,28 @@ How can I apply this to my life?
                             <h1 className="font-bold text-gray-800 text-base truncate">
                               {getBookDisplayName(selectedBook.name)}
                             </h1>
-                            <Badge variant="outline" className="text-xs flex-shrink-0">
+                            <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
                               Ch {selectedChapter}
                             </Badge>
+                          </div>
+                          {/* All Chapters Selection - Horizontal Scroll for Mobile */}
+                          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 flex-1">
+                            {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                              <Button
+                                key={chapter}
+                                variant={selectedChapter === chapter ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setSelectedChapter(chapter)}
+                                className={cn(
+                                  "h-7 px-2 text-xs font-medium flex-shrink-0 transition-all min-w-[2rem]",
+                                  selectedChapter === chapter 
+                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
+                                    : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
+                                )}
+                              >
+                                {chapter}
+                              </Button>
+                            ))}
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <Button
@@ -1431,13 +1350,34 @@ How can I apply this to my life?
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center gap-2">
-                            <h1 className="font-bold text-gray-800 text-xl">
-                              {getBookDisplayName(selectedBook.name)}
-                            </h1>
-                            <Badge variant="outline" className="text-xs">
-                              Chapter {selectedChapter}
-                            </Badge>
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <h1 className="font-bold text-gray-800 text-xl">
+                                {getBookDisplayName(selectedBook.name)}
+                              </h1>
+                              <Badge className="bg-orange-500 text-white text-xs px-2 py-1">
+                                Ch {selectedChapter}
+                              </Badge>
+                            </div>
+                            {/* All Chapters Selection - Horizontal Scroll */}
+                            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide px-2 max-w-md">
+                              {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                                <Button
+                                  key={chapter}
+                                  variant={selectedChapter === chapter ? "default" : "ghost"}
+                                  size="sm"
+                                  onClick={() => setSelectedChapter(chapter)}
+                                  className={cn(
+                                    "h-7 px-2.5 text-xs font-medium flex-shrink-0 transition-all min-w-[2rem]",
+                                    selectedChapter === chapter 
+                                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
+                                      : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
+                                  )}
+                                >
+                                  {chapter}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
@@ -1537,15 +1477,20 @@ How can I apply this to my life?
                               </span>
                             </div>
                             
-                            {/* Verse Text - Mobile-Optimized Typography */}
+                            {/* Verse Text - Mobile-Optimized Typography with Search Highlighting */}
                             <div className="flex-1 min-w-0">
-                              <p className={`text-gray-800 leading-relaxed font-normal ${
-                                isMobile 
-                                  ? 'text-base leading-7' // Optimized mobile text size
-                                  : 'text-xl leading-9'
-                              }`}>
-                                {verse.text}
-                              </p>
+                              <p 
+                                className={`text-gray-800 leading-relaxed font-normal ${
+                                  isMobile 
+                                    ? 'text-base leading-7' // Optimized mobile text size
+                                    : 'text-xl leading-9'
+                                }`}
+                                dangerouslySetInnerHTML={{ 
+                                  __html: searchQuery.trim() 
+                                    ? highlightVerseText(verse, searchQuery) 
+                                    : verse.text 
+                                }}
+                              />
                             </div>
                           </div>
 
@@ -1780,7 +1725,7 @@ How can I apply this to my life?
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
           >
             {/* Close Button - Top Right */}
             <div className="absolute top-4 right-4 z-10">
