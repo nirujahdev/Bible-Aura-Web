@@ -1289,29 +1289,28 @@ How can I apply this to my life?
                           <h1 className="font-bold text-gray-800 text-base flex-shrink-0 truncate">
                             {getBookDisplayName(selectedBook.name)}
                           </h1>
-                          {/* Current Chapter Badge */}
-                          <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
-                            Ch {selectedChapter}
-                          </Badge>
-                          {/* All Chapters Selection - Horizontal Scroll for Mobile */}
-                          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1 flex-1 min-w-0">
-                            {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                              <Button
-                                key={chapter}
-                                variant={selectedChapter === chapter ? "default" : "ghost"}
-                                size="sm"
-                                onClick={() => setSelectedChapter(chapter)}
-                                className={cn(
-                                  "h-7 px-2 text-xs font-medium flex-shrink-0 transition-all min-w-[2rem]",
-                                  selectedChapter === chapter 
-                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
-                                    : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
-                                )}
-                              >
-                                {chapter}
-                              </Button>
-                            ))}
-                          </div>
+                          {/* Chapter Dropdown Selector - Mobile */}
+                          <Select 
+                            value={selectedChapter.toString()} 
+                            onValueChange={(value) => setSelectedChapter(parseInt(value))}
+                          >
+                            <SelectTrigger className="h-8 w-[90px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0">
+                              <SelectValue>
+                                <span className="text-xs font-medium">Ch {selectedChapter}</span>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                              {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                                <SelectItem 
+                                  key={chapter} 
+                                  value={chapter.toString()}
+                                  className="cursor-pointer text-xs"
+                                >
+                                  Chapter {chapter}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <Button
                               variant="outline"
@@ -1335,34 +1334,33 @@ How can I apply this to my life?
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             {/* Book Name */}
                             <h1 className="font-bold text-gray-800 text-xl flex-shrink-0">
                               {getBookDisplayName(selectedBook.name)}
                             </h1>
-                            {/* Current Chapter Badge */}
-                            <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
-                              Ch {selectedChapter}
-                            </Badge>
-                            {/* All Chapters Selection - Horizontal Scroll */}
-                            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 flex-1 min-w-0">
-                              {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                                <Button
-                                  key={chapter}
-                                  variant={selectedChapter === chapter ? "default" : "ghost"}
-                                  size="sm"
-                                  onClick={() => setSelectedChapter(chapter)}
-                                  className={cn(
-                                    "h-7 px-2 text-xs font-medium flex-shrink-0 transition-all min-w-[2rem]",
-                                    selectedChapter === chapter 
-                                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
-                                      : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
-                                  )}
-                                >
-                                  {chapter}
-                                </Button>
-                              ))}
-                            </div>
+                            {/* Chapter Dropdown Selector */}
+                            <Select 
+                              value={selectedChapter.toString()} 
+                              onValueChange={(value) => setSelectedChapter(parseInt(value))}
+                            >
+                              <SelectTrigger className="h-9 w-[100px] border-gray-300 hover:border-orange-400 transition-colors">
+                                <SelectValue>
+                                  <span className="text-sm font-medium">Ch {selectedChapter}</span>
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                                {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                                  <SelectItem 
+                                    key={chapter} 
+                                    value={chapter.toString()}
+                                    className="cursor-pointer"
+                                  >
+                                    Chapter {chapter}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
@@ -1448,7 +1446,8 @@ How can I apply this to my life?
                           className={cn(
                             "group relative rounded-xl transition-all duration-200 p-4",
                             highlightColor ? getHighlightClasses(highlightColor) : 'hover:bg-gray-50',
-                            isMobile && 'mx-1 overflow-x-hidden max-w-full'
+                            isMobile && 'mx-1 overflow-x-hidden max-w-full',
+                            'overflow-visible'
                           )}
                         >
                           {/* Verse Content - Mobile-Optimized */}
@@ -1553,7 +1552,7 @@ How can I apply this to my life?
                             </Button>
 
                             {/* Highlight Icon - Old system with popup */}
-                            <div className="relative" data-highlight-container>
+                            <div className="relative z-10" data-highlight-container>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -1565,7 +1564,7 @@ How can I apply this to my life?
                                         setSelectedVerseForHighlight(selectedVerseForHighlight === verseId ? null : verseId);
                                       }}
                                       className={cn(
-                                        "touch-optimized flex-shrink-0 p-0",
+                                        "touch-optimized flex-shrink-0 p-0 relative",
                                         isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9',
                                         highlightColor 
                                           ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' :
@@ -1594,13 +1593,15 @@ How can I apply this to my life?
                               {/* Old Highlight System - Popup with circular dots */}
                               {selectedVerseForHighlight === verseId && (
                                 <motion.div
-                                  initial={{ opacity: 0, scale: 0.9, y: 5 }}
+                                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                                  exit={{ opacity: 0, scale: 0.9, y: 5 }}
-                                  className="absolute bottom-full right-0 mb-2 p-2 bg-white rounded-lg shadow-xl border border-gray-200 z-[100]"
+                                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[220px]"
                                   onClick={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
                                 >
-                                  <div className="flex gap-1.5">
+                                  <div className="flex flex-wrap gap-2.5 justify-center">
                                     {HIGHLIGHT_COLORS.map(color => (
                                       <button
                                         key={color.id}
@@ -1610,14 +1611,25 @@ How can I apply this to my life?
                                           highlightVerse(verse, color.id);
                                           setSelectedVerseForHighlight(null);
                                         }}
-                                        onMouseDown={(e) => e.preventDefault()}
+                                        onMouseDown={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                        }}
+                                        type="button"
                                         className={cn(
-                                          "w-8 h-8 rounded-full border-2 hover:scale-110 transition-transform cursor-pointer",
-                                          color.id === highlightColor ? 'border-gray-800 scale-110 ring-2 ring-offset-1 ring-gray-400' : 'border-gray-300 hover:border-gray-400',
+                                          "w-10 h-10 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center",
+                                          color.id === highlightColor 
+                                            ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
+                                            : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
                                           color.dot
                                         )}
                                         title={color.name}
-                                      />
+                                        aria-label={`Highlight with ${color.name}`}
+                                      >
+                                        {color.id === highlightColor && (
+                                          <span className="text-xs font-bold text-white drop-shadow-md">✓</span>
+                                        )}
+                                      </button>
                                     ))}
                                   </div>
                                 </motion.div>
