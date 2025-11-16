@@ -1041,6 +1041,22 @@ How can I apply this to my life?
                 )}
               </div>
 
+              {/* Loading indicator for search - simple spinner, not AI thinking */}
+              {loading && activeTab === 'search' && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                    <p className="text-sm text-gray-600">Searching verses...</p>
+                  </div>
+                </div>
+              )}
+
+              {!loading && searchResults.length === 0 && searchQuery.trim() && (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No verses found matching "{searchQuery}"
+                </div>
+              )}
+
               {searchResults.length > 0 && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
