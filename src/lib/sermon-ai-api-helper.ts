@@ -1,5 +1,6 @@
-// Sermon AI API Helper - Separate API key and model for sermon AI operations
-// Uses VITE_SERMON_AI_API_KEY environment variable and GPT-4.1 model
+// Sermon AI API Helper - Secure server-side API calls
+// Uses server-side API route to keep API key secure (not exposed to client)
+// Uses GPT-4.1 model
 
 export interface SermonAIRequestOptions {
   systemPrompt?: string;
@@ -11,23 +12,14 @@ export interface SermonAIRequestOptions {
 }
 
 /**
- * Call OpenAI API specifically for Sermon AI operations
- * Uses VITE_SERMON_AI_API_KEY and GPT-4.1 model
+ * Call Sermon AI API through secure server-side route
+ * API key is kept secure on server (SERMON_AI_API_KEY in Vercel env)
+ * Uses GPT-4.1 model
  */
 export async function callSermonAIAPI(
   prompt: string,
   options: SermonAIRequestOptions = {}
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_SERMON_AI_API_KEY;
-  
-  // Friendly error message for missing API key
-  if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_sermon_ai_api_key_here' || apiKey.trim() === '') {
-    const errorMsg = import.meta.env.DEV
-      ? `🔑 Sermon AI API key not configured!\n\nPlease configure your Sermon AI API key:\n\n1. Create a .env.local file in your project root (if it doesn't exist)\n2. Add this line:\n   VITE_SERMON_AI_API_KEY=your_sermon_ai_api_key_here\n\n3. Get your API key from: https://platform.openai.com/api-keys\n4. Replace 'your_sermon_ai_api_key_here' with your actual key\n5. Restart your dev server (stop and run 'npm run dev' again)\n\nThank you for using Bible Aura! 🙏`
-      : '🔑 Sermon AI API key not configured! Please contact support for assistance.';
-    throw new Error(errorMsg);
-  }
-
   const {
     systemPrompt = 'You are an expert sermon writing assistant. Provide helpful, natural sermon content.',
     messages = [],
@@ -38,42 +30,35 @@ export async function callSermonAIAPI(
   } = options;
 
   try {
-    // Build messages array - if messages are provided, use them; otherwise use prompt
-    const messageArray = messages.length > 0 
-      ? [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ]
-      : [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ];
+    // Call server-side API route (keeps API key secure)
+    const apiUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/api/sermon-ai`
+      : '/api/sermon-ai';
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4.1',
-        messages: messageArray,
-        max_tokens: maxTokens,
-        temperature: temperature,
-        stream: false
+        prompt,
+        systemPrompt,
+        messages,
+        maxTokens,
+        temperature
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error?.message || `API error: ${response.status}`;
+      const errorMessage = errorData.message || errorData.error || `API error: ${response.status}`;
       
       if (response.status === 401) {
         throw new Error('🔐 Sermon AI API authentication failed. Please check your API key is correct.');
       } else if (response.status === 429) {
         throw new Error('⏳ Too many requests. Please wait a moment and try again.');
       } else if (response.status >= 500) {
-        throw new Error('🔧 OpenAI service is temporarily unavailable. Please try again later.');
+        throw new Error('🔧 Sermon AI service is temporarily unavailable. Please try again later.');
       } else {
         throw new Error(`❌ Sermon AI API error: ${errorMessage}`);
       }
@@ -81,14 +66,14 @@ export async function callSermonAIAPI(
 
     const data = await response.json();
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    if (!data.content) {
       throw new Error('❌ Invalid response from Sermon AI. Please try again.');
     }
 
-    return data.choices[0].message.content || '';
+    return data.content;
   } catch (error: any) {
     console.error('Sermon AI API Error:', error);
-    if (error.message.includes('API key')) {
+    if (error.message.includes('API key') || error.message.includes('authentication')) {
       throw error; // Re-throw API key errors as-is
     }
     throw new Error(error?.message || 'Failed to connect to Sermon AI service. Please try again.');

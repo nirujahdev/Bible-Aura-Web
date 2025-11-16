@@ -1,5 +1,5 @@
-// Sermon Agent SDK - Specialized AI for sermon writing using Agent SDK
-import { sendBibleAuraMessage, AgentSDKResponse } from './agent-sdk';
+// Sermon Agent SDK - Specialized AI for sermon writing using Sermon AI API
+import { callSermonAIAPI } from './sermon-ai-api-helper';
 
 export interface SermonAgentRequest {
   message: string;
@@ -26,16 +26,18 @@ export async function generateSermonContent(
   const sermonPrompt = buildSermonPrompt(message, context, task);
 
   try {
-    // Use agent SDK with 'topical' mode for comprehensive responses
-    // or 'chat' mode for conversational assistance
-    const mode = task === 'chat' ? 'chat' : 'topical';
+    // Use Sermon AI API directly with GPT-4.1
+    const systemPrompt = task === 'chat' 
+      ? 'You are an expert sermon writing assistant. Provide conversational, helpful guidance for sermon creation.'
+      : 'You are an expert sermon writing assistant. Provide comprehensive, theologically sound sermon content.';
     
-    const response: AgentSDKResponse = await sendBibleAuraMessage(sermonPrompt, {
-      mode,
-      language: 'en'
+    const response = await callSermonAIAPI(sermonPrompt, {
+      systemPrompt,
+      maxTokens: 2000,
+      temperature: 0.7,
     });
 
-    return response.text || '';
+    return response || '';
   } catch (error: any) {
     console.error('Sermon Agent SDK error:', error);
     throw error;
