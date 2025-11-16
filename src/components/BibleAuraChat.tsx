@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { sendBibleAuraMessage } from '@/lib/agent-sdk';
 import { checkAndIncrementUsage, getUsageInfo } from '@/lib/ai-limits';
+import { logMessage, updateMessageFeedback, updateMessageReport, softDeleteUserMessages } from '@/lib/ai-message-logs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -188,7 +189,7 @@ export function BibleAuraChat() {
   const [isLoading, setIsLoading] = useState(false);
   
   // Settings state
-  const [currentMode, setCurrentMode] = useState<ChatMode>('verse-clean');
+  const [currentMode, setCurrentMode] = useState<ChatMode>('chat-clean');
   const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
   
   // Chat history state
@@ -344,7 +345,7 @@ export function BibleAuraChat() {
   const loadConversation = (conversation: Conversation) => {
     setCurrentConversationId(conversation.id);
     setMessages(JSON.parse(conversation.messages as any) || []);
-    setCurrentMode(conversation.mode as ChatMode);
+    setCurrentMode((conversation.mode || 'chat-clean') as ChatMode);
     setCurrentLanguage(conversation.language as Language);
   };
 
@@ -356,6 +357,12 @@ export function BibleAuraChat() {
 
   const deleteConversation = async (conversationId: string) => {
     try {
+      if (user) {
+        // Soft delete messages in logs (hide from user, but keep for admin analysis)
+        await softDeleteUserMessages(user.id, conversationId);
+      }
+
+      // Delete conversation from conversations table
       const { error } = await supabase
         .from('ai_conversations')
         .delete()
@@ -413,16 +420,33 @@ export function BibleAuraChat() {
       setInput('');
     }
 
+    const messageTimestamp = new Date().toISOString();
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: userInput,
-      timestamp: new Date().toISOString(),
+      timestamp: messageTimestamp,
       mode: currentMode
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
+
+    // Log user message to analytics table
+    const startTime = Date.now();
+    if (user) {
+      logMessage({
+        user_id: user.id,
+        conversation_id: currentConversationId,
+        message_id: userMessage.id,
+        role: 'user',
+        content: userInput,
+        mode: currentMode,
+        language: currentLanguage,
+        translation: 'KJV',
+        message_timestamp: messageTimestamp
+      }).catch(err => console.error('Error logging user message:', err));
+    }
 
     try {
       // Map UI mode to API mode format
@@ -441,11 +465,13 @@ export function BibleAuraChat() {
         console.warn('Usage limit reached after successful API call');
       }
       
+      const responseTime = Date.now() - startTime;
+      const aiMessageTimestamp = new Date().toISOString();
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: aiResponse.text,
-        timestamp: new Date().toISOString(),
+        timestamp: aiMessageTimestamp,
         mode: aiResponse.mode || currentMode,
         sources: aiResponse.sources,
         crossReferences: aiResponse.crossReferences,
@@ -453,6 +479,34 @@ export function BibleAuraChat() {
       };
 
       setMessages([...newMessages, aiMessage]);
+
+      // Log AI message to analytics table
+      if (user) {
+        logMessage({
+          user_id: user.id,
+          conversation_id: currentConversationId,
+          message_id: aiMessage.id,
+          role: 'assistant',
+          content: aiResponse.text,
+          mode: currentMode,
+          language: currentLanguage,
+          translation: 'KJV',
+          message_timestamp: aiMessageTimestamp,
+          ai_mode: aiResponse.mode || currentMode,
+          has_sources: !!(aiResponse.sources && aiResponse.sources.length > 0),
+          sources_count: aiResponse.sources?.length || 0,
+          has_cross_references: !!(aiResponse.crossReferences && aiResponse.crossReferences.length > 0),
+          cross_references_count: aiResponse.crossReferences?.length || 0,
+          has_validated_verses: !!((aiResponse as any).validatedVerses && (aiResponse as any).validatedVerses.length > 0),
+          validated_verses_count: (aiResponse as any).validatedVerses?.length || 0,
+          response_time_ms: responseTime,
+          metadata: {
+            sources: aiResponse.sources || [],
+            crossReferences: aiResponse.crossReferences || [],
+            validatedVerses: (aiResponse as any).validatedVerses || []
+          }
+        }).catch(err => console.error('Error logging AI message:', err));
+      }
       
     } catch (error: any) {
       toast({
@@ -475,28 +529,36 @@ export function BibleAuraChat() {
   const handleFeedback = async (messageId: string, feedback: 'positive' | 'negative') => {
     try {
       const message = messages.find(m => m.id === messageId);
-      if (!message) return;
+      if (!message || !user) return;
 
       // Update local state
       setMessages(prev => prev.map(m => 
         m.id === messageId ? { ...m, feedback } : m
       ));
 
-      // Send feedback to API
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messageId,
-          feedback,
-          message: message.content,
-          response: message.content,
-          userId: user?.id || null
-        })
-      });
+      // Update feedback in message logs
+      await updateMessageFeedback(user.id, messageId, feedback);
 
-      if (!response.ok) {
-        console.error('Failed to submit feedback');
+      // Send feedback to API (legacy endpoint, if it exists)
+      try {
+        const response = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messageId,
+            feedback,
+            message: message.content,
+            response: message.content,
+            userId: user.id
+          })
+        });
+
+        if (!response.ok) {
+          console.error('Failed to submit feedback to legacy API');
+        }
+      } catch (error) {
+        // Legacy API might not exist, ignore errors
+        console.warn('Legacy feedback API not available:', error);
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -566,7 +628,7 @@ export function BibleAuraChat() {
   };
 
   const submitReport = async () => {
-    if (!reportingMessageId || !selectedCategory) {
+    if (!reportingMessageId || !selectedCategory || !user) {
       toast({
         title: "Error",
         description: "Please select a report category",
@@ -584,33 +646,41 @@ export function BibleAuraChat() {
       : categoryLabel;
 
     try {
-      // Send report to API
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messageId: reportingMessageId,
-          feedback: 'negative',
-          message: message.content,
-          response: message.content,
-          userId: user?.id || null,
-          reportReason: fullReportReason,
-          reportCategory: selectedCategory
-        })
-      });
+      // Update report in message logs
+      await updateMessageReport(user.id, reportingMessageId, fullReportReason, selectedCategory);
 
-      if (response.ok) {
-        toast({
-          title: "Report submitted",
-          description: "Thank you for your feedback. We'll review this content.",
+      // Send report to API (legacy endpoint, if it exists)
+      try {
+        const response = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messageId: reportingMessageId,
+            feedback: 'negative',
+            message: message.content,
+            response: message.content,
+            userId: user.id,
+            reportReason: fullReportReason,
+            reportCategory: selectedCategory
+          })
         });
-        setReportDialogOpen(false);
-        setReportReason('');
-        setSelectedCategory('');
-        setReportingMessageId(null);
-      } else {
-        throw new Error('Failed to submit report');
+
+        if (!response.ok) {
+          console.error('Failed to submit report to legacy API');
+        }
+      } catch (error) {
+        // Legacy API might not exist, ignore errors
+        console.warn('Legacy report API not available:', error);
       }
+
+      toast({
+        title: "Report submitted",
+        description: "Thank you for your feedback. We'll review this content.",
+      });
+      setReportDialogOpen(false);
+      setReportReason('');
+      setSelectedCategory('');
+      setReportingMessageId(null);
     } catch (error) {
       console.error('Error submitting report:', error);
       toast({
@@ -1003,7 +1073,7 @@ export function BibleAuraChat() {
                           )}
                         </div>
                       ) : (
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-none sm:rounded-xl md:rounded-2xl p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-[20px] sm:rounded-[24px] md:rounded-[28px] p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
                           <div className="whitespace-pre-wrap text-[15px] leading-[1.75] break-words">{message.content}</div>
                         </div>
                       )}
