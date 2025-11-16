@@ -69,15 +69,34 @@ export const ContactForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // In a real app, you would send this to your backend
-      // For now, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Use relative path for Vercel API routes (works in production)
+      // In development, this will work with Vite proxy or directly
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          category: formData.category,
+          message: formData.message.trim(),
+          userId: user?.id || null
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || result.error || 'Failed to send message');
+      }
 
       setIsSubmitted(true);
       
       toast({
         title: "Message Sent!",
-        description: "Thank you for contacting us. We'll get back to you within 24 hours."
+        description: "Thank you for contacting us. We've sent you a confirmation email. We'll get back to you within 24 hours."
       });
 
       // Reset form after successful submission
@@ -92,10 +111,11 @@ export const ContactForm: React.FC = () => {
         });
       }, 3000);
 
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Contact form error:', error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error.message || "Failed to send message. Please try again.",
         variant: "destructive"
       });
     } finally {

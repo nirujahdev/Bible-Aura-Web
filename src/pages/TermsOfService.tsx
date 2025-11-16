@@ -1,5 +1,7 @@
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { FileText, Shield, AlertTriangle, Mail, CheckCircle, Lock, BookOpen } from "lucide-react";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
@@ -360,6 +362,24 @@ const TermsOfService = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-8 border-t border-gray-200 mt-8">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                  <Link to="/contact">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Contact Us
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link to="/privacy-policy">
+                    <Shield className="h-4 w-4 mr-2" />
+                    View Privacy Policy
+                  </Link>
+                </Button>
               </div>
             </div>
 

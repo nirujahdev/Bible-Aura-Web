@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
-import { Heart, Target, Star, Crown, BookOpen, Brain, MessageCircle, Shield, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { SEOBacklinks } from "@/components/SEOBacklinks";
@@ -130,40 +130,6 @@ const About = () => {
                 <p className="text-gray-600 text-lg leading-relaxed mb-6">
                   Bible Aura was created by Benaiah Nicholas Nimal, a young believer passionate about spreading the Gospel through technology. He built Bible Aura to help people understand the Bible better with the help of AI.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 rounded-lg">
-                    <Brain className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-800">Tech Innovation</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 p-3 bg-green-50 rounded-lg">
-                    <Heart className="h-5 w-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">Faith-Driven</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 p-3 bg-purple-50 rounded-lg">
-                    <BookOpen className="h-5 w-5 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-800">Bible Study</span>
-                  </div>
-                </div>
-                
-                {/* Portfolio and Blog Links */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-                  <a 
-                    href="https://benaiahnicholasnimal.vercel.app" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium"
-                  >
-                    View Portfolio
-                  </a>
-                  <a 
-                    href="https://benaiahnicholasnimal.vercel.app/blog-bible-aura.html" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-500 font-medium"
-                  >
-                    Read About Bible Aura
-                  </a>
-                </div>
                 
                 <div className="mt-6">
                   <a 

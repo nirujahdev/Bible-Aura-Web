@@ -1,5 +1,7 @@
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Shield, Lock, Eye, FileText, Mail, CheckCircle } from "lucide-react";
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
 
@@ -356,6 +358,24 @@ const PrivacyPolicy = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-8 border-t border-gray-200 mt-8">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                  <Link to="/contact">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Contact Us
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link to="/terms-of-service">
+                    <FileText className="h-4 w-4 mr-2" />
+                    View Terms of Service
+                  </Link>
+                </Button>
               </div>
             </div>
 
