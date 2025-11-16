@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, BookOpen, Target,
-  Copy, Highlighter, FileText,
+  Copy, FileText,
   ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2, X
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -101,7 +101,6 @@ export default function Bible() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [selectedVerse, setSelectedVerse] = useState<{id: string, text: string, reference: string} | null>(null);
   
-  const [selectedVerseForHighlight, setSelectedVerseForHighlight] = useState<string | null>(null);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
   const [targetVerseNumber, setTargetVerseNumber] = useState<number | null>(null);
@@ -181,21 +180,6 @@ export default function Bible() {
     }
   }, [user, selectedLanguage]);
 
-  // Close highlight picker when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      // Close highlight picker if clicking outside the highlight button area
-      if (selectedVerseForHighlight && !target.closest('[data-highlight-container]')) {
-        setSelectedVerseForHighlight(null);
-      }
-    };
-
-    if (selectedVerseForHighlight) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [selectedVerseForHighlight]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -527,27 +511,40 @@ export default function Bible() {
       }
       
       if (searchFilters.exactMatch) {
-        const queryLower = searchQuery.toLowerCase().trim();
-        const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
-        
-        // For exact match, check for exact phrase match (case-insensitive)
-        results = results.filter(verse => {
-          const verseTextLower = verse.text.toLowerCase();
+        const queryTrimmed = searchQuery.trim();
+        if (queryTrimmed.length === 0) {
+          results = [];
+        } else {
+          const queryLower = queryTrimmed.toLowerCase();
+          const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
           
-          // If single word, check word boundaries
-          if (queryWords.length === 1) {
-            const word = queryWords[0];
-            const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const wordBoundaryRegex = new RegExp(`\\b${escapedWord}\\b`, 'i');
-            return wordBoundaryRegex.test(verse.text);
-          } else {
-            // If multiple words, check exact phrase match
-            // Escape special regex characters
-            const escapedPhrase = queryLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const phraseRegex = new RegExp(escapedPhrase.replace(/\s+/g, '\\s+'), 'i');
-            return phraseRegex.test(verse.text);
-          }
-        });
+          // For exact match, check for exact phrase match (case-insensitive)
+          results = results.filter(verse => {
+            // Get clean verse text (remove HTML tags if any)
+            const verseText = verse.text.replace(/<[^>]*>/g, '').trim();
+            const verseTextLower = verseText.toLowerCase();
+            
+            // If single word, check word boundaries (case-insensitive)
+            if (queryWords.length === 1) {
+              const word = queryWords[0];
+              // Escape special regex characters
+              const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              // Use word boundaries for exact word match
+              const wordBoundaryRegex = new RegExp(`\\b${escapedWord}\\b`, 'i');
+              return wordBoundaryRegex.test(verseText);
+            } else {
+              // If multiple words, check exact phrase match with word boundaries
+              // Escape special regex characters
+              const escapedWords = queryWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+              // Match words in order with word boundaries and flexible whitespace
+              const phraseRegex = new RegExp(
+                escapedWords.map(w => `\\b${w}\\b`).join('\\s+'),
+                'i'
+              );
+              return phraseRegex.test(verseText);
+            }
+          });
+        }
       }
       
       // Limit to max results for performance
@@ -839,8 +836,6 @@ How can I apply this to my life?
       const newHighlights = new Map(highlights);
       newHighlights.set(verseId, color);
       setHighlights(newHighlights);
-      
-      setSelectedVerseForHighlight(null); // Close picker after selection
       
       toast({
         title: "Verse Highlighted",
@@ -1604,114 +1599,6 @@ How can I apply this to my life?
                               }`} />
                             </Button>
 
-                            {/* Highlight Icon - Old system with popup */}
-                            <div className="relative z-10 overflow-visible" data-highlight-container style={{ overflow: 'visible' }}>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedVerseForHighlight(selectedVerseForHighlight === verseId ? null : verseId);
-                                      }}
-                                      className={cn(
-                                        "touch-optimized flex-shrink-0 p-0 relative",
-                                        isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9',
-                                        highlightColor 
-                                          ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' :
-                                            highlightColor === 'green' ? 'text-green-500 hover:text-green-600 bg-green-50' :
-                                            highlightColor === 'blue' ? 'text-blue-500 hover:text-blue-600 bg-blue-50' :
-                                            highlightColor === 'purple' ? 'text-purple-500 hover:text-purple-600 bg-purple-50' :
-                                            highlightColor === 'red' ? 'text-red-500 hover:text-red-600 bg-red-50' :
-                                            highlightColor === 'pink' ? 'text-pink-500 hover:text-pink-600 bg-pink-50' :
-                                            highlightColor === 'orange' ? 'text-orange-500 hover:text-orange-600 bg-orange-50' :
-                                            'text-gray-400 hover:text-yellow-500'
-                                          : 'text-gray-400 hover:text-yellow-500'
-                                      )}
-                                      title="Highlight verse"
-                                    >
-                                      <Highlighter className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} ${
-                                        highlightColor ? 'fill-current' : ''
-                                      }`} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{highlightColor ? `Change ${highlightColor} highlight` : 'Highlight verse'}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              
-                              {/* Old Highlight System - Popup with circular dots */}
-                              <AnimatePresence>
-                                {selectedVerseForHighlight === verseId && (
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="absolute bottom-full right-0 mb-2 p-4 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[260px]"
-                                    style={{ 
-                                      position: 'absolute',
-                                      zIndex: 9999,
-                                      pointerEvents: 'auto'
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                  >
-                                    <div className="flex flex-wrap gap-3 justify-center items-center">
-                                      {HIGHLIGHT_COLORS.map(color => {
-                                        const colorMap: Record<string, { bg: string; border: string }> = {
-                                          yellow: { bg: '#facc15', border: '#ca8a04' },
-                                          green: { bg: '#4ade80', border: '#16a34a' },
-                                          blue: { bg: '#60a5fa', border: '#2563eb' },
-                                          purple: { bg: '#a78bfa', border: '#7c3aed' },
-                                          red: { bg: '#f87171', border: '#dc2626' },
-                                          pink: { bg: '#f472b6', border: '#db2777' },
-                                          orange: { bg: '#fb923c', border: '#ea580c' }
-                                        };
-                                        const style = colorMap[color.id] || { bg: '#facc15', border: '#ca8a04' };
-                                        
-                                        return (
-                                          <button
-                                            key={color.id}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                              highlightVerse(verse, color.id);
-                                              setSelectedVerseForHighlight(null);
-                                            }}
-                                            onMouseDown={(e) => {
-                                              e.stopPropagation();
-                                              e.preventDefault();
-                                            }}
-                                            type="button"
-                                            className={cn(
-                                              "w-12 h-12 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center relative",
-                                              color.id === highlightColor 
-                                                ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
-                                                : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
-                                              'shadow-sm'
-                                            )}
-                                            style={{
-                                              backgroundColor: style.bg,
-                                              borderColor: color.id === highlightColor ? '#1f2937' : style.border
-                                            }}
-                                            title={color.name}
-                                            aria-label={`Highlight with ${color.name}`}
-                                          >
-                                            {color.id === highlightColor && (
-                                              <span className="text-base font-bold text-white drop-shadow-lg">✓</span>
-                                            )}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
 
                             {/* Copy Button */}
                             <Button
@@ -1847,8 +1734,6 @@ function VerseCard({
   toast,
   getBookDisplayName
 }: any) {
-  const [showHighlighter, setShowHighlighter] = useState(false);
-  
   // Helper function to get highlight color classes
   const getHighlightClasses = (color: string | undefined) => {
     if (!color) return 'hover:bg-gray-50';
@@ -1891,35 +1776,6 @@ function VerseCard({
         
         {/* Action Buttons - Horizontal layout, always visible on mobile */}
         <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-          {/* Highlight */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowHighlighter(!showHighlighter)}
-              className="h-6 w-6 md:h-8 md:w-8 p-0"
-            >
-              <Highlighter className="h-3 w-3 md:h-4 md:w-4" />
-            </Button>
-            
-            {showHighlighter && (
-              <div className="absolute top-full right-0 mt-1 p-2 bg-white border rounded-lg shadow-lg z-10">
-                <div className="flex gap-1">
-                  {HIGHLIGHT_COLORS.map(color => (
-                    <button
-                      key={color.id}
-                      onClick={() => {
-                        onHighlight(verse, color.id);
-                        setShowHighlighter(false);
-                      }}
-                      className={`w-6 h-6 rounded border-2 ${color.color}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Favorite */}
           <Button
             variant="ghost"
