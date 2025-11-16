@@ -10,22 +10,28 @@ BEGIN;
 -- 1. Add AI limit columns to profiles table
 DO $$ 
 BEGIN
-  -- Add AI message limit (default: 50 messages per day)
+  -- Add AI message limit (default: 20 messages per day)
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_schema = 'public' 
                  AND table_name = 'profiles' 
                  AND column_name = 'ai_message_limit') THEN
-    ALTER TABLE public.profiles ADD COLUMN ai_message_limit INTEGER DEFAULT 50;
+    ALTER TABLE public.profiles ADD COLUMN ai_message_limit INTEGER DEFAULT 20;
     RAISE NOTICE 'Added ai_message_limit column';
+  ELSE
+    -- Update existing default to 20 if column exists but default is different
+    ALTER TABLE public.profiles ALTER COLUMN ai_message_limit SET DEFAULT 20;
   END IF;
   
-  -- Add AI sermon limit (default: 5 sermons per day)
+  -- Add AI sermon limit (default: 1 sermon per day)
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                  WHERE table_schema = 'public' 
                  AND table_name = 'profiles' 
                  AND column_name = 'ai_sermon_limit') THEN
-    ALTER TABLE public.profiles ADD COLUMN ai_sermon_limit INTEGER DEFAULT 5;
+    ALTER TABLE public.profiles ADD COLUMN ai_sermon_limit INTEGER DEFAULT 1;
     RAISE NOTICE 'Added ai_sermon_limit column';
+  ELSE
+    -- Update existing default to 1 if column exists but default is different
+    ALTER TABLE public.profiles ALTER COLUMN ai_sermon_limit SET DEFAULT 1;
   END IF;
   
   -- Add constraints

@@ -253,14 +253,15 @@ Ensure the sermon is:
       return;
     }
 
-    // Check AI sermon limit
+    // Check AI sermon limit first (without incrementing)
     if (user) {
-      const usageResult = await checkAndIncrementUsage(user.id, 'ai_sermon');
+      const { getUsageInfo } = await import('@/lib/ai-limits');
+      const usageInfo = await getUsageInfo(user.id, 'ai_sermon');
       
-      if (!usageResult.allowed) {
+      if (usageInfo.limit_reached) {
         toast({
           title: "AI Sermon Limit Reached",
-          description: `You've reached your daily limit of ${usageResult.limit} AI sermons. Please try again tomorrow.`,
+          description: `You've reached your daily limit of ${usageInfo.limit} AI sermons. Please try again tomorrow.`,
           variant: "destructive"
         });
         return;
@@ -279,6 +280,16 @@ Ensure the sermon is:
       } catch (parseError) {
         // If JSON parsing fails, create a structured response from the text
         sermon = parseTextResponse(response);
+      }
+
+      // Only increment usage count AFTER successful sermon generation
+      if (user) {
+        const { checkAndIncrementUsage } = await import('@/lib/ai-limits');
+        const usageResult = await checkAndIncrementUsage(user.id, 'ai_sermon');
+        if (!usageResult.allowed) {
+          // This shouldn't happen since we checked first, but handle it gracefully
+          console.warn('Usage limit reached after successful sermon generation');
+        }
       }
 
       setGeneratedSermon(sermon);

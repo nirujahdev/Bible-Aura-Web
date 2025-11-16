@@ -251,10 +251,31 @@ const EnhancedSermonGenerator: React.FC<EnhancedSermonGeneratorProps> = ({
       return;
     }
 
+    // Check AI sermon limit first (without incrementing)
+    const { getUsageInfo } = await import('@/lib/ai-limits');
+    const usageInfo = await getUsageInfo(user.id, 'ai_sermon');
+    
+    if (usageInfo.limit_reached) {
+      toast({
+        title: "AI Sermon Limit Reached",
+        description: `You've reached your daily limit of ${usageInfo.limit} AI sermons. Please try again tomorrow.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
       // Create comprehensive sermon based on form data using OpenAI
       const sermon = await generateComprehensiveSermon(formData, advancedOptions);
+      
+      // Only increment usage count AFTER successful sermon generation
+      const { checkAndIncrementUsage } = await import('@/lib/ai-limits');
+      const usageResult = await checkAndIncrementUsage(user.id, 'ai_sermon');
+      if (!usageResult.allowed) {
+        // This shouldn't happen since we checked first, but handle it gracefully
+        console.warn('Usage limit reached after successful sermon generation');
+      }
       
       setGeneratedSermon(sermon);
       setActiveSection('overview');

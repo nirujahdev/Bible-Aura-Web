@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { getUsageInfo } from "@/lib/ai-limits";
 import { 
   User, Edit3, BookOpen, Heart, 
   Calendar, Award, Target, TrendingUp, Save, Star,
@@ -57,6 +58,10 @@ const Profile = () => {
     totalConversations: 0,
     totalHighlights: 0
   });
+
+  // Usage tracking state
+  const [aiMessageUsage, setAiMessageUsage] = useState({ current: 0, limit: 20, remaining: 20 });
+  const [aiSermonUsage, setAiSermonUsage] = useState({ current: 0, limit: 1, remaining: 1 });
 
 
   // Profile editing states
@@ -120,6 +125,7 @@ const Profile = () => {
     if (user) {
       loadProfile();
       loadStats();
+      loadUsageInfo();
       
       // Set up real-time subscription for profile updates
       const profileSubscription = supabase
@@ -265,6 +271,31 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Failed to load stats:", error);
+    }
+  };
+
+  const loadUsageInfo = async () => {
+    if (!user) return;
+
+    try {
+      const [messageUsage, sermonUsage] = await Promise.all([
+        getUsageInfo(user.id, 'ai_message'),
+        getUsageInfo(user.id, 'ai_sermon')
+      ]);
+
+      setAiMessageUsage({
+        current: messageUsage.current_usage,
+        limit: messageUsage.limit || 20,
+        remaining: messageUsage.remaining
+      });
+
+      setAiSermonUsage({
+        current: sermonUsage.current_usage,
+        limit: sermonUsage.limit || 1,
+        remaining: sermonUsage.remaining
+      });
+    } catch (error) {
+      console.error("Failed to load usage info:", error);
     }
   };
 
@@ -999,14 +1030,36 @@ const Profile = () => {
                 <span className="text-xs sm:text-sm text-muted-foreground">Sermons Created</span>
                 <span className="text-xs sm:text-sm font-medium">{stats.totalSermons}</span>
               </div>
-              <div className="pt-2 border-t">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs sm:text-sm text-muted-foreground">AI Message Limit</span>
-                  <span className="text-xs sm:text-sm font-medium">{profile?.ai_message_limit || 50}/day</span>
+              <div className="pt-2 border-t space-y-2">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs sm:text-sm text-muted-foreground">AI Messages</span>
+                    <span className={`text-xs sm:text-sm font-medium ${aiMessageUsage.remaining === 0 ? 'text-red-600' : ''}`}>
+                      {aiMessageUsage.current}/{aiMessageUsage.limit} today
+                    </span>
+                  </div>
+                  <Progress 
+                    value={(aiMessageUsage.current / aiMessageUsage.limit) * 100} 
+                    className={`h-1.5 ${aiMessageUsage.remaining === 0 ? 'bg-red-100' : ''}`}
+                  />
+                  {aiMessageUsage.remaining > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{aiMessageUsage.remaining} remaining</p>
+                  )}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground">AI Sermon Limit</span>
-                  <span className="text-xs sm:text-sm font-medium">{profile?.ai_sermon_limit || 5}/day</span>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs sm:text-sm text-muted-foreground">AI Sermons</span>
+                    <span className={`text-xs sm:text-sm font-medium ${aiSermonUsage.remaining === 0 ? 'text-red-600' : ''}`}>
+                      {aiSermonUsage.current}/{aiSermonUsage.limit} today
+                    </span>
+                  </div>
+                  <Progress 
+                    value={(aiSermonUsage.current / aiSermonUsage.limit) * 100} 
+                    className={`h-1.5 ${aiSermonUsage.remaining === 0 ? 'bg-red-100' : ''}`}
+                  />
+                  {aiSermonUsage.remaining > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{aiSermonUsage.remaining} remaining</p>
+                  )}
                 </div>
               </div>
             </CardContent>

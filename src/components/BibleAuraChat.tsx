@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { sendBibleAuraMessage } from '@/lib/agent-sdk';
-import { checkAndIncrementUsage } from '@/lib/ai-limits';
+import { checkAndIncrementUsage, getUsageInfo } from '@/lib/ai-limits';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -395,13 +395,13 @@ export function BibleAuraChat() {
       return;
     }
 
-    // Check AI message limit
-    const usageResult = await checkAndIncrementUsage(user.id, 'ai_message');
+    // Check AI message limit first (without incrementing)
+    const usageInfo = await getUsageInfo(user.id, 'ai_message');
     
-    if (!usageResult.allowed) {
+    if (usageInfo.limit_reached) {
       toast({
         title: "AI Message Limit Reached",
-        description: `You've reached your daily limit of ${usageResult.limit} AI messages. Please try again tomorrow.`,
+        description: `You've reached your daily limit of ${usageInfo.limit} AI messages. Please try again tomorrow.`,
         variant: "destructive",
       });
       return;
@@ -433,6 +433,13 @@ export function BibleAuraChat() {
         mode: apiMode,
         language: apiLanguage
       });
+      
+      // Only increment usage count AFTER successful API response
+      const usageResult = await checkAndIncrementUsage(user.id, 'ai_message');
+      if (!usageResult.allowed) {
+        // This shouldn't happen since we checked first, but handle it gracefully
+        console.warn('Usage limit reached after successful API call');
+      }
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -717,7 +724,7 @@ export function BibleAuraChat() {
       )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full max-w-full">
         {/* Mobile Header - Hide when history or menus are open */}
         {!showMobileHistory && !showMobileNavMenu && !showMobileMoreMenu && (
           <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-40 flex-shrink-0">
@@ -780,8 +787,8 @@ export function BibleAuraChat() {
 
 
         {/* Messages Area - Scrollable */}
-        <ScrollArea className="flex-1 min-h-0 overflow-auto px-2 md:px-4 py-2 md:py-6">
-          <div className="max-w-3xl mx-auto space-y-6">
+        <ScrollArea className="flex-1 min-h-0 overflow-auto px-2 sm:px-3 md:px-4 py-2 md:py-6">
+          <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
             {messages.length === 0 ? (
               <div className="text-center py-4 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="inline-block mb-3 md:mb-4">
@@ -800,11 +807,11 @@ export function BibleAuraChat() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'} px-1 sm:px-0`}
                   >
-                    <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
+                    <div className={`max-w-[85%] sm:max-w-[90%] md:max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                       {message.role === 'assistant' ? (
-                        <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-4 shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 shadow-sm w-full">
                           <div className="prose max-w-none text-gray-700 leading-relaxed">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
@@ -812,7 +819,7 @@ export function BibleAuraChat() {
                                 const titleText = line.replace(/^✦\s*/, '').trim();
                                 return (
                                   <div key={idx} className="mb-2 md:mb-3 mt-2 md:mt-3 first:mt-0">
-                                    <strong className="text-gray-900 font-semibold text-base md:text-lg">{titleText}</strong>
+                                    <strong className="text-gray-900 font-semibold text-[15px] md:text-[15px]">{titleText}</strong>
                                   </div>
                                 );
                               }
@@ -821,12 +828,12 @@ export function BibleAuraChat() {
                                 const headingText = line.replace(/^↗\s*/, '').trim();
                                 return (
                                   <div key={idx} className="mt-1.5 md:mt-2 mb-1">
-                                    <strong className="text-gray-800 font-medium text-sm md:text-base">{headingText}</strong>
+                                    <strong className="text-gray-800 font-medium text-[15px] md:text-[15px]">{headingText}</strong>
                                   </div>
                                 );
                               }
-                              // Regular line
-                              return <div key={idx} className="mb-1 text-base md:text-lg">{line || '\u00A0'}</div>;
+                              // Regular line - ChatGPT font size: 15px
+                              return <div key={idx} className="mb-1 text-[15px] leading-[1.75]">{line || '\u00A0'}</div>;
                             })}
                           </div>
                           
@@ -996,8 +1003,8 @@ export function BibleAuraChat() {
                           )}
                         </div>
                       ) : (
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-3 md:p-4 shadow-sm">
-                          <div className="whitespace-pre-wrap text-xs md:text-sm">{message.content}</div>
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 shadow-sm w-full">
+                          <div className="whitespace-pre-wrap text-[15px] leading-[1.75] break-words">{message.content}</div>
                         </div>
                       )}
                       <div className="text-[9px] md:text-[10px] text-gray-400 mt-1 px-2">
@@ -1093,8 +1100,8 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area - Fixed at bottom */}
-        <div className="bg-white border-t border-gray-200 px-3 md:px-4 py-3 md:py-4 flex-shrink-0 safe-area-bottom">
-          <div className="max-w-3xl mx-auto">
+        <div className="bg-white border-t border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 safe-area-bottom">
+          <div className="max-w-3xl mx-auto w-full">
             {/* Mobile: Redesigned Input Bar */}
             <div className="lg:hidden">
               {/* Mode and Language - On Top */}
@@ -1130,8 +1137,8 @@ export function BibleAuraChat() {
               </div>
 
               {/* Message Input Bar */}
-              <div className="bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
-                <div className="flex items-end gap-2 p-2">
+              <div className="bg-gray-50 rounded-xl md:rounded-2xl border border-gray-200 shadow-sm">
+                <div className="flex items-end gap-1.5 sm:gap-2 p-1.5 sm:p-2">
                   {/* Text Input */}
                   <Textarea
                     ref={textareaRef}
@@ -1139,7 +1146,7 @@ export function BibleAuraChat() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything about bible"
-                    className="flex-1 min-h-[36px] max-h-[100px] py-2 px-3 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-white rounded-lg placeholder:text-gray-400 outline-none"
+                    className="flex-1 min-h-[40px] sm:min-h-[36px] max-h-[100px] py-2 px-2 sm:px-3 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-[15px] bg-white rounded-lg placeholder:text-gray-400 outline-none"
                     disabled={isLoading}
                     rows={1}
                   />
@@ -1156,8 +1163,8 @@ export function BibleAuraChat() {
                 </div>
               </div>
               {/* Disclaimer */}
-              <p className="text-[8px] text-gray-500 text-center mt-1.5">
-                By using bible aura your are agree with our polices
+              <p className="text-[10px] text-gray-500 text-center mt-1.5 px-2">
+                By using Bible Aura you agree with our <Link to="/privacy-policy" className="text-orange-500 hover:text-orange-600 underline">privacy policy</Link>
               </p>
             </div>
 
@@ -1204,7 +1211,7 @@ export function BibleAuraChat() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Ask anything about bible"
-                      className="flex-1 min-h-[24px] max-h-[200px] py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-transparent placeholder:text-gray-400 outline-none"
+                      className="flex-1 min-h-[24px] max-h-[200px] py-1.5 px-0 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-[15px] bg-transparent placeholder:text-gray-400 outline-none"
                       disabled={isLoading}
                       rows={1}
                     />
@@ -1223,7 +1230,7 @@ export function BibleAuraChat() {
                 
                 {/* Disclaimer */}
                 <p className="text-xs text-gray-500 text-center mt-2">
-                  By using bible aura your are agree with our polices
+                  By using Bible Aura you agree with our <Link to="/privacy-policy" className="text-orange-500 hover:text-orange-600 underline">privacy policy</Link>
                 </p>
               </div>
             </div>
