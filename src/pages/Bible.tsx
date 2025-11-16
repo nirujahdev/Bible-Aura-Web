@@ -184,16 +184,17 @@ export default function Bible() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (highlightPickerOpen && !target.closest('[data-highlight-picker]')) {
-        setHighlightPickerOpen(null);
+      // Close highlight picker if clicking outside the highlight button area
+      if (selectedVerseForHighlight && !target.closest('[data-highlight-container]')) {
+        setSelectedVerseForHighlight(null);
       }
     };
 
-    if (highlightPickerOpen) {
+    if (selectedVerseForHighlight) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [highlightPickerOpen]);
+  }, [selectedVerseForHighlight]);
 
   useEffect(() => {
     if (selectedBook) {
@@ -792,7 +793,7 @@ How can I apply this to my life?
       newHighlights.set(verseId, color);
       setHighlights(newHighlights);
       
-      setHighlightPickerOpen(null); // Close picker after selection
+      setSelectedVerseForHighlight(null); // Close picker after selection
       
       toast({
         title: "Verse Highlighted",
@@ -1363,7 +1364,7 @@ How can I apply this to my life?
                         <>
                           <div className="flex items-center gap-2">
                             <h1 className="font-bold text-gray-800 text-xl">
-                              {selectedBook.name}
+                              {getBookDisplayName(selectedBook.name)}
                             </h1>
                             <Badge variant="outline" className="text-xs">
                               Chapter {selectedChapter}
@@ -1553,7 +1554,7 @@ How can I apply this to my life?
                             </Button>
 
                             {/* Highlight Icon - Old system with popup */}
-                            <div className="relative">
+                            <div className="relative" data-highlight-container>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
