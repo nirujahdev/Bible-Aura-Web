@@ -6,7 +6,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, Indent, Outdent, Download,
   FileDown, Copy, Undo, Redo, Search, Replace, Palette, Zap,
   BookOpen, Target, Users, Globe, Mic, Volume2, Eye, Settings,
-  Sparkles, TrendingUp, Wand2, Brain, Lightbulb, Heart
+  Sparkles, TrendingUp, Wand2, Brain, Lightbulb, Heart, Highlighter
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -17,14 +17,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSermonAI } from "@/contexts/SermonAIContext";
 
 interface SermonToolbarProps {
-  editorRef: React.RefObject<HTMLTextAreaElement>;
-  onFormatText: (format: string, value?: string) => void;
+  editorRef: React.RefObject<HTMLTextAreaElement | HTMLDivElement>;
+  onFormatText?: (format: string, value?: string) => void;
   wordCount: number;
   estimatedTime: number;
   sermonContent: string;
   sermonTitle: string;
   onExport?: (format: string) => void;
   onInsertQuickText?: (text: string) => void;
+  isRichText?: boolean;
 }
 
 export default function SermonToolbar({ 
@@ -35,7 +36,8 @@ export default function SermonToolbar({
   sermonContent,
   sermonTitle,
   onExport,
-  onInsertQuickText
+  onInsertQuickText,
+  isRichText = false
 }: SermonToolbarProps) {
   const { toast } = useToast();
   const { state } = useSermonAI();
@@ -64,61 +66,143 @@ export default function SermonToolbar({
 
   const formatText = (format: string, value?: string) => {
     if (!editorRef.current) return;
-    
-    const textarea = editorRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    
-    let formattedText = '';
-    
-    switch (format) {
-      case 'bold':
-        formattedText = `**${selectedText}**`;
-        break;
-      case 'italic':
-        formattedText = `*${selectedText}*`;
-        break;
-      case 'underline':
-        formattedText = `<u>${selectedText}</u>`;
-        break;
-      case 'strikethrough':
-        formattedText = `~~${selectedText}~~`;
-        break;
-      case 'code':
-        formattedText = `\`${selectedText}\``;
-        break;
-      case 'heading1':
-        formattedText = `# ${selectedText}`;
-        break;
-      case 'heading2':
-        formattedText = `## ${selectedText}`;
-        break;
-      case 'heading3':
-        formattedText = `### ${selectedText}`;
-        break;
-      case 'quote':
-        formattedText = `> ${selectedText}`;
-        break;
-      case 'list':
-        formattedText = `- ${selectedText}`;
-        break;
-      case 'orderedList':
-        formattedText = `1. ${selectedText}`;
-        break;
-      case 'link': {
-        const url = value || prompt('Enter URL:');
-        formattedText = `[${selectedText}](${url})`;
-        break;
+
+    // If rich text editor (contentEditable div)
+    if (isRichText && editorRef.current instanceof HTMLDivElement) {
+      editorRef.current.focus();
+      
+      switch (format) {
+        case 'bold':
+          document.execCommand('bold', false);
+          break;
+        case 'italic':
+          document.execCommand('italic', false);
+          break;
+        case 'underline':
+          document.execCommand('underline', false);
+          break;
+        case 'strikethrough':
+          document.execCommand('strikethrough', false);
+          break;
+        case 'heading1':
+          document.execCommand('formatBlock', false, '<h1>');
+          break;
+        case 'heading2':
+          document.execCommand('formatBlock', false, '<h2>');
+          break;
+        case 'heading3':
+          document.execCommand('formatBlock', false, '<h3>');
+          break;
+        case 'alignLeft':
+          document.execCommand('justifyLeft', false);
+          break;
+        case 'alignCenter':
+          document.execCommand('justifyCenter', false);
+          break;
+        case 'alignRight':
+          document.execCommand('justifyRight', false);
+          break;
+        case 'alignJustify':
+          document.execCommand('justifyFull', false);
+          break;
+        case 'list':
+          document.execCommand('insertUnorderedList', false);
+          break;
+        case 'orderedList':
+          document.execCommand('insertOrderedList', false);
+          break;
+        case 'quote':
+          document.execCommand('formatBlock', false, '<blockquote>');
+          break;
+        case 'foreColor':
+          if (value) {
+            document.execCommand('foreColor', false, value);
+          }
+          break;
+        case 'backColor':
+          if (value) {
+            document.execCommand('backColor', false, value);
+          }
+          break;
+        case 'link': {
+          const url = value || prompt('Enter URL:');
+          if (url) {
+            document.execCommand('createLink', false, url);
+          }
+          break;
+        }
+        case 'removeFormat':
+          document.execCommand('removeFormat', false);
+          break;
+        default:
+          return;
       }
-      case 'table':
-        formattedText = `\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| ${selectedText} |          |          |\n|          |          |          |\n`;
-        break;
-      default:
-        return;
+      return;
     }
-    
-    onFormatText(format, formattedText);
+
+    // Legacy textarea support (markdown)
+    if (editorRef.current instanceof HTMLTextAreaElement) {
+      const textarea = editorRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = textarea.value.substring(start, end);
+      
+      let formattedText = '';
+      
+      switch (format) {
+        case 'bold':
+          formattedText = `**${selectedText}**`;
+          break;
+        case 'italic':
+          formattedText = `*${selectedText}*`;
+          break;
+        case 'underline':
+          formattedText = `<u>${selectedText}</u>`;
+          break;
+        case 'strikethrough':
+          formattedText = `~~${selectedText}~~`;
+          break;
+        case 'code':
+          formattedText = `\`${selectedText}\``;
+          break;
+        case 'heading1':
+          formattedText = `# ${selectedText}`;
+          break;
+        case 'heading2':
+          formattedText = `## ${selectedText}`;
+          break;
+        case 'heading3':
+          formattedText = `### ${selectedText}`;
+          break;
+        case 'quote':
+          formattedText = `> ${selectedText}`;
+          break;
+        case 'list':
+          formattedText = `- ${selectedText}`;
+          break;
+        case 'orderedList':
+          formattedText = `1. ${selectedText}`;
+          break;
+        case 'link': {
+          const url = value || prompt('Enter URL:');
+          formattedText = `[${selectedText}](${url})`;
+          break;
+        }
+        case 'table':
+          formattedText = `\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| ${selectedText} |          |          |\n|          |          |          |\n`;
+          break;
+        default:
+          return;
+      }
+      
+      if (onFormatText) {
+        onFormatText(format, formattedText);
+      }
+    }
+  };
+
+  const handleColorChange = (type: 'foreColor' | 'backColor', color: string) => {
+    formatText(type, color);
   };
 
   const insertQuickText = (text: string) => {
@@ -220,26 +304,127 @@ export default function SermonToolbar({
                   <TooltipContent>Italic (Ctrl+I)</TooltipContent>
                 </Tooltip>
 
-                {!isMobile && (
-                  <>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => formatText('underline')}>
-                          <Underline className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Underline</TooltipContent>
-                    </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => formatText('underline')}>
+                      <Underline className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Underline (Ctrl+U)</TooltipContent>
+                </Tooltip>
 
+                {!isMobile && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" onClick={() => formatText('strikethrough')}>
+                        <Strikethrough className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Strikethrough</TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Text Color */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => formatText('strikethrough')}>
-                          <Strikethrough className="h-4 w-4" />
+                        <Button variant="ghost" size="sm">
+                          <Palette className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Strikethrough</TooltipContent>
+                      <TooltipContent>Text Color</TooltipContent>
                     </Tooltip>
-                  </>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <div className="p-2">
+                      <p className="text-xs font-medium mb-2">Text Color</p>
+                      <div className="grid grid-cols-6 gap-1">
+                        {['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080', '#FFC0CB', '#A52A2A', '#808080'].map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => handleColorChange('foreColor', color)}
+                            className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Highlight Color */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Highlighter className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Highlight</TooltipContent>
+                    </Tooltip>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <div className="p-2">
+                      <p className="text-xs font-medium mb-2">Highlight Color</p>
+                      <div className="grid grid-cols-6 gap-1">
+                        {['#FFFF00', '#FFE066', '#FFCC99', '#99CCFF', '#99FF99', '#FF99CC', '#CC99FF', '#FFE5B4', '#E6E6FA', '#F0E68C', '#FFB6C1', '#DDA0DD'].map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => handleColorChange('backColor', color)}
+                            className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <Separator orientation="vertical" className="h-6" />
+
+              {/* Alignment */}
+              <div className="flex items-center gap-0.5 sm:gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => formatText('alignLeft')}>
+                      <AlignLeft className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Align Left</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => formatText('alignCenter')}>
+                      <AlignCenter className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Align Center</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => formatText('alignRight')}>
+                      <AlignRight className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Align Right</TooltipContent>
+                </Tooltip>
+
+                {!isMobile && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" onClick={() => formatText('alignJustify')}>
+                        <AlignRight className="h-4 w-4 rotate-180" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Justify</TooltipContent>
+                  </Tooltip>
                 )}
               </div>
 

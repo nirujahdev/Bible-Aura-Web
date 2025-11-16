@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getAllBooks, getChapterVerses, TranslationCode, BIBLE_TRANSLATIONS, searchVerses } from "@/lib/local-bible";
 import SermonToolbar from '@/components/SermonToolbar';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import SermonAIGenerator from '@/components/SermonAIGenerator';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
 import { MobileOptimizedLayout } from '@/components/MobileOptimizedLayout';
@@ -229,7 +230,7 @@ const SermonsContent = () => {
   const [targetAudience, setTargetAudience] = useState<string>('');
   
   // Refs
-  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const autoSaveRef = useRef<NodeJS.Timeout>();
 
   // Calculate stats
@@ -700,22 +701,32 @@ const SermonsContent = () => {
   };
 
   const insertVerseIntoSermon = (verse: BibleVerse) => {
-    const verseText = `> "${verse.text}" \n> — ${verse.book_name} ${verse.chapter}:${verse.verse}\n\n`;
+    const verseText = `<blockquote>"${verse.text}"<br>— ${verse.book_name} ${verse.chapter}:${verse.verse}</blockquote>`;
     
     if (editorRef.current && selectedSermon) {
-      const start = editorRef.current.selectionStart;
-      const end = editorRef.current.selectionEnd;
-      const currentContent = selectedSermon.content || '';
-      const newContent = currentContent.slice(0, start) + verseText + currentContent.slice(end);
+      editorRef.current.focus();
+      const selection = window.getSelection();
       
-      setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
-      
-      setTimeout(() => {
-        if (editorRef.current) {
-          editorRef.current.focus();
-          editorRef.current.setSelectionRange(start + verseText.length, start + verseText.length);
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = verseText;
+        const fragment = document.createDocumentFragment();
+        while (tempDiv.firstChild) {
+          fragment.appendChild(tempDiv.firstChild);
         }
-      }, 0);
+        range.insertNode(fragment);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        // Fallback: append to end
+        const currentContent = selectedSermon.content || '';
+        const newContent = currentContent + verseText;
+        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+        updateContent(newContent);
+      }
     }
     
     setShowBibleDialog(false);
@@ -852,16 +863,25 @@ const SermonsContent = () => {
   };
 
   const handleInsertQuickText = (text: string) => {
-    if (editorRef.current) {
-      const textarea = editorRef.current;
-      const start = textarea.selectionStart;
-      const newContent = content.substring(0, start) + text + content.substring(start);
-      setContent(newContent);
+    if (editorRef.current && editorRef.current instanceof HTMLDivElement) {
+      editorRef.current.focus();
+      const selection = window.getSelection();
       
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + text.length, start + text.length);
-      }, 0);
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        // Fallback: append to end
+        const currentContent = selectedSermon?.content || '';
+        const newContent = currentContent + text;
+        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+        updateContent(newContent);
+      }
     }
   };
 
@@ -1770,66 +1790,37 @@ const SermonsContent = () => {
           <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
             <SermonToolbar
               editorRef={editorRef}
-              onFormatText={handleFormatText}
-              wordCount={selectedSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0}
-              estimatedTime={Math.ceil((selectedSermon?.content?.trim().split(/\s+/).filter(w => w.length > 0).length || 0) / 150)}
+              wordCount={selectedSermon?.content ? (selectedSermon.content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(w => w.length > 0).length) : 0}
+              estimatedTime={Math.ceil((selectedSermon?.content ? (selectedSermon.content.replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(w => w.length > 0).length) : 0) / 150)}
               sermonContent={selectedSermon?.content || ''}
               sermonTitle={selectedSermon?.title || ''}
               onExport={handleExportSermon}
               onInsertQuickText={handleInsertQuickText}
+              isRichText={true}
             />
             <div className={`flex-1 flex flex-col p-2 sm:p-3 md:p-4 ${focusMode ? 'bg-white' : ''} overflow-hidden relative min-h-0`}>
-              <Textarea
-                ref={editorRef}
-                placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
-                value={selectedSermon?.content || ''}
-                onChange={(e) => {
-                  const newContent = e.target.value;
-                  setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
-                  updateContent(newContent);
-                }}
-                className={`w-full flex-1 resize-none border-0 focus:ring-0 leading-relaxed ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-3 sm:p-4 md:p-8 border border-gray-200' : 'p-2 sm:p-3 md:p-4'} text-base sm:text-lg`}
+              <div className={`w-full flex-1 overflow-auto ${focusMode ? 'bg-white/90 backdrop-blur-sm shadow-xl rounded-xl p-3 sm:p-4 md:p-8 border border-gray-200' : 'p-2 sm:p-3 md:p-4'}`}
                 style={{ 
-                  fontSize: isMobile ? `${Math.max(16, fontSize)}px` : `${fontSize}px`,
-                  lineHeight: lineHeight,
                   maxWidth: focusMode ? (isMobile ? '100%' : '800px') : '100%',
                   margin: focusMode && !isMobile ? '0 auto' : '0',
                 }}
-              />
-              <SermonAutoComplete
-                textareaRef={editorRef}
-                onSuggestionSelect={(suggestion) => {
-                  if (editorRef.current && selectedSermon) {
-                    const start = editorRef.current.selectionStart;
-                    const end = editorRef.current.selectionEnd;
-                    const before = (selectedSermon.content || '').substring(0, start);
-                    const after = (selectedSermon.content || '').substring(end);
-                    const newContent = before + suggestion + ' ' + after;
-                    setSelectedSermon({ ...selectedSermon, content: newContent });
-                    updateContent(newContent);
-                    setTimeout(() => {
-                      if (editorRef.current) {
-                        editorRef.current.focus();
-                        editorRef.current.setSelectionRange(start + suggestion.length + 1, start + suggestion.length + 1);
-                      }
-                    }, 0);
-                  }
-                }}
-                enabled={true}
-              />
-              <InlineAISuggestions
-                textareaRef={editorRef}
-                onApplyFix={(original, fixed, position) => {
-                  if (selectedSermon) {
-                    const before = (selectedSermon.content || '').substring(0, position);
-                    const after = (selectedSermon.content || '').substring(position + original.length);
-                    const newContent = before + fixed + after;
-                    setSelectedSermon({ ...selectedSermon, content: newContent });
-                    updateContent(newContent);
-                  }
-                }}
-                enabled={true}
-              />
+              >
+                <RichTextEditor
+                  ref={editorRef}
+                  value={selectedSermon?.content || ''}
+                  onChange={(html) => {
+                    setSelectedSermon(prev => prev ? { ...prev, content: html } : null);
+                    updateContent(html);
+                  }}
+                  placeholder="Start writing your sermon... Let the Holy Spirit guide your words. ✨"
+                  className="w-full min-h-full outline-none"
+                  style={{ 
+                    fontSize: isMobile ? `${Math.max(16, fontSize)}px` : `${fontSize}px`,
+                    lineHeight: lineHeight,
+                  }}
+                />
+              </div>
+              {/* Note: SermonAutoComplete and InlineAISuggestions need to be updated to work with rich text editor */}
             </div>
             
             {/* Inline AI Assistant removed per user request */}

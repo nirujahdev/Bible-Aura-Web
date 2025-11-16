@@ -14,7 +14,8 @@ import {
   Bot, Send, Sparkles, History, X, ChevronRight, 
   BookOpen, Search, Quote, Lightbulb, Globe, FileText,
   MessageSquare, Zap, Loader2, Target, Wand2, CheckCircle2,
-  Play, Clock
+  Play, Clock, Info, Calendar, Tag, Bookmark, Users, Timer,
+  FileText as FileTextIcon, Award, BarChart, AlertCircle, ListOrdered
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -61,11 +62,13 @@ export function AIResearchPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'tools' | 'history'>('tools');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tools' | 'history' | 'info'>('tools');
   const [researchHistory, setResearchHistory] = useState<ResearchHistory[]>([]);
   const [executingAgent, setExecutingAgent] = useState<string | null>(null);
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
   const [agents, setAgents] = useState<SermonAgent[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(true);
+  const [agentsError, setAgentsError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -83,13 +86,21 @@ export function AIResearchPanel() {
   // Load agents on mount
   useEffect(() => {
     const loadAgents = async () => {
+      setAgentsLoading(true);
+      setAgentsError(null);
       try {
         const { getAllAgents } = await import('@/lib/sermon-agents');
         const allAgents = getAllAgents();
         setAgents(allAgents);
-      } catch (error) {
+        if (allAgents.length === 0) {
+          setAgentsError('No agents available');
+        }
+      } catch (error: any) {
         console.error('Error loading agents:', error);
+        setAgentsError(error?.message || 'Failed to load agents');
         setAgents([]);
+      } finally {
+        setAgentsLoading(false);
       }
     };
     loadAgents();
@@ -315,25 +326,47 @@ Provide detailed, helpful research and insights.`;
 
       {/* Enhanced Tabs - Optimized for mobile and laptop */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
-        <TabsList className="grid grid-cols-3 mx-2 sm:mx-4 mt-2 sm:mt-3 h-8 sm:h-9 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1">
-          <TabsTrigger value="tools" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+        <TabsList className="grid grid-cols-4 mx-2 sm:mx-4 mt-2 sm:mt-3 h-8 sm:h-9 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1">
+          <TabsTrigger value="tools" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <Zap className="h-3 w-3 sm:mr-1" />
             <span className="hidden sm:inline">Tools</span>
           </TabsTrigger>
-          <TabsTrigger value="chat" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+          <TabsTrigger value="chat" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <MessageSquare className="h-3 w-3 sm:mr-1" />
             <span className="hidden sm:inline">Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="text-[10px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+          <TabsTrigger value="history" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
             <History className="h-3 w-3 sm:mr-1" />
             <span className="hidden sm:inline">History</span>
+          </TabsTrigger>
+          <TabsTrigger value="info" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+            <Info className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Info</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Enhanced Tools Tab - Compact to fit without scroll */}
         <TabsContent value="tools" className="flex-1 overflow-hidden p-2 m-0 min-h-0">
           <div className="space-y-2.5 h-full overflow-y-auto pb-0">
-            {Object.entries(agentsByCategory).map(([category, agents]) => {
+            {agentsLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-500 mb-3" />
+                <p className="font-medium">Loading tools...</p>
+              </div>
+            ) : agentsError ? (
+              <div className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
+                <AlertCircle className="h-8 w-8 text-red-500 mb-3" />
+                <p className="font-medium text-red-600">Error loading tools</p>
+                <p className="text-xs mt-1 text-gray-400">{agentsError}</p>
+              </div>
+            ) : availableAgents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
+                <Zap className="h-8 w-8 text-gray-400 mb-3" />
+                <p className="font-medium">No tools available</p>
+                <p className="text-xs mt-1 text-gray-400">Please check your configuration</p>
+              </div>
+            ) : (
+              Object.entries(agentsByCategory).map(([category, agents]) => {
               const categoryInfo = categoryLabels[category] || { label: category, icon: Sparkles, color: 'bg-gray-500' };
               const CategoryIcon = categoryInfo.icon;
               
@@ -418,7 +451,8 @@ Provide detailed, helpful research and insights.`;
                   </div>
                 </div>
               );
-            })}
+            }))
+            }
           </div>
         </TabsContent>
 
@@ -574,6 +608,146 @@ Provide detailed, helpful research and insights.`;
               })
             )}
           </div>
+        </TabsContent>
+
+        {/* Info Tab - Sermon Information */}
+        <TabsContent value="info" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Info className="h-5 w-5 text-orange-500" />
+                <h3 className="text-sm font-semibold text-gray-900">Sermon Information</h3>
+              </div>
+
+              {/* Title */}
+              <Card className="p-3 border-gray-200">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
+                    <FileTextIcon className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Title</p>
+                    <p className="text-sm font-semibold text-gray-900 break-words">
+                      {state.sermonTitle || 'Untitled Sermon'}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Scripture Reference */}
+              {state.scriptureReference && (
+                <Card className="p-3 border-gray-200">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                      <BookOpen className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-500 mb-1">Scripture Reference</p>
+                      <p className="text-sm text-gray-900 break-words">
+                        {state.scriptureReference}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Main Points */}
+              {state.mainPoints && state.mainPoints.length > 0 && (
+                <Card className="p-3 border-gray-200">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                      <Target className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-500 mb-2">Main Points</p>
+                      <ul className="space-y-1.5">
+                        {state.mainPoints.map((point, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-xs font-semibold text-orange-600 mt-0.5">
+                              {index + 1}.
+                            </span>
+                            <span className="text-sm text-gray-700 flex-1">{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Content Statistics */}
+              <Card className="p-3 border-gray-200">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                    <BarChart className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-500 mb-2">Statistics</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500">Word Count</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {state.currentContent ? state.currentContent.trim().split(/\s+/).filter(w => w.length > 0).length : 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Est. Duration</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {state.currentContent 
+                            ? Math.ceil(state.currentContent.trim().split(/\s+/).filter(w => w.length > 0).length / 150)
+                            : 0} min
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Characters</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {state.currentContent?.length || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Main Points</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {state.mainPoints?.length || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Outline */}
+              {state.outline && state.outline.length > 0 && (
+                <Card className="p-3 border-gray-200">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-indigo-100 rounded-lg flex-shrink-0">
+                      <ListOrdered className="h-4 w-4 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-500 mb-2">Outline</p>
+                      <div className="space-y-1">
+                        {state.outline.map((item: any, index: number) => (
+                          <div key={index} className="text-sm text-gray-700">
+                            {typeof item === 'string' ? item : item.title || item.content}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Empty State */}
+              {!state.sermonTitle && !state.scriptureReference && !state.currentContent && (
+                <div className="text-center py-12 text-sm text-gray-500">
+                  <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Info className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="font-medium">No sermon information yet</p>
+                  <p className="text-xs mt-1 text-gray-400">Start writing to see details here</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
     </div>
