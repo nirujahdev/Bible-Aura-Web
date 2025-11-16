@@ -26,62 +26,6 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
   // Combine refs
   React.useImperativeHandle(ref, () => editorRef.current as HTMLDivElement);
 
-  // Update editor content when value prop changes (but not from internal changes)
-  useEffect(() => {
-    // Skip if this is an internal change or if user is actively typing
-    if (isInternalChange.current) {
-      isInternalChange.current = false;
-      return;
-    }
-
-    // Skip if user is actively typing
-    if (isTypingRef.current) {
-      return;
-    }
-
-    if (editorRef.current) {
-      const currentHtml = editorRef.current.innerHTML;
-      // Only update if value actually changed from external source and is different from what we have
-      if (value !== undefined && value !== null && currentHtml !== value && value !== lastValueRef.current) {
-        // Don't update if editor is focused and has content - this prevents backward typing
-        if (document.activeElement === editorRef.current && currentHtml.trim() !== '') {
-          // Only update if the value is significantly different (external change)
-          const currentText = currentHtml.replace(/<[^>]*>/g, '').trim();
-          const newText = value.replace(/<[^>]*>/g, '').trim();
-          
-          // If text content is the same, don't update (prevents backward typing)
-          if (currentText === newText) {
-            return;
-          }
-        }
-        
-        const selection = window.getSelection();
-        let savedRange: Range | null = null;
-        
-        // Save selection if editor is focused
-        if (document.activeElement === editorRef.current && selection && selection.rangeCount > 0) {
-          try {
-            savedRange = selection.getRangeAt(0).cloneRange();
-          } catch (e) {
-            // Ignore selection errors
-          }
-        }
-        
-        editorRef.current.innerHTML = value || '';
-        lastValueRef.current = value || '';
-        
-        // Restore selection if we saved it
-        if (savedRange && selection) {
-          try {
-            selection.removeAllRanges();
-            selection.addRange(savedRange);
-          } catch (e) {
-            // Ignore selection errors
-          }
-        }
-      }
-    }
-  }, [value]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
@@ -125,13 +69,69 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
     };
   }, []);
 
-  // Initialize content on mount
+  // Initialize content on mount and when value changes from external source
   useEffect(() => {
-    if (editorRef.current && !editorRef.current.innerHTML && value) {
+    if (!editorRef.current) return;
+    
+    // Initialize on mount
+    if (!lastValueRef.current && value) {
       editorRef.current.innerHTML = value;
       lastValueRef.current = value;
+      return;
     }
-  }, []);
+    
+    // Skip if this is an internal change or if user is actively typing
+    if (isInternalChange.current) {
+      isInternalChange.current = false;
+      return;
+    }
+
+    // Skip if user is actively typing
+    if (isTypingRef.current) {
+      return;
+    }
+
+    const currentHtml = editorRef.current.innerHTML;
+    // Only update if value actually changed from external source and is different from what we have
+    if (value !== undefined && value !== null && currentHtml !== value && value !== lastValueRef.current) {
+      // Don't update if editor is focused and has content - this prevents backward typing
+      if (document.activeElement === editorRef.current && currentHtml.trim() !== '') {
+        // Only update if the value is significantly different (external change)
+        const currentText = currentHtml.replace(/<[^>]*>/g, '').trim();
+        const newText = value.replace(/<[^>]*>/g, '').trim();
+        
+        // If text content is the same, don't update (prevents backward typing)
+        if (currentText === newText) {
+          return;
+        }
+      }
+      
+      const selection = window.getSelection();
+      let savedRange: Range | null = null;
+      
+      // Save selection if editor is focused
+      if (document.activeElement === editorRef.current && selection && selection.rangeCount > 0) {
+        try {
+          savedRange = selection.getRangeAt(0).cloneRange();
+        } catch (e) {
+          // Ignore selection errors
+        }
+      }
+      
+      editorRef.current.innerHTML = value || '';
+      lastValueRef.current = value || '';
+      
+      // Restore selection if we saved it
+      if (savedRange && selection) {
+        try {
+          selection.removeAllRanges();
+          selection.addRange(savedRange);
+        } catch (e) {
+          // Ignore selection errors
+        }
+      }
+    }
+  }, [value]);
 
   return (
     <div
