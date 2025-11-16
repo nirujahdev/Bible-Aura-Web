@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { RotatingThinkingMessageInline } from '@/components/BibleAuraLoadingAnimation';
 
 // Types
 interface Message {
@@ -1153,7 +1154,7 @@ export function BibleAuraChat() {
                         transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
                       />
                     </div>
-                    <span>AI is thinking...</span>
+                    <RotatingThinkingMessageInline />
                   </div>
                 </div>
               </motion.div>

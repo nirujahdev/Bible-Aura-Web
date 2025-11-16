@@ -1,7 +1,8 @@
 // ✦ Bible Aura Loading Animation Component
 // Beautiful animated loading indicator for AI responses
 
-import { motion } from 'framer-motion';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LoadingAnimationProps {
   message?: string;
@@ -77,8 +78,35 @@ export function BibleAuraLoadingAnimation({
   );
 }
 
-// Inline compact version for chat messages
+// Rotating thinking messages - changes every 2 seconds
+const THINKING_MESSAGES = [
+  "Searching through scripture...",
+  "Analyzing verses...",
+  "Writing response...",
+  "Gathering insights...",
+  "Connecting references...",
+  "Formulating answer..."
+];
+
+// Hook for rotating messages
+function useRotatingMessage(messages: string[], interval: number = 2000) {
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % messages.length);
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [messages.length, interval]);
+
+  return messages[currentIndex];
+}
+
+// Inline compact version for chat messages with rotating animations
 export function InlineLoadingIndicator() {
+  const currentMessage = useRotatingMessage(THINKING_MESSAGES, 2000);
+
   return (
     <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-lg">
       <motion.span
@@ -95,7 +123,18 @@ export function InlineLoadingIndicator() {
       >
         ✦
       </motion.span>
-      <span className="text-sm text-gray-600">Bible Aura is thinking</span>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={currentMessage}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.3 }}
+          className="text-sm text-gray-600"
+        >
+          {currentMessage}
+        </motion.span>
+      </AnimatePresence>
       <div className="flex gap-1 ml-1">
         {[0, 1, 2].map((i) => (
           <motion.div
@@ -114,6 +153,26 @@ export function InlineLoadingIndicator() {
         ))}
       </div>
     </div>
+  );
+}
+
+// Inline rotating thinking message component (for use in chat bubbles)
+export function RotatingThinkingMessageInline() {
+  const currentMessage = useRotatingMessage(THINKING_MESSAGES, 2000);
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.span
+        key={currentMessage}
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -5 }}
+        transition={{ duration: 0.3 }}
+        className="text-sm text-gray-600"
+      >
+        {currentMessage}
+      </motion.span>
+    </AnimatePresence>
   );
 }
 

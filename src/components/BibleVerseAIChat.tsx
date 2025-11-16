@@ -15,6 +15,7 @@ import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-t
 import { supabase } from '@/integrations/supabase/client';
 import { callOpenAIAPI } from '@/lib/openai-api-helper';
 import { checkAndIncrementUsage } from '@/lib/ai-limits';
+import { RotatingThinkingMessageInline } from '@/components/BibleAuraLoadingAnimation';
 
 interface BibleVerse {
   book_name: string;
@@ -422,7 +423,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-lg px-4 py-3 flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-gray-600">Bible Aura is thinking...</span>
+                  <RotatingThinkingMessageInline />
                 </div>
               </div>
             )}
