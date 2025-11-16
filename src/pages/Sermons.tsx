@@ -855,60 +855,76 @@ const SermonsContent = () => {
     }
 
     try {
-      // Create HTML content for PDF
+      // Dynamically import jsPDF
+      const { default: jsPDF } = await import('jspdf');
+      
       const sermonTitle = selectedSermon.title || 'Untitled Sermon';
       const sermonContent = selectedSermon.content || '';
       const scriptureRef = selectedSermon.scripture_reference || '';
       const sermonDate = selectedSermon.sermon_date ? format(new Date(selectedSermon.sermon_date), 'MMMM d, yyyy') : '';
       const congregation = selectedSermon.congregation || '';
 
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <title>${sermonTitle}</title>
-            <style>
-              @page { margin: 1in; }
-              body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; }
-              h1 { font-size: 24pt; margin-bottom: 0.5em; }
-              h2 { font-size: 18pt; margin-top: 1em; margin-bottom: 0.5em; }
-              h3 { font-size: 14pt; margin-top: 0.8em; margin-bottom: 0.4em; }
-              .metadata { margin-bottom: 1em; color: #666; font-size: 10pt; }
-              .content { margin-top: 1em; }
-            </style>
-          </head>
-          <body>
-            <h1>${sermonTitle}</h1>
-            <div class="metadata">
-              ${scriptureRef ? `<p><strong>Scripture:</strong> ${scriptureRef}</p>` : ''}
-              ${sermonDate ? `<p><strong>Date:</strong> ${sermonDate}</p>` : ''}
-              ${congregation ? `<p><strong>Location:</strong> ${congregation}</p>` : ''}
-            </div>
-            <div class="content">${sermonContent}</div>
-          </body>
-        </html>
-      `;
+      // Strip HTML tags for plain text
+      const stripHtml = (html: string) => {
+        const tmp = document.createElement('DIV');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      };
 
-      // Open print dialog for PDF
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-        printWindow.focus();
-        
-        // Wait for content to load, then trigger print
-        setTimeout(() => {
-          printWindow.print();
-          setTimeout(() => {
-            printWindow.close();
-          }, 100);
-        }, 250);
+      const textContent = stripHtml(sermonContent);
+
+      // Create PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPosition = margin;
+
+      // Title
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      const titleLines = pdf.splitTextToSize(sermonTitle, maxWidth);
+      pdf.text(titleLines, margin, yPosition);
+      yPosition += titleLines.length * 8 + 5;
+
+      // Metadata
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      if (scriptureRef) {
+        pdf.text(`Scripture: ${scriptureRef}`, margin, yPosition);
+        yPosition += 6;
       }
+      if (sermonDate) {
+        pdf.text(`Date: ${sermonDate}`, margin, yPosition);
+        yPosition += 6;
+      }
+      if (congregation) {
+        pdf.text(`Location: ${congregation}`, margin, yPosition);
+        yPosition += 6;
+      }
+      yPosition += 5;
+
+      // Content
+      pdf.setFontSize(12);
+      const contentLines = pdf.splitTextToSize(textContent, maxWidth);
+      
+      contentLines.forEach((line: string) => {
+        if (yPosition > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+        pdf.text(line, margin, yPosition);
+        yPosition += 6;
+      });
+
+      // Save PDF
+      const fileName = `${sermonTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+      pdf.save(fileName);
 
       toast({
-        title: "Export initiated",
-        description: "PDF export dialog opened",
+        title: "Export complete",
+        description: "Sermon exported as PDF",
       });
     } catch (error: any) {
       console.error('Export error:', error);
