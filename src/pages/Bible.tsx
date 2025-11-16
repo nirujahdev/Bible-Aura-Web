@@ -10,7 +10,6 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, BookOpen, Target,
@@ -108,7 +107,6 @@ export default function Bible() {
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
   const [targetVerseNumber, setTargetVerseNumber] = useState<number | null>(null);
   const [selectedVerseForHighlight, setSelectedVerseForHighlight] = useState<string | null>(null);
-  const [floatingChapterSelectorOpen, setFloatingChapterSelectorOpen] = useState(false);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
