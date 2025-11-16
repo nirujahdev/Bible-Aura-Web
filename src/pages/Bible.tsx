@@ -1381,76 +1381,18 @@ How can I apply this to my life?
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 border-b border-gray-200 bg-white ${isMobile ? 'p-3 pt-2' : 'p-4'}`}>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  {selectedBook && (
-                    <>
-                      {/* Mobile: Book name and chapter selector */}
-                      {isMobile ? (
-                        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-                          {/* Book Name */}
-                          <h1 className="font-bold text-gray-800 text-base flex-shrink-0 truncate">
-                            {getBookDisplayName(selectedBook.name)}
-                          </h1>
-                          {/* Chapter Selector - Shows "Ch {number}" as trigger */}
-                          <Select 
-                            value={selectedChapter.toString()} 
-                            onValueChange={(value) => setSelectedChapter(parseInt(value))}
-                          >
-                            <SelectTrigger className="h-8 w-auto min-w-[70px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0 bg-orange-500 text-white">
-                              <SelectValue>
-                                <span className="text-xs font-medium">Ch {selectedChapter}</span>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
-                              {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                                <SelectItem 
-                                  key={chapter} 
-                                  value={chapter.toString()}
-                                  className="cursor-pointer text-xs"
-                                >
-                                  Chapter {chapter}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            {/* Book Name */}
-                            <h1 className="font-bold text-gray-800 text-xl flex-shrink-0">
-                              {getBookDisplayName(selectedBook.name)}
-                            </h1>
-                            {/* Chapter Selector - Shows "Ch {number}" as trigger */}
-                            <Select 
-                              value={selectedChapter.toString()} 
-                              onValueChange={(value) => setSelectedChapter(parseInt(value))}
-                            >
-                              <SelectTrigger className="h-9 w-auto min-w-[80px] border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white">
-                                <SelectValue>
-                                  <span className="text-sm font-medium">Ch {selectedChapter}</span>
-                                </SelectValue>
-                              </SelectTrigger>
-                              <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
-                                {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                                  <SelectItem 
-                                    key={chapter} 
-                                    value={chapter.toString()}
-                                    className="cursor-pointer"
-                                  >
-                                    Chapter {chapter}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-
+              <div className="flex items-center justify-center">
+                {selectedBook && (
+                  <div className="flex items-center gap-2">
+                    <h1 className="font-bold text-gray-800 text-base sm:text-xl">
+                      {getBookDisplayName(selectedBook.name)}
+                    </h1>
+                    <span className="text-gray-600 text-sm sm:text-base">-</span>
+                    <span className="text-orange-600 font-semibold text-base sm:text-xl">
+                      Chapter {selectedChapter}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Reading Progress - Mobile optimized */}
@@ -1846,70 +1788,33 @@ How can I apply this to my life?
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Selector - Bottom Right */}
+      {/* Floating Chapter Navigation - Bottom Right */}
       {selectedBook && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <Popover open={floatingChapterSelectorOpen} onOpenChange={setFloatingChapterSelectorOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
-                size="lg"
-              >
-                <span className="text-sm font-bold">Ch {selectedChapter}</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-2" align="end" side="top">
-              {/* Navigation Buttons */}
-              <div className="flex gap-2 mb-2 pb-2 border-b border-gray-200">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigateChapter('prev');
-                    setFloatingChapterSelectorOpen(false);
-                  }}
-                  disabled={selectedChapter <= 1}
-                  className="flex-1 h-8 text-xs"
-                >
-                  <ChevronLeft className="h-3 w-3 mr-1" />
-                  Prev
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigateChapter('next');
-                    setFloatingChapterSelectorOpen(false);
-                  }}
-                  disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                  className="flex-1 h-8 text-xs"
-                >
-                  Next
-                  <ChevronRight className="h-3 w-3 ml-1" />
-                </Button>
-              </div>
-              {/* Chapter List */}
-              <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-hide">
-                {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
-                  <button
-                    key={chapter}
-                    onClick={() => {
-                      setSelectedChapter(chapter);
-                      setFloatingChapterSelectorOpen(false);
-                    }}
-                    className={cn(
-                      "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                      chapter === selectedChapter
-                        ? 'bg-orange-500 text-white font-semibold'
-                        : 'hover:bg-orange-50 text-gray-700'
-                    )}
-                  >
-                    Chapter {chapter}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigateChapter('prev')}
+            disabled={selectedChapter <= 1}
+            className="h-12 w-12 rounded-full bg-white shadow-lg hover:shadow-xl border-gray-300 hover:border-orange-400 transition-all flex items-center justify-center"
+          >
+            <ChevronLeft className="h-5 w-5 text-gray-700" />
+          </Button>
+          <Button
+            className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+            size="lg"
+          >
+            <span className="text-sm font-bold">Ch {selectedChapter}</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigateChapter('next')}
+            disabled={selectedChapter >= (selectedBook.chapters || 1)}
+            className="h-12 w-12 rounded-full bg-white shadow-lg hover:shadow-xl border-gray-300 hover:border-orange-400 transition-all flex items-center justify-center"
+          >
+            <ChevronRight className="h-5 w-5 text-gray-700" />
+          </Button>
         </div>
       )}
     </Layout>

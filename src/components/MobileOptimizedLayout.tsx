@@ -124,17 +124,21 @@ export function MobileOptimizedLayout({
             </span>
           </div>
           
-          {/* Right - Contextual Three dots - Only show on Bible page */}
-          {location.pathname === '/bible' && (
-            <button 
-              onClick={() => setRightSidebarOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Open Bible options"
-              aria-expanded={rightSidebarOpen}
-            >
-              <MoreVertical className="h-5 w-5 text-gray-600" />
-            </button>
-          )}
+          {/* Right - Three dots menu - Show on all pages */}
+          <button 
+            onClick={() => {
+              if (location.pathname === '/bible') {
+                setRightSidebarOpen(true);
+              } else {
+                setContextMenuOpen(true);
+              }
+            }}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Open quick actions"
+            aria-expanded={location.pathname === '/bible' ? rightSidebarOpen : contextMenuOpen}
+          >
+            <MoreVertical className="h-5 w-5 text-gray-600" />
+          </button>
         </div>
       </div>
       )}
