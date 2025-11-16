@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Plus, GripVertical, Edit2, Trash2, Highlighter, Underline, StickyNote, Palette, Minus } from 'lucide-react';
+import { X, Plus, GripVertical, Edit2, Trash2, Highlighter, Underline, StickyNote, Palette, Minus, PenTool } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 interface StickyNote {
   id: string;
@@ -87,7 +88,6 @@ export function SermonViewMode({
   const [selectedHighlightColor, setSelectedHighlightColor] = useState(HIGHLIGHT_COLORS[0]);
   const [selectedUnderlineColor, setSelectedUnderlineColor] = useState(UNDERLINE_COLORS[0]);
   const [activeTool, setActiveTool] = useState<'note' | 'highlight' | 'underline' | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -155,8 +155,7 @@ export function SermonViewMode({
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest('.sticky-note') || 
-        (e.target as HTMLElement).closest('.content-box')) {
+    if ((e.target as HTMLElement).closest('.sticky-note')) {
       return;
     }
 
@@ -291,58 +290,131 @@ export function SermonViewMode({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-gray-700 hover:bg-gray-100"
-          >
-            {sidebarOpen ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          </Button>
+          {/* Annotation Tools Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={activeTool ? "default" : "outline"}
+                size="sm"
+                className="text-gray-700"
+              >
+                <PenTool className="h-4 w-4 mr-2" />
+                Annotations
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem
+                onClick={() => {
+                  setActiveTool(activeTool === 'note' ? null : 'note');
+                  setIsAddingNote(activeTool !== 'note');
+                }}
+              >
+                <StickyNote className="h-4 w-4 mr-2" />
+                {activeTool === 'note' ? 'Cancel Note' : 'Add Sticky Note'}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setActiveTool(activeTool === 'highlight' ? null : 'highlight')}
+              >
+                <Highlighter className="h-4 w-4 mr-2" />
+                {activeTool === 'highlight' ? 'Cancel Highlight' : 'Highlight Text'}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setActiveTool(activeTool === 'underline' ? null : 'underline')}
+              >
+                <Underline className="h-4 w-4 mr-2" />
+                {activeTool === 'underline' ? 'Cancel Underline' : 'Underline Text'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5">
+                <p className="text-xs text-gray-600 mb-2">Note Color:</p>
+                <div className="grid grid-cols-3 gap-1">
+                  {NOTE_COLORS.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedNoteColor(color)}
+                      className={cn(
+                        "h-8 rounded border-2 transition-all",
+                        color.border,
+                        selectedNoteColor.name === color.name && "ring-2 ring-orange-500"
+                      )}
+                    >
+                      <div className={cn("w-full h-full rounded", color.class)} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5">
+                <p className="text-xs text-gray-600 mb-2">Highlight Color:</p>
+                <div className="grid grid-cols-3 gap-1">
+                  {HIGHLIGHT_COLORS.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedHighlightColor(color)}
+                      className={cn(
+                        "h-8 rounded border-2 transition-all",
+                        color.class,
+                        selectedHighlightColor.name === color.name && "ring-2 ring-orange-500"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5">
+                <p className="text-xs text-gray-600 mb-2">Underline Color:</p>
+                <div className="grid grid-cols-3 gap-1">
+                  {UNDERLINE_COLORS.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedUnderlineColor(color)}
+                      className={cn(
+                        "h-8 rounded border-2 transition-all",
+                        color.class,
+                        selectedUnderlineColor.name === color.name && "ring-2 ring-orange-500"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Canvas */}
+      {/* Main Canvas - Free Canvas Mode */}
+      <div 
+        ref={canvasRef}
+        className={cn(
+          "flex-1 relative overflow-auto bg-white transition-all",
+          activeTool === 'note' && isAddingNote && "cursor-crosshair",
+          activeTool === 'highlight' && "cursor-text"
+        )}
+        onClick={handleCanvasClick}
+      >
+        {/* Sermon Content - No Borders, Free Canvas */}
         <div 
-          ref={canvasRef}
-          className={cn(
-            "flex-1 relative overflow-auto bg-gray-50 transition-all",
-            activeTool === 'note' && isAddingNote && "cursor-crosshair",
-            activeTool === 'highlight' && "cursor-text"
-          )}
-          onClick={handleCanvasClick}
+          ref={contentRef}
+          className="absolute inset-0 p-12"
         >
-          {/* Content Box - Red Border */}
-          <div className="absolute inset-0 flex items-start justify-center p-8">
-            <div 
-              ref={contentRef}
-              className="content-box w-full max-w-4xl bg-white border-4 border-red-500 rounded-lg shadow-lg overflow-hidden"
-              style={{ minHeight: '80vh' }}
-            >
-              <ScrollArea className="h-full max-h-[80vh]">
-                <div className="p-8">
-                  <div
-                    className="space-y-8"
-                    style={{
-                      fontSize: '24px',
-                      lineHeight: '1.8',
-                      color: '#1f2937'
-                    }}
-                  >
-                    {sections.map((section, index) => (
-                      <div key={index} className="mb-8">
-                        <p className="whitespace-pre-wrap">{section}</p>
-                      </div>
-                    ))}
-                    {sections.length === 0 && (
-                      <p className="text-gray-500 text-center">No content available</p>
-                    )}
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
+          <div
+            className="max-w-4xl mx-auto space-y-8"
+            style={{
+              fontSize: '24px',
+              lineHeight: '1.8',
+              color: '#1f2937'
+            }}
+          >
+            {sections.map((section, index) => (
+              <div key={index} className="mb-8">
+                <p className="whitespace-pre-wrap">{section}</p>
+              </div>
+            ))}
+            {sections.length === 0 && (
+              <p className="text-gray-500 text-center">No content available</p>
+            )}
           </div>
+        </div>
 
           {/* Sticky Notes */}
           {stickyNotes.map((note) => {
@@ -472,128 +544,6 @@ export function SermonViewMode({
             </div>
           )}
         </div>
-
-        {/* Annotation Sidebar */}
-        {sidebarOpen && (
-          <div className="w-80 bg-white border-l border-gray-200 flex flex-col shadow-lg">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Annotation Tools</h2>
-            </div>
-            
-            <ScrollArea className="flex-1">
-              <div className="p-4 space-y-6">
-                {/* Sticky Notes */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <StickyNote className="h-5 w-5 text-orange-600" />
-                    <h3 className="font-semibold text-gray-800">Sticky Notes</h3>
-                  </div>
-                  <Button
-                    variant={activeTool === 'note' ? "default" : "outline"}
-                    size="sm"
-                    className="w-full mb-3"
-                    onClick={() => {
-                      setActiveTool(activeTool === 'note' ? null : 'note');
-                      setIsAddingNote(activeTool !== 'note');
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {activeTool === 'note' ? 'Cancel' : 'Add Note'}
-                  </Button>
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-600 mb-2">Note Color:</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {NOTE_COLORS.map((color) => (
-                        <button
-                          key={color.name}
-                          onClick={() => setSelectedNoteColor(color)}
-                          className={cn(
-                            "h-10 rounded border-2 transition-all",
-                            color.border,
-                            selectedNoteColor.name === color.name && "ring-2 ring-orange-500 ring-offset-2"
-                          )}
-                        >
-                          <div className={cn("w-full h-full rounded", color.class)} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Highlight */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Highlighter className="h-5 w-5 text-yellow-600" />
-                    <h3 className="font-semibold text-gray-800">Highlight</h3>
-                  </div>
-                  <Button
-                    variant={activeTool === 'highlight' ? "default" : "outline"}
-                    size="sm"
-                    className="w-full mb-3"
-                    onClick={() => setActiveTool(activeTool === 'highlight' ? null : 'highlight')}
-                  >
-                    <Highlighter className="h-4 w-4 mr-2" />
-                    {activeTool === 'highlight' ? 'Cancel' : 'Select Text to Highlight'}
-                  </Button>
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-600 mb-2">Highlight Color:</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {HIGHLIGHT_COLORS.map((color) => (
-                        <button
-                          key={color.name}
-                          onClick={() => setSelectedHighlightColor(color)}
-                          className={cn(
-                            "h-10 rounded border-2 transition-all",
-                            color.class,
-                            selectedHighlightColor.name === color.name && "ring-2 ring-orange-500 ring-offset-2"
-                          )}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Underline */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Underline className="h-5 w-5 text-blue-600" />
-                    <h3 className="font-semibold text-gray-800">Underline</h3>
-                  </div>
-                  <Button
-                    variant={activeTool === 'underline' ? "default" : "outline"}
-                    size="sm"
-                    className="w-full mb-3"
-                    onClick={() => setActiveTool(activeTool === 'underline' ? null : 'underline')}
-                  >
-                    <Underline className="h-4 w-4 mr-2" />
-                    {activeTool === 'underline' ? 'Cancel' : 'Select Text to Underline'}
-                  </Button>
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-600 mb-2">Underline Color:</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {UNDERLINE_COLORS.map((color) => (
-                        <button
-                          key={color.name}
-                          onClick={() => setSelectedUnderlineColor(color)}
-                          className={cn(
-                            "h-10 rounded border-2 transition-all",
-                            color.class,
-                            selectedUnderlineColor.name === color.name && "ring-2 ring-orange-500 ring-offset-2"
-                          )}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </ScrollArea>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
