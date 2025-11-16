@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, BookOpen, Target,
-  Copy, FileText,
+  Copy, Highlighter, FileText,
   ChevronDown, ChevronUp, Menu, Sparkles, PenTool, Share2, X
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -104,6 +104,7 @@ export default function Bible() {
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
   const [targetVerseNumber, setTargetVerseNumber] = useState<number | null>(null);
+  const [selectedVerseForHighlight, setSelectedVerseForHighlight] = useState<string | null>(null);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
@@ -186,6 +187,21 @@ export default function Bible() {
       loadChapter();
     }
   }, [selectedBook, selectedChapter, selectedLanguage, selectedTranslation]);
+
+  // Close highlight picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (selectedVerseForHighlight && !target.closest('[data-highlight-container]')) {
+        setSelectedVerseForHighlight(null);
+      }
+    };
+
+    if (selectedVerseForHighlight) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [selectedVerseForHighlight]);
 
   // Scroll to specific verse when coming from search results
   useEffect(() => {
@@ -1527,9 +1543,9 @@ How can I apply this to my life?
                           </div>
 
                           {/* Action Buttons - Icons Only - Always visible and scrollable on mobile */}
-                          <div className={`flex items-center justify-end gap-2 mt-4 overflow-x-auto overflow-y-visible ${
+                          <div className={`flex items-center justify-end gap-2 mt-4 overflow-x-auto overflow-y-visible relative ${
                             isMobile ? 'opacity-100 -mx-2 px-2' : 'opacity-0 group-hover:opacity-100'
-                          } transition-opacity ${isMobile ? 'pb-2' : ''}`}>
+                          } transition-opacity ${isMobile ? 'pb-2' : ''}`} style={{ overflow: 'visible' }}>
                             
                             {/* AI Chat Icon - Sparkle (✦) */}
                             <TooltipProvider>
@@ -1599,6 +1615,108 @@ How can I apply this to my life?
                               }`} />
                             </Button>
 
+                            {/* Highlight Icon */}
+                            <div className="relative" data-highlight-container>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedVerseForHighlight(selectedVerseForHighlight === verseId ? null : verseId);
+                                      }}
+                                      className={cn(
+                                        "touch-optimized flex-shrink-0 p-0 relative",
+                                        isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9',
+                                        highlightColor 
+                                          ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' :
+                                            highlightColor === 'green' ? 'text-green-500 hover:text-green-600 bg-green-50' :
+                                            highlightColor === 'blue' ? 'text-blue-500 hover:text-blue-600 bg-blue-50' :
+                                            highlightColor === 'purple' ? 'text-purple-500 hover:text-purple-600 bg-purple-50' :
+                                            highlightColor === 'red' ? 'text-red-500 hover:text-red-600 bg-red-50' :
+                                            highlightColor === 'pink' ? 'text-pink-500 hover:text-pink-600 bg-pink-50' :
+                                            highlightColor === 'orange' ? 'text-orange-500 hover:text-orange-600 bg-orange-50' :
+                                            'text-gray-400 hover:text-yellow-500'
+                                          : 'text-gray-400 hover:text-yellow-500'
+                                      )}
+                                      title="Highlight verse"
+                                    >
+                                      <Highlighter className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} ${
+                                        highlightColor ? 'fill-current' : ''
+                                      }`} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{highlightColor ? `Change ${highlightColor} highlight` : 'Highlight verse'}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              {/* Highlight Color Picker Popup */}
+                              <AnimatePresence>
+                                {selectedVerseForHighlight === verseId && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-lg border border-gray-200 z-[100] min-w-[200px]"
+                                    onClick={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                  >
+                                    <div className="flex flex-wrap gap-2 justify-center">
+                                      {HIGHLIGHT_COLORS.map(color => {
+                                        const colorMap: Record<string, { bg: string; border: string }> = {
+                                          yellow: { bg: '#facc15', border: '#ca8a04' },
+                                          green: { bg: '#4ade80', border: '#16a34a' },
+                                          blue: { bg: '#60a5fa', border: '#2563eb' },
+                                          purple: { bg: '#a78bfa', border: '#7c3aed' },
+                                          red: { bg: '#f87171', border: '#dc2626' },
+                                          pink: { bg: '#f472b6', border: '#db2777' },
+                                          orange: { bg: '#fb923c', border: '#ea580c' }
+                                        };
+                                        const style = colorMap[color.id] || { bg: '#facc15', border: '#ca8a04' };
+                                        
+                                        return (
+                                          <button
+                                            key={color.id}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                              highlightVerse(verse, color.id);
+                                              setSelectedVerseForHighlight(null);
+                                            }}
+                                            onMouseDown={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                            }}
+                                            type="button"
+                                            className={cn(
+                                              "w-10 h-10 rounded-full border-2 hover:scale-110 transition-transform flex items-center justify-center",
+                                              color.id === highlightColor 
+                                                ? 'ring-2 ring-offset-2 ring-orange-300 shadow-md' 
+                                                : 'hover:shadow-md'
+                                            )}
+                                            style={{
+                                              backgroundColor: style.bg,
+                                              borderColor: color.id === highlightColor ? style.border : '#e5e7eb'
+                                            }}
+                                            title={color.name}
+                                            aria-label={`Highlight with ${color.name}`}
+                                          >
+                                            {color.id === highlightColor && (
+                                              <span className="text-sm font-bold text-white drop-shadow-md">✓</span>
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
 
                             {/* Copy Button */}
                             <Button

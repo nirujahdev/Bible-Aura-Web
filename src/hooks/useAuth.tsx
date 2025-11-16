@@ -491,6 +491,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           emailRedirectTo: redirectUrl,
+          // Enable email confirmation
+          emailRedirectOptions: {
+            redirectTo: redirectUrl,
+          },
           // Ensure we capture all email types
           data: {
             redirect_to: redirectUrl,
