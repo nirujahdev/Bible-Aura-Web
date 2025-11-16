@@ -239,6 +239,20 @@ export default function Bible() {
     }
   }, [targetVerseNumber, verses, loading]);
 
+  const getRandomVerse = () => {
+    if (verses.length === 0) return;
+    const randomVerse = verses[Math.floor(Math.random() * verses.length)];
+    setSelectedVerse({
+      id: randomVerse.id,
+      text: randomVerse.text,
+      reference: `${randomVerse.book_name} ${randomVerse.chapter}:${randomVerse.verse}`
+    });
+    toast({
+      title: "Random Verse",
+      description: `${randomVerse.book_name} ${randomVerse.chapter}:${randomVerse.verse}`,
+    });
+  };
+
   // Listen for bible-action events from MobileMoreMenu
   useEffect(() => {
     const handleBibleAction = (event: CustomEvent) => {
@@ -900,20 +914,6 @@ How can I apply this to my life?
       // If forceTab is 'search' or undefined, do NOT change tabs
       // This ensures search results clicking never switches tabs
     }
-  };
-
-  const getRandomVerse = () => {
-    if (verses.length === 0) return;
-    const randomVerse = verses[Math.floor(Math.random() * verses.length)];
-    setSelectedVerse({
-      id: randomVerse.id,
-      text: randomVerse.text,
-      reference: `${randomVerse.book_name} ${randomVerse.chapter}:${randomVerse.verse}`
-    });
-    toast({
-      title: "Random Verse",
-      description: `${randomVerse.book_name} ${randomVerse.chapter}:${randomVerse.verse}`,
-    });
   };
 
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
