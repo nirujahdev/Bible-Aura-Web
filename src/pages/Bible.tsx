@@ -997,7 +997,12 @@ How can I apply this to my life?
                 setSearchResults([]);
               }
               if (isMobileSidebar) {
-                setTimeout(() => setMobileSidebarOpen(false), 150);
+                setTimeout(() => {
+                  setMobileSidebarOpen(false);
+                  if (rightSidebar?.setRightSidebarOpen) {
+                    rightSidebar.setRightSidebarOpen(false);
+                  }
+                }, 150);
               }
             }
           }}
@@ -1027,27 +1032,42 @@ How can I apply this to my life?
 
           <div className="flex-1 overflow-auto scrollbar-hide">
             {/* Read Tab Content - Clean Modern Design */}
-            <TabsContent value="read" className="mt-0 p-4 space-y-4 data-[state=active]:animate-in">
+            <TabsContent value="read" className={cn(
+              "mt-0 space-y-4 data-[state=active]:animate-in",
+              isMobileSidebar ? "p-3" : "p-4"
+            )}>
               {/* Book Selection - Ultra Clean List Design */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
                   <CollapsibleTrigger asChild>
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-between h-9 text-sm font-semibold text-gray-700 hover:bg-gray-50/50 hover:text-gray-900 transition-colors px-2"
+                      className={cn(
+                        "w-full justify-between font-semibold text-gray-700 hover:bg-gray-50/50 hover:text-gray-900 transition-colors px-2",
+                        isMobileSidebar ? "h-8 text-xs" : "h-9 text-sm"
+                      )}
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-1 h-5 bg-orange-500 rounded-full" />
+                        <div className={cn("bg-orange-500 rounded-full", isMobileSidebar ? "w-1 h-4" : "w-1 h-5")} />
                         <span>Old Testament</span>
-                        <Badge variant="secondary" className="ml-1 text-xs font-normal bg-gray-100 text-gray-600">
+                        <Badge variant="secondary" className={cn(
+                          "ml-1 font-normal bg-gray-100 text-gray-600",
+                          isMobileSidebar ? "text-[10px] px-1.5 py-0" : "text-xs"
+                        )}>
                           {oldTestamentBooks.length}
                         </Badge>
                       </div>
-                      <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180 text-gray-400" />
+                      <ChevronDown className={cn(
+                        "transition-transform duration-200 data-[state=open]:rotate-180 text-gray-400",
+                        isMobileSidebar ? "h-3.5 w-3.5" : "h-4 w-4"
+                      )} />
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-1">
-                    <div className="space-y-0.5 max-h-[380px] overflow-y-auto scrollbar-hide">
+                    <div className={cn(
+                      "space-y-0.5 overflow-y-auto scrollbar-hide",
+                      isMobileSidebar ? "max-h-[280px]" : "max-h-[380px]"
+                    )}>
                       {oldTestamentBooks.map((book) => (
                         <Button
                           key={book.id}
@@ -1056,11 +1076,17 @@ How can I apply this to my life?
                           onClick={() => {
                             handleBookSelect(book.name, 'read');
                             if (isMobileSidebar) {
-                              setTimeout(() => setMobileSidebarOpen(false), 200);
+                              setTimeout(() => {
+                                setMobileSidebarOpen(false);
+                                if (rightSidebar?.setRightSidebarOpen) {
+                                  rightSidebar.setRightSidebarOpen(false);
+                                }
+                              }, 200);
                             }
                           }}
                           className={cn(
-                            "w-full justify-start h-8 text-xs font-medium transition-all touch-target rounded-md px-3",
+                            "w-full justify-start font-medium transition-all touch-target rounded-md",
+                            isMobileSidebar ? "h-9 text-xs px-2" : "h-8 text-xs px-3",
                             selectedBook?.id === book.id 
                               ? 'bg-orange-500 hover:bg-orange-600 text-white font-semibold' 
                               : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
@@ -1077,20 +1103,32 @@ How can I apply this to my life?
                   <CollapsibleTrigger asChild>
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-between h-9 text-sm font-semibold text-gray-700 hover:bg-gray-50/50 hover:text-gray-900 transition-colors px-2"
+                      className={cn(
+                        "w-full justify-between font-semibold text-gray-700 hover:bg-gray-50/50 hover:text-gray-900 transition-colors px-2",
+                        isMobileSidebar ? "h-8 text-xs" : "h-9 text-sm"
+                      )}
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-1 h-5 bg-blue-500 rounded-full" />
+                        <div className={cn("bg-blue-500 rounded-full", isMobileSidebar ? "w-1 h-4" : "w-1 h-5")} />
                         <span>New Testament</span>
-                        <Badge variant="secondary" className="ml-1 text-xs font-normal bg-gray-100 text-gray-600">
+                        <Badge variant="secondary" className={cn(
+                          "ml-1 font-normal bg-gray-100 text-gray-600",
+                          isMobileSidebar ? "text-[10px] px-1.5 py-0" : "text-xs"
+                        )}>
                           {newTestamentBooks.length}
                         </Badge>
                       </div>
-                      <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180 text-gray-400" />
+                      <ChevronDown className={cn(
+                        "transition-transform duration-200 data-[state=open]:rotate-180 text-gray-400",
+                        isMobileSidebar ? "h-3.5 w-3.5" : "h-4 w-4"
+                      )} />
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-1">
-                    <div className="space-y-0.5 max-h-[380px] overflow-y-auto scrollbar-hide">
+                    <div className={cn(
+                      "space-y-0.5 overflow-y-auto scrollbar-hide",
+                      isMobileSidebar ? "max-h-[280px]" : "max-h-[380px]"
+                    )}>
                       {newTestamentBooks.map((book) => (
                         <Button
                           key={book.id}
@@ -1099,11 +1137,17 @@ How can I apply this to my life?
                           onClick={() => {
                             handleBookSelect(book.name, 'read');
                             if (isMobileSidebar) {
-                              setTimeout(() => setMobileSidebarOpen(false), 200);
+                              setTimeout(() => {
+                                setMobileSidebarOpen(false);
+                                if (rightSidebar?.setRightSidebarOpen) {
+                                  rightSidebar.setRightSidebarOpen(false);
+                                }
+                              }, 200);
                             }
                           }}
                           className={cn(
-                            "w-full justify-start h-8 text-xs font-medium transition-all touch-target rounded-md px-3",
+                            "w-full justify-start font-medium transition-all touch-target rounded-md",
+                            isMobileSidebar ? "h-9 text-xs px-2" : "h-8 text-xs px-3",
                             selectedBook?.id === book.id 
                               ? 'bg-orange-500 hover:bg-orange-600 text-white font-semibold' 
                               : 'text-gray-600 hover:bg-orange-50/50 hover:text-orange-700'
@@ -1125,12 +1169,18 @@ How can I apply this to my life?
                 <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-1">
                   Filters
                 </h3>
-                <div className="flex gap-2">
+                <div className={cn(
+                  "flex gap-2",
+                  isMobileSidebar && "flex-col"
+                )}>
                   <Select 
                     value={searchFilters.testament} 
                     onValueChange={(value) => setSearchFilters({...searchFilters, testament: value})}
                   >
-                    <SelectTrigger className="h-9 text-xs flex-1 border-gray-300 hover:border-orange-400 transition-colors">
+                    <SelectTrigger className={cn(
+                      "flex-1 border-gray-300 hover:border-orange-400 transition-colors",
+                      isMobileSidebar ? "h-8 text-xs" : "h-9 text-xs"
+                    )}>
                       <SelectValue placeholder="Testament" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1144,13 +1194,16 @@ How can I apply this to my life?
                     value={searchFilters.book} 
                     onValueChange={(value) => setSearchFilters({...searchFilters, book: value})}
                   >
-                    <SelectTrigger className="h-9 text-xs flex-1 border-gray-300 hover:border-orange-400 transition-colors">
+                    <SelectTrigger className={cn(
+                      "flex-1 border-gray-300 hover:border-orange-400 transition-colors",
+                      isMobileSidebar ? "h-8 text-xs" : "h-9 text-xs"
+                    )}>
                       <SelectValue placeholder="Book" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px]">
                       <SelectItem value="all">All Books</SelectItem>
                       {books.map((book) => (
-                        <SelectItem key={book.id} value={book.name}>
+                        <SelectItem key={book.id} value={book.name} className="text-xs">
                           {book.name}
                         </SelectItem>
                       ))}
@@ -1360,7 +1413,14 @@ How can I apply this to my life?
 
           {/* Right Side Sheet - Opened from 3-dot menu */}
           {isMobile && rightSidebar && (
-            <Sheet open={rightSidebar?.rightSidebarOpen || false} onOpenChange={rightSidebar?.setRightSidebarOpen || (() => {})}>
+            <Sheet 
+              open={rightSidebar.rightSidebarOpen} 
+              onOpenChange={(open) => {
+                if (rightSidebar.setRightSidebarOpen) {
+                  rightSidebar.setRightSidebarOpen(open);
+                }
+              }}
+            >
               <SheetContent side="right" className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col">
                 <SheetHeader className="px-4 pt-4 pb-3 border-b">
                   <SheetTitle className="flex items-center gap-2">
