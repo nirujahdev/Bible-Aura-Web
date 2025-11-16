@@ -202,6 +202,29 @@ export default function Bible() {
     }
   }, [selectedBook, selectedChapter, selectedLanguage, selectedTranslation]);
 
+  // Scroll to specific verse when coming from search results
+  useEffect(() => {
+    if (targetVerseNumber && verses.length > 0 && !loading) {
+      // Find the verse element and scroll to it
+      const verseElement = document.querySelector(`[data-verse-number="${targetVerseNumber}"]`);
+      if (verseElement) {
+        setTimeout(() => {
+          verseElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+          // Highlight briefly
+          verseElement.classList.add('ring-4', 'ring-orange-400', 'ring-offset-2', 'rounded-xl');
+          setTimeout(() => {
+            verseElement.classList.remove('ring-4', 'ring-orange-400', 'ring-offset-2');
+          }, 2000);
+          setTargetVerseNumber(null);
+        }, 100);
+      }
+    }
+  }, [targetVerseNumber, verses, loading]);
+
   // Listen for bible-action events from MobileMoreMenu
   useEffect(() => {
     const handleBibleAction = (event: CustomEvent) => {
@@ -503,10 +526,20 @@ export default function Bible() {
       }
       
       if (searchFilters.exactMatch) {
-        const queryLower = searchQuery.toLowerCase();
-        results = results.filter(verse => 
-          verse.text.toLowerCase().includes(queryLower)
-        );
+        const queryLower = searchQuery.toLowerCase().trim();
+        // For exact match, check if the exact phrase exists as a whole phrase or word
+        const words = queryLower.split(/\s+/).filter(w => w.length > 0);
+        if (words.length === 1) {
+          // Single word - use word boundary
+          const exactMatchRegex = new RegExp(`\\b${words[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+          results = results.filter(verse => exactMatchRegex.test(verse.text.toLowerCase()));
+        } else {
+          // Multiple words - check for exact phrase
+          results = results.filter(verse => {
+            const verseTextLower = verse.text.toLowerCase();
+            return verseTextLower.includes(queryLower);
+          });
+        }
       }
       
       // Limit to max results for performance
@@ -1161,11 +1194,14 @@ How can I apply this to my life?
                               // CRITICAL: Load book/chapter WITHOUT changing tabs
                               setSelectedBook(book);
                               setSelectedChapter(verse.chapter);
+                              // Set target verse to scroll to after chapter loads
+                              setTargetVerseNumber(verse.verse);
+                              // Switch to read tab to show the verse
+                              setActiveTab('read');
                               // Close mobile sidebar
                               if (isMobileSidebar) {
                                 setTimeout(() => setMobileSidebarOpen(false), 200);
                               }
-                              // ABSOLUTELY DO NOT call setActiveTab here
                             }
                           }}
                         >
@@ -1282,21 +1318,25 @@ How can I apply this to my life?
                 <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   {selectedBook && (
                     <>
-                      {/* Mobile: Show book name and chapter navigation */}
+                      {/* Mobile: Book name, current chapter, chapter dropdown */}
                       {isMobile ? (
                         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                           {/* Book Name */}
                           <h1 className="font-bold text-gray-800 text-base flex-shrink-0 truncate">
                             {getBookDisplayName(selectedBook.name)}
                           </h1>
+                          {/* Current Chapter Badge */}
+                          <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
+                            Ch {selectedChapter}
+                          </Badge>
                           {/* Chapter Dropdown Selector - Mobile */}
                           <Select 
                             value={selectedChapter.toString()} 
                             onValueChange={(value) => setSelectedChapter(parseInt(value))}
                           >
-                            <SelectTrigger className="h-8 w-[90px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0">
+                            <SelectTrigger className="h-8 w-auto min-w-[80px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0">
                               <SelectValue>
-                                <span className="text-xs font-medium">Ch {selectedChapter}</span>
+                                <span className="text-xs font-medium">Select Chapter</span>
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1339,14 +1379,18 @@ How can I apply this to my life?
                             <h1 className="font-bold text-gray-800 text-xl flex-shrink-0">
                               {getBookDisplayName(selectedBook.name)}
                             </h1>
+                            {/* Current Chapter Badge */}
+                            <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
+                              Ch {selectedChapter}
+                            </Badge>
                             {/* Chapter Dropdown Selector */}
                             <Select 
                               value={selectedChapter.toString()} 
                               onValueChange={(value) => setSelectedChapter(parseInt(value))}
                             >
-                              <SelectTrigger className="h-9 w-[100px] border-gray-300 hover:border-orange-400 transition-colors">
+                              <SelectTrigger className="h-9 w-auto min-w-[140px] border-gray-300 hover:border-orange-400 transition-colors">
                                 <SelectValue>
-                                  <span className="text-sm font-medium">Ch {selectedChapter}</span>
+                                  <span className="text-sm font-medium">Select Chapter</span>
                                 </SelectValue>
                               </SelectTrigger>
                               <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1443,6 +1487,7 @@ How can I apply this to my life?
                       return (
                         <div
                           key={verse.id}
+                          data-verse-number={verse.verse}
                           className={cn(
                             "group relative rounded-xl transition-all duration-200 p-4",
                             highlightColor ? getHighlightClasses(highlightColor) : 'hover:bg-gray-50',
@@ -1597,11 +1642,11 @@ How can I apply this to my life?
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.8, y: 10 }}
                                   transition={{ duration: 0.15 }}
-                                  className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[220px]"
+                                  className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[240px]"
                                   onClick={(e) => e.stopPropagation()}
                                   onMouseDown={(e) => e.stopPropagation()}
                                 >
-                                  <div className="flex flex-wrap gap-2.5 justify-center">
+                                  <div className="flex flex-wrap gap-3 justify-center items-center">
                                     {HIGHLIGHT_COLORS.map(color => (
                                       <button
                                         key={color.id}
@@ -1617,17 +1662,29 @@ How can I apply this to my life?
                                         }}
                                         type="button"
                                         className={cn(
-                                          "w-10 h-10 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center",
+                                          "w-12 h-12 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center relative",
                                           color.id === highlightColor 
                                             ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
                                             : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
-                                          color.dot
+                                          // Apply the color dot background
+                                          color.dot,
+                                          // Ensure visibility
+                                          'shadow-sm'
                                         )}
+                                        style={{
+                                          backgroundColor: color.id === 'yellow' ? '#facc15' :
+                                                          color.id === 'green' ? '#4ade80' :
+                                                          color.id === 'blue' ? '#60a5fa' :
+                                                          color.id === 'purple' ? '#a78bfa' :
+                                                          color.id === 'red' ? '#f87171' :
+                                                          color.id === 'pink' ? '#f472b6' :
+                                                          '#fb923c' // orange
+                                        }}
                                         title={color.name}
                                         aria-label={`Highlight with ${color.name}`}
                                       >
                                         {color.id === highlightColor && (
-                                          <span className="text-xs font-bold text-white drop-shadow-md">✓</span>
+                                          <span className="text-sm font-bold text-white drop-shadow-lg absolute">✓</span>
                                         )}
                                       </button>
                                     ))}
