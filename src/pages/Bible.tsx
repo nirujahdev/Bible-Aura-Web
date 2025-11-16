@@ -1649,6 +1649,63 @@ How can I apply this to my life?
 
 
       </div>
+
+      {/* AI Chat Side Panel */}
+      <AnimatePresence>
+        {aiChatOpen && selectedVerseForAI && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setAiChatOpen(false);
+                setSelectedVerseForAI(null);
+              }}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+            
+            {/* Side Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
+            >
+              {/* Close Button - Top Right */}
+              <div className="absolute top-4 right-4 z-10">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* AI Chat Content - Full Height */}
+              <div className="flex-1 overflow-hidden pt-2">
+                <BibleVerseAIChat
+                  verse={selectedVerseForAI}
+                  isOpen={aiChatOpen}
+                  onClose={() => {
+                    setAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
+                  sidebarMode={true}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 }
