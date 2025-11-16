@@ -845,17 +845,20 @@ How can I apply this to my life?
   const oldTestamentBooks = books.filter(book => book.testament === 'old');
   const newTestamentBooks = books.filter(book => book.testament === 'new');
 
-  // Reusable Sidebar Content Component - Works for both mobile and desktop - Improved UI
+  // Reusable Sidebar Content Component - Works for both mobile and desktop - Clean Modern UI
   const renderSidebarContent = (isMobileSidebar = false) => {
     return (
       <>
-        {/* Compact Header with Language/Translation and Search Toggle */}
-        <div className={`p-3 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50 ${isMobileSidebar ? 'bg-white' : ''}`}>
+        {/* Clean Header with Language/Translation and Search */}
+        <div className={cn(
+          "p-4 border-b border-gray-200 bg-white",
+          !isMobileSidebar && "bg-gradient-to-br from-white to-orange-50/30"
+        )}>
           <div className="flex items-center gap-2 mb-3">
-            {/* Language Selector - Compact */}
+            {/* Language Selector */}
             <Select value={selectedLanguage} onValueChange={(value: 'english' | 'tamil') => setSelectedLanguage(value)}>
-              <SelectTrigger className="h-9 text-xs flex-shrink-0">
-                <Languages className="h-3 w-3 mr-1.5" />
+              <SelectTrigger className="h-9 text-xs flex-shrink-0 border-gray-300 hover:border-orange-400 transition-colors">
+                <Languages className="h-3.5 w-3.5 mr-1.5 text-gray-600" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -870,7 +873,7 @@ How can I apply this to my life?
             {/* Translation Selector - Only for English */}
             {selectedLanguage === 'english' && (
               <Select value={selectedTranslation} onValueChange={(value: TranslationCode) => setSelectedTranslation(value)}>
-                <SelectTrigger className="h-9 text-xs flex-1 min-w-0">
+                <SelectTrigger className="h-9 text-xs flex-1 min-w-0 border-gray-300 hover:border-orange-400 transition-colors">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -884,11 +887,11 @@ How can I apply this to my life?
             )}
           </div>
 
-          {/* Quick Search Input - Always Visible */}
+          {/* Search Input - Clean Design */}
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Quick search verses..."
+              placeholder="Search verses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -903,12 +906,12 @@ How can I apply this to my life?
                   setActiveTab('search');
                 }
               }}
-              className="pl-8 h-9 text-sm"
+              className="pl-9 h-9 text-sm border-gray-300 focus:border-orange-400 focus:ring-orange-400/20"
             />
           </div>
         </div>
 
-        {/* Tabs - Navigation for Read and Search */}
+        {/* Clean Tabs Design */}
         <Tabs 
           value={activeTab} 
           onValueChange={(value) => {
@@ -925,73 +928,93 @@ How can I apply this to my life?
           }}
           className="flex-1 flex flex-col overflow-hidden"
         >
-          <TabsList className={cn(
-            "grid w-full grid-cols-2",
-            isMobileSidebar ? "mx-3 mt-3 mb-2" : "mx-3 mt-3"
+          <div className={cn(
+            "px-4 pt-4 pb-2 border-b border-gray-100",
+            isMobileSidebar && "px-3"
           )}>
-            <TabsTrigger value="read" className="text-xs sm:text-sm">
-              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
-              Books
-            </TabsTrigger>
-            <TabsTrigger value="search" className="text-xs sm:text-sm">
-              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
-              Results
-            </TabsTrigger>
-          </TabsList>
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100/50 p-1 h-10">
+              <TabsTrigger 
+                value="read" 
+                className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
+              >
+                <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+                Books
+              </TabsTrigger>
+              <TabsTrigger 
+                value="search" 
+                className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
+              >
+                <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+                Results
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <div className="flex-1 overflow-auto px-3 pb-3">
-            {/* Read Tab Content - Improved Layout */}
-            <TabsContent value="read" className="mt-3 space-y-3">
-              {/* Current Book & Chapter - Quick Access */}
+          <div className="flex-1 overflow-auto">
+            {/* Read Tab Content - Clean Modern Design */}
+            <TabsContent value="read" className="mt-0 p-4 space-y-4 data-[state=active]:animate-in">
+              {/* Current Book & Chapter - Modern Card Design */}
               {selectedBook && (
-                <div className="p-2 bg-orange-50 rounded-lg border border-orange-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Book className="h-4 w-4 text-orange-600 flex-shrink-0" />
-                      <span className="font-semibold text-sm text-gray-800 truncate">
-                        {getBookDisplayName(selectedBook.name)}
-                      </span>
-                      <Badge variant="outline" className="text-xs flex-shrink-0">
-                        Ch {selectedChapter}
-                      </Badge>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200/50 shadow-sm"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-2 bg-orange-500/10 rounded-lg">
+                      <Book className="h-4 w-4 text-orange-600" />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate">
+                        {getBookDisplayName(selectedBook.name)}
+                      </h3>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        {selectedBook.chapters || 1} chapters
+                      </p>
+                    </div>
+                    <Badge className="bg-orange-500 text-white text-xs px-2 py-1">
+                      Ch {selectedChapter}
+                    </Badge>
                   </div>
                   
-                  {/* Chapter Navigation - Quick Scroll */}
-                  <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                    {Array.from({ length: Math.min(selectedBook.chapters || 1, 20) }, (_, i) => i + 1).map((chapter) => (
-                      <Button
-                        key={chapter}
-                        variant={selectedChapter === chapter ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          setSelectedChapter(chapter);
-                          if (isMobileSidebar) {
-                            setTimeout(() => setMobileSidebarOpen(false), 200);
-                          }
-                        }}
-                        className={`h-7 px-2 text-xs flex-shrink-0 ${
-                          selectedChapter === chapter ? 'bg-orange-500 hover:bg-orange-600' : ''
-                        }`}
-                      >
-                        {chapter}
-                      </Button>
-                    ))}
+                  {/* Chapter Navigation - Clean Design */}
+                  <div className="space-y-2">
+                    <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
+                      {Array.from({ length: Math.min(selectedBook.chapters || 1, 20) }, (_, i) => i + 1).map((chapter) => (
+                        <Button
+                          key={chapter}
+                          variant={selectedChapter === chapter ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            setSelectedChapter(chapter);
+                            if (isMobileSidebar) {
+                              setTimeout(() => setMobileSidebarOpen(false), 200);
+                            }
+                          }}
+                          className={cn(
+                            "h-8 px-3 text-xs font-medium flex-shrink-0 transition-all",
+                            selectedChapter === chapter 
+                              ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
+                              : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50'
+                          )}
+                        >
+                          {chapter}
+                        </Button>
+                      ))}
+                      {selectedBook.chapters && selectedBook.chapters > 20 && (
+                        <span className="text-xs text-gray-500 self-center px-2">...</span>
+                      )}
+                    </div>
+                    
+                    {/* Chapter Jump & Navigation - For books with many chapters */}
                     {selectedBook.chapters && selectedBook.chapters > 20 && (
-                      <span className="text-xs text-gray-500 self-center px-2">...</span>
-                    )}
-                  </div>
-                  
-                  {/* Chapter Jump - For books with many chapters */}
-                  {selectedBook.chapters && selectedBook.chapters > 20 && (
-                    <div className="mt-2 pt-2 border-t border-orange-200">
-                      <div className="flex gap-1">
+                      <div className="flex gap-2 pt-2 border-t border-orange-200/50">
                         <Input
                           type="number"
                           min={1}
                           max={selectedBook.chapters}
-                          placeholder="Jump to chapter"
-                          className="h-7 text-xs flex-1"
+                          placeholder="Jump to..."
+                          className="h-8 text-xs flex-1 border-gray-300 focus:border-orange-400"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               const chapter = parseInt((e.target as HTMLInputElement).value);
@@ -1007,57 +1030,74 @@ How can I apply this to my life?
                           size="sm"
                           onClick={() => navigateChapter('prev')}
                           disabled={selectedChapter <= 1}
-                          className="h-7 px-2"
+                          className="h-8 px-2 border-gray-300 hover:border-orange-400"
                         >
-                          <ChevronLeft className="h-3 w-3" />
+                          <ChevronLeft className="h-3.5 w-3.5" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => navigateChapter('next')}
                           disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                          className="h-7 px-2"
+                          className="h-8 px-2 border-gray-300 hover:border-orange-400"
                         >
-                          <ChevronRight className="h-3 w-3" />
+                          <ChevronRight className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </motion.div>
               )}
 
-              {/* Book Selection - Improved */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Books</h3>
-                </div>
+              {/* Book Selection - Clean Modern Design */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-1">
+                  Select Book
+                </h3>
                 <div className="space-y-2">
                   <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
                     <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between h-9 text-xs">
-                        <span className="font-medium">Old Testament ({oldTestamentBooks.length})</span>
-                        <ChevronDown className="h-3.5 w-3.5" />
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-between h-10 text-sm font-medium border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-4 bg-orange-500 rounded-full" />
+                          <span>Old Testament</span>
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {oldTestamentBooks.length}
+                          </Badge>
+                        </div>
+                        <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-1.5">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-80 overflow-y-auto">
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[320px] overflow-y-auto pr-1">
                         {oldTestamentBooks.map((book) => (
-                          <Button
+                          <motion.div
                             key={book.id}
-                            variant={selectedBook?.id === book.id ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => {
-                              handleBookSelect(book.name, 'read');
-                              if (isMobileSidebar) {
-                                setTimeout(() => setMobileSidebarOpen(false), 200);
-                              }
-                            }}
-                            className={`text-xs h-8 touch-target ${
-                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''
-                            }`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                           >
-                            {book.name}
-                          </Button>
+                            <Button
+                              variant={selectedBook?.id === book.id ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                handleBookSelect(book.name, 'read');
+                                if (isMobileSidebar) {
+                                  setTimeout(() => setMobileSidebarOpen(false), 200);
+                                }
+                              }}
+                              className={cn(
+                                "w-full h-9 text-xs font-medium transition-all touch-target",
+                                selectedBook?.id === book.id 
+                                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
+                                  : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 hover:text-orange-700'
+                              )}
+                            >
+                              {book.name}
+                            </Button>
+                          </motion.div>
                         ))}
                       </div>
                     </CollapsibleContent>
@@ -1065,30 +1105,47 @@ How can I apply this to my life?
 
                   <Collapsible defaultOpen={!selectedBook || newTestamentBooks.some(b => b.id === selectedBook.id)}>
                     <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between h-9 text-xs">
-                        <span className="font-medium">New Testament ({newTestamentBooks.length})</span>
-                        <ChevronDown className="h-3.5 w-3.5" />
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-between h-10 text-sm font-medium border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                          <span>New Testament</span>
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {newTestamentBooks.length}
+                          </Badge>
+                        </div>
+                        <ChevronDown className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-180" />
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-1.5">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-80 overflow-y-auto">
+                    <CollapsibleContent className="mt-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[320px] overflow-y-auto pr-1">
                         {newTestamentBooks.map((book) => (
-                          <Button
+                          <motion.div
                             key={book.id}
-                            variant={selectedBook?.id === book.id ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => {
-                              handleBookSelect(book.name, 'read');
-                              if (isMobileSidebar) {
-                                setTimeout(() => setMobileSidebarOpen(false), 200);
-                              }
-                            }}
-                            className={`text-xs h-8 touch-target ${
-                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''
-                            }`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                           >
-                            {book.name}
-                          </Button>
+                            <Button
+                              variant={selectedBook?.id === book.id ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                handleBookSelect(book.name, 'read');
+                                if (isMobileSidebar) {
+                                  setTimeout(() => setMobileSidebarOpen(false), 200);
+                                }
+                              }}
+                              className={cn(
+                                "w-full h-9 text-xs font-medium transition-all touch-target",
+                                selectedBook?.id === book.id 
+                                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm' 
+                                  : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50/50 hover:text-orange-700'
+                              )}
+                            >
+                              {book.name}
+                            </Button>
+                          </motion.div>
                         ))}
                       </div>
                     </CollapsibleContent>
@@ -1097,13 +1154,19 @@ How can I apply this to my life?
               </div>
             </TabsContent>
 
-            {/* Search Tab Content - Improved */}
-            <TabsContent value="search" className="mt-3 space-y-3">
-              {/* Search Filters */}
-              <div className="space-y-2">
-                <div className="flex gap-1.5">
-                  <Select value={searchFilters.testament} onValueChange={(value) => setSearchFilters({...searchFilters, testament: value})}>
-                    <SelectTrigger className="h-8 text-xs flex-1">
+            {/* Search Tab Content - Clean Modern Design */}
+            <TabsContent value="search" className="mt-0 p-4 space-y-4 data-[state=active]:animate-in">
+              {/* Search Filters - Clean Design */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-1">
+                  Filters
+                </h3>
+                <div className="flex gap-2">
+                  <Select 
+                    value={searchFilters.testament} 
+                    onValueChange={(value) => setSearchFilters({...searchFilters, testament: value})}
+                  >
+                    <SelectTrigger className="h-9 text-xs flex-1 border-gray-300 hover:border-orange-400 transition-colors">
                       <SelectValue placeholder="Testament" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1113,8 +1176,11 @@ How can I apply this to my life?
                     </SelectContent>
                   </Select>
 
-                  <Select value={searchFilters.book} onValueChange={(value) => setSearchFilters({...searchFilters, book: value})}>
-                    <SelectTrigger className="h-8 text-xs flex-1">
+                  <Select 
+                    value={searchFilters.book} 
+                    onValueChange={(value) => setSearchFilters({...searchFilters, book: value})}
+                  >
+                    <SelectTrigger className="h-9 text-xs flex-1 border-gray-300 hover:border-orange-400 transition-colors">
                       <SelectValue placeholder="Book" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1128,76 +1194,94 @@ How can I apply this to my life?
                   </Select>
                 </div>
 
-                {/* Search Options */}
-                <div className="flex items-center gap-3 pt-2 border-t">
-                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                {/* Search Options - Clean Checkboxes */}
+                <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={fuzzySearchEnabled}
                       onChange={(e) => setFuzzySearchEnabled(e.target.checked)}
-                      className="rounded w-3.5 h-3.5"
+                      className="rounded w-4 h-4 border-gray-300 text-orange-500 focus:ring-orange-400/20 cursor-pointer transition-colors"
                     />
-                    <span>Fuzzy search</span>
+                    <span className="text-gray-700 group-hover:text-gray-900">Fuzzy search</span>
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={searchFilters.exactMatch}
                       onChange={(e) => setSearchFilters({...searchFilters, exactMatch: e.target.checked})}
-                      className="rounded w-3.5 h-3.5"
+                      className="rounded w-4 h-4 border-gray-300 text-orange-500 focus:ring-orange-400/20 cursor-pointer transition-colors"
                     />
-                    <span>Exact match</span>
+                    <span className="text-gray-700 group-hover:text-gray-900">Exact match</span>
                   </label>
                 </div>
 
-                {/* Search Help - Compact */}
+                {/* Search Help - Clean Tips */}
                 {!isMobileSidebar && (
-                  <div className="text-xs text-gray-500 space-y-0.5 pt-1 border-t">
-                    <p className="font-medium text-gray-700 mb-1">Tips:</p>
-                    <p>• Use quotes for exact phrases</p>
-                    <p>• AND/OR operators supported</p>
+                  <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                    <p className="font-medium text-blue-900 text-xs mb-2">Search Tips:</p>
+                    <ul className="text-xs text-blue-700 space-y-1">
+                      <li>• Use quotes for exact phrases</li>
+                      <li>• AND/OR operators supported</li>
+                    </ul>
                   </div>
                 )}
               </div>
 
-              {/* Loading indicator for search - simple spinner, not AI thinking */}
+              {/* Loading indicator for search - Clean Design */}
               {loading && activeTab === 'search' && (
-                <div className="flex items-center justify-center py-8">
+                <div className="flex items-center justify-center py-12">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-                    <p className="text-sm text-gray-600">Searching verses...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-200 border-t-orange-500"></div>
+                    <p className="text-sm text-gray-600 font-medium">Searching verses...</p>
                   </div>
                 </div>
               )}
 
+              {/* Empty State - Clean Design */}
               {!loading && searchResults.length === 0 && searchQuery.trim() && (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  No verses found matching "{searchQuery}"
+                <div className="text-center py-12">
+                  <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm text-gray-600 font-medium mb-1">
+                    No verses found
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Try different keywords or check your spelling
+                  </p>
                 </div>
               )}
 
+              {/* Search Results - Clean Modern Design */}
               {searchResults.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">Results ({searchResults.length})</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      Results
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {searchResults.length}
+                      </Badge>
+                    </h3>
                     {searchResults.length > visibleResultsCount && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setVisibleResultsCount(prev => Math.min(prev + 50, searchResults.length))}
-                        className="text-xs touch-target"
+                        className="text-xs h-8 hover:bg-orange-50 hover:text-orange-600 touch-target"
                       >
                         Show More ({searchResults.length - visibleResultsCount})
                       </Button>
                     )}
                   </div>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                     {searchResults.slice(0, visibleResultsCount).map((verse) => {
                       const highlightedText = highlightVerseText(verse, searchQuery);
                       return (
-                        <div
+                        <motion.div
                           key={verse.id}
-                          className="p-3 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer touch-target min-h-[60px]"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          whileHover={{ scale: 1.01 }}
+                          className="p-3 bg-white rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all cursor-pointer touch-target min-h-[70px] group"
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -1215,24 +1299,24 @@ How can I apply this to my life?
                             }
                           }}
                         >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-orange-600">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-semibold text-sm text-orange-600 group-hover:text-orange-700">
                               {verse.book_name} {verse.chapter}:{verse.verse}
                             </span>
-                            <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-gray-300">
                               {verse.language === 'english' ? 'EN' : 'TA'}
                             </Badge>
                             {verse.relevanceScore && (
                               <span className="ml-auto text-xs text-gray-400">
-                                (relevance: {Math.round(verse.relevanceScore)})
+                                {Math.round(verse.relevanceScore)}% match
                               </span>
                             )}
                           </div>
                           <div 
-                            className="text-gray-700"
+                            className="text-sm text-gray-700 leading-relaxed line-clamp-2"
                             dangerouslySetInnerHTML={{ __html: highlightedText }}
                           />
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
