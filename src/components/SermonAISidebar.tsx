@@ -472,7 +472,7 @@ Please provide helpful sermon writing assistance.`;
         </div>
         <Badge variant="secondary" className="mt-2">
           <Bot className="h-3 w-3 mr-1" />
-          ✦ Bible Aura AI
+          ✦ Bible Aura
         </Badge>
       </div>
 

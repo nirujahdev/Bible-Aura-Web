@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState, createContext, useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,6 +15,19 @@ import {
   User,
   LogOut
 } from 'lucide-react';
+
+// Context for right sidebar state
+interface RightSidebarContextType {
+  rightSidebarOpen: boolean;
+  setRightSidebarOpen: (open: boolean) => void;
+}
+
+const RightSidebarContext = createContext<RightSidebarContextType | null>(null);
+
+export const useRightSidebar = () => {
+  const context = useContext(RightSidebarContext);
+  return context;
+};
 
 type NavIcon = 'star' | 'bible' | 'sermon' | 'favorites' | 'profile';
 
@@ -67,6 +80,7 @@ export function MobileOptimizedLayout({
   const location = useLocation();
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const navigationItems = NAV_ITEMS;
 
   useEffect(() => {
@@ -88,35 +102,22 @@ export function MobileOptimizedLayout({
       {/* Mobile Top Header */}
       {!hideHeader && (
       <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Left - Hamburger Menu */}
-          <button 
-            onClick={() => setHamburgerMenuOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Open navigation menu"
-            aria-expanded={hamburgerMenuOpen}
-          >
-            <Menu className="h-5 w-5 text-gray-600" />
-          </button>
-          
-          {/* Center - Logo */}
+        <div className="flex items-center justify-center px-4 py-3 relative">
+          {/* Center - Logo - Centered */}
           <div className="flex flex-col items-center justify-center leading-tight">
             <div className="flex items-center gap-2">
               <span className="text-orange-500 text-xl font-semibold">✦</span>
-              <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
+              <span className="text-lg font-semibold text-gray-900">Bible AI Assistant</span>
             </div>
-            <span className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
-              Bible AI Assistance
-            </span>
           </div>
           
           {/* Right - Contextual Three dots - Only show on Bible page */}
           {location.pathname === '/bible' && (
             <button 
-              onClick={() => setContextMenuOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Open quick actions"
-              aria-expanded={contextMenuOpen}
+              onClick={() => setRightSidebarOpen(true)}
+              className="absolute right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Open Bible options"
+              aria-expanded={rightSidebarOpen}
             >
               <MoreVertical className="h-5 w-5 text-gray-600" />
             </button>
@@ -126,11 +127,13 @@ export function MobileOptimizedLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <div className="min-h-full">
-          {children}
+      <RightSidebarContext.Provider value={{ rightSidebarOpen, setRightSidebarOpen }}>
+        <div className="flex-1 overflow-auto">
+          <div className="min-h-full">
+            {children}
+          </div>
         </div>
-      </div>
+      </RightSidebarContext.Provider>
 
       {/* Hamburger Navigation Menu */}
       <MobileNavigationMenu 
@@ -189,7 +192,7 @@ function MobileNavigationMenu({ isOpen, onClose, items }: { isOpen: boolean; onC
               <div className="leading-tight">
                 <p className="text-sm font-semibold text-gray-900">Bible Aura</p>
                 <p className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
-                  Bible AI Assistance
+                  Bible AI Assistant
                 </p>
               </div>
             </div>

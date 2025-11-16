@@ -99,7 +99,7 @@ const Home = () => {
                           <span className="text-white text-sm md:text-base lg:text-lg font-bold">✦</span>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-sm md:text-base">Bible Aura AI</h3>
+                          <h3 className="font-semibold text-sm md:text-base">Bible Aura</h3>
                           <p className="text-xs opacity-80">AI Biblical Assistant</p>
                         </div>
                       </div>

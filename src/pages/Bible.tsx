@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
+import { useRightSidebar } from '@/components/MobileOptimizedLayout';
 import { 
   BibleBook, 
   BibleVerse, 
@@ -85,6 +86,7 @@ export default function Bible() {
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const rightSidebar = useRightSidebar();
   const [books, setBooks] = useState<BibleBook[]>([]);
   const [tamilBookNames, setTamilBookNames] = useState<TamilBookName[]>([]);
   const [verses, setVerses] = useState<BibleVerse[]>([]);
@@ -1342,7 +1344,7 @@ How can I apply this to my life?
             </div>
           )}
 
-          {/* Mobile Sidebar - Sheet Drawer */}
+          {/* Mobile Sidebar - Sheet Drawer (Left - Keep for backward compatibility if needed) */}
           {isMobile && (
             <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
               <SheetContent side="left" className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col">
@@ -1357,19 +1359,19 @@ How can I apply this to my life?
             </Sheet>
           )}
 
-          {/* Mobile Sidebar Toggle Button */}
-          {isMobile && (
-            <div className="fixed top-14 left-4 z-30">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setMobileSidebarOpen(true)}
-                className="h-10 w-10 p-0 bg-white shadow-md hover:bg-gray-50 rounded-lg border-gray-200"
-                aria-label="Open navigation menu"
-              >
-                <Menu className="h-5 w-5 text-gray-700" />
-              </Button>
-            </div>
+          {/* Right Side Sheet - Opened from 3-dot menu */}
+          {isMobile && rightSidebar && (
+            <Sheet open={rightSidebar?.rightSidebarOpen || false} onOpenChange={rightSidebar?.setRightSidebarOpen || (() => {})}>
+              <SheetContent side="right" className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col">
+                <SheetHeader className="px-4 pt-4 pb-3 border-b">
+                  <SheetTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-orange-500" />
+                    <span className="text-lg font-semibold text-gray-800">Bible Study</span>
+                  </SheetTitle>
+                </SheetHeader>
+                {renderSidebarContent(true)}
+              </SheetContent>
+            </Sheet>
           )}
 
           {/* Main Reading Area - Adjust when AI chat is open */}
@@ -1572,7 +1574,7 @@ How can I apply this to my life?
                                 isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                               } p-0 ${
                                 isFavorited 
-                                  ? 'text-red-500 hover:text-red-600 bg-red-50' 
+                                  ? 'text-red-500 hover:text-red-600' 
                                   : 'text-gray-400 hover:text-red-500'
                               }`}
                               title={isFavorited ? "Remove from Favorites" : "Add to Favorites"}
@@ -1591,7 +1593,7 @@ How can I apply this to my life?
                                 isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
                               } p-0 ${
                                 isBookmarked 
-                                  ? 'text-blue-500 hover:text-blue-600 bg-blue-50' 
+                                  ? 'text-blue-500 hover:text-blue-600' 
                                   : 'text-gray-400 hover:text-blue-500'
                               }`}
                               title={isBookmarked ? "Remove from Bookmarks" : "Add to Bookmarks"}
@@ -1857,6 +1859,36 @@ How can I apply this to my life?
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-2" align="end" side="top">
+              {/* Navigation Buttons */}
+              <div className="flex gap-2 mb-2 pb-2 border-b border-gray-200">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigateChapter('prev');
+                    setFloatingChapterSelectorOpen(false);
+                  }}
+                  disabled={selectedChapter <= 1}
+                  className="flex-1 h-8 text-xs"
+                >
+                  <ChevronLeft className="h-3 w-3 mr-1" />
+                  Prev
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigateChapter('next');
+                    setFloatingChapterSelectorOpen(false);
+                  }}
+                  disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                  className="flex-1 h-8 text-xs"
+                >
+                  Next
+                  <ChevronRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+              {/* Chapter List */}
               <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-hide">
                 {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
                   <button

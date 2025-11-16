@@ -162,7 +162,7 @@ export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReferenc
     const welcomeMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `<span className="text-orange-500">✦</span> **Welcome to Bible Aura AI**
+      content: `<span className="text-orange-500">✦</span> **Welcome to Bible Aura**
 
 I'm ready to help you explore **${verseRef}**:
 
@@ -337,7 +337,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Bible Aura AI Assistant
+                  Bible AI Assistant
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Analyzing: <span className="font-semibold">{verseRef}</span>
@@ -422,7 +422,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               <div className="flex justify-start">
                 <div className="bg-gray-100 rounded-lg px-4 py-3 flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-gray-600">Bible Aura AI is thinking...</span>
+                  <span className="text-sm text-gray-600">Bible Aura is thinking...</span>
                 </div>
               </div>
             )}

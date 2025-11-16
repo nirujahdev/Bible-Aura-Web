@@ -17,7 +17,7 @@ export default function Dashboard() {
 
   useSEO({
     title: "✦ Bible Aura | AI Chat Dashboard",
-    description: "Chat with Bible Aura AI for biblical insights, verse analysis, and spiritual guidance",
+    description: "Chat with Bible Aura for biblical insights, verse analysis, and spiritual guidance",
     keywords: "Bible AI chat, biblical insights, AI Bible study, scripture analysis"
   });
 

@@ -486,7 +486,7 @@ Memory Verse: ${sermon.studyGuide.memoryVerse}
             AI Sermon Generator
             <Badge variant="secondary" className="ml-auto">
               <Sparkles className="h-3 w-3 mr-1" />
-              ✦ Bible Aura AI
+              ✦ Bible Aura
             </Badge>
           </CardTitle>
         </CardHeader>

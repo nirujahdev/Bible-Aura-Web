@@ -95,7 +95,7 @@ export function InlineLoadingIndicator() {
       >
         ✦
       </motion.span>
-      <span className="text-sm text-gray-600">Bible Aura AI is thinking</span>
+      <span className="text-sm text-gray-600">Bible Aura is thinking</span>
       <div className="flex gap-1 ml-1">
         {[0, 1, 2].map((i) => (
           <motion.div

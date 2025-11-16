@@ -2031,7 +2031,7 @@ const SermonsContent = () => {
                 AI Sermon Generator
                 <Badge variant="secondary" className="ml-2">
                   <Sparkles className="h-3 w-3 mr-1" />
-                  ✦ Bible Aura AI
+                  ✦ Bible Aura
                 </Badge>
               </DialogTitle>
             </DialogHeader>
@@ -2352,7 +2352,7 @@ const SermonsContent = () => {
                 AI Sermon Generator
                 <Badge variant="secondary" className="ml-2">
                   <Sparkles className="h-3 w-3 mr-1" />
-                  ✦ Bible Aura AI
+                  ✦ Bible Aura
                 </Badge>
               </DialogTitle>
             </DialogHeader>

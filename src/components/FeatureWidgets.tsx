@@ -192,7 +192,7 @@ export function AIChatWidget() {
         <CardTitle className="flex items-center gap-2 text-purple-800">
           <span className="text-purple-600">✦</span>
           <MessageCircle className="h-5 w-5" />
-          Bible Aura AI Assistant
+          Bible AI Assistant
           <Badge variant="secondary" className="ml-auto">
             {totalQuestions} questions
           </Badge>

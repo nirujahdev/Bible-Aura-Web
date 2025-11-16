@@ -449,7 +449,7 @@ export function EnhancedAIChat() {
                 </Button>
                 <div className="flex items-center gap-2">
                   <span className="text-orange-500">✦</span>
-                  <h1 className="text-xl font-bold text-gray-800">Bible Aura AI Chat</h1>
+                  <h1 className="text-xl font-bold text-gray-800">Bible Aura Chat</h1>
                 </div>
               </div>
               
@@ -474,10 +474,10 @@ export function EnhancedAIChat() {
                   <BookOpen className="h-16 w-16 mx-auto" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Welcome to Bible Aura AI
+                  Welcome to Bible Aura
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  Your Biblical Study Assistant
+                  Bible AI Assistant
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl mx-auto">
                   {Object.entries(CHAT_MODES).map(([key, mode]) => (
@@ -511,7 +511,7 @@ export function EnhancedAIChat() {
                     {message.role === 'assistant' && (
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-orange-500">✦</span>
-                        <span className="text-sm font-medium text-gray-600">Bible Aura AI</span>
+                        <span className="text-sm font-medium text-gray-600">Bible Aura</span>
                       </div>
                     )}
                     <div className="whitespace-pre-wrap">{message.content}</div>
@@ -651,7 +651,7 @@ export function EnhancedAIChat() {
               {aiState !== 'idle' && (
                 <span className="text-orange-500">{getAIStateText()}</span>
               )}
-              <span className="text-orange-500">✦ Powered by Bible Aura AI</span>
+              <span className="text-orange-500">✦ Powered by Bible Aura</span>
             </div>
           </div>
         </div>

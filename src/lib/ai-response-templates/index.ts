@@ -1,4 +1,4 @@
-// ✦ Bible Aura AI Response Templates Index
+// ✦ Bible Aura Response Templates Index
 // This file organizes all 6 response structure templates for different AI chat modes
 // Each mode has specific formatting requirements with orange ✦ icon and biblical accuracy standards
 
@@ -116,7 +116,7 @@ export const generateSystemPrompt = (mode: keyof typeof AI_RESPONSE_TEMPLATES): 
     return cleanTemplate.system_prompt || 'You are a biblical assistant providing clean, formatted responses.';
   }
 
-  let systemPrompt = `You are Bible Aura AI, a ${template.purpose}
+  let systemPrompt = `You are Bible Aura, a ${template.purpose}
 
 MODE: ${template.name}
 TONE: ${template.tone}

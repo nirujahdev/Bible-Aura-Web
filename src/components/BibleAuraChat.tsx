@@ -584,7 +584,7 @@ export function BibleAuraChat() {
     if (!message) return;
 
     const shareData = {
-      title: 'Bible Aura AI Response',
+      title: 'Bible Aura Response',
       text: message.content,
       url: window.location.href
     };
@@ -810,7 +810,7 @@ export function BibleAuraChat() {
                   <span className="text-lg font-semibold text-gray-900">Bible Aura</span>
                 </div>
                 <span className="text-[11px] uppercase tracking-[0.18em] text-orange-500 font-medium">
-                  Bible AI Assistance
+                  Bible AI Assistant
                 </span>
               </div>
               
@@ -833,8 +833,8 @@ export function BibleAuraChat() {
             <div className="flex items-center gap-3">
               <span className="text-orange-500 text-2xl drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">✦</span>
               <div>
-                <h1 className="text-lg font-bold text-gray-800">Bible Aura AI</h1>
-                <p className="text-xs text-gray-600">Your Biblical Study Assistant</p>
+                <h1 className="text-lg font-bold text-gray-800">Bible Aura</h1>
+                <p className="text-xs text-gray-600">Bible AI Assistant</p>
               </div>
             </div>
             

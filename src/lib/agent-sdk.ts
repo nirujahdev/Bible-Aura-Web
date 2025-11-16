@@ -44,7 +44,7 @@ export interface AgentSDKRequest {
 }
 
 /**
- * Send a message to Bible Aura AI using Agent SDK
+ * Send a message to Bible Aura using Agent SDK
  * @param message - The user's message to send
  * @param options - Optional mode and language preferences
  * @returns Promise with the Agent SDK response containing text, mode, language, sources, and cross-references
@@ -59,7 +59,7 @@ export async function sendBibleAuraMessage(
   }
 
   if (import.meta.env.DEV) {
-    console.log('[Bible Aura AI] Processing message through Agent SDK...');
+    console.log('[Bible Aura] Processing message through Agent SDK...');
   }
 
   // Use the same origin to avoid CORS issues
@@ -71,7 +71,7 @@ export async function sendBibleAuraMessage(
   const apiUrl = `${window.location.origin}${AGENT_SDK_CONFIG.apiEndpoint}`;
 
   if (import.meta.env.DEV) {
-    console.log('[Bible Aura AI] Calling Agent SDK API:', apiUrl);
+    console.log('[Bible Aura] Calling Agent SDK API:', apiUrl);
   }
 
   try {
@@ -89,7 +89,7 @@ export async function sendBibleAuraMessage(
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || errorData.error || `API error: ${response.status}`;
       
-      console.error('[Bible Aura AI] ❌ Agent SDK API failed:', errorMessage);
+      console.error('[Bible Aura] ❌ Agent SDK API failed:', errorMessage);
       
       // Provide helpful error messages
       if (response.status === 500 && errorMessage.includes('API key')) {
@@ -109,7 +109,7 @@ export async function sendBibleAuraMessage(
     }
 
     if (import.meta.env.DEV) {
-      console.log('[Bible Aura AI] ✓ Agent SDK success', {
+      console.log('[Bible Aura] ✓ Agent SDK success', {
         mode: data.mode,
         lang: data.lang,
         sourcesCount: data.sources?.length || 0,
@@ -119,7 +119,7 @@ export async function sendBibleAuraMessage(
 
     return data;
   } catch (error: any) {
-    console.error('[Bible Aura AI] ❌ Agent SDK error:', error);
+    console.error('[Bible Aura] ❌ Agent SDK error:', error);
     
     // Re-throw with better error message if it's not already formatted
     if (error.message && !error.message.includes('❌')) {
