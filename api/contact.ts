@@ -11,14 +11,33 @@ const DEFAULT_ALLOWED_ORIGIN =
 // Initialize Supabase client
 function getSupabaseClient() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  // Prefer service role key for server-side operations, fallback to anon key
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
   
   if (!supabaseUrl || !supabaseKey) {
-    console.warn('[Contact] Supabase credentials not configured');
+    console.error('[Contact] Supabase credentials not configured:', {
+      hasUrl: !!supabaseUrl,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      hasAnonKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+      hasKey: !!supabaseKey
+    });
     return null;
   }
   
-  return createClient(supabaseUrl, supabaseKey);
+  const client = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
+    }
+  });
+  
+  console.log('[Contact] Supabase client initialized:', {
+    url: supabaseUrl,
+    hasKey: !!supabaseKey,
+    keyType: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role' : 'anon'
+  });
+  
+  return client;
 }
 
 // Initialize email transporter
@@ -227,33 +246,55 @@ export default async function handler(
     let submissionId: string | null = null;
     if (supabase) {
       try {
+        // Ensure we have valid data before inserting
+        const submissionData = {
+          user_id: userId || null,
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          subject: subject.trim(),
+          category: category.trim(),
+          message: message.trim(),
+          ip_address: typeof ipAddress === 'string' ? ipAddress : (Array.isArray(ipAddress) ? ipAddress[0] : 'unknown'),
+          user_agent: typeof userAgent === 'string' ? userAgent : 'unknown',
+          status: 'pending' as const
+        };
+
+        console.log('[Contact] Attempting to save submission:', {
+          name: submissionData.name,
+          email: submissionData.email,
+          category: submissionData.category,
+          hasUserId: !!submissionData.user_id
+        });
+
         const { data: submission, error: dbError } = await supabase
           .from('contact_submissions')
-          .insert({
-            user_id: userId || null,
-            name: name.trim(),
-            email: email.trim().toLowerCase(),
-            subject: subject.trim(),
-            category: category.trim(),
-            message: message.trim(),
-            ip_address: Array.isArray(ipAddress) ? ipAddress[0] : ipAddress,
-            user_agent: userAgent,
-            status: 'pending'
-          })
+          .insert(submissionData)
           .select('id')
           .single();
 
         if (dbError) {
-          console.error('[Contact] Database error:', dbError);
+          console.error('[Contact] Database error:', {
+            message: dbError.message,
+            details: dbError.details,
+            hint: dbError.hint,
+            code: dbError.code
+          });
           // Continue even if DB insert fails (graceful degradation)
-        } else if (submission) {
+        } else if (submission && submission.id) {
           submissionId = submission.id;
           console.log('[Contact] Successfully saved to database:', submissionId);
+        } else {
+          console.warn('[Contact] No submission ID returned from database insert');
         }
       } catch (dbError: any) {
-        console.error('[Contact] Database error:', dbError.message);
+        console.error('[Contact] Database error (catch):', {
+          message: dbError.message,
+          stack: dbError.stack
+        });
         // Continue even if DB insert fails (graceful degradation)
       }
+    } else {
+      console.warn('[Contact] Supabase client not initialized, skipping database save');
     }
 
     // Send emails via SMTP

@@ -245,9 +245,12 @@ export const ContactForm: React.FC = () => {
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="font-medium text-blue-900 mb-2">Other Ways to Reach Us</h4>
             <div className="text-sm text-blue-800 space-y-1">
-              <p>📧 Email: contact@bibleaura.xyz</p>
+              <p>📧 Email: <a href="mailto:contact@bibleaura.xyz" className="text-blue-600 hover:text-blue-800 underline">contact@bibleaura.xyz</a></p>
               <p>⏰ Response Time: Within 24 hours</p>
               <p>🕐 Support Hours: Monday - Friday, 9 AM - 6 PM EST</p>
+              <p className="mt-3 pt-3 border-t border-blue-200 text-xs text-blue-700">
+                <strong>Note:</strong> Please provide us with a valid email address to contact you regarding your inquiry.
+              </p>
             </div>
           </div>
 

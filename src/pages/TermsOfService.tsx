@@ -18,7 +18,7 @@ const TermsOfService = () => {
       <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
-      <section className="py-16 pt-32 bg-gradient-to-r from-orange-500 via-purple-600 to-blue-600 text-white">
+      <section className="py-16 pt-32 bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 text-white">
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur mb-6">

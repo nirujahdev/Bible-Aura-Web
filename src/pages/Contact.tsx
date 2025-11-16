@@ -23,7 +23,7 @@ const Contact = () => {
       <GlobalNavigation variant="landing" />
 
       {/* Hero Section */}
-      <section className="py-16 pt-32 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 text-white">
+      <section className="py-16 pt-32 bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 text-white">
         <div className="w-full px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur mb-6">
@@ -45,10 +45,6 @@ const Contact = () => {
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
                 <MessageCircle className="w-5 h-5" />
                 <span>24/7 AI Support</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
-                <HelpCircle className="w-5 h-5" />
-                <span>Fast Response</span>
               </div>
             </div>
           </div>
