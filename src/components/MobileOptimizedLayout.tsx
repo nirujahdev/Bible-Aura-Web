@@ -110,15 +110,17 @@ export function MobileOptimizedLayout({
             </span>
           </div>
           
-          {/* Right - Contextual Three dots */}
-          <button 
-            onClick={() => setContextMenuOpen(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Open quick actions"
-            aria-expanded={contextMenuOpen}
-          >
-            <MoreVertical className="h-5 w-5 text-gray-600" />
-          </button>
+          {/* Right - Contextual Three dots - Only show on Bible page */}
+          {location.pathname === '/bible' && (
+            <button 
+              onClick={() => setContextMenuOpen(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Open quick actions"
+              aria-expanded={contextMenuOpen}
+            >
+              <MoreVertical className="h-5 w-5 text-gray-600" />
+            </button>
+          )}
         </div>
       </div>
       )}
@@ -137,12 +139,14 @@ export function MobileOptimizedLayout({
         items={navigationItems}
       />
 
-      {/* Contextual More Menu */}
-      <MobileMoreMenu 
-        isOpen={contextMenuOpen}
-        onClose={() => setContextMenuOpen(false)}
-        currentPage={location.pathname}
-      />
+      {/* Contextual More Menu - Only on Bible page */}
+      {location.pathname === '/bible' && (
+        <MobileMoreMenu 
+          isOpen={contextMenuOpen}
+          onClose={() => setContextMenuOpen(false)}
+          currentPage={location.pathname}
+        />
+      )}
     </div>
   );
 }

@@ -195,6 +195,37 @@ export default function Bible() {
     }
   }, [selectedBook, selectedChapter, selectedLanguage, selectedTranslation]);
 
+  // Listen for bible-action events from MobileMoreMenu
+  useEffect(() => {
+    const handleBibleAction = (event: CustomEvent) => {
+      const action = event.detail?.action;
+      
+      try {
+        switch (action) {
+          case 'search-verses':
+            setActiveTab('search');
+            break;
+          case 'book-selection':
+            setMobileSidebarOpen(true);
+            break;
+          case 'translation':
+            // Translation selection can be done from sidebar
+            setMobileSidebarOpen(true);
+            break;
+          default:
+            console.log('Unknown bible action:', action);
+        }
+      } catch (error) {
+        console.error('Error handling bible action:', error);
+      }
+    };
+
+    window.addEventListener('bible-action', handleBibleAction as EventListener);
+    return () => {
+      window.removeEventListener('bible-action', handleBibleAction as EventListener);
+    };
+  }, []);
+
   const loadTamilBookNames = async () => {
     try {
       const response = await fetch('/Bible/Tamil bible/Books.json');
@@ -646,7 +677,8 @@ How can I apply this to my life?
       'pink': 'bg-pink-100 border-l-4 border-pink-400',
       'orange': 'bg-orange-100 border-l-4 border-orange-400',
     };
-    return colorMap[color] || 'hover:bg-gray-50';
+    const baseClass = colorMap[color] || 'hover:bg-gray-50';
+    return `${baseClass} max-w-full overflow-x-hidden`;
   };
 
   const highlightVerse = async (verse: BibleVerse, color: string) => {
@@ -937,14 +969,22 @@ How can I apply this to my life?
                     placeholder='Search verses...'
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter') {
+                        e.preventDefault();
                         handleSearch();
                       }
                     }}
                     className="flex-1"
                   />
-                  <Button onClick={handleSearch} disabled={loading} className="touch-target min-w-[44px]">
+                  <Button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSearch();
+                    }} 
+                    disabled={loading || !searchQuery.trim()} 
+                    className="touch-target min-w-[44px]"
+                  >
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1142,38 +1182,72 @@ How can I apply this to my life?
             "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10"
           )}>
             {/* Header - Mobile optimized */}
-            <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2' : ''}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2 px-3' : ''}`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   {selectedBook && (
                     <>
-                      <div className="flex items-center gap-2">
-                        <h1 className={`font-bold text-gray-800 ${isMobile ? 'text-lg' : 'text-xl'}`}>
-                          {selectedBook.name}
-                        </h1>
-                        <Badge variant="outline" className="text-xs">
-                          Chapter {selectedChapter}
-                        </Badge>
-                      </div>
-                      {!isMobile && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigateChapter('prev')}
-                            disabled={selectedChapter <= 1}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigateChapter('next')}
-                            disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
+                      {/* Mobile: Show book name and chapter navigation */}
+                      {isMobile ? (
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <h1 className="font-bold text-gray-800 text-base truncate">
+                              {getBookDisplayName(selectedBook.name)}
+                            </h1>
+                            <Badge variant="outline" className="text-xs flex-shrink-0">
+                              Ch {selectedChapter}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigateChapter('prev')}
+                              disabled={selectedChapter <= 1}
+                              className="h-8 w-8 p-0"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigateChapter('next')}
+                              disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <h1 className="font-bold text-gray-800 text-xl">
+                              {selectedBook.name}
+                            </h1>
+                            <Badge variant="outline" className="text-xs">
+                              Chapter {selectedChapter}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigateChapter('prev')}
+                              disabled={selectedChapter <= 1}
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigateChapter('next')}
+                              disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
                       )}
                     </>
                   )}
@@ -1223,19 +1297,7 @@ How can I apply this to my life?
               ) : selectedBook && verses.length > 0 ? (
                 <div className={`${isMobile ? 'p-4 pb-6' : 'p-8'} max-w-4xl mx-auto w-full`}>
                   
-                  {/* Mobile Chapter Header - Clean and unified */}
-                  {isMobile && (
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-gray-800">
-                          {getBookDisplayName(selectedBook.name)}
-                        </h2>
-                        <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">
-                          Chapter {selectedChapter}
-                        </Badge>
-                      </div>
-                    </div>
-                  )}
+                  {/* Mobile Chapter Header removed - now shown in main header */}
 
                   {/* Verses with Mobile-Optimized Layout */}
                   <div className="space-y-6">
@@ -1251,7 +1313,7 @@ How can I apply this to my life?
                           className={cn(
                             "group relative rounded-xl transition-all duration-200 p-4",
                             highlightColor ? getHighlightClasses(highlightColor) : 'hover:bg-gray-50',
-                            isMobile && 'mx-1'
+                            isMobile && 'mx-1 overflow-x-hidden max-w-full'
                           )}
                         >
                           {/* Verse Content - Mobile-Optimized */}
@@ -1259,7 +1321,7 @@ How can I apply this to my life?
                             {/* Verse Number - Enhanced for Mobile */}
                             <div className="flex-shrink-0">
                               <span className={`inline-flex items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white font-bold shadow-sm ${
-                                isMobile ? 'w-10 h-10 text-sm' : 'w-12 h-12 text-base'
+                                isMobile ? 'w-8 h-8 text-xs' : 'w-12 h-12 text-base'
                               }`}>
                                 {verse.verse}
                               </span>
@@ -1510,7 +1572,8 @@ function VerseCard({
       'pink': 'bg-pink-100 border-l-4 border-pink-400',
       'orange': 'bg-orange-100 border-l-4 border-orange-400',
     };
-    return colorMap[color] || 'hover:bg-gray-50';
+    const baseClass = colorMap[color] || 'hover:bg-gray-50';
+    return `${baseClass} max-w-full overflow-x-hidden`;
   };
 
   return (

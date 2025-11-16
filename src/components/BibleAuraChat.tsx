@@ -622,7 +622,7 @@ export function BibleAuraChat() {
   };
 
   return (
-    <div className="flex h-full w-full bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+    <div className="flex h-screen h-dvh w-full bg-gradient-to-br from-gray-50 to-white overflow-hidden fixed inset-0 lg:relative lg:inset-auto lg:h-full">
       {/* Sidebar - Chat History */}
       <div className="hidden lg:flex w-72 bg-white border-r border-gray-200 flex-col min-h-0 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
@@ -724,7 +724,7 @@ export function BibleAuraChat() {
       )}
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full max-w-full">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden w-full max-w-full pb-20 lg:pb-0">
         {/* Mobile Header - Hide when history or menus are open */}
         {!showMobileHistory && !showMobileNavMenu && !showMobileMoreMenu && (
           <div className="lg:hidden sticky top-0 bg-white border-b border-gray-200 z-40 flex-shrink-0">
@@ -787,8 +787,8 @@ export function BibleAuraChat() {
 
 
         {/* Messages Area - Scrollable */}
-        <ScrollArea className="flex-1 min-h-0 overflow-auto px-2 sm:px-3 md:px-4 py-2 md:py-6">
-          <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
+        <ScrollArea className="flex-1 min-h-0 overflow-auto px-0 sm:px-3 md:px-4 py-2 md:py-6 pb-20 sm:pb-2 lg:pb-2">
+          <div className="w-full max-w-3xl mx-auto space-y-4 md:space-y-6 px-3 sm:px-0">
             {messages.length === 0 ? (
               <div className="text-center py-4 md:py-12 px-2 md:px-4 flex flex-col items-center justify-center min-h-[60vh]">
                 <div className="inline-block mb-3 md:mb-4">
@@ -807,11 +807,11 @@ export function BibleAuraChat() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'} px-1 sm:px-0`}
+                    className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}
                   >
-                    <div className={`max-w-[85%] sm:max-w-[90%] md:max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
+                    <div className={`${message.role === 'assistant' ? 'w-full' : 'w-full max-w-[90%]'} sm:max-w-[90%] md:max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
                       {message.role === 'assistant' ? (
-                        <div className="bg-white border border-gray-100 rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 shadow-sm w-full">
+                        <div className="bg-white border-0 sm:border border-gray-100 rounded-none sm:rounded-xl md:rounded-2xl p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
                           <div className="prose max-w-none text-gray-700 leading-relaxed">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
@@ -1003,7 +1003,7 @@ export function BibleAuraChat() {
                           )}
                         </div>
                       ) : (
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 shadow-sm w-full">
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-none sm:rounded-xl md:rounded-2xl p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
                           <div className="whitespace-pre-wrap text-[15px] leading-[1.75] break-words">{message.content}</div>
                         </div>
                       )}
@@ -1099,8 +1099,8 @@ export function BibleAuraChat() {
           </div>
         </ScrollArea>
 
-        {/* Input Area - Fixed at bottom */}
-        <div className="bg-white border-t border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 safe-area-bottom">
+        {/* Input Area - Fixed at bottom (moves up with keyboard on mobile) */}
+        <div className="bg-white border-t border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 safe-area-bottom fixed bottom-0 left-0 right-0 lg:relative lg:left-auto lg:right-auto">
           <div className="max-w-3xl mx-auto w-full">
             {/* Mobile: Redesigned Input Bar */}
             <div className="lg:hidden">
