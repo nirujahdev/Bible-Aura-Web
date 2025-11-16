@@ -163,8 +163,7 @@ export default function Bible() {
   // Mobile sidebar state - completely independent from tab state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   
-  // Mobile detection
-  const isMobile = useIsMobile();
+  // Mobile detection - already declared above
   
   // CRITICAL: Tab state is completely isolated - NEVER changes except on explicit user click
   // This ref helps prevent any accidental state changes
