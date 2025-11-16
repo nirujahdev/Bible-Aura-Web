@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { sendBibleAuraMessage } from '@/lib/agent-sdk';
 import { checkAndIncrementUsage, getUsageInfo } from '@/lib/ai-limits';
-import { logMessage, updateMessageFeedback, updateMessageReport, softDeleteUserMessages } from '@/lib/ai-message-logs';
+import { logMessage, logMessagePair, updateMessageFeedback, updateMessageReport, softDeleteUserMessages } from '@/lib/ai-message-logs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -432,21 +432,9 @@ export function BibleAuraChat() {
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
 
-    // Log user message to analytics table
+    // Track start time for response time calculation
     const startTime = Date.now();
-    if (user) {
-      logMessage({
-        user_id: user.id,
-        conversation_id: currentConversationId,
-        message_id: userMessage.id,
-        role: 'user',
-        content: userInput,
-        mode: currentMode,
-        language: currentLanguage,
-        translation: 'KJV',
-        message_timestamp: messageTimestamp
-      }).catch(err => console.error('Error logging user message:', err));
-    }
+    const pairId = `pair_${userMessage.id}`; // Create unique pair ID
 
     try {
       // Map UI mode to API mode format
@@ -480,18 +468,24 @@ export function BibleAuraChat() {
 
       setMessages([...newMessages, aiMessage]);
 
-      // Log AI message to analytics table
+      // Log user message and AI response together in same row
       if (user) {
-        logMessage({
+        const turnNumber = messages.filter(m => m.role === 'user').length + 1;
+        
+        logMessagePair({
           user_id: user.id,
           conversation_id: currentConversationId,
-          message_id: aiMessage.id,
-          role: 'assistant',
-          content: aiResponse.text,
+          pair_id: pairId,
+          user_message_id: userMessage.id,
+          assistant_message_id: aiMessage.id,
+          user_message_content: userInput,
+          assistant_message_content: aiResponse.text,
+          user_message_timestamp: messageTimestamp,
+          assistant_message_timestamp: aiMessageTimestamp,
           mode: currentMode,
           language: currentLanguage,
           translation: 'KJV',
-          message_timestamp: aiMessageTimestamp,
+          turn_number: turnNumber,
           ai_mode: aiResponse.mode || currentMode,
           has_sources: !!(aiResponse.sources && aiResponse.sources.length > 0),
           sources_count: aiResponse.sources?.length || 0,
@@ -505,7 +499,7 @@ export function BibleAuraChat() {
             crossReferences: aiResponse.crossReferences || [],
             validatedVerses: (aiResponse as any).validatedVerses || []
           }
-        }).catch(err => console.error('Error logging AI message:', err));
+        }).catch(err => console.error('Error logging message pair:', err));
       }
       
     } catch (error: any) {
@@ -879,7 +873,7 @@ export function BibleAuraChat() {
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex gap-2 sm:gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}
                   >
-                    <div className={`${message.role === 'assistant' ? 'w-full' : 'w-full max-w-[90%]'} sm:max-w-[90%] md:max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
+                    <div className={`${message.role === 'assistant' ? 'w-full' : 'w-full max-w-[90%]'} sm:max-w-[90%] md:max-w-2xl`}>
                       {message.role === 'assistant' ? (
                         <div className="bg-white border-0 sm:border border-gray-100 rounded-none sm:rounded-xl md:rounded-2xl p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
                           <div className="prose max-w-none text-gray-700 leading-relaxed">
