@@ -119,7 +119,7 @@ SPEED PRIORITY: Generate fast, accurate verse-specific responses.`;
       messages: openAIMessages,
       maxTokens,
       temperature: 0.2, // Lower for faster, more focused responses
-      model: 'gpt-4.1-mini'
+      model: 'gpt-4.1-nano'
     });
 
     return response;

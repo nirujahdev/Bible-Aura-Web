@@ -40,13 +40,13 @@ export default async function handler(
 
   try {
     // Security: Get API key from server-side environment variable (NOT exposed to client)
-    const apiKey = process.env.SERMON_AI_API_KEY;
+    const apiKey = process.env.Sermon_AI_API;
     
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_sermon_ai_api_key_here' || apiKey.trim() === '') {
-      console.error('[Sermon AI] SERMON_AI_API_KEY not configured');
+      console.error('[Sermon AI] Sermon_AI_API not configured');
       res.status(500).json({
         error: 'Service unavailable',
-        message: 'Sermon AI API key not configured. Please set SERMON_AI_API_KEY in Vercel environment variables.'
+        message: 'Sermon AI API key not configured. Please set Sermon_AI_API in Vercel environment variables.'
       });
       return;
     }

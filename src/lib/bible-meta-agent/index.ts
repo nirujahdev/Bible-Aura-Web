@@ -64,7 +64,7 @@ export async function runMetaAgent(
 
     // Call OpenAI API with structured output
     const completion = await client.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4.1-nano",
       messages: [
         {
           role: "system",

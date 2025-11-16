@@ -13,7 +13,7 @@ export interface SermonAIRequestOptions {
 
 /**
  * Call Sermon AI API through secure server-side route
- * API key is kept secure on server (SERMON_AI_API_KEY in Vercel env)
+ * API key is kept secure on server (Sermon_AI_API in Vercel env)
  * Uses GPT-4.1 model
  */
 export async function callSermonAIAPI(

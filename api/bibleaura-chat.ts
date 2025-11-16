@@ -436,7 +436,7 @@ async function classifyLanguage(text: string, apiKey: string): Promise<Language>
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini',
+        model: 'gpt-4.1-nano',
         messages: [
           {
             role: 'system',
@@ -476,7 +476,7 @@ async function classifyMode(text: string, language: Language, apiKey: string): P
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini',
+        model: 'gpt-4.1-nano',
         messages: [
           {
             role: 'system',
