@@ -429,18 +429,65 @@ export default function Bible() {
     setVisibleResultsCount(50); // Reset visible count on new search
     
     try {
-      let results = await searchVerses(
-        searchQuery, 
-        selectedLanguage,
-        searchFilters.book !== 'all' ? searchFilters.book : undefined,
-        selectedLanguage === 'english' ? selectedTranslation : 'TAMIL',
-        {
-          fuzzyEnabled: fuzzySearchEnabled,
-          maxResults: 200
-        }
-      );
+      // Search BOTH English and Tamil simultaneously - no need to switch languages
+      const [englishResults, tamilResults] = await Promise.all([
+        searchVerses(
+          searchQuery, 
+          'english',
+          searchFilters.book !== 'all' ? searchFilters.book : undefined,
+          selectedTranslation,
+          {
+            fuzzyEnabled: fuzzySearchEnabled,
+            maxResults: 200
+          }
+        ).catch(err => {
+          console.error('Error searching English:', err);
+          return [];
+        }),
+        searchVerses(
+          searchQuery, 
+          'tamil',
+          searchFilters.book !== 'all' ? searchFilters.book : undefined,
+          'TAMIL',
+          {
+            fuzzyEnabled: fuzzySearchEnabled,
+            maxResults: 200
+          }
+        ).catch(err => {
+          console.error('Error searching Tamil:', err);
+          return [];
+        })
+      ]);
       
-      // Apply filters
+      // Combine results from both languages
+      let results = [...englishResults, ...tamilResults];
+      
+      // Sort by relevance score (highest first) - better results come first
+      results.sort((a, b) => {
+        const scoreA = a.relevanceScore || 0;
+        const scoreB = b.relevanceScore || 0;
+        return scoreB - scoreA; // Sort descending
+      });
+      
+      // Remove duplicates (same book, chapter, verse) - keep the one with higher relevance
+      const uniqueResults = new Map<string, BibleVerse>();
+      for (const verse of results) {
+        const key = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
+        const existing = uniqueResults.get(key);
+        if (!existing || (verse.relevanceScore || 0) > (existing.relevanceScore || 0)) {
+          uniqueResults.set(key, verse);
+        }
+      }
+      results = Array.from(uniqueResults.values());
+      
+      // Re-sort after deduplication
+      results.sort((a, b) => {
+        const scoreA = a.relevanceScore || 0;
+        const scoreB = b.relevanceScore || 0;
+        return scoreB - scoreA;
+      });
+      
+      // Apply filters after combining results
       if (searchFilters.testament !== 'all') {
         results = results.filter(verse => {
           const book = books.find(b => b.name === verse.book_name);
@@ -449,22 +496,28 @@ export default function Bible() {
       }
       
       if (searchFilters.exactMatch) {
+        const queryLower = searchQuery.toLowerCase();
         results = results.filter(verse => 
-          verse.text.toLowerCase().includes(searchQuery.toLowerCase())
+          verse.text.toLowerCase().includes(queryLower)
         );
       }
+      
+      // Limit to max results for performance
+      results = results.slice(0, 500);
       
       setSearchResults(results);
       
       if (results.length === 0) {
         toast({
           title: "No Results",
-          description: "No verses found matching your search",
+          description: "No verses found matching your search in English or Tamil",
         });
       } else {
+        const englishCount = results.filter(r => r.language === 'english').length;
+        const tamilCount = results.filter(r => r.language === 'tamil').length;
         toast({
           title: "Search Complete",
-          description: `Found ${results.length} verses${results.length >= 200 ? ' (showing top 200)' : ''}`,
+          description: `Found ${results.length} verses (${englishCount} English, ${tamilCount} Tamil)`,
         });
       }
     } catch (error) {
@@ -1096,10 +1149,15 @@ How can I apply this to my life?
                             }
                           }}
                         >
-                          <div className="font-medium text-orange-600 mb-1">
-                            {verse.book_name} {verse.chapter}:{verse.verse}
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-orange-600">
+                              {verse.book_name} {verse.chapter}:{verse.verse}
+                            </span>
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                              {verse.language === 'english' ? 'EN' : 'TA'}
+                            </Badge>
                             {verse.relevanceScore && (
-                              <span className="ml-2 text-xs text-gray-400">
+                              <span className="ml-auto text-xs text-gray-400">
                                 (relevance: {Math.round(verse.relevanceScore)})
                               </span>
                             )}
