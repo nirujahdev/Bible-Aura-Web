@@ -35,8 +35,17 @@ export async function callSermonAIAPI(
       ? `${window.location.origin}/api/sermon-ai`
       : '/api/sermon-ai';
 
-    console.log('[Sermon AI] Calling API:', apiUrl);
+    console.log('[Sermon AI] ===== Starting API Call =====');
+    console.log('[Sermon AI] API URL:', apiUrl);
+    console.log('[Sermon AI] Request payload:', {
+      promptLength: prompt?.length || 0,
+      systemPrompt: systemPrompt?.substring(0, 50) + '...',
+      messagesCount: messages?.length || 0,
+      maxTokens,
+      temperature
+    });
 
+    const startTime = Date.now();
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -51,7 +60,13 @@ export async function callSermonAIAPI(
       })
     });
 
-    console.log('[Sermon AI] Response status:', response.status);
+    const duration = Date.now() - startTime;
+    console.log('[Sermon AI] Response received:', {
+      status: response.status,
+      statusText: response.statusText,
+      duration: `${duration}ms`,
+      headers: Object.fromEntries(response.headers.entries())
+    });
 
     if (!response.ok) {
       let errorData: any = {};
@@ -85,25 +100,48 @@ export async function callSermonAIAPI(
     }
 
     const data = await response.json();
+    console.log('[Sermon AI] Response data:', {
+      hasContent: !!data.content,
+      contentLength: data.content?.length || 0,
+      model: data.model,
+      usage: data.usage
+    });
     
     if (!data.content) {
       console.error('[Sermon AI] Invalid response data:', data);
       throw new Error('❌ Invalid response from Sermon AI. Please try again.');
     }
 
+    console.log('[Sermon AI] ===== API Call Success =====');
     return data.content;
   } catch (error: any) {
-    console.error('[Sermon AI] Full Error:', error);
+    console.error('[Sermon AI] ===== API Call Failed =====');
+    console.error('[Sermon AI] Error type:', error?.constructor?.name);
+    console.error('[Sermon AI] Error name:', error?.name);
+    console.error('[Sermon AI] Error message:', error?.message);
+    console.error('[Sermon AI] Error stack:', error?.stack);
+    console.error('[Sermon AI] Full error object:', error);
     
     // Network errors
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      throw new Error('🔧 Failed to connect to Sermon AI service. Please check your internet connection and ensure the API route is accessible.');
+    if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+      const networkError = new Error('🔧 Failed to connect to Sermon AI service. The API route may not be accessible. Please check:\n1. The API route is deployed correctly\n2. Your internet connection\n3. Vercel deployment status');
+      console.error('[Sermon AI] Network error detected');
+      throw networkError;
+    }
+    
+    // CORS errors
+    if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+      const corsError = new Error('🔧 CORS error: The API route may not be configured correctly for cross-origin requests.');
+      console.error('[Sermon AI] CORS error detected');
+      throw corsError;
     }
     
     if (error.message.includes('API key') || error.message.includes('authentication') || error.message.includes('Sermon_AI_API')) {
+      console.error('[Sermon AI] API key error detected');
       throw error; // Re-throw API key errors as-is
     }
     
+    console.error('[Sermon AI] Generic error, re-throwing with message');
     throw new Error(error?.message || 'Failed to connect to Sermon AI service. Please try again.');
   }
 }
