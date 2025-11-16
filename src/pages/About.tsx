@@ -40,20 +40,30 @@ const About = () => {
 
       {/* Hero Section */}
       <section className="py-24 pt-32 bg-gradient-to-br from-orange-50 to-white">
-        <div className="w-full px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            About <span className="text-primary">Bible Aura</span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Spreading the Gospel and making the Bible accessible to everyone through innovative technology
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-              <Link to="/auth">Join Our Community</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/contact">Get in Touch</Link>
-            </Button>
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-8 text-center">
+              About <span className="text-primary">Bible Aura</span>
+            </h1>
+            <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
+              <p>
+                Bible Aura is a free AI Bible study tool created to help anyone understand God's Word easily. You can use it anytime and on any device. We use modern technology to explain the Bible in simple, clear ways so every believer can grow in their faith.
+              </p>
+              <p>
+                Bible Aura removes common struggles like language difficulty, confusion, or lack of guidance. With AI chat, verse explanations, Tamil and English support, daily devotions, and reading plans, Bible Aura makes Bible learning easy, personal, and accessible for everyone.
+              </p>
+              <p>
+                Our goal is to share the Gospel through technology and help people stay connected to God's Word in their everyday life.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                <Link to="/auth">Join Our Community</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/contact">Get in Touch</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -67,47 +77,18 @@ const About = () => {
                 <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
                   Our Mission
                 </h2>
-                <p className="text-lg text-gray-600 mb-6">
-                  To spread the Gospel by making the Bible accessible to everyone, everywhere. We believe that through innovative technology, 
-                  every person should be able to understand and engage with God's Word deeply and meaningfully.
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  To make the Bible simple, clear, and easy to understand for everyone, no matter their age, background, or language.
                 </p>
-                <p className="text-lg text-gray-600 mb-6">
-                  Bible Aura combines cutting-edge AI technology with timeless biblical wisdom to create a platform that serves believers 
-                  at every stage of their spiritual journey, breaking down barriers of language, complexity, and accessibility.
-                </p>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="h-6 w-6 text-primary" />
-                    <span className="text-lg font-medium">Make Bible study accessible to all</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Brain className="h-6 w-6 text-blue-600" />
-                    <span className="text-lg font-medium">AI-powered biblical insights</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Heart className="h-6 w-6 text-red-500" />
-                    <span className="text-lg font-medium">Spread the Gospel through technology</span>
-                  </div>
-                </div>
               </div>
             </div>
 
             <div className="relative">
               <div className="bg-gradient-to-br from-primary/10 to-orange-100 rounded-2xl p-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-                <p className="text-gray-700 mb-6">
-                  To become the world's most trusted platform for biblical study and spiritual growth, 
-                  empowering millions of believers to deepen their relationship with God through accessible, 
-                  AI-enhanced Bible study tools.
+                <p className="text-gray-700 leading-relaxed">
+                  To become a trusted Bible companion for millions of people around the world, helping them grow spiritually through simple, AI-powered Bible tools.
                 </p>
-                <p className="text-gray-700 mb-4">
-                  We envision a world where everyone can understand the Bible through technology, regardless of their 
-                  background, education level, or language, fostering global spiritual growth and biblical literacy.
-                </p>
-                <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">Reaching every nation with God's Word</span>
-                </div>
               </div>
             </div>
           </div>
@@ -119,11 +100,8 @@ const About = () => {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              Meet the Founder
+              About the Founder
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Bible Aura was created by a passionate believer dedicated to using technology to spread God's word and make the Bible accessible to everyone.
-            </p>
           </div>
           
           <div className="max-w-2xl mx-auto">
@@ -149,7 +127,9 @@ const About = () => {
                 <p className="text-primary font-medium text-lg">{founder.role}</p>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 text-lg leading-relaxed mb-6">{founder.description}</p>
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  Bible Aura was created by Benaiah Nicholas Nimal, a young believer passionate about spreading the Gospel through technology. He built Bible Aura to help people understand the Bible better with the help of AI.
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 rounded-lg">
                     <Brain className="h-5 w-5 text-blue-600" />

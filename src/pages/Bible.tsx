@@ -528,11 +528,25 @@ export default function Bible() {
       
       if (searchFilters.exactMatch) {
         const queryLower = searchQuery.toLowerCase().trim();
-        // For exact match, check for exact phrase match only (case-insensitive)
+        const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
+        
+        // For exact match, check for exact phrase match (case-insensitive)
         results = results.filter(verse => {
           const verseTextLower = verse.text.toLowerCase();
-          // Check if the exact query phrase exists in the verse text
-          return verseTextLower.includes(queryLower);
+          
+          // If single word, check word boundaries
+          if (queryWords.length === 1) {
+            const word = queryWords[0];
+            const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const wordBoundaryRegex = new RegExp(`\\b${escapedWord}\\b`, 'i');
+            return wordBoundaryRegex.test(verse.text);
+          } else {
+            // If multiple words, check exact phrase match
+            // Escape special regex characters
+            const escapedPhrase = queryLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const phraseRegex = new RegExp(escapedPhrase.replace(/\s+/g, '\\s+'), 'i');
+            return phraseRegex.test(verse.text);
+          }
         });
       }
       
@@ -1591,7 +1605,7 @@ How can I apply this to my life?
                             </Button>
 
                             {/* Highlight Icon - Old system with popup */}
-                            <div className="relative z-10" data-highlight-container>
+                            <div className="relative z-10 overflow-visible" data-highlight-container style={{ overflow: 'visible' }}>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -1630,66 +1644,73 @@ How can I apply this to my life?
                               </TooltipProvider>
                               
                               {/* Old Highlight System - Popup with circular dots */}
-                              {selectedVerseForHighlight === verseId && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                                  transition={{ duration: 0.15 }}
-                                  className="absolute bottom-full right-0 mb-2 p-4 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[260px]"
-                                  onClick={(e) => e.stopPropagation()}
-                                  onMouseDown={(e) => e.stopPropagation()}
-                                >
-                                  <div className="flex flex-wrap gap-3 justify-center items-center">
-                                    {HIGHLIGHT_COLORS.map(color => {
-                                      const colorStyles = {
-                                        yellow: { bg: '#facc15', border: '#ca8a04' },
-                                        green: { bg: '#4ade80', border: '#16a34a' },
-                                        blue: { bg: '#60a5fa', border: '#2563eb' },
-                                        purple: { bg: '#a78bfa', border: '#7c3aed' },
-                                        red: { bg: '#f87171', border: '#dc2626' },
-                                        pink: { bg: '#f472b6', border: '#db2777' },
-                                        orange: { bg: '#fb923c', border: '#ea580c' }
-                                      };
-                                      const style = colorStyles[color.id as keyof typeof colorStyles];
-                                      
-                                      return (
-                                        <button
-                                          key={color.id}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            highlightVerse(verse, color.id);
-                                            setSelectedVerseForHighlight(null);
-                                          }}
-                                          onMouseDown={(e) => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                          }}
-                                          type="button"
-                                          className={cn(
-                                            "w-12 h-12 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center relative",
-                                            color.id === highlightColor 
-                                              ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
-                                              : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
-                                            'shadow-sm'
-                                          )}
-                                          style={{
-                                            backgroundColor: style.bg,
-                                            borderColor: color.id === highlightColor ? '#1f2937' : style.border
-                                          }}
-                                          title={color.name}
-                                          aria-label={`Highlight with ${color.name}`}
-                                        >
-                                          {color.id === highlightColor && (
-                                            <span className="text-base font-bold text-white drop-shadow-lg">✓</span>
-                                          )}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </motion.div>
-                              )}
+                              <AnimatePresence>
+                                {selectedVerseForHighlight === verseId && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute bottom-full right-0 mb-2 p-4 bg-white rounded-xl shadow-2xl border-2 border-gray-300 z-[9999] min-w-[260px]"
+                                    style={{ 
+                                      position: 'absolute',
+                                      zIndex: 9999,
+                                      pointerEvents: 'auto'
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                  >
+                                    <div className="flex flex-wrap gap-3 justify-center items-center">
+                                      {HIGHLIGHT_COLORS.map(color => {
+                                        const colorMap: Record<string, { bg: string; border: string }> = {
+                                          yellow: { bg: '#facc15', border: '#ca8a04' },
+                                          green: { bg: '#4ade80', border: '#16a34a' },
+                                          blue: { bg: '#60a5fa', border: '#2563eb' },
+                                          purple: { bg: '#a78bfa', border: '#7c3aed' },
+                                          red: { bg: '#f87171', border: '#dc2626' },
+                                          pink: { bg: '#f472b6', border: '#db2777' },
+                                          orange: { bg: '#fb923c', border: '#ea580c' }
+                                        };
+                                        const style = colorMap[color.id] || { bg: '#facc15', border: '#ca8a04' };
+                                        
+                                        return (
+                                          <button
+                                            key={color.id}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                              highlightVerse(verse, color.id);
+                                              setSelectedVerseForHighlight(null);
+                                            }}
+                                            onMouseDown={(e) => {
+                                              e.stopPropagation();
+                                              e.preventDefault();
+                                            }}
+                                            type="button"
+                                            className={cn(
+                                              "w-12 h-12 rounded-full border-2 hover:scale-125 active:scale-110 transition-all cursor-pointer flex items-center justify-center relative",
+                                              color.id === highlightColor 
+                                                ? 'border-gray-900 scale-110 ring-4 ring-orange-200 shadow-lg' 
+                                                : 'border-gray-300 hover:border-gray-500 hover:shadow-md',
+                                              'shadow-sm'
+                                            )}
+                                            style={{
+                                              backgroundColor: style.bg,
+                                              borderColor: color.id === highlightColor ? '#1f2937' : style.border
+                                            }}
+                                            title={color.name}
+                                            aria-label={`Highlight with ${color.name}`}
+                                          >
+                                            {color.id === highlightColor && (
+                                              <span className="text-base font-bold text-white drop-shadow-lg">✓</span>
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                             </div>
 
                             {/* Copy Button */}
