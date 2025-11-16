@@ -35,6 +35,8 @@ export async function callSermonAIAPI(
       ? `${window.location.origin}/api/sermon-ai`
       : '/api/sermon-ai';
 
+    console.log('[Sermon AI] Calling API:', apiUrl);
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -49,12 +51,30 @@ export async function callSermonAIAPI(
       })
     });
 
+    console.log('[Sermon AI] Response status:', response.status);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorData: any = {};
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        // If JSON parsing fails, try to get text
+        const text = await response.text().catch(() => '');
+        errorData = { message: text || `HTTP ${response.status}` };
+      }
+      
       const errorMessage = errorData.message || errorData.error || `API error: ${response.status}`;
       
+      console.error('[Sermon AI] API Error:', {
+        status: response.status,
+        error: errorMessage,
+        data: errorData
+      });
+      
       if (response.status === 401) {
-        throw new Error('🔐 Sermon AI API authentication failed. Please check your API key is correct.');
+        throw new Error('🔐 Sermon AI API authentication failed. Please check your Sermon_AI_API key is set in Vercel environment variables.');
+      } else if (response.status === 404) {
+        throw new Error('🔧 Sermon AI API route not found. Please ensure the API route is deployed correctly.');
       } else if (response.status === 429) {
         throw new Error('⏳ Too many requests. Please wait a moment and try again.');
       } else if (response.status >= 500) {
@@ -67,15 +87,23 @@ export async function callSermonAIAPI(
     const data = await response.json();
     
     if (!data.content) {
+      console.error('[Sermon AI] Invalid response data:', data);
       throw new Error('❌ Invalid response from Sermon AI. Please try again.');
     }
 
     return data.content;
   } catch (error: any) {
-    console.error('Sermon AI API Error:', error);
-    if (error.message.includes('API key') || error.message.includes('authentication')) {
+    console.error('[Sermon AI] Full Error:', error);
+    
+    // Network errors
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('🔧 Failed to connect to Sermon AI service. Please check your internet connection and ensure the API route is accessible.');
+    }
+    
+    if (error.message.includes('API key') || error.message.includes('authentication') || error.message.includes('Sermon_AI_API')) {
       throw error; // Re-throw API key errors as-is
     }
+    
     throw new Error(error?.message || 'Failed to connect to Sermon AI service. Please try again.');
   }
 }
