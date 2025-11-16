@@ -29,15 +29,32 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
   // Update editor content when value prop changes (but not from internal changes)
   useEffect(() => {
     // Skip if this is an internal change or if user is actively typing
-    if (isInternalChange.current || isTypingRef.current) {
+    if (isInternalChange.current) {
       isInternalChange.current = false;
+      return;
+    }
+
+    // Skip if user is actively typing
+    if (isTypingRef.current) {
       return;
     }
 
     if (editorRef.current) {
       const currentHtml = editorRef.current.innerHTML;
-      // Only update if value actually changed from external source
-      if (currentHtml !== value && value !== lastValueRef.current) {
+      // Only update if value actually changed from external source and is different from what we have
+      if (value !== undefined && value !== null && currentHtml !== value && value !== lastValueRef.current) {
+        // Don't update if editor is focused and has content - this prevents backward typing
+        if (document.activeElement === editorRef.current && currentHtml.trim() !== '') {
+          // Only update if the value is significantly different (external change)
+          const currentText = currentHtml.replace(/<[^>]*>/g, '').trim();
+          const newText = value.replace(/<[^>]*>/g, '').trim();
+          
+          // If text content is the same, don't update (prevents backward typing)
+          if (currentText === newText) {
+            return;
+          }
+        }
+        
         const selection = window.getSelection();
         let savedRange: Range | null = null;
         
@@ -64,7 +81,6 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
         }
       }
     }
-    isInternalChange.current = false;
   }, [value]);
 
   const handleInput = useCallback(() => {
@@ -77,10 +93,10 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
         clearTimeout(typingTimeoutRef.current);
       }
       
-      // Set timeout to mark typing as complete
+      // Set timeout to mark typing as complete (longer timeout to prevent interference)
       typingTimeoutRef.current = setTimeout(() => {
         isTypingRef.current = false;
-      }, 300);
+      }, 500);
       
       const html = editorRef.current.innerHTML;
       lastValueRef.current = html;
@@ -107,6 +123,14 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
         clearTimeout(typingTimeoutRef.current);
       }
     };
+  }, []);
+
+  // Initialize content on mount
+  useEffect(() => {
+    if (editorRef.current && !editorRef.current.innerHTML && value) {
+      editorRef.current.innerHTML = value;
+      lastValueRef.current = value;
+    }
   }, []);
 
   return (
@@ -137,7 +161,6 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
       data-placeholder={placeholder}
       style={style}
       suppressContentEditableWarning
-      dangerouslySetInnerHTML={{ __html: value || '' }}
     />
   );
 });

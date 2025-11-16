@@ -18,7 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSermonAI } from "@/contexts/SermonAIContext";
 
 interface SermonToolbarProps {
-  editorRef: React.RefObject<HTMLTextAreaElement | HTMLDivElement>;
+  editorRef: React.RefObject<HTMLTextAreaElement | HTMLDivElement | null>;
   onFormatText?: (format: string, value?: string) => void;
   wordCount: number;
   estimatedTime: number;
