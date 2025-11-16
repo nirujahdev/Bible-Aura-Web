@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Search, Bookmark, Heart, Share, ChevronLeft, ChevronRight, 
   Book, Languages, StickyNote, BookOpen, Target,
@@ -105,6 +106,7 @@ export default function Bible() {
   const [selectedVerseForAI, setSelectedVerseForAI] = useState<BibleVerse | null>(null);
   const [targetVerseNumber, setTargetVerseNumber] = useState<number | null>(null);
   const [selectedVerseForHighlight, setSelectedVerseForHighlight] = useState<string | null>(null);
+  const [floatingChapterSelectorOpen, setFloatingChapterSelectorOpen] = useState(false);
 
   // Mobile utility functions
   const copyVerse = (verse: BibleVerse) => {
@@ -181,6 +183,17 @@ export default function Bible() {
     }
   }, [user, selectedLanguage]);
 
+  // Set default to Genesis 1:1 when books are loaded
+  useEffect(() => {
+    if (books.length > 0 && !selectedBook) {
+      const genesis = books.find(b => b.name === 'Genesis');
+      if (genesis) {
+        setSelectedBook(genesis);
+        setSelectedChapter(1);
+      }
+    }
+  }, [books, selectedBook]);
+
 
   useEffect(() => {
     if (selectedBook) {
@@ -243,6 +256,9 @@ export default function Bible() {
             // Translation selection can be done from sidebar
             setMobileSidebarOpen(true);
             break;
+          case 'random-verse':
+            getRandomVerse();
+            break;
           default:
             console.log('Unknown bible action:', action);
         }
@@ -255,7 +271,7 @@ export default function Bible() {
     return () => {
       window.removeEventListener('bible-action', handleBibleAction as EventListener);
     };
-  }, []);
+  }, [getRandomVerse]);
 
   const loadTamilBookNames = async () => {
     try {
@@ -930,11 +946,11 @@ How can I apply this to my life?
 
           </div>
 
-          {/* Search Input - Clean Design */}
+          {/* Search Input - Clean Design - Mobile Optimized */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
             <Input
-              placeholder="Search verses..."
+              placeholder={isMobile ? "Search Bible verses..." : "Search verses..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -949,8 +965,23 @@ How can I apply this to my life?
                   setActiveTab('search');
                 }
               }}
-              className="pl-9 h-9 text-sm border-gray-300 focus:border-orange-400 focus:ring-orange-400/20"
+              className={cn(
+                "pl-9 text-sm border-gray-300 focus:border-orange-400 focus:ring-orange-400/20",
+                isMobile ? "h-10 text-base" : "h-9"
+              )}
             />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearchResults([]);
+                }}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4 text-gray-400" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -1194,7 +1225,10 @@ How can I apply this to my life?
                       </Button>
                     )}
                   </div>
-                  <div className="space-y-2 max-h-[500px] overflow-y-auto scrollbar-hide pr-1">
+                  <div className={cn(
+                    "space-y-2 overflow-y-auto scrollbar-hide pr-1",
+                    isMobile ? "max-h-[calc(100vh-300px)]" : "max-h-[500px]"
+                  )}>
                     {searchResults.slice(0, visibleResultsCount).map((verse) => {
                       const highlightedText = highlightVerseText(verse, searchQuery);
                       return (
@@ -1202,8 +1236,11 @@ How can I apply this to my life?
                           key={verse.id}
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          whileHover={{ scale: 1.01 }}
-                          className="p-3 bg-white rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all cursor-pointer touch-target min-h-[70px] group"
+                          whileHover={{ scale: isMobile ? 1 : 1.01 }}
+                          className={cn(
+                            "bg-white rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-sm transition-all cursor-pointer group",
+                            isMobile ? "p-4 min-h-[80px] active:bg-orange-50" : "p-3 min-h-[70px]"
+                          )}
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
@@ -1224,8 +1261,14 @@ How can I apply this to my life?
                             }
                           }}
                         >
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-sm text-orange-600 group-hover:text-orange-700">
+                          <div className={cn(
+                            "flex items-center gap-2 mb-2 flex-wrap",
+                            isMobile && "mb-3"
+                          )}>
+                            <span className={cn(
+                              "font-semibold text-orange-600 group-hover:text-orange-700",
+                              isMobile ? "text-base" : "text-sm"
+                            )}>
                               {verse.book_name} {verse.chapter}:{verse.verse}
                             </span>
                             <Badge variant="outline" className="text-xs px-2 py-0.5 border-gray-300">
@@ -1238,7 +1281,10 @@ How can I apply this to my life?
                             )}
                           </div>
                           <div 
-                            className="text-sm text-gray-700 leading-relaxed line-clamp-2"
+                            className={cn(
+                              "text-gray-700 leading-relaxed line-clamp-2",
+                              isMobile ? "text-base leading-6" : "text-sm"
+                            )}
                             dangerouslySetInnerHTML={{ __html: highlightedText }}
                           />
                         </motion.div>
@@ -1332,30 +1378,26 @@ How can I apply this to my life?
             aiChatOpen && "mr-[calc(50%)] lg:mr-[384px]"
           )}>
             {/* Header - Mobile optimized */}
-            <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2 px-3' : ''}`}>
+            <div className={`flex-shrink-0 border-b border-gray-200 bg-white ${isMobile ? 'p-3 pt-2' : 'p-4'}`}>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   {selectedBook && (
                     <>
-                      {/* Mobile: Book name, current chapter, chapter dropdown */}
+                      {/* Mobile: Book name and chapter selector */}
                       {isMobile ? (
                         <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                           {/* Book Name */}
                           <h1 className="font-bold text-gray-800 text-base flex-shrink-0 truncate">
                             {getBookDisplayName(selectedBook.name)}
                           </h1>
-                          {/* Current Chapter Badge */}
-                          <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
-                            Ch {selectedChapter}
-                          </Badge>
-                          {/* Chapter Dropdown Selector - Mobile */}
+                          {/* Chapter Selector - Shows "Ch {number}" as trigger */}
                           <Select 
                             value={selectedChapter.toString()} 
                             onValueChange={(value) => setSelectedChapter(parseInt(value))}
                           >
-                            <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0">
+                            <SelectTrigger className="h-8 w-auto min-w-[70px] text-xs border-gray-300 hover:border-orange-400 transition-colors flex-shrink-0 bg-orange-500 text-white">
                               <SelectValue>
-                                <span className="text-xs font-medium">Chapter {selectedChapter}</span>
+                                <span className="text-xs font-medium">Ch {selectedChapter}</span>
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1370,26 +1412,6 @@ How can I apply this to my life?
                               ))}
                             </SelectContent>
                           </Select>
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigateChapter('prev')}
-                              disabled={selectedChapter <= 1}
-                              className="h-8 w-8 p-0"
-                            >
-                              <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigateChapter('next')}
-                              disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </div>
                       ) : (
                         <>
@@ -1398,18 +1420,14 @@ How can I apply this to my life?
                             <h1 className="font-bold text-gray-800 text-xl flex-shrink-0">
                               {getBookDisplayName(selectedBook.name)}
                             </h1>
-                            {/* Current Chapter Badge */}
-                            <Badge className="bg-orange-500 text-white text-xs px-2 py-1 flex-shrink-0">
-                              Ch {selectedChapter}
-                            </Badge>
-                            {/* Chapter Dropdown Selector */}
+                            {/* Chapter Selector - Shows "Ch {number}" as trigger */}
                             <Select 
                               value={selectedChapter.toString()} 
                               onValueChange={(value) => setSelectedChapter(parseInt(value))}
                             >
-                              <SelectTrigger className="h-9 w-auto min-w-[140px] border-gray-300 hover:border-orange-400 transition-colors">
+                              <SelectTrigger className="h-9 w-auto min-w-[80px] border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white">
                                 <SelectValue>
-                                  <span className="text-sm font-medium">Chapter {selectedChapter}</span>
+                                  <span className="text-sm font-medium">Ch {selectedChapter}</span>
                                 </SelectValue>
                               </SelectTrigger>
                               <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1425,44 +1443,12 @@ How can I apply this to my life?
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigateChapter('prev')}
-                              disabled={selectedChapter <= 1}
-                            >
-                              <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigateChapter('next')}
-                              disabled={selectedChapter >= (selectedBook.chapters || 1)}
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </>
                       )}
                     </>
                   )}
                 </div>
 
-                {/* Action Buttons - Mobile optimized */}
-                <div className="flex items-center gap-2">
-                  {selectedBook && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={getRandomVerse}
-                      className={`${isMobile ? 'h-9 px-3' : ''}`}
-                    >
-                      <Sparkles className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4 mr-2'}`} />
-                      {!isMobile && 'Random'}
-                    </Button>
-                  )}
-                </div>
               </div>
 
               {/* Reading Progress - Mobile optimized */}
@@ -1491,7 +1477,7 @@ How can I apply this to my life?
                   </div>
                 </div>
               ) : selectedBook && verses.length > 0 ? (
-                <div className={`${isMobile ? 'p-4 pb-6' : 'p-8'} max-w-4xl mx-auto w-full`}>
+                <div className={`${isMobile ? 'p-3 pb-20' : 'p-8'} max-w-4xl mx-auto w-full`}>
                   
                   {/* Mobile Chapter Header removed - now shown in main header */}
 
@@ -1508,9 +1494,9 @@ How can I apply this to my life?
                           key={verse.id}
                           data-verse-number={verse.verse}
                           className={cn(
-                            "group relative rounded-xl transition-all duration-200 p-4",
+                            "group relative rounded-xl transition-all duration-200",
                             highlightColor ? getHighlightClasses(highlightColor) : 'hover:bg-gray-50',
-                            isMobile && 'mx-1 overflow-x-hidden max-w-full',
+                            isMobile ? 'p-3 mx-0' : 'p-4',
                             'overflow-visible'
                           )}
                         >
@@ -1631,13 +1617,13 @@ How can I apply this to my life?
                                         "touch-optimized flex-shrink-0 p-0 relative",
                                         isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9',
                                         highlightColor 
-                                          ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' :
-                                            highlightColor === 'green' ? 'text-green-500 hover:text-green-600 bg-green-50' :
-                                            highlightColor === 'blue' ? 'text-blue-500 hover:text-blue-600 bg-blue-50' :
-                                            highlightColor === 'purple' ? 'text-purple-500 hover:text-purple-600 bg-purple-50' :
-                                            highlightColor === 'red' ? 'text-red-500 hover:text-red-600 bg-red-50' :
-                                            highlightColor === 'pink' ? 'text-pink-500 hover:text-pink-600 bg-pink-50' :
-                                            highlightColor === 'orange' ? 'text-orange-500 hover:text-orange-600 bg-orange-50' :
+                                          ? highlightColor === 'yellow' ? 'text-yellow-500 hover:text-yellow-600' :
+                                            highlightColor === 'green' ? 'text-green-500 hover:text-green-600' :
+                                            highlightColor === 'blue' ? 'text-blue-500 hover:text-blue-600' :
+                                            highlightColor === 'purple' ? 'text-purple-500 hover:text-purple-600' :
+                                            highlightColor === 'red' ? 'text-red-500 hover:text-red-600' :
+                                            highlightColor === 'pink' ? 'text-pink-500 hover:text-pink-600' :
+                                            highlightColor === 'orange' ? 'text-orange-500 hover:text-orange-600' :
                                             'text-gray-400 hover:text-yellow-500'
                                           : 'text-gray-400 hover:text-yellow-500'
                                       )}
@@ -1654,7 +1640,7 @@ How can I apply this to my life?
                                 </Tooltip>
                               </TooltipProvider>
                               
-                              {/* Highlight Color Picker Popup */}
+                              {/* Highlight Color Picker Popup - Small Horizontal Layout */}
                               <AnimatePresence>
                                 {selectedVerseForHighlight === verseId && (
                                   <motion.div
@@ -1662,11 +1648,33 @@ How can I apply this to my life?
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.9, y: -10 }}
                                     transition={{ duration: 0.15 }}
-                                    className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-lg border border-gray-200 z-[100] min-w-[200px]"
+                                    className="absolute bottom-full right-0 mb-2 p-2 bg-white rounded-lg shadow-lg border border-gray-200 z-[100]"
                                     onClick={(e) => e.stopPropagation()}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
-                                    <div className="flex flex-wrap gap-2 justify-center">
+                                    <div className="flex flex-nowrap gap-1.5 items-center">
+                                      {/* Unhighlight Button */}
+                                      {highlightColor && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            highlightVerse(verse, '');
+                                            setSelectedVerseForHighlight(null);
+                                          }}
+                                          onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                          }}
+                                          type="button"
+                                          className="w-6 h-6 rounded-full border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center justify-center flex-shrink-0"
+                                          title="Remove highlight"
+                                          aria-label="Remove highlight"
+                                        >
+                                          <X className="h-3 w-3 text-gray-600" />
+                                        </button>
+                                      )}
+                                      {/* Color Options */}
                                       {HIGHLIGHT_COLORS.map(color => {
                                         const colorMap: Record<string, { bg: string; border: string }> = {
                                           yellow: { bg: '#facc15', border: '#ca8a04' },
@@ -1694,10 +1702,10 @@ How can I apply this to my life?
                                             }}
                                             type="button"
                                             className={cn(
-                                              "w-10 h-10 rounded-full border-2 hover:scale-110 transition-transform flex items-center justify-center",
+                                              "w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform flex items-center justify-center flex-shrink-0",
                                               color.id === highlightColor 
-                                                ? 'ring-2 ring-offset-2 ring-orange-300 shadow-md' 
-                                                : 'hover:shadow-md'
+                                                ? 'ring-1 ring-offset-1 ring-orange-300' 
+                                                : 'hover:shadow-sm'
                                             )}
                                             style={{
                                               backgroundColor: style.bg,
@@ -1707,7 +1715,7 @@ How can I apply this to my life?
                                             aria-label={`Highlight with ${color.name}`}
                                           >
                                             {color.id === highlightColor && (
-                                              <span className="text-sm font-bold text-white drop-shadow-md">✓</span>
+                                              <span className="text-xs font-bold text-white drop-shadow-sm">✓</span>
                                             )}
                                           </button>
                                         );
@@ -1835,6 +1843,43 @@ How can I apply this to my life?
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Chapter Selector - Bottom Right */}
+      {selectedBook && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Popover open={floatingChapterSelectorOpen} onOpenChange={setFloatingChapterSelectorOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+                size="lg"
+              >
+                <span className="text-sm font-bold">Ch {selectedChapter}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-2" align="end" side="top">
+              <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-hide">
+                {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                  <button
+                    key={chapter}
+                    onClick={() => {
+                      setSelectedChapter(chapter);
+                      setFloatingChapterSelectorOpen(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                      chapter === selectedChapter
+                        ? 'bg-orange-500 text-white font-semibold'
+                        : 'hover:bg-orange-50 text-gray-700'
+                    )}
+                  >
+                    Chapter {chapter}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
     </Layout>
   );
 }
