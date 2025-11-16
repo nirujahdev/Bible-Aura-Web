@@ -22,7 +22,7 @@ import Blog from '@/pages/Blog';
 import FAQ from '@/pages/FAQ';
 
 // Import main application pages
-import Bible from '@/pages/BibleRedesigned';
+import Bible from '@/pages/Bible';
 import EnhancedBible from '@/pages/EnhancedBible';
 import BibleQA from '@/pages/BibleQA';
 import ReadingPlan from '@/pages/ReadingPlan';
