@@ -1792,19 +1792,6 @@ function VerseCard({
             <StickyNote className="h-3 w-3 md:h-4 md:w-4" />
           </Button>
 
-          
-          {/* Share */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-8 w-8 p-0"
-            onClick={() => {
-              const bookName = getBookDisplayName ? getBookDisplayName(verse.book_name) : verse.book_name;
-              const reference = `${bookName} ${verse.chapter}:${verse.verse}`;
-              navigator.clipboard.writeText(`${reference} - ${verse.text}`);
-              toast({ title: "Copied!", description: "Verse copied to clipboard" });
-            }}
-          >
         </div>
       </div>
     </div>
