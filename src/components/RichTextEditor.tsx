@@ -19,26 +19,45 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const isInternalChange = useRef(false);
+  const lastValueRef = useRef<string>('');
+  const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Combine refs
   React.useImperativeHandle(ref, () => editorRef.current as HTMLDivElement);
 
   // Update editor content when value prop changes (but not from internal changes)
   useEffect(() => {
-    if (editorRef.current && !isInternalChange.current) {
+    // Skip if this is an internal change or if user is actively typing
+    if (isInternalChange.current || isTypingRef.current) {
+      isInternalChange.current = false;
+      return;
+    }
+
+    if (editorRef.current) {
       const currentHtml = editorRef.current.innerHTML;
-      if (currentHtml !== value) {
+      // Only update if value actually changed from external source
+      if (currentHtml !== value && value !== lastValueRef.current) {
         const selection = window.getSelection();
-        const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
-        const wasFocused = document.activeElement === editorRef.current;
+        let savedRange: Range | null = null;
+        
+        // Save selection if editor is focused
+        if (document.activeElement === editorRef.current && selection && selection.rangeCount > 0) {
+          try {
+            savedRange = selection.getRangeAt(0).cloneRange();
+          } catch (e) {
+            // Ignore selection errors
+          }
+        }
         
         editorRef.current.innerHTML = value || '';
+        lastValueRef.current = value || '';
         
-        // Restore selection if editor was focused
-        if (wasFocused && range && editorRef.current.contains(range.commonAncestorContainer)) {
+        // Restore selection if we saved it
+        if (savedRange && selection) {
           try {
-            selection?.removeAllRanges();
-            selection?.addRange(range);
+            selection.removeAllRanges();
+            selection.addRange(savedRange);
           } catch (e) {
             // Ignore selection errors
           }
@@ -51,7 +70,20 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
   const handleInput = useCallback(() => {
     if (editorRef.current) {
       isInternalChange.current = true;
+      isTypingRef.current = true;
+      
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Set timeout to mark typing as complete
+      typingTimeoutRef.current = setTimeout(() => {
+        isTypingRef.current = false;
+      }, 300);
+      
       const html = editorRef.current.innerHTML;
+      lastValueRef.current = html;
       onChange(html);
     }
   }, [onChange]);
@@ -59,7 +91,22 @@ export const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorPro
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
+    isInternalChange.current = true;
     document.execCommand('insertText', false, text);
+    // Trigger input event manually
+    if (editorRef.current) {
+      const event = new Event('input', { bubbles: true });
+      editorRef.current.dispatchEvent(event);
+    }
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
   }, []);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, FileText, MoreVertical } from 'lucide-react';
+import { Copy, FileText, MoreVertical, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,15 +8,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { TextDiffView } from '@/components/TextDiffView';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface TextSelectionMenuProps {
   editorRef: React.RefObject<HTMLDivElement>;
   onInsertText?: (text: string) => void;
+  onReplaceText?: (originalText: string, newText: string) => void;
 }
 
-export function TextSelectionMenu({ editorRef, onInsertText }: TextSelectionMenuProps) {
+export function TextSelectionMenu({ editorRef, onInsertText, onReplaceText }: TextSelectionMenuProps) {
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [selectedText, setSelectedText] = useState('');
+  const [showDiffView, setShowDiffView] = useState(false);
+  const [generatedText, setGeneratedText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -113,6 +120,72 @@ export function TextSelectionMenu({ editorRef, onInsertText }: TextSelectionMenu
     }
   };
 
+  const handleAITool = async (toolId: string) => {
+    if (!selectedText) return;
+    
+    setIsGenerating(true);
+    setSelectedTool(toolId);
+    setPosition(null); // Hide menu while generating
+
+    try {
+      // Dynamically import and execute agent
+      const { getAllAgents, executeAgent } = await import('@/lib/sermon-agents');
+      const agents = getAllAgents();
+      const agent = agents.find(a => a.id === toolId);
+      
+      if (!agent) {
+        throw new Error('Tool not found');
+      }
+
+      // Execute agent with selected text as context
+      const result = await executeAgent(toolId, {
+        selectedText: selectedText,
+        task: 'enhance'
+      });
+
+      if (result && typeof result === 'string') {
+        setGeneratedText(result);
+        setShowDiffView(true);
+      } else {
+        throw new Error('Invalid response from AI');
+      }
+    } catch (error: any) {
+      console.error('AI tool error:', error);
+      toast({
+        title: "Generation failed",
+        description: error?.message || "Failed to generate content",
+        variant: "destructive"
+      });
+      setPosition(null);
+    } finally {
+      setIsGenerating(false);
+      setSelectedTool(null);
+    }
+  };
+
+  const handleAccept = () => {
+    if (onReplaceText && selectedText && generatedText) {
+      onReplaceText(selectedText, generatedText);
+      toast({
+        title: "Content updated",
+        description: "AI-generated content has been applied",
+      });
+    }
+    setShowDiffView(false);
+    setGeneratedText('');
+    setSelectedText('');
+    window.getSelection()?.removeAllRanges();
+  };
+
+  const handleDecline = () => {
+    setShowDiffView(false);
+    setGeneratedText('');
+    toast({
+      title: "Changes declined",
+      description: "Original text kept",
+    });
+  };
+
   if (!position || !selectedText) return null;
 
   return (
@@ -149,10 +222,14 @@ export function TextSelectionMenu({ editorRef, onInsertText }: TextSelectionMenu
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 px-2 hover:bg-gray-100">
-            <MoreVertical className="h-4 w-4" />
+            {isGenerating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MoreVertical className="h-4 w-4" />
+            )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem onClick={handleCopy}>
             <Copy className="h-4 w-4 mr-2" />
             Copy
@@ -161,8 +238,34 @@ export function TextSelectionMenu({ editorRef, onInsertText }: TextSelectionMenu
             <FileText className="h-4 w-4 mr-2" />
             Add to Sermon
           </DropdownMenuItem>
+          <div className="border-t my-1" />
+          <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">AI Tools</div>
+          <DropdownMenuItem onClick={() => handleAITool('improve')}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            Improve
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleAITool('enhance')}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            Enhance
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleAITool('findScripture')}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            Find Scripture
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Diff View Dialog */}
+      <Dialog open={showDiffView} onOpenChange={setShowDiffView}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <TextDiffView
+            originalText={selectedText}
+            generatedText={generatedText}
+            onAccept={handleAccept}
+            onDecline={handleDecline}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

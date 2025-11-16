@@ -367,7 +367,7 @@ Provide detailed, helpful research and insights.`;
 
         {/* Enhanced Tools Tab - Compact to fit without scroll */}
         <TabsContent value="tools" className="flex-1 overflow-hidden p-2 m-0 min-h-0">
-          <div className="space-y-2.5 h-full overflow-y-auto pb-0">
+          <div className="space-y-2.5 h-full overflow-y-auto pb-2">
             {agentsLoading ? (
               <div className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
                 <Loader2 className="h-8 w-8 animate-spin text-orange-500 mb-3" />
@@ -631,9 +631,9 @@ Provide detailed, helpful research and insights.`;
         </TabsContent>
 
         {/* Info Tab - Sermon Information - EDITABLE */}
-        <TabsContent value="info" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
+        <TabsContent value="info" className="flex-1 overflow-y-auto p-2 sm:p-3 m-0 min-h-0">
           <ScrollArea className="h-full">
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-4">
                 <Info className="h-5 w-5 text-orange-500" />
                 <h3 className="text-sm font-semibold text-gray-900">Sermon Information</h3>

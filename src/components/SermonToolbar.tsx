@@ -69,107 +69,112 @@ export default function SermonToolbar({
 
     // If rich text editor (contentEditable div)
     if (isRichText && editorRef.current instanceof HTMLDivElement) {
+      // Ensure editor is focused
       editorRef.current.focus();
       
-      switch (format) {
-        case 'bold':
-          document.execCommand('bold', false);
-          break;
-        case 'italic':
-          document.execCommand('italic', false);
-          break;
-        case 'underline':
-          document.execCommand('underline', false);
-          break;
-        case 'strikethrough':
-          document.execCommand('strikethrough', false);
-          break;
-        case 'heading1':
-          document.execCommand('formatBlock', false, '<h1>');
-          break;
-        case 'heading2':
-          document.execCommand('formatBlock', false, '<h2>');
-          break;
-        case 'heading3':
-          document.execCommand('formatBlock', false, '<h3>');
-          break;
-        case 'alignLeft':
-          document.execCommand('justifyLeft', false);
-          break;
-        case 'alignCenter':
-          document.execCommand('justifyCenter', false);
-          break;
-        case 'alignRight':
-          document.execCommand('justifyRight', false);
-          break;
-        case 'alignJustify':
-          document.execCommand('justifyFull', false);
-          break;
-        case 'list':
-          document.execCommand('insertUnorderedList', false);
-          break;
-        case 'orderedList':
-          document.execCommand('insertOrderedList', false);
-          break;
-        case 'quote':
-          document.execCommand('formatBlock', false, '<blockquote>');
-          break;
-        case 'foreColor':
-          if (value) {
-            document.execCommand('foreColor', false, value);
-          }
-          break;
-        case 'backColor':
-          if (value) {
-            document.execCommand('backColor', false, value);
-          }
-          break;
-        case 'fontName':
-          if (value) {
-            document.execCommand('fontName', false, value);
-            // Trigger input event to update content
-            const event = new Event('input', { bubbles: true });
-            editorRef.current.dispatchEvent(event);
-          }
-          break;
-        case 'fontSize':
-          if (value) {
-            // Use CSS font-size directly for better control
-            const selection = window.getSelection();
-            if (selection && selection.rangeCount > 0) {
-              const range = selection.getRangeAt(0);
-              const span = document.createElement('span');
-              span.style.fontSize = `${value}px`;
-              try {
-                range.surroundContents(span);
-              } catch (e) {
-                // If surroundContents fails, use insertNode
-                const contents = range.extractContents();
-                span.appendChild(contents);
-                range.insertNode(span);
-              }
-              selection.removeAllRanges();
-              selection.addRange(range);
-              
-              // Trigger input event to update content
-              const event = new Event('input', { bubbles: true });
-              editorRef.current.dispatchEvent(event);
+      // Small delay to ensure focus is set
+      setTimeout(() => {
+        if (!editorRef.current) return;
+        
+        switch (format) {
+          case 'bold':
+            document.execCommand('bold', false);
+            break;
+          case 'italic':
+            document.execCommand('italic', false);
+            break;
+          case 'underline':
+            document.execCommand('underline', false);
+            break;
+          case 'strikethrough':
+            document.execCommand('strikethrough', false);
+            break;
+          case 'heading1':
+            document.execCommand('formatBlock', false, '<h1>');
+            break;
+          case 'heading2':
+            document.execCommand('formatBlock', false, '<h2>');
+            break;
+          case 'heading3':
+            document.execCommand('formatBlock', false, '<h3>');
+            break;
+          case 'alignLeft':
+            document.execCommand('justifyLeft', false);
+            break;
+          case 'alignCenter':
+            document.execCommand('justifyCenter', false);
+            break;
+          case 'alignRight':
+            document.execCommand('justifyRight', false);
+            break;
+          case 'alignJustify':
+            document.execCommand('justifyFull', false);
+            break;
+          case 'list':
+            document.execCommand('insertUnorderedList', false);
+            break;
+          case 'orderedList':
+            document.execCommand('insertOrderedList', false);
+            break;
+          case 'quote':
+            document.execCommand('formatBlock', false, '<blockquote>');
+            break;
+          case 'foreColor':
+            if (value) {
+              document.execCommand('foreColor', false, value);
             }
+            break;
+          case 'backColor':
+            if (value) {
+              document.execCommand('backColor', false, value);
+            }
+            break;
+          case 'fontName':
+            if (value) {
+              document.execCommand('fontName', false, value);
+            }
+            break;
+          case 'fontSize':
+            if (value) {
+              // Use CSS font-size directly for better control
+              const selection = window.getSelection();
+              if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.style.fontSize = `${value}px`;
+                try {
+                  range.surroundContents(span);
+                } catch (e) {
+                  // If surroundContents fails, use insertNode
+                  const contents = range.extractContents();
+                  span.appendChild(contents);
+                  range.insertNode(span);
+                }
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+            }
+            break;
+          case 'link': {
+            const url = value || prompt('Enter URL:');
+            if (url) {
+              document.execCommand('createLink', false, url);
+            }
+            break;
           }
-          break;
-        case 'link': {
-          const url = value || prompt('Enter URL:');
-          if (url) {
-            document.execCommand('createLink', false, url);
-          }
-          break;
+          case 'removeFormat':
+            document.execCommand('removeFormat', false);
+            break;
+          default:
+            return;
         }
-        case 'removeFormat':
-          document.execCommand('removeFormat', false);
-          break;
-        default:
-          return;
-      }
+        
+        // Trigger input event to update content after all commands
+        if (editorRef.current) {
+          const event = new Event('input', { bubbles: true });
+          editorRef.current.dispatchEvent(event);
+        }
+      }, 10);
       return;
     }
 

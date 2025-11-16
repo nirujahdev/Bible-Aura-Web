@@ -29,6 +29,7 @@ import { SermonAutoComplete } from '@/components/sermon/SermonAutoComplete';
 import { InlineAISuggestions } from '@/components/sermon/InlineAISuggestions';
 import { AIResearchPanel } from '@/components/sermon/AIResearchPanel';
 import { TextSelectionMenu } from '@/components/TextSelectionMenu';
+import { SermonViewMode } from '@/components/SermonViewMode';
 // InlineAIAssistant removed per user request
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { 
@@ -159,7 +160,7 @@ const SermonsContent = () => {
   const isMobile = useIsMobile();
   
   // View states
-  const [viewMode, setViewMode] = useState<'dashboard' | 'editor'>('dashboard');
+  const [viewMode, setViewMode] = useState<'dashboard' | 'editor' | 'view'>('dashboard');
   const [selectedSermon, setSelectedSermon] = useState<Sermon | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -843,7 +844,88 @@ const SermonsContent = () => {
     }, 0);
   };
 
+  const handleExportPDF = useCallback(async () => {
+    if (!selectedSermon) {
+      toast({
+        title: "No sermon selected",
+        description: "Please select a sermon to export",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Create HTML content for PDF
+      const sermonTitle = selectedSermon.title || 'Untitled Sermon';
+      const sermonContent = selectedSermon.content || '';
+      const scriptureRef = selectedSermon.scripture_reference || '';
+      const sermonDate = selectedSermon.sermon_date ? format(new Date(selectedSermon.sermon_date), 'MMMM d, yyyy') : '';
+      const congregation = selectedSermon.congregation || '';
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>${sermonTitle}</title>
+            <style>
+              @page { margin: 1in; }
+              body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; }
+              h1 { font-size: 24pt; margin-bottom: 0.5em; }
+              h2 { font-size: 18pt; margin-top: 1em; margin-bottom: 0.5em; }
+              h3 { font-size: 14pt; margin-top: 0.8em; margin-bottom: 0.4em; }
+              .metadata { margin-bottom: 1em; color: #666; font-size: 10pt; }
+              .content { margin-top: 1em; }
+            </style>
+          </head>
+          <body>
+            <h1>${sermonTitle}</h1>
+            <div class="metadata">
+              ${scriptureRef ? `<p><strong>Scripture:</strong> ${scriptureRef}</p>` : ''}
+              ${sermonDate ? `<p><strong>Date:</strong> ${sermonDate}</p>` : ''}
+              ${congregation ? `<p><strong>Location:</strong> ${congregation}</p>` : ''}
+            </div>
+            <div class="content">${sermonContent}</div>
+          </body>
+        </html>
+      `;
+
+      // Open print dialog for PDF
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        
+        // Wait for content to load, then trigger print
+        setTimeout(() => {
+          printWindow.print();
+          setTimeout(() => {
+            printWindow.close();
+          }, 100);
+        }, 250);
+      }
+
+      toast({
+        title: "Export initiated",
+        description: "PDF export dialog opened",
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export failed",
+        description: error?.message || "Failed to export sermon",
+        variant: "destructive"
+      });
+    }
+  }, [selectedSermon, toast]);
+
   const handleExportSermon = (format: 'txt' | 'markdown' | 'html' | 'pdf') => {
+    if (format === 'pdf') {
+      handleExportPDF();
+      return;
+    }
+    
     const exportContent = `${title}\n\n${content}`;
     
     if (format === 'txt') {
@@ -855,7 +937,6 @@ const SermonsContent = () => {
       a.click();
       URL.revokeObjectURL(url);
     }
-    // Add other export formats as needed
     
     toast({
       title: "Export Complete",
@@ -1118,6 +1199,16 @@ const SermonsContent = () => {
     }
   };
 
+  // If in view mode, show the preaching view
+  if (viewMode === 'view' && selectedSermon) {
+    return (
+      <SermonViewMode
+        sermon={selectedSermon}
+        onClose={() => setViewMode('editor')}
+      />
+    );
+  }
+
   // If in editor mode, show the enhanced sermon editor
   if (viewMode === 'editor' && selectedSermon) {
     return (
@@ -1166,7 +1257,37 @@ const SermonsContent = () => {
             </div>
             
             <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
-              {/* Bible Reference Button - Only essential button */}
+              {/* Sermon Metadata - Place, Date, Stats */}
+              {selectedSermon && (
+                <>
+                  {selectedSermon.congregation && (
+                    <Badge variant="outline" className="hidden sm:flex items-center gap-1 h-8 px-2 text-xs">
+                      <MapPin className="h-3 w-3" />
+                      {selectedSermon.congregation}
+                    </Badge>
+                  )}
+                  {selectedSermon.sermon_date && (
+                    <Badge variant="outline" className="hidden md:flex items-center gap-1 h-8 px-2 text-xs">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(selectedSermon.sermon_date), 'MMM d, yyyy')}
+                    </Badge>
+                  )}
+                  {selectedSermon.word_count && (
+                    <Badge variant="outline" className="hidden lg:flex items-center gap-1 h-8 px-2 text-xs">
+                      <Type className="h-3 w-3" />
+                      {selectedSermon.word_count} words
+                    </Badge>
+                  )}
+                  {selectedSermon.estimated_time && (
+                    <Badge variant="outline" className="hidden lg:flex items-center gap-1 h-8 px-2 text-xs">
+                      <Clock className="h-3 w-3" />
+                      {Math.round(selectedSermon.estimated_time)} min
+                    </Badge>
+                  )}
+                </>
+              )}
+              
+              {/* Bible Reference Button */}
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -1496,19 +1617,34 @@ const SermonsContent = () => {
                   <Separator orientation="vertical" className="h-6" />
                 </>
               )}
+              {/* Auto-save indicator */}
+              {autoSave && selectedSermon && (
+                <Badge variant="outline" className="hidden sm:flex items-center gap-1 h-8 px-2 text-xs text-green-600 border-green-200 bg-green-50">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Auto-saved
+                </Badge>
+              )}
+
+              {/* View Mode Button */}
               <Button
-                onClick={() => handleSaveSermon(false)}
-                disabled={saving}
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode(viewMode === 'editor' ? 'view' : 'editor')}
+                className="h-8 sm:h-9"
+              >
+                <Eye className="h-4 w-4 sm:mr-2" />
+                {!isMobile && <span>View</span>}
+              </Button>
+
+              {/* Export PDF Button */}
+              <Button
+                onClick={handleExportPDF}
                 size={isMobile ? "sm" : "default"}
                 className="bg-orange-600 hover:bg-orange-700 text-white h-8 sm:h-9 px-2 sm:px-3 md:px-4"
               >
-                {saving ? (
-                  <RefreshCw className="h-4 w-4 sm:mr-2 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4 sm:mr-2" />
-                )}
-                {!isMobile && <span>Save</span>}
-                {isMobile && <span className="ml-1 text-xs">Save</span>}
+                <FileDown className="h-4 w-4 sm:mr-2" />
+                {!isMobile && <span>Export</span>}
+                {isMobile && <span className="ml-1 text-xs">PDF</span>}
               </Button>
             </div>
           </div>
@@ -1853,6 +1989,33 @@ const SermonsContent = () => {
                         // Fallback: append to end
                         const currentContent = selectedSermon.content || '';
                         const newContent = currentContent + text;
+                        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+                        updateContent(newContent);
+                      }
+                    }
+                  }}
+                  onReplaceText={(originalText, newText) => {
+                    if (editorRef.current && selectedSermon) {
+                      editorRef.current.focus();
+                      const selection = window.getSelection();
+                      if (selection && selection.rangeCount > 0) {
+                        const range = selection.getRangeAt(0);
+                        range.deleteContents();
+                        const textNode = document.createTextNode(newText);
+                        range.insertNode(textNode);
+                        range.setStartAfter(textNode);
+                        range.collapse(false);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        
+                        // Update content
+                        const newContent = editorRef.current.innerHTML;
+                        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+                        updateContent(newContent);
+                      } else {
+                        // Fallback: replace in content
+                        const currentContent = selectedSermon.content || '';
+                        const newContent = currentContent.replace(originalText, newText);
                         setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
                         updateContent(newContent);
                       }
