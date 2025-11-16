@@ -1412,11 +1412,11 @@ How can I apply this to my life?
           )}
 
           {/* Right Side Sheet - Opened from 3-dot menu */}
-          {isMobile && rightSidebar && (
+          {isMobile && (
             <Sheet 
-              open={rightSidebar.rightSidebarOpen} 
+              open={rightSidebar?.rightSidebarOpen || false} 
               onOpenChange={(open) => {
-                if (rightSidebar.setRightSidebarOpen) {
+                if (rightSidebar?.setRightSidebarOpen) {
                   rightSidebar.setRightSidebarOpen(open);
                 }
               }}
