@@ -33,7 +33,7 @@ export async function callOpenAIAPI(
     messages = [],
     maxTokens = 1000,
     temperature = 0.7,
-    model = 'gpt-4o',
+    model = 'gpt-4o-mini',
     stream = false,
     onChunk
   } = options;

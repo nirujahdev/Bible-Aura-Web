@@ -81,7 +81,7 @@ Provide corrections in JSON format:
       systemPrompt: 'You are an expert editor specializing in sermon writing. Provide clear, helpful corrections.',
       maxTokens: 600,
       temperature: 0.3,
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
     });
 
     try {
@@ -144,7 +144,7 @@ Return JSON:
       systemPrompt: 'You are a Bible reference validator. Verify references and provide accurate verse text.',
       maxTokens: 800,
       temperature: 0.2,
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
     });
 
     try {
@@ -208,7 +208,7 @@ Return as JSON array: ["suggestion 1", "suggestion 2", ...]`;
       systemPrompt: 'You are an expert sermon editor. Provide specific, actionable improvement suggestions.',
       maxTokens: 400,
       temperature: 0.5,
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
     });
 
     try {

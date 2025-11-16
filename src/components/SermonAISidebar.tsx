@@ -152,7 +152,7 @@ Provide helpful, practical, and theologically sound assistance.`;
       systemPrompt,
       maxTokens: 2000,
       temperature: 0.7,
-      model: 'gpt-4o'
+      model: 'gpt-4o-mini'
     });
   };
 

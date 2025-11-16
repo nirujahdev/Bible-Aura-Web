@@ -37,7 +37,7 @@ export type SupportedLanguage = 'english' | 'tamil' | 'sinhala';
 
 // AI Configuration - OpenAI
 const AI_CONFIG = {
-  model: "gpt-4o",
+  model: "gpt-4o-mini",
   baseURL: "https://api.openai.com",
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   headers: {
