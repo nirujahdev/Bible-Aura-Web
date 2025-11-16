@@ -107,7 +107,7 @@ export function TextSelectionMenu({ editorRef, onReplaceText }: TextSelectionMen
 
     const handleClick = (e: MouseEvent) => {
       // Hide menu if clicking outside editor
-      if (position && editorRef.current && !editorRef.current.contains(e.target as Node)) {
+      if (editorRef.current && !editorRef.current.contains(e.target as Node)) {
         const selection = window.getSelection();
         if (selection) {
           selection.removeAllRanges();
