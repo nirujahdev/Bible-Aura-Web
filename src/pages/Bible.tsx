@@ -935,7 +935,7 @@ How can I apply this to my life?
                       </Button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-2">
-                      <div className="grid grid-cols-3 gap-1">
+                      <div className="grid grid-cols-3 gap-1.5 max-h-96 overflow-y-auto">
                         {oldTestamentBooks.map((book) => (
                           <Button
                             key={book.id}
@@ -946,8 +946,8 @@ How can I apply this to my life?
                                 setTimeout(() => setMobileSidebarOpen(false), 200);
                               }
                             }}
-                            className={`text-xs p-2 h-8 touch-target ${
-                              selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                            className={`text-xs p-2 h-9 touch-target min-h-[44px] ${
+                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600' : ''
                             }`}
                           >
                             {book.name}
@@ -965,7 +965,7 @@ How can I apply this to my life?
                       </Button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-2">
-                      <div className="grid grid-cols-3 gap-1">
+                      <div className="grid grid-cols-3 gap-1.5 max-h-96 overflow-y-auto">
                         {newTestamentBooks.map((book) => (
                           <Button
                             key={book.id}
@@ -976,8 +976,8 @@ How can I apply this to my life?
                                 setTimeout(() => setMobileSidebarOpen(false), 200);
                               }
                             }}
-                            className={`text-xs p-2 h-8 touch-target ${
-                              selectedBook?.id === book.id ? 'bg-orange-500' : ''
+                            className={`text-xs p-2 h-9 touch-target min-h-[44px] ${
+                              selectedBook?.id === book.id ? 'bg-orange-500 hover:bg-orange-600' : ''
                             }`}
                           >
                             {book.name}
@@ -995,7 +995,7 @@ How can I apply this to my life?
                   <h3 className="text-sm font-semibold text-gray-800 mb-2">
                     {selectedBook.name} - Chapters
                   </h3>
-                  <div className="grid grid-cols-6 gap-1 max-h-32 overflow-y-auto">
+                  <div className="grid grid-cols-6 gap-1.5 max-h-64 overflow-y-auto overflow-x-hidden scrollbar-thin">
                     {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
                       <Button
                         key={chapter}
@@ -1006,8 +1006,8 @@ How can I apply this to my life?
                             setTimeout(() => setMobileSidebarOpen(false), 200);
                           }
                         }}
-                        className={`h-8 text-xs touch-target ${
-                          selectedChapter === chapter ? 'bg-orange-500' : ''
+                        className={`h-9 text-xs touch-target min-w-[44px] ${
+                          selectedChapter === chapter ? 'bg-orange-500 hover:bg-orange-600' : ''
                         }`}
                       >
                         {chapter}
@@ -1255,9 +1255,10 @@ How can I apply this to my life?
             </div>
           )}
 
-          {/* Main Reading Area */}
+          {/* Main Reading Area - Adjust when AI chat is open */}
           <div className={cn(
-            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10"
+            "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10",
+            aiChatOpen && "mr-[calc(50%)] lg:mr-[420px]"
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 p-4 border-b border-gray-200 bg-white ${isMobile ? 'pt-2 px-3' : ''}`}>
@@ -1578,18 +1579,6 @@ How can I apply this to my life?
                               )}
                             </div>
 
-                            {/* Journal Icon */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => addToJournal(verse)}
-                              className={`touch-optimized flex-shrink-0 ${
-                                isMobile ? 'min-h-[44px] min-w-[44px]' : 'h-9 w-9'
-                              } p-0 text-gray-400 hover:text-green-500`}
-                              title="Add to Journal"
-                            >
-                              <FileText className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'}`} />
-                            </Button>
                           </div>
                         </div>
                       );
@@ -1650,60 +1639,45 @@ How can I apply this to my life?
 
       </div>
 
-      {/* AI Chat Side Panel */}
+      {/* AI Chat Side Panel - Side by side, no backdrop */}
       <AnimatePresence>
         {aiChatOpen && selectedVerseForAI && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setAiChatOpen(false);
-                setSelectedVerseForAI(null);
-              }}
-              className="fixed inset-0 bg-black/50 z-50"
-            />
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
+          >
+            {/* Close Button - Top Right */}
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setAiChatOpen(false);
+                  setSelectedVerseForAI(null);
+                }}
+                className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             
-            {/* Side Panel */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
-            >
-              {/* Close Button - Top Right */}
-              <div className="absolute top-4 right-4 z-10">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setAiChatOpen(false);
-                    setSelectedVerseForAI(null);
-                  }}
-                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {/* AI Chat Content - Full Height */}
-              <div className="flex-1 overflow-hidden pt-2">
-                <BibleVerseAIChat
-                  verse={selectedVerseForAI}
-                  isOpen={aiChatOpen}
-                  onClose={() => {
-                    setAiChatOpen(false);
-                    setSelectedVerseForAI(null);
-                  }}
-                  verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
-                  sidebarMode={true}
-                />
-              </div>
-            </motion.div>
-          </>
+            {/* AI Chat Content - Full Height */}
+            <div className="flex-1 overflow-hidden pt-2">
+              <BibleVerseAIChat
+                verse={selectedVerseForAI}
+                isOpen={aiChatOpen}
+                onClose={() => {
+                  setAiChatOpen(false);
+                  setSelectedVerseForAI(null);
+                }}
+                verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
+                sidebarMode={true}
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </Layout>

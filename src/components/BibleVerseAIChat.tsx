@@ -356,7 +356,8 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
         </div>
       )}
 
-        {/* AI Mode Selection */}
+        {/* AI Mode Selection - Hidden to simplify, only use default 'verse' mode */}
+        {false && (
         <div className="px-6 py-3 border-b bg-gray-50">
           <div className="flex flex-wrap gap-2">
             {AI_CHAT_MODES.map((mode) => (
@@ -380,6 +381,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
             {AI_CHAT_MODES.find(m => m.id === selectedMode)?.description}
           </p>
         </div>
+        )}
 
       {/* Messages Area - Properly sized for scrolling */}
       <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6">
@@ -437,7 +439,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={`Ask about ${verseRef} using ${AI_CHAT_MODES.find(m => m.id === selectedMode)?.name}...`}
+              placeholder={`Ask about ${verseRef}...`}
               className="flex-1 min-h-[36px] max-h-[100px] py-2 px-3 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-white rounded-lg placeholder:text-gray-400 outline-none"
               disabled={isLoading}
               rows={1}
