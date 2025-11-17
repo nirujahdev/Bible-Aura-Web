@@ -1427,7 +1427,7 @@ How can I apply this to my life?
           {/* Main Reading Area - Adjust when AI chat is open */}
           <div className={cn(
             "flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 relative z-10",
-            aiChatOpen && "mr-[calc(50%)] lg:mr-[384px]"
+            aiChatOpen && "mr-[calc(50%)] lg:mr-[384px] sm:mr-[384px]"
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 border-b border-gray-200 bg-white ${isMobile ? 'p-3 pt-2' : 'p-4'}`}>
@@ -1814,7 +1814,7 @@ How can I apply this to my life?
 
       </div>
 
-      {/* AI Chat Side Panel - Side by side, no backdrop */}
+      {/* AI Chat Side Panel - Compact Size, Side by side, no backdrop */}
       <AnimatePresence>
         {aiChatOpen && selectedVerseForAI && (
           <motion.div
@@ -1822,10 +1822,10 @@ How can I apply this to my life?
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-[384px] bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
           >
             {/* Close Button - Top Right */}
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-3 right-3 z-10">
               <Button
                 variant="ghost"
                 size="sm"
@@ -1833,14 +1833,14 @@ How can I apply this to my life?
                   setAiChatOpen(false);
                   setSelectedVerseForAI(null);
                 }}
-                className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </Button>
             </div>
             
-            {/* AI Chat Content - Full Height */}
-            <div className="flex-1 overflow-hidden pt-2">
+            {/* AI Chat Content - Compact Height */}
+            <div className="flex-1 overflow-hidden pt-1">
               <BibleVerseAIChat
                 verse={selectedVerseForAI}
                 isOpen={aiChatOpen}
@@ -1850,39 +1850,46 @@ How can I apply this to my life?
                 }}
                 verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
                 sidebarMode={true}
+                defaultMode="verse"
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Navigation - Bottom Right - Simple One Line */}
-      {selectedBook && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="flex items-center gap-1 bg-white rounded-full shadow-lg border border-orange-200 hover:border-orange-400 transition-all px-1 py-1">
+      {/* Floating Chapter Navigation - Bottom Right - Compact Design */}
+      {selectedBook && !aiChatOpen && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="fixed bottom-4 right-4 z-50"
+        >
+          <div className="flex items-center gap-0 bg-white rounded-lg shadow-md border border-orange-200/60 overflow-hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('prev')}
               disabled={selectedChapter <= 1}
-              className="h-7 w-7 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="h-8 w-8 rounded-none p-0 hover:bg-orange-50/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
             >
-              <ChevronLeft className="h-3.5 w-3.5 text-gray-600" />
+              <ChevronLeft className="h-4 w-4 text-gray-500" />
             </Button>
-            <span className="text-xs font-semibold text-orange-600 px-2 min-w-[2.5rem] text-center">
-              Ch{selectedChapter}
-            </span>
+            <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 min-w-[3.5rem]">
+              <div className="text-[10px] font-medium text-white/90 leading-none">CH</div>
+              <div className="text-sm font-bold text-white leading-none">{selectedChapter}</div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('next')}
               disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-7 w-7 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="h-8 w-8 rounded-none p-0 hover:bg-orange-50/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
             >
-              <ChevronRight className="h-3.5 w-3.5 text-gray-600" />
+              <ChevronRight className="h-4 w-4 text-gray-500" />
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
     </Layout>
   );

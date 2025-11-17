@@ -39,6 +39,7 @@ interface BibleVerseAIChatProps {
   onClose: () => void;
   verseReference?: string;
   sidebarMode?: boolean; // If true, renders as sidebar without Sheet wrapper
+  defaultMode?: string; // Default mode to use (e.g., 'verse' for verse analysis)
 }
 
 // AI Chat modes with enhanced descriptions and icons
@@ -133,16 +134,23 @@ SPEED PRIORITY: Generate fast, accurate verse-specific responses.`;
   }
 };
 
-export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReference, sidebarMode = false }: BibleVerseAIChatProps) {
+export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReference, sidebarMode = false, defaultMode = 'verse' }: BibleVerseAIChatProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedMode, setSelectedMode] = useState('verse');
+  const [selectedMode, setSelectedMode] = useState(defaultMode);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Reset mode when defaultMode changes
+  useEffect(() => {
+    if (defaultMode) {
+      setSelectedMode(defaultMode);
+    }
+  }, [defaultMode]);
 
   const verseRef = verseReference || `${verse.book_name} ${verse.chapter}:${verse.verse}`;
   const verseContext = `${verseRef}: "${verse.text}"`;
@@ -385,8 +393,8 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
         )}
 
       {/* Messages Area - Properly sized for scrolling */}
-      <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6">
-          <div className="py-4 space-y-4">
+      <ScrollArea className="flex-1 min-h-0 px-3 sm:px-4">
+          <div className="py-3 space-y-3">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -395,22 +403,22 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
                 }`}
               >
                 <div
-                  className={`max-w-[85%] rounded-lg px-4 py-3 ${
+                  className={`max-w-[90%] rounded-lg px-3 py-2 ${
                     message.role === 'user'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-900'
                   }`}
                 >
-                  <div className="prose prose-sm max-w-none">
+                  <div className="prose prose-sm max-w-none text-xs sm:text-sm">
                     {message.content.split('\n').map((line, i) => (
-                      <p key={i} className={`mb-2 last:mb-0 ${
+                      <p key={i} className={`mb-1.5 last:mb-0 ${
                         message.role === 'user' ? 'text-white' : 'text-gray-900'
                       }`}>
                         {line}
                       </p>
                     ))}
                   </div>
-                  <div className={`text-xs mt-2 ${
+                  <div className={`text-[10px] mt-1.5 ${
                     message.role === 'user' ? 'text-orange-100' : 'text-gray-500'
                   }`}>
                     {new Date(message.timestamp).toLocaleTimeString()}
@@ -432,16 +440,16 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
           </div>
         </ScrollArea>
 
-      {/* Input Area - Matches main chat style */}
-      <div className="px-4 sm:px-6 py-4 border-t bg-gray-50 flex-shrink-0">
-        <div className="bg-gray-50 rounded-2xl border border-gray-200 shadow-sm">
-          <div className="flex items-end gap-2 p-2">
+      {/* Input Area - Compact for sidebar mode */}
+      <div className={`px-3 sm:px-4 py-2.5 border-t bg-gray-50 flex-shrink-0 ${sidebarMode ? 'pb-2' : ''}`}>
+        <div className="bg-gray-50 rounded-xl border border-gray-200 shadow-sm">
+          <div className="flex items-end gap-1.5 p-1.5">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Ask about ${verseRef}...`}
-              className="flex-1 min-h-[36px] max-h-[100px] py-2 px-3 resize-none border-0 focus:ring-0 focus-visible:ring-0 text-sm bg-white rounded-lg placeholder:text-gray-400 outline-none"
+              className={`flex-1 min-h-[32px] max-h-[80px] py-1.5 px-2.5 resize-none border-0 focus:ring-0 focus-visible:ring-0 bg-white rounded-lg placeholder:text-gray-400 outline-none ${sidebarMode ? 'text-xs' : 'text-sm'}`}
               disabled={isLoading}
               rows={1}
             />
@@ -449,15 +457,17 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               onClick={() => handleSendMessage()}
               disabled={isLoading || !input.trim()}
               size="icon"
-              className="h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex-shrink-0 mb-0.5"
+              className="h-8 w-8 rounded-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md flex-shrink-0"
             >
-              <Send className="h-4 w-4 text-white" />
+              <Send className="h-3.5 w-3.5 text-white" />
             </Button>
           </div>
         </div>
-        <p className="text-[8px] text-gray-500 text-center mt-1.5">
-          By using bible aura you agree with our policies
-        </p>
+        {!sidebarMode && (
+          <p className="text-[8px] text-gray-500 text-center mt-1.5">
+            By using bible aura you agree with our policies
+          </p>
+        )}
       </div>
     </div>
   );
