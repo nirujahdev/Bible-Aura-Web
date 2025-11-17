@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  Send, X
+  Send, X, Cross, Users, BookOpen, Lightbulb, Clock, HelpCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AIUsageTracker, getUsageInfo } from '@/lib/ai-usage-tracker';
