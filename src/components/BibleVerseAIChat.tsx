@@ -8,14 +8,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  Send, Bot, Sparkles, BookOpen, Users, HelpCircle, 
-  Cross, Clock, Lightbulb, MessageSquare, X, Loader2 
+  Send, X
 } from 'lucide-react';
-import { AI_RESPONSE_TEMPLATES, generateSystemPrompt } from '@/lib/ai-response-templates';
 import { supabase } from '@/integrations/supabase/client';
-import { callOpenAIAPI } from '@/lib/openai-api-helper';
-import { checkAndIncrementUsage } from '@/lib/ai-limits';
+import { AIUsageTracker, getUsageInfo } from '@/lib/ai-usage-tracker';
+import { sendBibleAuraMessage } from '@/lib/agent-sdk';
 import { RotatingThinkingMessageInline } from '@/components/BibleAuraLoadingAnimation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface BibleVerse {
   book_name: string;
@@ -88,52 +87,6 @@ const AI_CHAT_MODES = [
   }
 ];
 
-// OpenAI integration - SPEED OPTIMIZED
-const callBiblicalAI = async (
-  messages: Array<{role: string, content: string}>,
-  mode: string = 'verse',
-  verseContext: string = '',
-  abortController?: AbortController
-): Promise<string> => {
-  try {
-    const systemPrompt = generateSystemPrompt(mode as keyof typeof AI_RESPONSE_TEMPLATES) + `
-
-VERSE CONTEXT: ${verseContext}
-
-LANGUAGE: Respond in English.
-TRANSLATION: Use KJV Bible translation when citing verses.
-FOCUS: Center your analysis specifically on the provided verse while connecting to broader biblical themes.
-SPEED PRIORITY: Generate fast, accurate verse-specific responses.`;
-
-    const maxTokens = mode === 'verse' || mode === 'character' || mode === 'parable' || mode === 'topical' ? 800 : 500;
-    
-    // Convert messages array to OpenAI format
-    const openAIMessages = messages.map(msg => ({
-      role: msg.role,
-      content: msg.content
-    }));
-
-    // Get the last user message as the prompt, or use empty string if no messages
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
-    
-    const response = await callOpenAIAPI(lastUserMessage, {
-      systemPrompt,
-      messages: openAIMessages,
-      maxTokens,
-      temperature: 0.2, // Lower for faster, more focused responses
-      model: 'gpt-4.1-nano'
-    });
-
-    return response;
-  } catch (error: any) {
-    console.error('AI Call Error:', error);
-    if (error.name === 'AbortError') {
-      throw new Error('⏰ Request timed out. Please try again.');
-    }
-    throw error;
-  }
-};
-
 export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReference, sidebarMode = false, defaultMode = 'verse' }: BibleVerseAIChatProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -160,30 +113,7 @@ export default function BibleVerseAIChat({ verse, isOpen, onClose, verseReferenc
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Initialize conversation when opened
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      initializeConversation();
-    }
-  }, [isOpen]);
-
-  const initializeConversation = () => {
-    const welcomeMessage: Message = {
-      id: Date.now().toString(),
-      role: 'assistant',
-      content: `<span className="text-orange-500">✦</span> **Welcome to Bible Aura**
-
-I'm ready to help you explore **${verseRef}**:
-
-*"${verse.text}"*
-
-Choose an analysis mode above and ask me anything about this verse! I can provide theological insights, historical context, character studies, cross-references, and more.`,
-      timestamp: new Date().toISOString(),
-      mode: selectedMode
-    };
-
-    setMessages([welcomeMessage]);
-  };
+  // No welcome message - start with empty messages
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || input.trim();
@@ -192,74 +122,153 @@ Choose an analysis mode above and ask me anything about this verse! I can provid
     if (!user) {
       toast({
         title: "Sign in required",
-        description: "Please sign in to chat with AI about Bible verses",
+        description: "Please sign in to chat with AI",
         variant: "destructive",
       });
       return;
     }
 
-    // Check AI message limit
-    const usageResult = await checkAndIncrementUsage(user.id, 'ai_message');
+    // Check AI message limit first (without incrementing)
+    const usageInfo = await getUsageInfo(user.id, 'ai_message');
     
-    if (!usageResult.allowed) {
+    if (usageInfo.limit_reached) {
       toast({
         title: "AI Message Limit Reached",
-        description: `You've reached your daily limit of ${usageResult.limit} AI messages. Please try again tomorrow.`,
+        description: `You've reached your daily limit of ${usageInfo.limit} AI messages. Please try again tomorrow.`,
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    setInput('');
+    const userInput = textToSend.trim();
+    if (!messageText) {
+      setInput('');
+    }
 
+    const messageTimestamp = new Date().toISOString();
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: textToSend,
-      timestamp: new Date().toISOString(),
+      content: userInput,
+      timestamp: messageTimestamp,
       mode: selectedMode
     };
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
 
-    try {
-      abortControllerRef.current = new AbortController();
-      
-      const conversationMessages = newMessages.map(m => ({ 
-        role: m.role, 
-        content: m.content 
-      }));
+    // Track start time for response time calculation
+    const startTime = Date.now();
+    const pairId = `pair_${userMessage.id}`;
+    let reservationId: string | undefined;
 
-      const aiResponse = await callBiblicalAI(
-        conversationMessages,
-        selectedMode,
-        verseContext,
-        abortControllerRef.current
+    try {
+      // Reserve usage BEFORE API call (atomic operation)
+      const reservationResult = await AIUsageTracker.reserveUsage(
+        user.id,
+        'ai_message',
+        conversationId || undefined
       );
 
+      if (!reservationResult.allowed) {
+        toast({
+          title: "AI Message Limit Reached",
+          description: reservationResult.message || "You've reached your daily limit.",
+          variant: "destructive",
+        });
+        setMessages(messages); // Revert user message
+        return;
+      }
+
+      reservationId = reservationResult.reservation_id;
+
+      // Use sendBibleAuraMessage with verse mode
+      const aiResponse = await sendBibleAuraMessage(userInput, {
+        mode: 'verse', // Always use verse analysis mode
+        language: 'en'
+      });
+      
+      const responseTime = Date.now() - startTime;
+      const aiMessageTimestamp = new Date().toISOString();
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date().toISOString(),
-        mode: selectedMode
+        content: aiResponse.text,
+        timestamp: aiMessageTimestamp,
+        mode: aiResponse.mode || 'verse',
+        sources: aiResponse.sources,
+        crossReferences: aiResponse.crossReferences,
+        validatedVerses: (aiResponse as any).validatedVerses
       };
 
       const finalMessages = [...newMessages, aiMessage];
       setMessages(finalMessages);
-      
-      // Save conversation to database
-      await saveConversation(finalMessages);
 
+      // Confirm usage and link conversation
+      if (reservationId) {
+        const confirmResult = await AIUsageTracker.confirmUsage(
+          reservationId,
+          user.id,
+          {
+            conversation_id: conversationId,
+            mode: 'verse',
+            language: 'english',
+            translation: 'KJV'
+          },
+          {
+            pair_id: pairId,
+            user_message_id: userMessage.id,
+            assistant_message_id: aiMessage.id,
+            user_message_content: userInput,
+            assistant_message_content: aiResponse.text,
+            user_message_timestamp: messageTimestamp,
+            assistant_message_timestamp: aiMessageTimestamp,
+            mode: 'verse',
+            language: 'english',
+            translation: 'KJV',
+            ai_mode: aiResponse.mode || 'verse',
+            has_sources: !!(aiResponse.sources && aiResponse.sources.length > 0),
+            sources_count: aiResponse.sources?.length || 0,
+            has_cross_references: !!(aiResponse.crossReferences && aiResponse.crossReferences.length > 0),
+            cross_references_count: aiResponse.crossReferences?.length || 0,
+            has_validated_verses: !!((aiResponse as any).validatedVerses && (aiResponse as any).validatedVerses.length > 0),
+            validated_verses_count: (aiResponse as any).validatedVerses?.length || 0,
+            response_time_ms: responseTime,
+            metadata: {
+              sources: aiResponse.sources || [],
+              crossReferences: aiResponse.crossReferences || [],
+              validatedVerses: (aiResponse as any).validatedVerses || []
+            }
+          }
+        );
+
+        // Update conversation ID if a new one was created
+        if (confirmResult.conversation_id && !conversationId) {
+          setConversationId(confirmResult.conversation_id);
+        }
+
+        // Update conversation with all messages
+        const convId = confirmResult.conversation_id || conversationId;
+        if (convId) {
+          await AIUsageTracker.updateConversation(convId, user.id, finalMessages);
+        }
+      }
+      
     } catch (error: any) {
-      console.error('AI Response Error:', error);
+      // Rollback usage on API failure
+      if (reservationId) {
+        await AIUsageTracker.rollbackUsage(reservationId, user.id, 'ai_message');
+      }
+
       toast({
         title: "AI Error",
-        description: error.message || "Failed to get AI response. Please try again.",
+        description: error.message || "Failed to get AI response",
         variant: "destructive"
       });
+      
+      // Remove user message on error
+      setMessages(messages);
     } finally {
       setIsLoading(false);
     }
@@ -395,45 +404,83 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
       {/* Messages Area - Properly sized for scrolling */}
       <ScrollArea className="flex-1 min-h-0 px-3 sm:px-4">
           <div className="py-3 space-y-3">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-[90%] rounded-lg px-3 py-2 ${
-                    message.role === 'user'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-900'
+            <AnimatePresence>
+              {messages.map((message, index) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex ${
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
-                  <div className="prose prose-sm max-w-none text-xs sm:text-sm">
-                    {message.content.split('\n').map((line, i) => (
-                      <p key={i} className={`mb-1.5 last:mb-0 ${
-                        message.role === 'user' ? 'text-white' : 'text-gray-900'
-                      }`}>
-                        {line}
-                      </p>
-                    ))}
+                  <div className="w-full max-w-[90%]">
+                    {message.role === 'user' ? (
+                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-[20px] sm:rounded-[24px] p-3 sm:p-3 shadow-none sm:shadow-sm">
+                        <div className="whitespace-pre-wrap text-[15px] leading-[1.75] break-words">{message.content}</div>
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-gray-100 rounded-[20px] sm:rounded-[24px] p-3 sm:p-4 shadow-sm">
+                        <div className="whitespace-pre-wrap text-[15px] leading-[1.75] break-words text-gray-900">{message.content}</div>
+                      </div>
+                    )}
+                    <div className={`text-[9px] md:text-[10px] text-gray-400 mt-1 px-2 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
                   </div>
-                  <div className={`text-[10px] mt-1.5 ${
-                    message.role === 'user' ? 'text-orange-100' : 'text-gray-500'
-                  }`}>
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </div>
-                </div>
-              </div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
             
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg px-4 py-3 flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <RotatingThinkingMessageInline />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex gap-3"
+              >
+                <div className="flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                    <motion.span
+                      className="text-white text-lg font-bold drop-shadow-lg"
+                      animate={{
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    >
+                      ✦
+                    </motion.span>
+                  </div>
                 </div>
-              </div>
+                <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex gap-1">
+                      <motion.div
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                      />
+                    </div>
+                    <RotatingThinkingMessageInline />
+                  </div>
+                </div>
+              </motion.div>
             )}
             
             <div ref={messagesEndRef} />
@@ -448,7 +495,7 @@ Ask me anything about **${verseRef}** using this analysis mode!`,
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={`Ask about ${verseRef}...`}
+              placeholder={verseRef}
               className={`flex-1 min-h-[32px] max-h-[80px] py-1.5 px-2.5 resize-none border-0 focus:ring-0 focus-visible:ring-0 bg-white rounded-lg placeholder:text-gray-400 outline-none ${sidebarMode ? 'text-xs' : 'text-sm'}`}
               disabled={isLoading}
               rows={1}

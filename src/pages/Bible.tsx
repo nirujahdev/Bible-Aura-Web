@@ -1397,12 +1397,8 @@ How can I apply this to my life?
             <Sheet 
               open={!!rightSidebar.rightSidebarOpen} 
               onOpenChange={(open) => {
-                console.log('Sheet onOpenChange called:', open, 'rightSidebar exists:', !!rightSidebar);
                 if (rightSidebar?.setRightSidebarOpen) {
-                  console.log('Calling setRightSidebarOpen with:', open);
                   rightSidebar.setRightSidebarOpen(open);
-                } else {
-                  console.error('setRightSidebarOpen is not available');
                 }
               }}
               modal={true}
@@ -1410,6 +1406,10 @@ How can I apply this to my life?
               <SheetContent 
                 side="right" 
                 className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
+                onInteractOutside={(e) => {
+                  // Prevent closing when clicking outside on mobile
+                  e.preventDefault();
+                }}
               >
                 <SheetHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
                   <SheetTitle className="flex items-center gap-2">
