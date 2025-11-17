@@ -1366,8 +1366,15 @@ How can I apply this to my life?
   // Choose layout based on device type
   const Layout = isMobile ? MobileOptimizedLayout : ModernLayout;
 
-  return (
-    <Layout>
+  // BibleContent component that uses the context (must be inside Layout)
+  const BibleContent = () => {
+    // Get context here - this will be called inside Layout's children
+    const rightSidebarFromContext = useRightSidebar();
+    
+    // Use the context value if available, otherwise fallback
+    const effectiveRightSidebar = rightSidebarFromContext || rightSidebar;
+    
+    return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
 
         <div className={cn("flex", isMobile ? "flex-col h-[100dvh]" : "h-screen")}>
@@ -1395,15 +1402,15 @@ How can I apply this to my life?
           )}
 
           {/* Right Side Sheet - Opened from 3-dot menu - Mobile Only */}
-          {isMobile && rightSidebar && (
+          {isMobile && effectiveRightSidebar && (
             <Sheet 
-              open={rightSidebar.rightSidebarOpen || false}
+              open={effectiveRightSidebar.rightSidebarOpen || false}
               onOpenChange={(open) => {
                 console.log('[Bible] Sheet onOpenChange:', open);
-                console.log('[Bible] rightSidebar object:', rightSidebar);
-                if (rightSidebar?.setRightSidebarOpen) {
+                console.log('[Bible] effectiveRightSidebar object:', effectiveRightSidebar);
+                if (effectiveRightSidebar?.setRightSidebarOpen) {
                   console.log('[Bible] Setting rightSidebarOpen to:', open);
-                  rightSidebar.setRightSidebarOpen(open);
+                  effectiveRightSidebar.setRightSidebarOpen(open);
                 } else {
                   console.error('[Bible] ERROR: setRightSidebarOpen is not available!');
                 }
@@ -1415,14 +1422,14 @@ How can I apply this to my life?
                 className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
                 onPointerDownOutside={(e) => {
                   console.log('[Bible] Clicked outside sheet');
-                  if (rightSidebar?.setRightSidebarOpen) {
-                    rightSidebar.setRightSidebarOpen(false);
+                  if (effectiveRightSidebar?.setRightSidebarOpen) {
+                    effectiveRightSidebar.setRightSidebarOpen(false);
                   }
                 }}
                 onEscapeKeyDown={(e) => {
                   console.log('[Bible] Escape key pressed');
-                  if (rightSidebar?.setRightSidebarOpen) {
-                    rightSidebar.setRightSidebarOpen(false);
+                  if (effectiveRightSidebar?.setRightSidebarOpen) {
+                    effectiveRightSidebar.setRightSidebarOpen(false);
                   }
                 }}
               >
@@ -1439,8 +1446,8 @@ How can I apply this to my life?
                         e.preventDefault();
                         e.stopPropagation();
                         console.log('[Bible] Close button clicked');
-                        if (rightSidebar?.setRightSidebarOpen) {
-                          rightSidebar.setRightSidebarOpen(false);
+                        if (effectiveRightSidebar?.setRightSidebarOpen) {
+                          effectiveRightSidebar.setRightSidebarOpen(false);
                         }
                       }}
                       className="h-8 w-8 p-0"
@@ -1459,8 +1466,8 @@ How can I apply this to my life?
           {isMobile && (
             <div className="fixed bottom-20 left-4 bg-black/80 text-white text-xs p-2 rounded z-[100] pointer-events-none">
               <div>Mobile: {isMobile ? 'Yes' : 'No'}</div>
-              <div>RightSidebar: {rightSidebar ? 'Yes' : 'No'}</div>
-              <div>Open: {rightSidebar?.rightSidebarOpen ? 'Yes' : 'No'}</div>
+              <div>RightSidebar: {effectiveRightSidebar ? 'Yes' : 'No'}</div>
+              <div>Open: {effectiveRightSidebar?.rightSidebarOpen ? 'Yes' : 'No'}</div>
             </div>
           )}
 
@@ -1851,86 +1858,90 @@ How can I apply this to my life?
           />
         )}
 
+        {/* AI Chat Side Panel - Compact Size, Side by side, no backdrop */}
+        <AnimatePresence>
+          {aiChatOpen && selectedVerseForAI && (
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-[384px] bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
+            >
+              {/* Close Button - Top Right */}
+              <div className="absolute top-3 right-3 z-10">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              
+              {/* AI Chat Content - Compact Height */}
+              <div className="flex-1 overflow-hidden pt-1">
+                <BibleVerseAIChat
+                  verse={selectedVerseForAI}
+                  isOpen={aiChatOpen}
+                  onClose={() => {
+                    setAiChatOpen(false);
+                    setSelectedVerseForAI(null);
+                  }}
+                  verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
+                  sidebarMode={true}
+                  defaultMode="verse"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      </div>
-
-      {/* AI Chat Side Panel - Compact Size, Side by side, no backdrop */}
-      <AnimatePresence>
-        {aiChatOpen && selectedVerseForAI && (
+        {/* Floating Chapter Navigation - Bottom Right - Clean Pill Design */}
+        {selectedBook && !aiChatOpen && (
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-[384px] bg-white border-l border-gray-200 shadow-lg z-40 flex flex-col"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed bottom-4 right-4 z-50"
           >
-            {/* Close Button - Top Right */}
-            <div className="absolute top-3 right-3 z-10">
+            <div className="flex items-center gap-0 bg-white rounded-full shadow-sm border border-orange-200/40 overflow-hidden px-1">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setAiChatOpen(false);
-                  setSelectedVerseForAI(null);
-                }}
-                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
+                onClick={() => navigateChapter('prev')}
+                disabled={selectedChapter <= 1}
+                className="h-7 w-7 rounded-full p-0 hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
               >
-                <X className="h-3.5 w-3.5" />
+                <ChevronLeft className="h-3.5 w-3.5 text-gray-400" />
               </Button>
-            </div>
-            
-            {/* AI Chat Content - Compact Height */}
-            <div className="flex-1 overflow-hidden pt-1">
-              <BibleVerseAIChat
-                verse={selectedVerseForAI}
-                isOpen={aiChatOpen}
-                onClose={() => {
-                  setAiChatOpen(false);
-                  setSelectedVerseForAI(null);
-                }}
-                verseReference={`${selectedVerseForAI.book_name} ${selectedVerseForAI.chapter}:${selectedVerseForAI.verse}`}
-                sidebarMode={true}
-                defaultMode="verse"
-              />
+              <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 min-w-[3rem] rounded-full mx-0.5">
+                <div className="text-[9px] font-medium text-white/90 leading-none uppercase tracking-wide">CH</div>
+                <div className="text-base font-bold text-white leading-none">{selectedChapter}</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigateChapter('next')}
+                disabled={selectedChapter >= (selectedBook.chapters || 1)}
+                className="h-7 w-7 rounded-full p-0 hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
+              >
+                <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </div>
+    );
+  };
 
-      {/* Floating Chapter Navigation - Bottom Right - Clean Pill Design */}
-      {selectedBook && !aiChatOpen && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="fixed bottom-4 right-4 z-50"
-        >
-          <div className="flex items-center gap-0 bg-white rounded-full shadow-sm border border-orange-200/40 overflow-hidden px-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateChapter('prev')}
-              disabled={selectedChapter <= 1}
-              className="h-7 w-7 rounded-full p-0 hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
-            >
-              <ChevronLeft className="h-3.5 w-3.5 text-gray-400" />
-            </Button>
-            <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 min-w-[3rem] rounded-full mx-0.5">
-              <div className="text-[9px] font-medium text-white/90 leading-none uppercase tracking-wide">CH</div>
-              <div className="text-base font-bold text-white leading-none">{selectedChapter}</div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateChapter('next')}
-              disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-7 w-7 rounded-full p-0 hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
-            >
-              <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
-            </Button>
-          </div>
-        </motion.div>
-      )}
+  return (
+    <Layout>
+      <BibleContent />
     </Layout>
   );
 }
