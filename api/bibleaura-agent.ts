@@ -323,8 +323,8 @@ function getMetaAgentPrompt(
 Your responsibilities:
 1. Detect language (English/Tamil) - respond in the same language as the user
 2. Detect user mode:
-   - chat → conversational answer (brief but informative)
-   - verse → verse analysis format (structured explanation)
+   - chat → conversational answer (30-40 words, MUST include scripture reference with verse text)
+   - verse → verse analysis format (structured explanation with 5 sections)
    - parable → parable explainer format (story, context, lesson)
    - character → character study (overview, timeline, lessons)
    - topical → topic overview (definition, scriptures, application)
