@@ -156,7 +156,11 @@ const SermonsContent = () => {
     };
   }
   
-  const { updateContent, updateTitle, updateScriptureReference, updateMainPoints } = sermonAI;
+  // Extract methods from sermonAI context safely
+  const updateContent = sermonAI?.updateContent || (() => {});
+  const updateTitle = sermonAI?.updateTitle || (() => {});
+  const updateScriptureReference = sermonAI?.updateScriptureReference || (() => {});
+  const updateMainPoints = sermonAI?.updateMainPoints || (() => {});
   const isMobile = useIsMobile();
   
   // View states
@@ -164,13 +168,28 @@ const SermonsContent = () => {
   const [selectedSermon, setSelectedSermon] = useState<Sermon | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Sync context when sermon changes
+  // Sync context and local state when sermon changes
   useEffect(() => {
     if (selectedSermon) {
-      updateContent(selectedSermon.content || '');
-      updateTitle(selectedSermon.title || '');
-      updateScriptureReference(selectedSermon.scripture_reference || '');
+      const sermonContent = selectedSermon.content || '';
+      const sermonTitle = selectedSermon.title || '';
+      const sermonScriptureRef = selectedSermon.scripture_reference || '';
+      
+      // Update local state
+      setContent(sermonContent);
+      setTitle(sermonTitle);
+      setScriptureRefs(sermonScriptureRef);
+      
+      // Update context
+      updateContent(sermonContent);
+      updateTitle(sermonTitle);
+      updateScriptureReference(sermonScriptureRef);
       updateMainPoints(selectedSermon.main_points || []);
+    } else {
+      // Clear state when no sermon is selected
+      setContent('');
+      setTitle('');
+      setScriptureRefs('');
     }
   }, [selectedSermon, updateContent, updateTitle, updateScriptureReference, updateMainPoints]);
   
@@ -268,23 +287,6 @@ const SermonsContent = () => {
   useEffect(() => {
     calculateStats();
   }, [sermons, calculateStats]);
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (autoSave && selectedSermon && (title || content)) {
-      if (autoSaveRef.current) {
-        clearTimeout(autoSaveRef.current);
-      }
-      autoSaveRef.current = setTimeout(() => {
-        handleSaveSermon(true);
-      }, 2000);
-    }
-    return () => {
-      if (autoSaveRef.current) {
-        clearTimeout(autoSaveRef.current);
-      }
-    };
-  }, [title, content, autoSave, selectedSermon]);
 
   const loadSermons = async () => {
     if (!user?.id) {
@@ -420,26 +422,32 @@ const SermonsContent = () => {
   };
 
   const handleSaveSermon = useCallback(async (isAutoSave = false) => {
-    if (!user || (!title.trim() && !content.trim())) return;
+    if (!user) return;
+    
+    // Use selectedSermon's title/content if available, otherwise use state
+    const currentTitle = selectedSermon?.title || title || 'Untitled Sermon';
+    const currentContent = selectedSermon?.content || content || '';
+    
+    if (!currentTitle.trim() && !currentContent.trim()) return;
 
     if (!isAutoSave) setSaving(true);
     
     try {
       const sermonData = {
-        title: title || 'Untitled Sermon',
-        content: content || '',
-        scripture_reference: scriptureRefs || null,
-        scripture_references: scriptureRefs ? scriptureRefs.split(',').map(s => s.trim()).filter(Boolean) : [],
-        notes: privateNotes || null,
-        private_notes: privateNotes || null,
-        tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-        status,
-        series_name: seriesName || null,
-        language: 'english' as const,
-        category: 'general',
-        is_draft: status === 'draft',
-        ai_generated: false,
-        template_type: null,
+        title: currentTitle,
+        content: currentContent,
+        scripture_reference: selectedSermon?.scripture_reference || scriptureRefs || null,
+        scripture_references: (selectedSermon?.scripture_reference || scriptureRefs) ? (selectedSermon?.scripture_reference || scriptureRefs).split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+        notes: selectedSermon?.private_notes || privateNotes || null,
+        private_notes: selectedSermon?.private_notes || privateNotes || null,
+        tags: (selectedSermon?.tags || tags) ? ((Array.isArray(selectedSermon?.tags) ? selectedSermon.tags.join(',') : selectedSermon?.tags) || tags).split(',').map((t: string) => t.trim()).filter(Boolean) : [],
+        status: selectedSermon?.status || status,
+        series_name: selectedSermon?.series_name || seriesName || null,
+        language: (selectedSermon?.language || 'english') as const,
+        category: selectedSermon?.category || 'general',
+        is_draft: (selectedSermon?.status || status) === 'draft',
+        ai_generated: selectedSermon?.ai_generated || false,
+        template_type: selectedSermon?.template_type || null,
         // Don't set word_count and estimated_time manually - let database triggers handle it
         updated_at: new Date().toISOString()
       };
@@ -466,9 +474,9 @@ const SermonsContent = () => {
             
             // Retry with basic data only
             const basicData = {
-              title: title || 'Untitled Sermon',
-              content: content || '',
-              scripture_reference: scriptureRefs || null,
+              title: currentTitle,
+              content: currentContent,
+              scripture_reference: selectedSermon?.scripture_reference || scriptureRefs || null,
               updated_at: new Date().toISOString()
             };
             
@@ -521,11 +529,11 @@ const SermonsContent = () => {
             // Retry with basic data only (minimal required fields)
             const basicData = {
               user_id: user.id,
-              title: (title || 'Untitled Sermon').trim(),
-              content: (content || '').trim(),
-              scripture_reference: scriptureRefs?.trim() || null,
-              status: status || 'draft',
-              is_draft: (status || 'draft') === 'draft',
+              title: currentTitle.trim(),
+              content: currentContent.trim(),
+              scripture_reference: (selectedSermon?.scripture_reference || scriptureRefs)?.trim() || null,
+              status: (selectedSermon?.status || status) || 'draft',
+              is_draft: ((selectedSermon?.status || status) || 'draft') === 'draft',
               language: 'english',
               category: 'general',
               created_at: new Date().toISOString(),
@@ -602,7 +610,29 @@ const SermonsContent = () => {
     } finally {
       if (!isAutoSave) setSaving(false);
     }
-  }, [user, title, content, scriptureRefs, privateNotes, tags, status, seriesName, selectedSermon]);
+  }, [user, title, content, scriptureRefs, privateNotes, tags, status, seriesName, selectedSermon, toast]);
+
+  // Auto-save functionality - use ref to avoid stale closures
+  const handleSaveSermonRef = useRef(handleSaveSermon);
+  useEffect(() => {
+    handleSaveSermonRef.current = handleSaveSermon;
+  }, [handleSaveSermon]);
+
+  useEffect(() => {
+    if (autoSave && selectedSermon && selectedSermon.id && (selectedSermon.title || selectedSermon.content)) {
+      if (autoSaveRef.current) {
+        clearTimeout(autoSaveRef.current);
+      }
+      autoSaveRef.current = setTimeout(() => {
+        handleSaveSermonRef.current(true);
+      }, 2000);
+    }
+    return () => {
+      if (autoSaveRef.current) {
+        clearTimeout(autoSaveRef.current);
+      }
+    };
+  }, [selectedSermon?.title, selectedSermon?.content, autoSave, selectedSermon?.id]);
 
   const handleNewSermon = () => {
     setSelectedSermon({
@@ -706,7 +736,8 @@ const SermonsContent = () => {
     const verseText = `<blockquote>"${verse.text}"<br>— ${verse.book_name} ${verse.chapter}:${verse.verse}</blockquote>`;
     
     if (editorRef.current && selectedSermon) {
-      editorRef.current.focus();
+      const editor = editorRef.current;
+      editor.focus();
       const selection = window.getSelection();
       
       if (selection && selection.rangeCount > 0) {
@@ -722,12 +753,22 @@ const SermonsContent = () => {
         range.collapse(false);
         selection.removeAllRanges();
         selection.addRange(range);
+        
+        // Update content after insertion
+        const newContent = editor.innerHTML;
+        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+        updateContent(newContent);
       } else {
         // Fallback: append to end
         const currentContent = selectedSermon.content || '';
-        const newContent = currentContent + verseText;
+        const newContent = currentContent + (currentContent ? '<br>' : '') + verseText;
         setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
         updateContent(newContent);
+        
+        // Update editor content
+        if (editor) {
+          editor.innerHTML = newContent;
+        }
       }
     }
     
@@ -806,42 +847,61 @@ const SermonsContent = () => {
   // Removed old sendAIMessage function - now using comprehensive AI Assistant component
 
   const handleFormatText = (format: string, formattedText?: string) => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || !(editorRef.current instanceof HTMLDivElement)) return;
 
-    const textarea = editorRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
+    const editor = editorRef.current;
+    const selection = window.getSelection();
+    
+    if (!selection || selection.rangeCount === 0) {
+      // No selection, just insert formatted text at cursor
+      editor.focus();
+      return;
+    }
 
+    const range = selection.getRangeAt(0);
+    const selectedText = range.toString();
+    
     let replacement = '';
     switch (format) {
       case 'bold':
-        replacement = `**${selectedText || 'bold text'}**`;
+        replacement = `<strong>${selectedText || 'bold text'}</strong>`;
         break;
       case 'italic':
-        replacement = `*${selectedText || 'italic text'}*`;
+        replacement = `<em>${selectedText || 'italic text'}</em>`;
         break;
       case 'heading':
-        replacement = `## ${selectedText || 'Heading'}`;
+        replacement = `<h2>${selectedText || 'Heading'}</h2>`;
         break;
       case 'list':
-        replacement = `- ${selectedText || 'List item'}`;
+        replacement = `<ul><li>${selectedText || 'List item'}</li></ul>`;
         break;
       case 'quote':
-        replacement = `> ${selectedText || 'Quote'}`;
+        replacement = `<blockquote>${selectedText || 'Quote'}</blockquote>`;
         break;
       default:
         if (formattedText) replacement = formattedText;
+        else replacement = selectedText;
         break;
     }
 
-    const newContent = content.substring(0, start) + replacement + content.substring(end);
+    range.deleteContents();
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = replacement;
+    const fragment = document.createDocumentFragment();
+    while (tempDiv.firstChild) {
+      fragment.appendChild(tempDiv.firstChild);
+    }
+    range.insertNode(fragment);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Update content
+    const newContent = editor.innerHTML;
+    const currentContent = selectedSermon?.content || content;
+    setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
     setContent(newContent);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + replacement.length, start + replacement.length);
-    }, 0);
+    updateContent(newContent);
   };
 
   const handleExportPDF = useCallback(async () => {
@@ -962,7 +1022,8 @@ const SermonsContent = () => {
 
   const handleInsertQuickText = (text: string) => {
     if (editorRef.current && editorRef.current instanceof HTMLDivElement) {
-      editorRef.current.focus();
+      const editor = editorRef.current;
+      editor.focus();
       const selection = window.getSelection();
       
       if (selection && selection.rangeCount > 0) {
@@ -973,12 +1034,20 @@ const SermonsContent = () => {
         range.collapse(false);
         selection.removeAllRanges();
         selection.addRange(range);
+        
+        // Update content after insertion
+        const newContent = editor.innerHTML;
+        setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
+        updateContent(newContent);
       } else {
         // Fallback: append to end
         const currentContent = selectedSermon?.content || '';
-        const newContent = currentContent + text;
+        const newContent = currentContent + (currentContent ? '<br>' : '') + text;
         setSelectedSermon(prev => prev ? { ...prev, content: newContent } : null);
         updateContent(newContent);
+        
+        // Update editor content
+        editor.innerHTML = newContent;
       }
     }
   };
@@ -1148,13 +1217,63 @@ const SermonsContent = () => {
   };
 
   const scrollToOutlineItem = (content: string) => {
-    if (editorRef.current) {
-      const textareaContent = editorRef.current.value;
-      const index = textareaContent.indexOf(content);
+    if (editorRef.current && editorRef.current instanceof HTMLDivElement) {
+      const editor = editorRef.current;
+      const editorContent = editor.textContent || editor.innerText || '';
+      const index = editorContent.indexOf(content);
+      
       if (index !== -1) {
-        editorRef.current.focus();
-        editorRef.current.setSelectionRange(index, index + content.length);
-        editorRef.current.scrollTop = Math.max(0, (index / textareaContent.length) * editorRef.current.scrollHeight - 200);
+        editor.focus();
+        
+        // Create a range and select the text
+        const range = document.createRange();
+        const walker = document.createTreeWalker(
+          editor,
+          NodeFilter.SHOW_TEXT,
+          null
+        );
+        
+        let charCount = 0;
+        let startNode: Node | null = null;
+        let endNode: Node | null = null;
+        let startOffset = 0;
+        let endOffset = 0;
+        
+        while (walker.nextNode()) {
+          const node = walker.currentNode;
+          const nodeLength = node.textContent?.length || 0;
+          
+          if (!startNode && charCount + nodeLength >= index) {
+            startNode = node;
+            startOffset = index - charCount;
+          }
+          
+          if (!endNode && charCount + nodeLength >= index + content.length) {
+            endNode = node;
+            endOffset = index + content.length - charCount;
+            break;
+          }
+          
+          charCount += nodeLength;
+        }
+        
+        if (startNode && endNode) {
+          try {
+            range.setStart(startNode, startOffset);
+            range.setEnd(endNode, endOffset);
+            const selection = window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(range);
+              
+              // Scroll into view
+              range.getBoundingClientRect();
+              editor.scrollTop = Math.max(0, editor.scrollTop - 100);
+            }
+          } catch (e) {
+            console.error('Error scrolling to outline item:', e);
+          }
+        }
       }
     }
   };

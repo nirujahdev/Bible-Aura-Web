@@ -125,17 +125,20 @@ export default async function handler(
           { role: 'user' as const, content: sanitizedPrompt }
         ];
 
+    // Use gpt-4o for better performance and cost-effectiveness
+    const modelName = 'gpt-4o';
+    
     console.log('[Sermon AI API] Calling OpenAI API:', {
-      model: 'gpt-4.1',
+      model: modelName,
       messagesCount: messageArray.length,
       maxTokens: Math.min(maxTokens, 4000),
       temperature: Math.max(0, Math.min(2, temperature))
     });
 
     const startTime = Date.now();
-    // Call OpenAI API with GPT-4.1
+    // Call OpenAI API with GPT-4o
     const completion = await client.chat.completions.create({
-      model: 'gpt-4.1',
+      model: modelName,
       messages: messageArray,
       max_tokens: Math.min(maxTokens, 4000), // Cap at 4000 for safety
       temperature: Math.max(0, Math.min(2, temperature)) // Clamp between 0 and 2
@@ -164,7 +167,7 @@ export default async function handler(
 
     res.status(200).json({
       content: content,
-      model: 'gpt-4.1',
+      model: modelName,
       usage: completion.usage
     });
 
