@@ -930,7 +930,9 @@ How can I apply this to my life?
   const newTestamentBooks = books.filter(book => book.testament === 'new');
 
   // Reusable Sidebar Content Component - Works for both mobile and desktop - Clean Modern UI
-  const renderSidebarContent = (isMobileSidebar = false) => {
+  const renderSidebarContent = (isMobileSidebar = false, sidebarContext?: typeof rightSidebar) => {
+    // Use the provided context or fallback to the outer scope rightSidebar
+    const effectiveContext = sidebarContext || rightSidebar;
     return (
       <>
         {/* Clean Header with Language/Translation and Search */}
@@ -1006,12 +1008,16 @@ How can I apply this to my life?
                 setSearchResults([]);
               }
               if (isMobileSidebar) {
-                setTimeout(() => {
-                  setMobileSidebarOpen(false);
-                  if (rightSidebar?.setRightSidebarOpen) {
-                    rightSidebar.setRightSidebarOpen(false);
-                  }
-                }, 150);
+                // Don't close sidebar when switching to search tab
+                // Only close when switching back to read tab
+                if (value === 'read') {
+                  setTimeout(() => {
+                    setMobileSidebarOpen(false);
+                    if (effectiveContext?.setRightSidebarOpen) {
+                      effectiveContext.setRightSidebarOpen(false);
+                    }
+                  }, 150);
+                }
               }
             }
           }}
@@ -1087,8 +1093,8 @@ How can I apply this to my life?
                             if (isMobileSidebar) {
                               setTimeout(() => {
                                 setMobileSidebarOpen(false);
-                                if (rightSidebar?.setRightSidebarOpen) {
-                                  rightSidebar.setRightSidebarOpen(false);
+                                if (effectiveContext?.setRightSidebarOpen) {
+                                  effectiveContext.setRightSidebarOpen(false);
                                 }
                               }, 200);
                             }
@@ -1148,8 +1154,8 @@ How can I apply this to my life?
                             if (isMobileSidebar) {
                               setTimeout(() => {
                                 setMobileSidebarOpen(false);
-                                if (rightSidebar?.setRightSidebarOpen) {
-                                  rightSidebar.setRightSidebarOpen(false);
+                                if (effectiveContext?.setRightSidebarOpen) {
+                                  effectiveContext.setRightSidebarOpen(false);
                                 }
                               }, 200);
                             }
@@ -1319,7 +1325,12 @@ How can I apply this to my life?
                               setActiveTab('read');
                               // Close mobile sidebar
                               if (isMobileSidebar) {
-                                setTimeout(() => setMobileSidebarOpen(false), 200);
+                                setTimeout(() => {
+                                  setMobileSidebarOpen(false);
+                                  if (effectiveContext?.setRightSidebarOpen) {
+                                    effectiveContext.setRightSidebarOpen(false);
+                                  }
+                                }, 200);
                               }
                             }
                           }}
@@ -1382,7 +1393,7 @@ How can I apply this to my life?
           {!isMobile && (
             <div className="w-80 bg-white border-r border-gray-200 overflow-hidden flex flex-col">
               {/* Sidebar Content - Shared component for desktop */}
-              {renderSidebarContent()}
+              {renderSidebarContent(false, effectiveRightSidebar)}
             </div>
           )}
 
@@ -1396,7 +1407,7 @@ How can I apply this to my life?
                     <span className="text-lg font-semibold text-gray-800">Bible Study</span>
                   </SheetTitle>
                 </SheetHeader>
-                {renderSidebarContent(true)}
+                {renderSidebarContent(true, effectiveRightSidebar)}
               </SheetContent>
             </Sheet>
           )}
@@ -1457,7 +1468,7 @@ How can I apply this to my life?
                   </div>
                 </SheetHeader>
                 <div className="flex-1 overflow-hidden">
-                  {renderSidebarContent(true)}
+                  {renderSidebarContent(true, effectiveRightSidebar)}
                 </div>
               </SheetContent>
             </Sheet>
