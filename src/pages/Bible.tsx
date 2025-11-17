@@ -1527,7 +1527,7 @@ How can I apply this to my life?
             >
               <SheetContent 
                 side="right" 
-                className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
+                className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60] [&>button]:hidden"
                 onPointerDownOutside={(e) => {
                   console.log('[Bible] Clicked outside sheet');
                   if (effectiveRightSidebar?.setRightSidebarOpen) {
@@ -1570,14 +1570,6 @@ How can I apply this to my life?
               </SheetContent>
             </Sheet>
           )}
-          {/* Debug info - Remove in production */}
-          {isMobile && (
-            <div className="fixed bottom-20 left-4 bg-black/80 text-white text-xs p-2 rounded z-[100] pointer-events-none">
-              <div>Mobile: {isMobile ? 'Yes' : 'No'}</div>
-              <div>RightSidebar: {effectiveRightSidebar ? 'Yes' : 'No'}</div>
-              <div>Open: {effectiveRightSidebar?.rightSidebarOpen ? 'Yes' : 'No'}</div>
-            </div>
-          )}
 
           {/* Main Reading Area - Adjust when AI chat is open */}
           <div className={cn(
@@ -1586,9 +1578,9 @@ How can I apply this to my life?
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 border-b border-gray-200 bg-white ${isMobile ? 'p-3 pt-2' : 'p-4'}`}>
-              {/* Mobile: Book selection dropdown at top */}
-              {isMobile && (
-                <div className="mb-3">
+              {/* Mobile: Book and Chapter selection in same line */}
+              {isMobile ? (
+                <div className="flex items-center gap-2">
                   <Select 
                     value={selectedBook?.name || ''} 
                     onValueChange={(value) => {
@@ -1598,8 +1590,9 @@ How can I apply this to my life?
                         setSelectedChapter(1);
                       }
                     }}
+                    className="flex-1"
                   >
-                    <SelectTrigger className="h-10 w-full border-gray-300 hover:border-orange-400 transition-colors bg-white">
+                    <SelectTrigger className="h-10 border-gray-300 hover:border-orange-400 transition-colors bg-white">
                       <SelectValue placeholder="Select a book">
                         {selectedBook ? (
                           <span className="text-sm font-medium">{getBookDisplayName(selectedBook.name)}</span>
@@ -1633,30 +1626,15 @@ How can I apply this to my life?
                       </div>
                     </SelectContent>
                   </Select>
-                </div>
-              )}
-              
-              <div className="flex items-center justify-center gap-2">
-                {selectedBook && (
-                  <>
-                    {!isMobile && (
-                      <>
-                        <h1 className="font-bold text-gray-800 text-base sm:text-xl">
-                          {getBookDisplayName(selectedBook.name)}
-                        </h1>
-                        <span className="text-gray-600 text-sm sm:text-base">-</span>
-                      </>
-                    )}
+                  {selectedBook && (
                     <Select 
                       value={selectedChapter.toString()} 
                       onValueChange={(value) => setSelectedChapter(parseInt(value))}
+                      className="flex-shrink-0"
                     >
-                      <SelectTrigger className={cn(
-                        "border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white",
-                        isMobile ? "h-9 w-full" : "h-8 sm:h-9 w-auto min-w-[100px] sm:min-w-[120px]"
-                      )}>
+                      <SelectTrigger className="h-10 w-auto min-w-[100px] border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white">
                         <SelectValue>
-                          <span className="text-xs sm:text-sm font-medium">Chapter {selectedChapter}</span>
+                          <span className="text-xs font-medium">Ch {selectedChapter}</span>
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
@@ -1671,9 +1649,41 @@ How can I apply this to my life?
                         ))}
                       </SelectContent>
                     </Select>
-                  </>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  {selectedBook && (
+                    <>
+                      <h1 className="font-bold text-gray-800 text-base sm:text-xl">
+                        {getBookDisplayName(selectedBook.name)}
+                      </h1>
+                      <span className="text-gray-600 text-sm sm:text-base">-</span>
+                      <Select 
+                        value={selectedChapter.toString()} 
+                        onValueChange={(value) => setSelectedChapter(parseInt(value))}
+                      >
+                        <SelectTrigger className="h-8 sm:h-9 w-auto min-w-[100px] sm:min-w-[120px] border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white">
+                          <SelectValue>
+                            <span className="text-xs sm:text-sm font-medium">Chapter {selectedChapter}</span>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                          {Array.from({ length: selectedBook.chapters || 1 }, (_, i) => i + 1).map((chapter) => (
+                            <SelectItem 
+                              key={chapter} 
+                              value={chapter.toString()}
+                              className="cursor-pointer text-xs sm:text-sm"
+                            >
+                              Chapter {chapter}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Reading Progress - Mobile optimized */}
               {readingPlan && (
