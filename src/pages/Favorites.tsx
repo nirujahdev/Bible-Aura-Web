@@ -237,40 +237,66 @@ export default function Favorites() {
               ) : filteredVerses.length > 0 ? (
                 <div className="grid gap-4">
                   {filteredVerses.map((verse) => (
-                    <Card key={verse.id} className="hover:shadow-md transition-shadow">
+                    <Card key={verse.id} className="hover:shadow-md transition-shadow bg-white">
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <BookOpen className="h-4 w-4 text-primary" />
-                              <h3 className="font-semibold text-lg">
-                                {verse.book_name} {verse.chapter}:{verse.verse_number}
-                              </h3>
-                              <Badge variant="secondary">Favorite</Badge>
-                            </div>
-                            {verse.verse_text && (
-                              <p className="text-muted-foreground mb-3 leading-relaxed">
-                                {verse.verse_text}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              Added {new Date(verse.created_at).toLocaleDateString()}
-                            </div>
+                        {/* Header Section */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0 fill-current" />
+                            <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate">
+                              {verse.book_name} {verse.chapter}:{verse.verse_number}
+                            </h3>
+                            <span className="text-orange-500 text-xs sm:text-sm font-medium flex-shrink-0">Favorite</span>
                           </div>
-                          <div className="flex items-center gap-1 ml-4">
-                            <Button variant="ghost" size="sm">
-                              <Share className="h-4 w-4" />
+                          <div className="flex items-center gap-1 sm:gap-2 ml-2 flex-shrink-0">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Share functionality
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: `${verse.book_name} ${verse.chapter}:${verse.verse_number}`,
+                                    text: verse.verse_text || '',
+                                  }).catch(() => {});
+                                } else {
+                                  navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse_number}\n\n${verse.verse_text || ''}`);
+                                  toast({
+                                    title: "Copied to clipboard",
+                                    description: "Verse text copied to clipboard",
+                                  });
+                                }
+                              }}
+                            >
+                              <Share className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                             </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => removeFavoriteVerse(verse.id)}
-                              className="text-red-500 hover:text-red-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeFavoriteVerse(verse.id);
+                              }}
+                              className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                           </div>
+                        </div>
+
+                        {/* Verse Content */}
+                        {verse.verse_text && (
+                          <p className="text-gray-900 text-sm sm:text-base leading-relaxed mb-3">
+                            {verse.verse_text}
+                          </p>
+                        )}
+
+                        {/* Footer Section */}
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 pt-2 border-t border-gray-100">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                          <span>Added {new Date(verse.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -302,42 +328,66 @@ export default function Favorites() {
               ) : filteredBookmarks.length > 0 ? (
                 <div className="grid gap-4">
                   {filteredBookmarks.map((bookmark) => (
-                    <Card key={bookmark.id} className="hover:shadow-md transition-shadow">
+                    <Card key={bookmark.id} className="hover:shadow-md transition-shadow bg-white">
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Bookmark className="h-4 w-4 text-primary" />
-                              <h3 className="font-semibold text-lg">
-                                {bookmark.book_name} {bookmark.chapter}:{bookmark.verse_number}
-                              </h3>
-                              <Badge variant="secondary" className={`bg-${bookmark.highlight_color}-100 text-${bookmark.highlight_color}-800`}>
-                                {bookmark.category}
-                              </Badge>
-                            </div>
-                            {bookmark.verse_text && (
-                              <p className="text-muted-foreground mb-3 leading-relaxed">
-                                {bookmark.verse_text}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              Added {new Date(bookmark.created_at).toLocaleDateString()}
-                            </div>
+                        {/* Header Section */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
+                            <h3 className="font-bold text-base sm:text-lg text-gray-900 truncate">
+                              {bookmark.book_name} {bookmark.chapter}:{bookmark.verse_number}
+                            </h3>
+                            <span className="text-orange-500 text-xs sm:text-sm font-medium flex-shrink-0">Bookmark</span>
                           </div>
-                          <div className="flex items-center gap-1 ml-4">
-                            <Button variant="ghost" size="sm">
-                              <Share className="h-4 w-4" />
+                          <div className="flex items-center gap-1 sm:gap-2 ml-2 flex-shrink-0">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-gray-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Share functionality
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: `${bookmark.book_name} ${bookmark.chapter}:${bookmark.verse_number}`,
+                                    text: bookmark.verse_text || '',
+                                  }).catch(() => {});
+                                } else {
+                                  navigator.clipboard.writeText(`${bookmark.book_name} ${bookmark.chapter}:${bookmark.verse_number}\n\n${bookmark.verse_text || ''}`);
+                                  toast({
+                                    title: "Copied to clipboard",
+                                    description: "Verse text copied to clipboard",
+                                  });
+                                }
+                              }}
+                            >
+                              <Share className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                             </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => removeBookmark(bookmark.id)}
-                              className="text-red-500 hover:text-red-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeBookmark(bookmark.id);
+                              }}
+                              className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                           </div>
+                        </div>
+
+                        {/* Verse Content */}
+                        {bookmark.verse_text && (
+                          <p className="text-gray-900 text-sm sm:text-base leading-relaxed mb-3">
+                            {bookmark.verse_text}
+                          </p>
+                        )}
+
+                        {/* Footer Section */}
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 pt-2 border-t border-gray-100">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                          <span>Added {new Date(bookmark.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                         </div>
                       </CardContent>
                     </Card>
