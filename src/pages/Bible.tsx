@@ -558,29 +558,23 @@ export default function Bible() {
       // Combine results from both languages
       let results = [...englishResults, ...tamilResults];
       
-      // Sort by relevance score (highest first) - better results come first
-      results.sort((a, b) => {
-        const scoreA = a.relevanceScore || 0;
-        const scoreB = b.relevanceScore || 0;
-        return scoreB - scoreA; // Sort descending
-      });
-      
-      // Remove duplicates (same book, chapter, verse) - keep the one with higher relevance
+      // Remove duplicates first (more efficient than sorting twice)
       const uniqueResults = new Map<string, BibleVerse>();
       for (const verse of results) {
         const key = `${verse.book_name}-${verse.chapter}-${verse.verse}`;
         const existing = uniqueResults.get(key);
-        if (!existing || (verse.relevanceScore || 0) > (existing.relevanceScore || 0)) {
+        const verseScore = verse.relevanceScore || 0;
+        if (!existing || verseScore > (existing.relevanceScore || 0)) {
           uniqueResults.set(key, verse);
         }
       }
       results = Array.from(uniqueResults.values());
       
-      // Re-sort after deduplication
+      // Sort by relevance score once (highest first) - better results come first
       results.sort((a, b) => {
         const scoreA = a.relevanceScore || 0;
         const scoreB = b.relevanceScore || 0;
-        return scoreB - scoreA;
+        return scoreB - scoreA; // Sort descending
       });
       
       // Apply filters after combining results
@@ -592,38 +586,32 @@ export default function Bible() {
       }
       
       if (searchFilters.exactMatch) {
-        const queryTrimmed = searchQuery.trim();
+        const queryTrimmed = searchTerm.trim();
         if (queryTrimmed.length === 0) {
           results = [];
         } else {
           const queryLower = queryTrimmed.toLowerCase();
           const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
           
+          // Pre-compile regex for better performance
+          let filterRegex: RegExp;
+          if (queryWords.length === 1) {
+            const word = queryWords[0];
+            const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filterRegex = new RegExp(`\\b${escapedWord}\\b`, 'i');
+          } else {
+            const escapedWords = queryWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            filterRegex = new RegExp(
+              escapedWords.map(w => `\\b${w}\\b`).join('\\s+'),
+              'i'
+            );
+          }
+          
           // For exact match, check for exact phrase match (case-insensitive)
           results = results.filter(verse => {
             // Get clean verse text (remove HTML tags if any)
             const verseText = verse.text.replace(/<[^>]*>/g, '').trim();
-            const verseTextLower = verseText.toLowerCase();
-            
-            // If single word, check word boundaries (case-insensitive)
-            if (queryWords.length === 1) {
-              const word = queryWords[0];
-              // Escape special regex characters
-              const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              // Use word boundaries for exact word match
-              const wordBoundaryRegex = new RegExp(`\\b${escapedWord}\\b`, 'i');
-              return wordBoundaryRegex.test(verseText);
-            } else {
-              // If multiple words, check exact phrase match with word boundaries
-              // Escape special regex characters
-              const escapedWords = queryWords.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-              // Match words in order with word boundaries and flexible whitespace
-              const phraseRegex = new RegExp(
-                escapedWords.map(w => `\\b${w}\\b`).join('\\s+'),
-                'i'
-              );
-              return phraseRegex.test(verseText);
-            }
+            return filterRegex.test(verseText);
           });
         }
       }
@@ -633,19 +621,8 @@ export default function Bible() {
       
       setSearchResults(results);
       
-      if (results.length === 0) {
-        toast({
-          title: "No Results",
-          description: "No verses found matching your search in English or Tamil",
-        });
-      } else {
-        const englishCount = results.filter(r => r.language === 'english').length;
-        const tamilCount = results.filter(r => r.language === 'tamil').length;
-        toast({
-          title: "Search Complete",
-          description: `Found ${results.length} verses (${englishCount} English, ${tamilCount} Tamil)`,
-        });
-      }
+      // Only show toast for errors - remove success notifications to reduce lag
+      // Users can see results in the UI
     } catch (error: any) {
       // Don't show error if search was aborted
       if (abortController.signal.aborted) {
@@ -665,33 +642,46 @@ export default function Bible() {
     }
   }, [searchQuery, searchFilters, selectedTranslation, fuzzySearchEnabled, books, toast]);
 
-  // Debounced search effect - only search after user stops typing for 500ms
+  // Debounced search effect - only search after user stops typing for 800ms
   useEffect(() => {
     // Clear previous timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
+    const trimmedQuery = searchQuery.trim();
+    
     // If search query is empty, clear results immediately
-    if (!searchQuery.trim()) {
+    if (!trimmedQuery) {
       setSearchResults([]);
       setLoading(false);
       return;
     }
 
-    // Set loading state immediately for better UX
-    setLoading(true);
+    // Minimum query length check - don't search for very short queries
+    if (trimmedQuery.length < 2) {
+      setSearchResults([]);
+      setLoading(false);
+      return;
+    }
 
-    // Debounce the search - wait 500ms after user stops typing
+    // Set loading state after a short delay to avoid flickering
+    const loadingTimeout = setTimeout(() => {
+      setLoading(true);
+    }, 300);
+
+    // Debounce the search - wait 800ms after user stops typing (increased for better performance)
     searchTimeoutRef.current = setTimeout(() => {
-      handleSearch();
-    }, 500);
+      clearTimeout(loadingTimeout);
+      handleSearch(trimmedQuery);
+    }, 800);
 
     // Cleanup function
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
+      clearTimeout(loadingTimeout);
     };
   }, [searchQuery, handleSearch]);
 
@@ -1047,7 +1037,11 @@ How can I apply this to my life?
                   if (searchTimeoutRef.current) {
                     clearTimeout(searchTimeoutRef.current);
                   }
-                  handleSearch();
+                  const trimmedQuery = searchQuery.trim();
+                  if (trimmedQuery.length >= 2) {
+                    setLoading(true);
+                    handleSearch(trimmedQuery);
+                  }
                 }
               }}
               onFocus={() => {
