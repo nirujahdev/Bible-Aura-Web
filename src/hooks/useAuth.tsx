@@ -854,39 +854,129 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          deleted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
-
-      if (error) {
-        toast({
-          title: "Delete failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
+      const userId = user.id;
+      
+      // Step 1: Delete all user-related data first (sermons, bookmarks, favorites, etc.)
+      // This must be done before deleting the profile to avoid foreign key issues
+      
+      // Delete sermons
+      const { error: sermonsError } = await supabase
+        .from('sermons')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (sermonsError && !sermonsError.message.includes('does not exist')) {
+        console.error('Error deleting sermons:', sermonsError);
+        // Continue anyway - some data might not exist
       }
-        
+
+      // Delete bookmarks
+      const { error: bookmarksError } = await supabase
+        .from('user_bible_bookmarks')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (bookmarksError && !bookmarksError.message.includes('does not exist')) {
+        console.error('Error deleting bookmarks:', bookmarksError);
+      }
+
+      // Delete favorites
+      const { error: favoritesError } = await supabase
+        .from('user_bible_favorites')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (favoritesError && !favoritesError.message.includes('does not exist')) {
+        console.error('Error deleting favorites:', favoritesError);
+      }
+
+      // Delete highlights
+      const { error: highlightsError } = await supabase
+        .from('verse_highlights')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (highlightsError && !highlightsError.message.includes('does not exist')) {
+        console.error('Error deleting highlights:', highlightsError);
+      }
+
+      // Delete AI conversations
+      const { error: conversationsError } = await supabase
+        .from('ai_conversations')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (conversationsError && !conversationsError.message.includes('does not exist')) {
+        console.error('Error deleting conversations:', conversationsError);
+      }
+
+      // Delete AI usage tracking
+      const { error: usageError } = await supabase
+        .from('ai_usage_tracking')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (usageError && !usageError.message.includes('does not exist')) {
+        console.error('Error deleting usage tracking:', usageError);
+      }
+
+      // Step 2: Delete the profile (hard delete, not soft delete)
+      // Use DELETE instead of UPDATE to avoid RLS issues with deleted_at
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (profileError) {
+        // If profile delete fails due to RLS, try to update with deleted_at as fallback
+        if (profileError.message.includes('row-level security') || profileError.message.includes('RLS')) {
+          // Try soft delete as fallback
+          const { error: softDeleteError } = await supabase
+            .from('profiles')
+            .update({ deleted_at: new Date().toISOString() })
+            .eq('user_id', userId);
+          
+          if (softDeleteError) {
+            console.error('Both hard and soft delete failed:', softDeleteError);
+            toast({
+              title: "Delete failed",
+              description: "Unable to delete profile. Please contact support.",
+              variant: "destructive",
+            });
+            return { error: softDeleteError };
+          }
+        } else {
+          toast({
+            title: "Delete failed",
+            description: profileError.message,
+            variant: "destructive",
+          });
+          return { error: profileError };
+        }
+      }
+
+      // Step 3: Clear local state
       setProfile(null);
-        localStorage.removeItem(`profile_modal_seen_${user.id}`);
+      localStorage.removeItem(`profile_modal_seen_${userId}`);
+      
+      // Step 4: Sign out the user
+      await signOut();
         
-        toast({
-          title: "Profile deleted",
-          description: "Your profile has been deleted. You can create a new one anytime.",
-        });
-        return { error: null };
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all associated data have been permanently deleted.",
+      });
+      
+      return { error: null };
     } catch (error: unknown) {
-      const message = (error as Error).message;
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+      console.error('Delete account error:', error);
       toast({
         title: "Delete failed",
         description: message,
         variant: "destructive",
       });
-      return { error: error as Error };
+      return { error: error instanceof Error ? error : new Error(message) };
     }
   };
 

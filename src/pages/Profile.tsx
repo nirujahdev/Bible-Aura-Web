@@ -478,11 +478,10 @@ const Profile = () => {
           description: "Your account has been deleted. You will be signed out.",
         });
         
-        // Sign out after a short delay
-        setTimeout(async () => {
-          await signOut();
+        // Redirect to auth page immediately (signOut is already called in deleteProfile)
+        setTimeout(() => {
           window.location.href = '/auth';
-        }, 2000);
+        }, 1500);
       }
     } catch (error) {
       console.error('Delete account error:', error);
