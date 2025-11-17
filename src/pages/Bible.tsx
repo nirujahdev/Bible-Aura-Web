@@ -1395,11 +1395,14 @@ How can I apply this to my life?
           {/* Right Side Sheet - Opened from 3-dot menu - Mobile Only */}
           {isMobile && rightSidebar && (
             <Sheet 
-              open={rightSidebar.rightSidebarOpen || false} 
+              open={!!rightSidebar.rightSidebarOpen} 
               onOpenChange={(open) => {
-                console.log('Sheet onOpenChange:', open);
+                console.log('Sheet onOpenChange called:', open, 'rightSidebar exists:', !!rightSidebar);
                 if (rightSidebar?.setRightSidebarOpen) {
+                  console.log('Calling setRightSidebarOpen with:', open);
                   rightSidebar.setRightSidebarOpen(open);
+                } else {
+                  console.error('setRightSidebarOpen is not available');
                 }
               }}
               modal={true}
