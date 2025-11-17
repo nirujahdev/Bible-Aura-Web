@@ -90,10 +90,12 @@ export default function Bible() {
 
   // Debug rightSidebar state
   useEffect(() => {
-    if (isMobile && rightSidebar) {
-      console.log('RightSidebar state:', rightSidebar.rightSidebarOpen);
+    if (isMobile) {
+      console.log('RightSidebar context:', rightSidebar);
+      console.log('RightSidebar state:', rightSidebar?.rightSidebarOpen);
+      console.log('Is mobile:', isMobile);
     }
-  }, [rightSidebar?.rightSidebarOpen, isMobile]);
+  }, [rightSidebar?.rightSidebarOpen, isMobile, rightSidebar]);
   
   const [books, setBooks] = useState<BibleBook[]>([]);
   const [tamilBookNames, setTamilBookNames] = useState<TamilBookName[]>([]);
@@ -1395,17 +1397,34 @@ How can I apply this to my life?
           {/* Right Side Sheet - Opened from 3-dot menu - Mobile Only */}
           {isMobile && rightSidebar && (
             <Sheet 
-              open={!!rightSidebar.rightSidebarOpen} 
+              open={rightSidebar.rightSidebarOpen || false}
               onOpenChange={(open) => {
+                console.log('[Bible] Sheet onOpenChange:', open);
+                console.log('[Bible] rightSidebar object:', rightSidebar);
                 if (rightSidebar?.setRightSidebarOpen) {
+                  console.log('[Bible] Setting rightSidebarOpen to:', open);
                   rightSidebar.setRightSidebarOpen(open);
+                } else {
+                  console.error('[Bible] ERROR: setRightSidebarOpen is not available!');
                 }
               }}
-              modal={false}
+              modal={true}
             >
               <SheetContent 
                 side="right" 
                 className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
+                onPointerDownOutside={(e) => {
+                  console.log('[Bible] Clicked outside sheet');
+                  if (rightSidebar?.setRightSidebarOpen) {
+                    rightSidebar.setRightSidebarOpen(false);
+                  }
+                }}
+                onEscapeKeyDown={(e) => {
+                  console.log('[Bible] Escape key pressed');
+                  if (rightSidebar?.setRightSidebarOpen) {
+                    rightSidebar.setRightSidebarOpen(false);
+                  }
+                }}
               >
                 <SheetHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
                   <div className="flex items-center justify-between">
@@ -1416,7 +1435,10 @@ How can I apply this to my life?
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('[Bible] Close button clicked');
                         if (rightSidebar?.setRightSidebarOpen) {
                           rightSidebar.setRightSidebarOpen(false);
                         }
@@ -1432,6 +1454,14 @@ How can I apply this to my life?
                 </div>
               </SheetContent>
             </Sheet>
+          )}
+          {/* Debug info - Remove in production */}
+          {isMobile && (
+            <div className="fixed bottom-20 left-4 bg-black/80 text-white text-xs p-2 rounded z-[100] pointer-events-none">
+              <div>Mobile: {isMobile ? 'Yes' : 'No'}</div>
+              <div>RightSidebar: {rightSidebar ? 'Yes' : 'No'}</div>
+              <div>Open: {rightSidebar?.rightSidebarOpen ? 'Yes' : 'No'}</div>
+            </div>
           )}
 
           {/* Main Reading Area - Adjust when AI chat is open */}
