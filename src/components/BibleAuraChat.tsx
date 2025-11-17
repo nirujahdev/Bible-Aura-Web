@@ -4,7 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
 import { sendBibleAuraMessage } from '@/lib/agent-sdk';
-import { checkAndIncrementUsage, getUsageInfo } from '@/lib/ai-limits';
+import { AIUsageTracker } from '@/lib/ai-usage-tracker';
+import { getUsageInfo } from '@/lib/ai-usage-tracker';
 import { logMessage, logMessagePair, updateMessageFeedback, updateMessageReport, softDeleteUserMessages } from '@/lib/ai-message-logs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -436,8 +437,28 @@ export function BibleAuraChat() {
     // Track start time for response time calculation
     const startTime = Date.now();
     const pairId = `pair_${userMessage.id}`; // Create unique pair ID
+    let reservationId: string | undefined;
 
     try {
+      // Reserve usage BEFORE API call (atomic operation)
+      const reservationResult = await AIUsageTracker.reserveUsage(
+        user.id,
+        'ai_message',
+        currentConversationId || undefined
+      );
+
+      if (!reservationResult.allowed) {
+        toast({
+          title: "AI Message Limit Reached",
+          description: reservationResult.message || "You've reached your daily limit.",
+          variant: "destructive",
+        });
+        setMessages(messages); // Revert user message
+        return;
+      }
+
+      reservationId = reservationResult.reservation_id;
+
       // Map UI mode to API mode format
       const apiMode = currentMode.replace('-clean', '');
       const apiLanguage = currentLanguage === 'english' ? 'en' : 'ta';
@@ -446,13 +467,6 @@ export function BibleAuraChat() {
         mode: apiMode,
         language: apiLanguage
       });
-      
-      // Only increment usage count AFTER successful API response
-      const usageResult = await checkAndIncrementUsage(user.id, 'ai_message');
-      if (!usageResult.allowed) {
-        // This shouldn't happen since we checked first, but handle it gracefully
-        console.warn('Usage limit reached after successful API call');
-      }
       
       const responseTime = Date.now() - startTime;
       const aiMessageTimestamp = new Date().toISOString();
@@ -467,48 +481,73 @@ export function BibleAuraChat() {
         validatedVerses: (aiResponse as any).validatedVerses
       };
 
-      setMessages([...newMessages, aiMessage]);
+      const finalMessages = [...newMessages, aiMessage];
+      setMessages(finalMessages);
 
-      // Log user message and AI response together in same row
-      if (user) {
-        const turnNumber = messages.filter(m => m.role === 'user').length + 1;
-        
-        logMessagePair({
-          user_id: user.id,
-          conversation_id: currentConversationId,
-          pair_id: pairId,
-          user_message_id: userMessage.id,
-          assistant_message_id: aiMessage.id,
-          user_message_content: userInput,
-          assistant_message_content: aiResponse.text,
-          user_message_timestamp: messageTimestamp,
-          assistant_message_timestamp: aiMessageTimestamp,
-          mode: currentMode,
-          language: currentLanguage,
-          translation: 'KJV',
-          turn_number: turnNumber,
-          ai_mode: aiResponse.mode || currentMode,
-          has_sources: !!(aiResponse.sources && aiResponse.sources.length > 0),
-          sources_count: aiResponse.sources?.length || 0,
-          has_cross_references: !!(aiResponse.crossReferences && aiResponse.crossReferences.length > 0),
-          cross_references_count: aiResponse.crossReferences?.length || 0,
-          has_validated_verses: !!((aiResponse as any).validatedVerses && (aiResponse as any).validatedVerses.length > 0),
-          validated_verses_count: (aiResponse as any).validatedVerses?.length || 0,
-          response_time_ms: responseTime,
-          metadata: {
-            sources: aiResponse.sources || [],
-            crossReferences: aiResponse.crossReferences || [],
-            validatedVerses: (aiResponse as any).validatedVerses || []
+      // Confirm usage and link conversation (atomic operation with logging)
+      if (reservationId) {
+        const confirmResult = await AIUsageTracker.confirmUsage(
+          reservationId,
+          user.id,
+          {
+            conversation_id: currentConversationId,
+            mode: currentMode,
+            language: currentLanguage,
+            translation: 'KJV'
+          },
+          {
+            pair_id: pairId,
+            user_message_id: userMessage.id,
+            assistant_message_id: aiMessage.id,
+            user_message_content: userInput,
+            assistant_message_content: aiResponse.text,
+            user_message_timestamp: messageTimestamp,
+            assistant_message_timestamp: aiMessageTimestamp,
+            mode: currentMode,
+            language: currentLanguage,
+            translation: 'KJV',
+            ai_mode: aiResponse.mode || currentMode,
+            has_sources: !!(aiResponse.sources && aiResponse.sources.length > 0),
+            sources_count: aiResponse.sources?.length || 0,
+            has_cross_references: !!(aiResponse.crossReferences && aiResponse.crossReferences.length > 0),
+            cross_references_count: aiResponse.crossReferences?.length || 0,
+            has_validated_verses: !!((aiResponse as any).validatedVerses && (aiResponse as any).validatedVerses.length > 0),
+            validated_verses_count: (aiResponse as any).validatedVerses?.length || 0,
+            response_time_ms: responseTime,
+            metadata: {
+              sources: aiResponse.sources || [],
+              crossReferences: aiResponse.crossReferences || [],
+              validatedVerses: (aiResponse as any).validatedVerses || []
+            }
           }
-        }).catch(err => console.error('Error logging message pair:', err));
+        );
+
+        // Update conversation ID if a new one was created
+        if (confirmResult.conversation_id && !currentConversationId) {
+          setCurrentConversationId(confirmResult.conversation_id);
+        }
+
+        // Update conversation with all messages
+        const conversationId = confirmResult.conversation_id || currentConversationId;
+        if (conversationId) {
+          await AIUsageTracker.updateConversation(conversationId, user.id, finalMessages);
+        }
       }
       
     } catch (error: any) {
+      // Rollback usage on API failure
+      if (reservationId) {
+        await AIUsageTracker.rollbackUsage(reservationId, user.id, 'ai_message');
+      }
+
       toast({
         title: "AI Error",
         description: error.message || "Failed to get AI response",
         variant: "destructive"
       });
+      
+      // Remove user message on error
+      setMessages(messages);
     } finally {
       setIsLoading(false);
     }
