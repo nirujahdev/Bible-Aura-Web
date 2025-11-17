@@ -1401,21 +1401,31 @@ How can I apply this to my life?
                   rightSidebar.setRightSidebarOpen(open);
                 }
               }}
-              modal={true}
+              modal={false}
             >
               <SheetContent 
                 side="right" 
                 className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
-                onInteractOutside={(e) => {
-                  // Prevent closing when clicking outside on mobile
-                  e.preventDefault();
-                }}
               >
                 <SheetHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
-                  <SheetTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-orange-500" />
-                    <span className="text-lg font-semibold text-gray-800">Bible Study</span>
-                  </SheetTitle>
+                  <div className="flex items-center justify-between">
+                    <SheetTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-orange-500" />
+                      <span className="text-lg font-semibold text-gray-800">Bible Study</span>
+                    </SheetTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (rightSidebar?.setRightSidebarOpen) {
+                          rightSidebar.setRightSidebarOpen(false);
+                        }
+                      }}
+                      className="h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </SheetHeader>
                 <div className="flex-1 overflow-hidden">
                   {renderSidebarContent(true)}
@@ -1857,7 +1867,7 @@ How can I apply this to my life?
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Navigation - Bottom Right - Compact Design */}
+      {/* Floating Chapter Navigation - Bottom Right - Clean Pill Design */}
       {selectedBook && !aiChatOpen && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -1865,28 +1875,28 @@ How can I apply this to my life?
           exit={{ opacity: 0, scale: 0.9 }}
           className="fixed bottom-4 right-4 z-50"
         >
-          <div className="flex items-center gap-0 bg-white rounded-lg shadow-md border border-orange-200/60 overflow-hidden">
+          <div className="flex items-center gap-0 bg-white rounded-full shadow-sm border border-orange-200/40 overflow-hidden px-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('prev')}
               disabled={selectedChapter <= 1}
-              className="h-8 w-8 rounded-none p-0 hover:bg-orange-50/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
+              className="h-7 w-7 rounded-full p-0 hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
             >
-              <ChevronLeft className="h-4 w-4 text-gray-500" />
+              <ChevronLeft className="h-3.5 w-3.5 text-gray-400" />
             </Button>
-            <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 min-w-[3.5rem]">
-              <div className="text-[10px] font-medium text-white/90 leading-none">CH</div>
-              <div className="text-sm font-bold text-white leading-none">{selectedChapter}</div>
+            <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 min-w-[3rem] rounded-full mx-0.5">
+              <div className="text-[9px] font-medium text-white/90 leading-none uppercase tracking-wide">CH</div>
+              <div className="text-base font-bold text-white leading-none">{selectedChapter}</div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('next')}
               disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-8 w-8 rounded-none p-0 hover:bg-orange-50/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
+              className="h-7 w-7 rounded-full p-0 hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed border-0"
             >
-              <ChevronRight className="h-4 w-4 text-gray-500" />
+              <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
             </Button>
           </div>
         </motion.div>
