@@ -92,9 +92,17 @@ export function MobileOptimizedLayout({
     };
   }, [hamburgerMenuOpen, contextMenuOpen, isMobile]);
 
-  // If not mobile or not authenticated, use the original ModernLayout
+  // Always provide the context, even if not mobile or not authenticated
+  // This ensures the hook works in all cases
+  const contextValue = { rightSidebarOpen, setRightSidebarOpen };
+
+  // If not mobile or not authenticated, use the original ModernLayout but still provide context
   if (!isMobile || !user) {
-    return <ModernLayout>{children}</ModernLayout>;
+    return (
+      <RightSidebarContext.Provider value={contextValue}>
+        <ModernLayout>{children}</ModernLayout>
+      </RightSidebarContext.Provider>
+    );
   }
 
   return (
@@ -149,7 +157,7 @@ export function MobileOptimizedLayout({
       )}
 
       {/* Main Content Area - Context Provider wraps children */}
-      <RightSidebarContext.Provider value={{ rightSidebarOpen, setRightSidebarOpen }}>
+      <RightSidebarContext.Provider value={contextValue}>
         {children}
       </RightSidebarContext.Provider>
 
