@@ -1360,32 +1360,6 @@ How can I apply this to my life?
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
-        {/* Mobile Chapter Navigation - Clean and optimized */}
-        {isMobile && selectedBook && (
-          <div className="fixed top-14 right-4 z-30 flex items-center gap-1 bg-white rounded-lg shadow-md p-1 border border-gray-200">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateChapter('prev')}
-              disabled={selectedChapter <= 1}
-              className="h-7 w-7 p-0 hover:bg-gray-100 disabled:opacity-50"
-            >
-              <ChevronLeft className="h-3 w-3" />
-            </Button>
-            <span className="text-xs font-medium px-2 min-w-[2rem] text-center bg-gray-50 rounded">
-              {selectedChapter}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateChapter('next')}
-              disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-7 w-7 p-0 hover:bg-gray-100 disabled:opacity-50"
-            >
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
 
         <div className={cn("flex", isMobile ? "flex-col h-[100dvh]" : "h-screen")}>
           {/* Desktop Sidebar */}
@@ -1415,16 +1389,29 @@ How can I apply this to my life?
           {isMobile && rightSidebar && (
             <Sheet 
               open={rightSidebar.rightSidebarOpen} 
-              onOpenChange={rightSidebar.setRightSidebarOpen}
+              onOpenChange={(open) => {
+                if (rightSidebar.setRightSidebarOpen) {
+                  rightSidebar.setRightSidebarOpen(open);
+                }
+              }}
+              modal={true}
             >
-              <SheetContent side="right" className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col">
-                <SheetHeader className="px-4 pt-4 pb-3 border-b">
+              <SheetContent 
+                side="right" 
+                className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
+                onInteractOutside={(e) => {
+                  // Allow closing by clicking outside
+                }}
+              >
+                <SheetHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
                   <SheetTitle className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-orange-500" />
                     <span className="text-lg font-semibold text-gray-800">Bible Study</span>
                   </SheetTitle>
                 </SheetHeader>
-                {renderSidebarContent(true)}
+                <div className="flex-1 overflow-hidden">
+                  {renderSidebarContent(true)}
+                </div>
               </SheetContent>
             </Sheet>
           )}
@@ -1861,31 +1848,33 @@ How can I apply this to my life?
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Navigation - Bottom Right - One Line Design */}
+      {/* Floating Chapter Navigation - Bottom Right - Redesigned */}
       {selectedBook && (
         <div className="fixed bottom-4 right-4 z-50">
-          <div className="flex items-center gap-0 bg-white rounded-full shadow-xl border-2 border-orange-200 hover:border-orange-400 transition-all overflow-hidden">
+          <div className="flex items-center gap-0 bg-white rounded-full shadow-2xl border-2 border-orange-300 hover:border-orange-500 transition-all overflow-hidden backdrop-blur-sm">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('prev')}
               disabled={selectedChapter <= 1}
-              className="h-10 w-10 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-11 w-11 rounded-full p-0 hover:bg-orange-50 active:bg-orange-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="h-4 w-4 text-gray-700" />
+              <ChevronLeft className="h-5 w-5 text-gray-700" />
             </Button>
-            <div className="px-3 py-2 bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white min-w-[60px] text-center">
-              <span className="text-xs font-semibold opacity-90">Ch</span>
-              <span className="text-base font-bold ml-1">{selectedChapter}</span>
+            <div className="px-4 py-2.5 bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white min-w-[70px] text-center shadow-inner">
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-[10px] font-semibold opacity-90 uppercase tracking-wide">Ch</span>
+                <span className="text-lg font-bold leading-none mt-0.5">{selectedChapter}</span>
+              </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('next')}
               disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-10 w-10 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-11 w-11 rounded-full p-0 hover:bg-orange-50 active:bg-orange-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <ChevronRight className="h-4 w-4 text-gray-700" />
+              <ChevronRight className="h-5 w-5 text-gray-700" />
             </Button>
           </div>
         </div>

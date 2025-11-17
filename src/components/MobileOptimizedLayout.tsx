@@ -126,14 +126,16 @@ export function MobileOptimizedLayout({
           
           {/* Right - Three dots menu - Show on all pages */}
           <button 
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               if (location.pathname === '/bible') {
                 setRightSidebarOpen(true);
               } else {
                 setContextMenuOpen(true);
               }
             }}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200"
             aria-label="Open quick actions"
             aria-expanded={location.pathname === '/bible' ? rightSidebarOpen : contextMenuOpen}
           >
