@@ -274,15 +274,37 @@ export function BibleAuraChat() {
         // Check if table doesn't exist
         if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
           console.error('❌ ai_conversations table does not exist. Please run database migration.');
+        } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          console.error('❌ Permission denied loading conversations');
         }
-        // Don't throw - just fail silently to prevent crashes
+        setConversations([]);
         return;
       }
-      setConversations(data || []);
+      // Ensure messages are properly formatted (handle both array and string)
+      const formattedConversations = (data || []).map((conv: any) => ({
+        ...conv,
+        messages: Array.isArray(conv.messages) 
+          ? conv.messages 
+          : (typeof conv.messages === 'string' ? (() => {
+              try {
+                return JSON.parse(conv.messages);
+              } catch {
+                return [];
+              }
+            })() : [])
+      }));
+      setConversations(formattedConversations);
     } catch (error: any) {
-      console.error('Load conversations error:', error);
-      // Fail silently to prevent component crashes
+      console.error('Exception loading conversations:', error);
       setConversations([]);
+      // Don't show toast for network errors to avoid spam
+      if (error?.message && !error.message.includes('network') && !error.message.includes('fetch')) {
+        toast({
+          title: "Error Loading History",
+          description: "Unable to load chat history. Your conversations are still saved.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -300,7 +322,7 @@ export function BibleAuraChat() {
       const conversationData = {
         user_id: user.id,
         title,
-        messages: JSON.stringify(messages),
+        messages: messages, // JSONB field - send as array, not stringified
         mode: currentMode,
         language: currentLanguage,
         translation: 'KJV',
@@ -346,7 +368,19 @@ export function BibleAuraChat() {
 
   const loadConversation = (conversation: Conversation) => {
     setCurrentConversationId(conversation.id);
-    setMessages(JSON.parse(conversation.messages as any) || []);
+    // Messages is JSONB - handle both array and string formats
+    let loadedMessages = [];
+    if (Array.isArray(conversation.messages)) {
+      loadedMessages = conversation.messages;
+    } else if (typeof conversation.messages === 'string') {
+      try {
+        loadedMessages = JSON.parse(conversation.messages);
+      } catch (e) {
+        console.error('Error parsing messages:', e);
+        loadedMessages = [];
+      }
+    }
+    setMessages(loadedMessages || []);
     setCurrentMode((conversation.mode || 'chat-clean') as ChatMode);
     setCurrentLanguage(conversation.language as Language);
   };

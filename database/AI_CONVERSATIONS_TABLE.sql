@@ -54,6 +54,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_ai_conversations_updated_at ON ai_conversations;
 CREATE TRIGGER update_ai_conversations_updated_at
   BEFORE UPDATE ON ai_conversations
   FOR EACH ROW

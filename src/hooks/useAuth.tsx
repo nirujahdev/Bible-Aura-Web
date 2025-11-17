@@ -167,8 +167,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         favorite_translation: 'ESV',
         reading_streak: 0,
         total_reading_days: 0,
-        ai_message_limit: 50,
-        ai_sermon_limit: 5,
+        ai_message_limit: 20,
+        ai_sermon_limit: 1,
       };
 
       console.log('🔐 Creating profile with session:', {

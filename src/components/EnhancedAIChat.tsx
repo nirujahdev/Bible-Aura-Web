@@ -158,6 +158,7 @@ export function EnhancedAIChat() {
     // Check if Supabase is properly configured
     if (!hasSupabaseCredentials) {
       console.warn('⚠️ Supabase credentials not configured - chat history unavailable');
+      setConversations([]);
       return;
     }
     
@@ -166,20 +167,43 @@ export function EnhancedAIChat() {
         .from('ai_conversations')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(50); // Limit to prevent performance issues
       
       if (error) {
         console.error('Error loading conversations:', error);
         // Check if table doesn't exist
         if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
           console.error('❌ ai_conversations table does not exist. Please run database migration.');
+          toast({
+            title: "Chat History Unavailable",
+            description: "Database table not found. Please contact support.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+          console.error('❌ Permission denied loading conversations');
+          toast({
+            title: "Permission Error",
+            description: "Unable to load chat history. Please try again.",
+            variant: "destructive",
+          });
         }
+        setConversations([]);
         return;
       }
       
       setConversations(data || []);
-    } catch (error) {
-      console.error('Error loading conversations:', error);
+    } catch (error: any) {
+      console.error('Exception loading conversations:', error);
+      setConversations([]);
+      // Don't show toast for network errors to avoid spam
+      if (error?.message && !error.message.includes('network') && !error.message.includes('fetch')) {
+        toast({
+          title: "Error Loading History",
+          description: "Unable to load chat history. Your conversations are still saved.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -221,8 +245,13 @@ export function EnhancedAIChat() {
       }
       
       await loadConversations();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving conversation:', error);
+      // Don't show error toast for save failures - it's background operation
+      // Only log for debugging
+      if (error?.code === 'PGRST116' || error?.message?.includes('does not exist')) {
+        console.error('❌ ai_conversations table does not exist. Please run database migration.');
+      }
     }
   };
 

@@ -1,113 +1,38 @@
 -- ========================================
--- BIBLE AURA - AI LIMITS SETUP
+-- FIX AI LIMITS MIGRATION
 -- ========================================
--- Adds AI message and sermon limits to profiles
--- Creates usage tracking table
--- Creates limit checking functions
+-- Updates existing profiles with incorrect limits (50/5) to correct limits (20/1)
+-- Ensures all profiles have correct default limits
+-- Fixes database functions to use proper defaults
 
 BEGIN;
 
--- 1. Add AI limit columns to profiles table
-DO $$ 
-BEGIN
-  -- Add AI message limit (default: 20 messages per day)
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_schema = 'public' 
-                 AND table_name = 'profiles' 
-                 AND column_name = 'ai_message_limit') THEN
-    ALTER TABLE public.profiles ADD COLUMN ai_message_limit INTEGER DEFAULT 20;
-    RAISE NOTICE 'Added ai_message_limit column';
-  ELSE
-    -- Update existing default to 20 if column exists but default is different
-    ALTER TABLE public.profiles ALTER COLUMN ai_message_limit SET DEFAULT 20;
-  END IF;
-  
-  -- Add AI sermon limit (default: 1 sermon per day)
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_schema = 'public' 
-                 AND table_name = 'profiles' 
-                 AND column_name = 'ai_sermon_limit') THEN
-    ALTER TABLE public.profiles ADD COLUMN ai_sermon_limit INTEGER DEFAULT 1;
-    RAISE NOTICE 'Added ai_sermon_limit column';
-  ELSE
-    -- Update existing default to 1 if column exists but default is different
-    ALTER TABLE public.profiles ALTER COLUMN ai_sermon_limit SET DEFAULT 1;
-  END IF;
-  
-  -- Add constraints
-  BEGIN
-    ALTER TABLE public.profiles ADD CONSTRAINT ai_message_limit_positive CHECK (ai_message_limit >= 0);
-  EXCEPTION WHEN duplicate_object THEN
-    NULL;
-  END;
-  
-  BEGIN
-    ALTER TABLE public.profiles ADD CONSTRAINT ai_sermon_limit_positive CHECK (ai_sermon_limit >= 0);
-  EXCEPTION WHEN duplicate_object THEN
-    NULL;
-  END;
-END $$;
+-- 1. Update existing profiles with wrong limits
+UPDATE public.profiles
+SET 
+  ai_message_limit = 20,
+  ai_sermon_limit = 1
+WHERE 
+  (ai_message_limit = 50 OR ai_message_limit IS NULL)
+  OR (ai_sermon_limit = 5 OR ai_sermon_limit IS NULL);
 
--- 2. Create AI usage tracking table
-CREATE TABLE IF NOT EXISTS public.ai_usage_tracking (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  usage_type TEXT NOT NULL CHECK (usage_type IN ('ai_message', 'ai_sermon')),
-  usage_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  usage_count INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, usage_type, usage_date)
-);
+-- 2. Set defaults for any remaining NULL values
+UPDATE public.profiles
+SET 
+  ai_message_limit = COALESCE(ai_message_limit, 20),
+  ai_sermon_limit = COALESCE(ai_sermon_limit, 1)
+WHERE 
+  ai_message_limit IS NULL 
+  OR ai_sermon_limit IS NULL;
 
--- 3. Create indexes for faster queries
-CREATE INDEX IF NOT EXISTS idx_ai_usage_user_id ON public.ai_usage_tracking(user_id);
-CREATE INDEX IF NOT EXISTS idx_ai_usage_date ON public.ai_usage_tracking(usage_date DESC);
-CREATE INDEX IF NOT EXISTS idx_ai_usage_user_type_date ON public.ai_usage_tracking(user_id, usage_type, usage_date);
+-- 3. Ensure column defaults are correct (redundant but safe)
+ALTER TABLE public.profiles 
+  ALTER COLUMN ai_message_limit SET DEFAULT 20;
 
--- 4. Enable Row Level Security
-ALTER TABLE public.ai_usage_tracking ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles 
+  ALTER COLUMN ai_sermon_limit SET DEFAULT 1;
 
--- 5. Create RLS policies
-DROP POLICY IF EXISTS "Users can view own usage" ON public.ai_usage_tracking;
-CREATE POLICY "Users can view own usage" ON public.ai_usage_tracking
-  FOR SELECT 
-  USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can insert own usage" ON public.ai_usage_tracking;
-CREATE POLICY "Users can insert own usage" ON public.ai_usage_tracking
-  FOR INSERT 
-  WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can update own usage" ON public.ai_usage_tracking;
-CREATE POLICY "Users can update own usage" ON public.ai_usage_tracking
-  FOR UPDATE 
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- Service role has full access
-DROP POLICY IF EXISTS "Service role full access" ON public.ai_usage_tracking;
-CREATE POLICY "Service role full access" ON public.ai_usage_tracking
-  FOR ALL 
-  USING (auth.role() = 'service_role');
-
--- 6. Create function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION public.handle_ai_usage_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- 7. Create trigger for updated_at
-DROP TRIGGER IF EXISTS set_ai_usage_updated_at ON public.ai_usage_tracking;
-CREATE TRIGGER set_ai_usage_updated_at
-  BEFORE UPDATE ON public.ai_usage_tracking
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_ai_usage_updated_at();
-
--- 8. Create function to check and increment AI usage
+-- 4. Update check_and_increment_ai_usage function with proper defaults
 CREATE OR REPLACE FUNCTION public.check_and_increment_ai_usage(
   p_user_id UUID,
   p_usage_type TEXT
@@ -118,6 +43,7 @@ DECLARE
   v_usage_count INTEGER;
   v_today DATE := CURRENT_DATE;
   v_result JSONB;
+  v_current_user_id UUID;
 BEGIN
   -- Get the current authenticated user ID
   v_current_user_id := auth.uid();
@@ -221,7 +147,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY INVOKER;
 
--- 9. Create function to get current usage without incrementing
+-- 5. Update get_ai_usage function with proper defaults
 CREATE OR REPLACE FUNCTION public.get_ai_usage(
   p_user_id UUID,
   p_usage_type TEXT
@@ -290,6 +216,7 @@ BEGIN
   END IF;
   
   -- Get current usage count (RLS will ensure user can only read their own records)
+  -- Usage is tracked per day (usage_date = CURRENT_DATE), so it automatically resets daily
   SELECT COALESCE(usage_count, 0) INTO v_usage_count
   FROM public.ai_usage_tracking
   WHERE user_id = p_user_id 
@@ -313,17 +240,31 @@ COMMIT;
 -- VERIFICATION QUERIES
 -- ========================================
 
--- Check if columns were added
-SELECT column_name, data_type, column_default
-FROM information_schema.columns
-WHERE table_schema = 'public' 
-  AND table_name = 'profiles'
-  AND column_name IN ('ai_message_limit', 'ai_sermon_limit');
+-- Check profiles with correct limits
+SELECT 
+  user_id,
+  ai_message_limit,
+  ai_sermon_limit,
+  CASE 
+    WHEN ai_message_limit = 20 AND ai_sermon_limit = 1 THEN '✅ Correct'
+    ELSE '❌ Needs Update'
+  END as status
+FROM public.profiles
+WHERE ai_message_limit IS NOT NULL OR ai_sermon_limit IS NOT NULL
+ORDER BY created_at DESC
+LIMIT 10;
 
--- Check if usage tracking table was created
-SELECT column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public' 
-  AND table_name = 'ai_usage_tracking'
-ORDER BY ordinal_position;
+-- Check usage tracking (should show today's date)
+SELECT 
+  user_id,
+  usage_type,
+  usage_date,
+  usage_count,
+  CASE 
+    WHEN usage_date = CURRENT_DATE THEN '✅ Today'
+    ELSE '⚠️ Old Date'
+  END as date_status
+FROM public.ai_usage_tracking
+ORDER BY updated_at DESC
+LIMIT 10;
 
