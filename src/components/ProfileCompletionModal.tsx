@@ -165,29 +165,29 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full mx-2 sm:mx-auto p-4 sm:p-6" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <User className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-[90vw] md:w-full mx-auto p-3 sm:p-4 md:p-6" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="pb-3 sm:pb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+              <User className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary" />
             </div>
-            <div className="flex-1">
-              <DialogTitle className="text-xl sm:text-2xl">Complete Your Profile</DialogTitle>
-              <DialogDescription className="text-sm sm:text-base mt-1">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-semibold truncate">Complete Your Profile</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1">
                 Help us personalize your Bible Aura experience
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-4">
+        <form onSubmit={handleSubmit} className="mt-2 sm:mt-4">
           {/* Two column layout for laptop, single column for mobile */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
             {/* Left Column */}
-            <div className="space-y-4 sm:space-y-5">
+            <div className="space-y-3 sm:space-y-4 md:space-y-5">
               {/* Display Name */}
-              <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-sm font-medium">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="displayName" className="text-xs sm:text-sm font-medium">
                   Display Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -195,20 +195,20 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                   value={formData.displayName}
                   onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
                   placeholder="Enter your display name"
-                  className={`${errors.displayName ? 'border-red-500' : ''}`}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${errors.displayName ? 'border-red-500' : ''}`}
                 />
                 {errors.displayName && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3 flex-shrink-0" />
                     {errors.displayName}
                   </p>
                 )}
               </div>
 
               {/* Phone Number */}
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-sm font-medium">
-                  Phone Number <span className="text-gray-500">(Optional)</span>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="phoneNumber" className="text-xs sm:text-sm font-medium">
+                  Phone Number <span className="text-gray-500 text-xs">(Optional)</span>
                 </Label>
                 <Input
                   id="phoneNumber"
@@ -216,20 +216,20 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                   value={formData.phoneNumber}
                   onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                   placeholder="+1 (555) 123-4567"
-                  className={errors.phoneNumber ? 'border-red-500' : ''}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${errors.phoneNumber ? 'border-red-500' : ''}`}
                 />
                 {errors.phoneNumber && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3 flex-shrink-0" />
                     {errors.phoneNumber}
                   </p>
                 )}
               </div>
 
               {/* Age */}
-              <div className="space-y-2">
-                <Label htmlFor="age" className="text-sm font-medium">
-                  Age <span className="text-gray-500">(Optional)</span>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="age" className="text-xs sm:text-sm font-medium">
+                  Age <span className="text-gray-500 text-xs">(Optional)</span>
                 </Label>
                 <Input
                   id="age"
@@ -239,31 +239,31 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                   value={formData.age}
                   onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                   placeholder="Enter your age"
-                  className={errors.age ? 'border-red-500' : ''}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${errors.age ? 'border-red-500' : ''}`}
                 />
                 {errors.age && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className="text-xs sm:text-sm text-red-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3 flex-shrink-0" />
                     {errors.age}
                   </p>
                 )}
               </div>
 
               {/* Denomination */}
-              <div className="space-y-2">
-                <Label htmlFor="denomination" className="text-sm font-medium">
-                  Denomination <span className="text-gray-500">(Optional)</span>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="denomination" className="text-xs sm:text-sm font-medium">
+                  Denomination <span className="text-gray-500 text-xs">(Optional)</span>
                 </Label>
                 <Select
                   value={formData.denomination}
                   onValueChange={(value) => setFormData({ ...formData, denomination: value })}
                 >
-                  <SelectTrigger id="denomination">
+                  <SelectTrigger id="denomination" className="h-9 sm:h-10 text-sm sm:text-base">
                     <SelectValue placeholder="Select your denomination" />
                   </SelectTrigger>
                   <SelectContent>
                     {denominations.map((denom) => (
-                      <SelectItem key={denom} value={denom}>
+                      <SelectItem key={denom} value={denom} className="text-sm">
                         {denom}
                       </SelectItem>
                     ))}
@@ -273,36 +273,36 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
             </div>
 
             {/* Right Column - Required Agreements */}
-            <div className="space-y-4 sm:space-y-5">
+            <div className="space-y-3 sm:space-y-4 md:space-y-5">
 
               {/* Terms and Agreements */}
-              <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 h-full">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-blue-600" />
+              <div className="space-y-2.5 sm:space-y-3 md:space-y-4 p-2.5 sm:p-3 md:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
                   Required Agreements
                 </h3>
 
                 {/* Terms of Service */}
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2 sm:gap-3">
                   <Checkbox
                     id="terms"
                     checked={formData.agreedToTerms}
                     onCheckedChange={(checked) =>
                       setFormData({ ...formData, agreedToTerms: checked as boolean })
                     }
-                    className={errors.agreedToTerms ? 'border-red-500' : ''}
+                    className={`mt-0.5 sm:mt-1 flex-shrink-0 ${errors.agreedToTerms ? 'border-red-500' : ''}`}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Label
                       htmlFor="terms"
-                      className="text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1"
+                      className="text-xs sm:text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1 leading-relaxed"
                     >
                       <span>I agree to the</span>
                       <a
                         href="/terms-of-service"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline font-medium"
+                        className="text-primary hover:underline font-medium break-words"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Terms of Service
@@ -310,8 +310,8 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                       <span className="text-red-500">*</span>
                     </Label>
                     {errors.agreedToTerms && (
-                      <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
+                      <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 flex-shrink-0" />
                         {errors.agreedToTerms}
                       </p>
                     )}
@@ -319,19 +319,19 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                 </div>
 
                 {/* Privacy Policy */}
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2 sm:gap-3">
                   <Checkbox
                     id="privacy"
                     checked={formData.agreedToPrivacy}
                     onCheckedChange={(checked) =>
                       setFormData({ ...formData, agreedToPrivacy: checked as boolean })
                     }
-                    className={errors.agreedToPrivacy ? 'border-red-500' : ''}
+                    className={`mt-0.5 sm:mt-1 flex-shrink-0 ${errors.agreedToPrivacy ? 'border-red-500' : ''}`}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Label
                       htmlFor="privacy"
-                      className="text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1"
+                      className="text-xs sm:text-sm font-normal cursor-pointer flex flex-wrap items-start gap-1 leading-relaxed"
                     >
                       <span>I agree to the</span>
                       <a
@@ -346,8 +346,8 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                       <span className="text-red-500">*</span>
                     </Label>
                     {errors.agreedToPrivacy && (
-                      <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
+                      <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 flex-shrink-0" />
                         {errors.agreedToPrivacy}
                       </p>
                     )}
@@ -355,25 +355,25 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
                 </div>
 
                 {/* Age Confirmation */}
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2 sm:gap-3">
                   <Checkbox
                     id="ageConfirm"
                     checked={formData.isOver13}
                     onCheckedChange={(checked) =>
                       setFormData({ ...formData, isOver13: checked as boolean })
                     }
-                    className={errors.isOver13 ? 'border-red-500' : ''}
+                    className={`mt-0.5 sm:mt-1 flex-shrink-0 ${errors.isOver13 ? 'border-red-500' : ''}`}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Label
                       htmlFor="ageConfirm"
-                      className="text-sm font-normal cursor-pointer"
+                      className="text-xs sm:text-sm font-normal cursor-pointer leading-relaxed"
                     >
-                      I confirm that I am over 13 years old <span className="text-red-500">*</span>
+                      I confirm that I am over <span className="text-primary font-medium">13 years old</span> <span className="text-red-500">*</span>
                     </Label>
                     {errors.isOver13 && (
-                      <p className="text-sm text-red-500 mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
+                      <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 flex-shrink-0" />
                         {errors.isOver13}
                       </p>
                     )}
@@ -384,11 +384,11 @@ export function ProfileCompletionModal({ open, onComplete }: ProfileCompletionMo
           </div>
 
           {/* Submit Button */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
             <Button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto min-w-[120px] text-sm sm:text-base"
+              className="w-full sm:w-auto min-w-[140px] h-10 sm:h-11 text-sm sm:text-base font-medium"
             >
               {loading ? 'Saving...' : 'Complete Profile'}
             </Button>
