@@ -129,13 +129,16 @@ export function MobileOptimizedLayout({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              console.log('3-dot menu clicked, pathname:', location.pathname);
               if (location.pathname === '/bible') {
+                console.log('Opening right sidebar, current state:', rightSidebarOpen);
                 setRightSidebarOpen(true);
+                console.log('Right sidebar state set to true');
               } else {
                 setContextMenuOpen(true);
               }
             }}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200 touch-manipulation"
             aria-label="Open quick actions"
             aria-expanded={location.pathname === '/bible' ? rightSidebarOpen : contextMenuOpen}
           >
@@ -145,13 +148,9 @@ export function MobileOptimizedLayout({
       </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area - Context Provider wraps children */}
       <RightSidebarContext.Provider value={{ rightSidebarOpen, setRightSidebarOpen }}>
-        <div className="flex-1 overflow-auto">
-          <div className="min-h-full">
-            {children}
-          </div>
-        </div>
+        {children}
       </RightSidebarContext.Provider>
 
       {/* Hamburger Navigation Menu */}

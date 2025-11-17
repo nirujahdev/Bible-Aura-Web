@@ -87,6 +87,13 @@ export default function Bible() {
   const { toast } = useToast();
   const rightSidebar = useRightSidebar();
   const isMobile = useIsMobile();
+
+  // Debug rightSidebar state
+  useEffect(() => {
+    if (isMobile && rightSidebar) {
+      console.log('RightSidebar state:', rightSidebar.rightSidebarOpen);
+    }
+  }, [rightSidebar?.rightSidebarOpen, isMobile]);
   
   const [books, setBooks] = useState<BibleBook[]>([]);
   const [tamilBookNames, setTamilBookNames] = useState<TamilBookName[]>([]);
@@ -1388,9 +1395,10 @@ How can I apply this to my life?
           {/* Right Side Sheet - Opened from 3-dot menu - Mobile Only */}
           {isMobile && rightSidebar && (
             <Sheet 
-              open={rightSidebar.rightSidebarOpen} 
+              open={rightSidebar.rightSidebarOpen || false} 
               onOpenChange={(open) => {
-                if (rightSidebar.setRightSidebarOpen) {
+                console.log('Sheet onOpenChange:', open);
+                if (rightSidebar?.setRightSidebarOpen) {
                   rightSidebar.setRightSidebarOpen(open);
                 }
               }}
@@ -1399,9 +1407,6 @@ How can I apply this to my life?
               <SheetContent 
                 side="right" 
                 className="w-[320px] sm:w-[380px] p-0 overflow-hidden flex flex-col z-[60]"
-                onInteractOutside={(e) => {
-                  // Allow closing by clicking outside
-                }}
               >
                 <SheetHeader className="px-4 pt-4 pb-3 border-b flex-shrink-0">
                   <SheetTitle className="flex items-center gap-2">
@@ -1848,33 +1853,30 @@ How can I apply this to my life?
         )}
       </AnimatePresence>
 
-      {/* Floating Chapter Navigation - Bottom Right - Redesigned */}
+      {/* Floating Chapter Navigation - Bottom Right - Simple One Line */}
       {selectedBook && (
         <div className="fixed bottom-4 right-4 z-50">
-          <div className="flex items-center gap-0 bg-white rounded-full shadow-2xl border-2 border-orange-300 hover:border-orange-500 transition-all overflow-hidden backdrop-blur-sm">
+          <div className="flex items-center gap-1 bg-white rounded-full shadow-lg border border-orange-200 hover:border-orange-400 transition-all px-1 py-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('prev')}
               disabled={selectedChapter <= 1}
-              className="h-11 w-11 rounded-full p-0 hover:bg-orange-50 active:bg-orange-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="h-7 w-7 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="h-5 w-5 text-gray-700" />
+              <ChevronLeft className="h-3.5 w-3.5 text-gray-600" />
             </Button>
-            <div className="px-4 py-2.5 bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white min-w-[70px] text-center shadow-inner">
-              <div className="flex flex-col items-center justify-center">
-                <span className="text-[10px] font-semibold opacity-90 uppercase tracking-wide">Ch</span>
-                <span className="text-lg font-bold leading-none mt-0.5">{selectedChapter}</span>
-              </div>
-            </div>
+            <span className="text-xs font-semibold text-orange-600 px-2 min-w-[2.5rem] text-center">
+              Ch{selectedChapter}
+            </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateChapter('next')}
               disabled={selectedChapter >= (selectedBook.chapters || 1)}
-              className="h-11 w-11 rounded-full p-0 hover:bg-orange-50 active:bg-orange-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="h-7 w-7 rounded-full p-0 hover:bg-orange-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <ChevronRight className="h-5 w-5 text-gray-700" />
+              <ChevronRight className="h-3.5 w-3.5 text-gray-600" />
             </Button>
           </div>
         </div>
