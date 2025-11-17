@@ -1351,13 +1351,17 @@ const SermonsContent = () => {
         <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'h-screen'} bg-gray-50 flex flex-col overflow-hidden`}>
           {/* Clean Header - Mobile Optimized */}
           <div className="border-b bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 shadow-sm border-gray-200 flex-shrink-0 z-30">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 flex-1 min-w-0">
               <Button
                 variant="ghost"
                 size={isMobile ? "sm" : "sm"}
-                onClick={handleBackToDashboard}
-                className="hover:bg-orange-50 text-gray-700 flex-shrink-0 h-8 sm:h-9 px-2 sm:px-3"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleBackToDashboard();
+                }}
+                className="hover:bg-orange-50 text-gray-700 flex-shrink-0 h-8 sm:h-9 px-2 sm:px-3 touch-manipulation min-h-[44px] sm:min-h-0"
               >
                 <ArrowLeft className="h-4 w-4" />
                 {!isMobile && <span className="ml-2 hidden sm:inline">Back to Sermons</span>}
@@ -1391,14 +1395,14 @@ const SermonsContent = () => {
               </div>
             </div>
             
-            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0 flex-wrap">
               {/* Sermon Metadata - Place, Date, Stats */}
               {selectedSermon && (
                 <>
                   {selectedSermon.congregation && (
                     <Badge variant="outline" className="hidden sm:flex items-center gap-1 h-8 px-2 text-xs">
                       <MapPin className="h-3 w-3" />
-                      {selectedSermon.congregation}
+                      <span className="truncate max-w-[100px]">{selectedSermon.congregation}</span>
                     </Badge>
                   )}
                   {selectedSermon.sermon_date && (
@@ -1426,8 +1430,12 @@ const SermonsContent = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="hover:bg-blue-50 h-8 sm:h-9" 
-                onClick={() => setShowBibleDialog(true)}
+                className="hover:bg-blue-50 h-8 sm:h-9 touch-manipulation min-h-[44px] sm:min-h-0" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowBibleDialog(true);
+                }}
               >
                 <BookOpen className="h-4 w-4 sm:mr-2" />
                 {!isMobile && <span>Bible</span>}
@@ -1523,9 +1531,13 @@ const SermonsContent = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => loadChapter(selectedBook, Math.max(1, selectedChapter - 1))}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              loadChapter(selectedBook, Math.max(1, selectedChapter - 1));
+                            }}
                             disabled={selectedChapter <= 1}
-                                className="h-9 flex-shrink-0"
+                                className="h-9 flex-shrink-0 touch-manipulation min-h-[44px] sm:min-h-0"
                           >
                             <ChevronLeft className="h-4 w-4" />
                           </Button>
@@ -1544,9 +1556,13 @@ const SermonsContent = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1))}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              loadChapter(selectedBook, Math.min(selectedBook.chapters, selectedChapter + 1));
+                            }}
                             disabled={selectedChapter >= selectedBook.chapters}
-                                className="h-9 flex-shrink-0"
+                                className="h-9 flex-shrink-0 touch-manipulation min-h-[44px] sm:min-h-0"
                           >
                             <ChevronRight className="h-4 w-4" />
                           </Button>
@@ -1573,12 +1589,14 @@ const SermonsContent = () => {
                            <Button
                              variant="outline"
                              size="sm"
-                             onClick={() => {
+                             onClick={(e) => {
+                               e.preventDefault();
+                               e.stopPropagation();
                                setBibleSearchQuery('');
                                setSearchResults([]);
                              }}
                              disabled={!bibleSearchQuery}
-                             className="flex-shrink-0"
+                             className="flex-shrink-0 touch-manipulation min-h-[44px] sm:min-h-0"
                            >
                              {isMobile ? <X className="h-4 w-4" /> : "Clear"}
                            </Button>
@@ -1593,8 +1611,10 @@ const SermonsContent = () => {
                                  key={term}
                                  variant="outline"
                                  size="sm"
-                                 className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300"
-                                 onClick={() => {
+                                 className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300 touch-manipulation min-h-[44px] sm:min-h-0"
+                                 onClick={(e) => {
+                                   e.preventDefault();
+                                   e.stopPropagation();
                                    setBibleSearchQuery(term);
                                    searchBible(term);
                                  }}
@@ -1630,8 +1650,12 @@ const SermonsContent = () => {
                                   {searchResults.map((verse) => (
                             <div
                                       key={`search-${verse.id}`}
-                                      className="p-4 rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 cursor-pointer group transition-all duration-200 shadow-sm"
-                              onClick={() => insertVerseIntoSermon(verse)}
+                                      className="p-3 sm:p-4 rounded-lg border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 cursor-pointer group transition-all duration-200 shadow-sm touch-manipulation"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                insertVerseIntoSermon(verse);
+                              }}
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
@@ -1677,8 +1701,12 @@ const SermonsContent = () => {
                                   {verses.map((verse) => (
                                     <div
                                       key={verse.id}
-                                      className="group p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all duration-200 hover:shadow-md"
-                                      onClick={() => insertVerseIntoSermon(verse)}
+                                      className="group p-3 sm:p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all duration-200 hover:shadow-md touch-manipulation"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        insertVerseIntoSermon(verse);
+                                      }}
                                     >
                                       <div className="flex items-start gap-4">
                                         <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1742,13 +1770,18 @@ const SermonsContent = () => {
 
               {!isMobile && (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsFullscreen(!isFullscreen)}
-                  >
-                    {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsFullscreen(!isFullscreen);
+                }}
+                className="touch-manipulation min-h-[44px] sm:min-h-0"
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
                   <Separator orientation="vertical" className="h-6" />
                 </>
               )}
@@ -1764,8 +1797,12 @@ const SermonsContent = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setViewMode(viewMode === 'editor' ? 'view' : 'editor')}
-                className="h-8 sm:h-9"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setViewMode(viewMode === 'editor' ? 'view' : 'editor');
+                }}
+                className="h-8 sm:h-9 touch-manipulation min-h-[44px] sm:min-h-0"
               >
                 <Eye className="h-4 w-4 sm:mr-2" />
                 {!isMobile && <span>View</span>}
@@ -1773,9 +1810,13 @@ const SermonsContent = () => {
 
               {/* Export PDF Button */}
               <Button
-                onClick={handleExportPDF}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleExportPDF();
+                }}
                 size={isMobile ? "sm" : "default"}
-                className="bg-orange-600 hover:bg-orange-700 text-white h-8 sm:h-9 px-2 sm:px-3 md:px-4"
+                className="bg-orange-600 hover:bg-orange-700 text-white h-8 sm:h-9 px-2 sm:px-3 md:px-4 touch-manipulation min-h-[44px] sm:min-h-0"
               >
                 <FileDown className="h-4 w-4 sm:mr-2" />
                 {!isMobile && <span>Export</span>}
@@ -1791,11 +1832,15 @@ const SermonsContent = () => {
             <>
               {isMobile && (
                 <div 
-                  className="fixed inset-0 bg-black/50 z-40"
-                  onClick={() => setLeftPanelOpen(false)}
+                  className="fixed inset-0 bg-black/50 z-40 touch-none"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLeftPanelOpen(false);
+                  }}
                 />
               )}
-              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-md' : 'w-[380px] flex-shrink-0'} border-r bg-gray-50 flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''} h-full`}>
+              <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[95vw] max-w-md' : 'w-[380px] flex-shrink-0'} border-r bg-gray-50 flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''} h-full overflow-hidden`}>
                 <AIResearchPanel 
                   selectedSermon={selectedSermon}
                   onUpdateSermon={(updates) => {
@@ -1814,8 +1859,12 @@ const SermonsContent = () => {
             <>
               {isMobile && (
                 <div 
-                  className="fixed inset-0 bg-black/50 z-40"
-                  onClick={() => setLeftPanelOpen(false)}
+                  className="fixed inset-0 bg-black/50 z-40 touch-none"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLeftPanelOpen(false);
+                  }}
                 />
               )}
               <div className={`${isMobile ? 'fixed left-0 top-0 bottom-0 z-50 w-[90vw] max-w-sm' : 'w-80'} border-r bg-white flex flex-col shadow-lg ${isMobile ? 'animate-in slide-in-from-left' : ''}`}>
@@ -1825,8 +1874,12 @@ const SermonsContent = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setLeftPanelOpen(false)}
-                    className="h-8 w-8 p-0"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setLeftPanelOpen(false);
+                    }}
+                    className="h-8 w-8 p-0 touch-manipulation min-h-[44px] min-w-[44px]"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -1964,9 +2017,13 @@ const SermonsContent = () => {
                                                   className="flex-1 border-gray-200 focus:border-orange-500"
                       />
                                               <Button 
-                          onClick={() => addOutlineItem()}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addOutlineItem();
+                          }}
                           size="sm"
-                          className="bg-orange-500 hover:bg-orange-600"
+                          className="bg-orange-500 hover:bg-orange-600 touch-manipulation min-h-[44px] sm:min-h-0"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -1986,8 +2043,12 @@ const SermonsContent = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => toggleOutlineItem(item.id)}
-                                  className="p-1 h-6 w-6"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    toggleOutlineItem(item.id);
+                                  }}
+                                  className="p-1 h-6 w-6 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                                 >
                                   {item.completed ? 
                                     <CheckCircle2 className="h-4 w-4 text-green-600" /> : 
@@ -2000,8 +2061,12 @@ const SermonsContent = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => removeOutlineItem(item.id)}
-                                  className="opacity-0 group-hover:opacity-100 p-1 h-6 w-6 text-red-500 hover:text-red-700"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    removeOutlineItem(item.id);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 h-6 w-6 text-red-500 hover:text-red-700 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                                 >
                                   <Trash className="h-3 w-3" />
                                 </Button>
@@ -2013,8 +2078,12 @@ const SermonsContent = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => toggleOutlineItem(subItem.id, item.id)}
-                                    className="p-1 h-6 w-6"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      toggleOutlineItem(subItem.id, item.id);
+                                    }}
+                                    className="p-1 h-6 w-6 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                                   >
                                     {subItem.completed ? 
                                       <CheckCircle2 className="h-4 w-4 text-green-600" /> : 
@@ -2027,8 +2096,12 @@ const SermonsContent = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => removeOutlineItem(subItem.id, item.id)}
-                                    className="opacity-0 group-hover:opacity-100 p-1 h-6 w-6 text-red-500 hover:text-red-700"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      removeOutlineItem(subItem.id, item.id);
+                                    }}
+                                    className="opacity-0 group-hover:opacity-100 p-1 h-6 w-6 text-red-500 hover:text-red-700 touch-manipulation min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                                   >
                                     <Trash className="h-3 w-3" />
                                   </Button>
@@ -2191,17 +2264,25 @@ const SermonsContent = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
             <Button
-              onClick={() => setShowAIGenerator(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAIGenerator(true);
+              }}
               size={isMobile ? "default" : "lg"}
-              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white w-full sm:w-auto"
+              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white w-full sm:w-auto touch-manipulation min-h-[44px]"
             >
               <Brain className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               {isMobile ? "AI Generate" : "AI Generate Sermon"}
             </Button>
             <Button
-              onClick={handleNewSermon}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleNewSermon();
+              }}
               size={isMobile ? "default" : "lg"}
-              className="bg-orange-600 hover:bg-orange-700 text-white w-full sm:w-auto"
+              className="bg-orange-600 hover:bg-orange-700 text-white w-full sm:w-auto touch-manipulation min-h-[44px]"
             >
               <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               New Sermon
@@ -2258,12 +2339,14 @@ const SermonsContent = () => {
             {(searchQuery || statusFilter !== 'all' || seriesFilter !== 'all') && (
               <Button
                 variant="outline"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   setSearchQuery('');
                   setStatusFilter('all');
                   setSeriesFilter('all');
                 }}
-                className="w-full md:w-auto"
+                className="w-full md:w-auto touch-manipulation min-h-[44px] sm:min-h-0"
               >
                 <X className="h-4 w-4 mr-2" />
                 Clear
@@ -2280,66 +2363,66 @@ const SermonsContent = () => {
         </div>
 
         {/* Simple Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl md:text-2xl font-bold text-gray-900">{stats.total}</p>
-                  <p className="text-xs md:text-sm text-gray-600">Total Sermons</p>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 truncate">{stats.total}</p>
+                  <p className="text-xs md:text-sm text-gray-600 truncate">Total Sermons</p>
                 </div>
-                <FileText className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
+                <FileText className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-gray-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl md:text-2xl font-bold text-green-600">{stats.ready}</p>
-                  <p className="text-xs md:text-sm text-gray-600">Ready to Deliver</p>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600 truncate">{stats.ready}</p>
+                  <p className="text-xs md:text-sm text-gray-600 truncate">Ready to Deliver</p>
                 </div>
-                <CheckCircle2 className="h-6 w-6 md:h-8 md:w-8 text-green-400" />
+                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-green-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl md:text-2xl font-bold text-orange-600">{stats.delivered}</p>
-                  <p className="text-xs md:text-sm text-gray-600">Delivered</p>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600 truncate">{stats.delivered}</p>
+                  <p className="text-xs md:text-sm text-gray-600 truncate">Delivered</p>
                 </div>
-                <PenTool className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />
+                <PenTool className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-orange-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xl md:text-2xl font-bold text-orange-600">{stats.drafts}</p>
-                  <p className="text-xs md:text-sm text-gray-600">In Progress</p>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600 truncate">{stats.drafts}</p>
+                  <p className="text-xs md:text-sm text-gray-600 truncate">In Progress</p>
                 </div>
-                <Edit3 className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />
+                <Edit3 className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-orange-400 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Clean Sermons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filteredSermons.map((sermon) => (
-            <Card key={sermon.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg line-clamp-2 text-gray-900">
+            <Card key={sermon.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white cursor-default">
+              <CardHeader className="pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-base sm:text-lg line-clamp-2 text-gray-900 flex-1 min-w-0">
                     {sermon.title || "Untitled Sermon"}
                   </CardTitle>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 flex-shrink-0">
                     <Badge 
                       variant="outline"
                       className={`text-xs border ${
@@ -2357,27 +2440,27 @@ const SermonsContent = () => {
                   </div>
                 </div>
                     {sermon.scripture_reference && (
-                  <Badge variant="outline" className="text-xs border-gray-200 text-gray-600 w-fit">
+                  <Badge variant="outline" className="text-xs border-gray-200 text-gray-600 w-fit mt-2">
                     {sermon.scripture_reference}
                       </Badge>
                     )}
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 line-clamp-3 mb-4 leading-relaxed">
-                  {sermon.content || "No content yet..."}
+              <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+                <p className="text-sm text-gray-600 line-clamp-3 mb-3 sm:mb-4 leading-relaxed">
+                  {sermon.content ? sermon.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : "No content yet..."}
                 </p>
-                <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
+                <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 mb-3 sm:mb-4 gap-2">
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {format(new Date(sermon.created_at), 'MMM d, yyyy')}
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">{format(new Date(sermon.created_at), 'MMM d, yyyy')}</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <Type className="h-3 w-3" />
-                    {sermon.word_count || 0} words
+                    <Type className="h-3 w-3 flex-shrink-0" />
+                    <span>{sermon.word_count || 0} words</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {Math.ceil((sermon.word_count || 0) / 150)} min
+                    <Clock className="h-3 w-3 flex-shrink-0" />
+                    <span>{Math.ceil((sermon.word_count || 0) / 150)} min</span>
                   </span>
                 </div>
                 {(sermon.word_count || 0) > 0 && (
@@ -2392,20 +2475,26 @@ const SermonsContent = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleEditSermon(sermon)}
-                    className="flex-1 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEditSermon(sermon);
+                    }}
+                    className="flex-1 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 touch-manipulation min-h-[44px] sm:min-h-0"
                   >
                     <Edit3 className="h-4 w-4 mr-1" />
-                    Edit
+                    <span className="hidden sm:inline">Edit</span>
+                    <span className="sm:hidden">Edit</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleDeleteSermon(sermon.id);
                     }}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 touch-manipulation min-h-[44px] sm:min-h-0 px-3 sm:px-2"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -2426,11 +2515,14 @@ const SermonsContent = () => {
             </p>
             <Button
               variant="outline"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setSearchQuery('');
                 setStatusFilter('all');
                 setSeriesFilter('all');
               }}
+              className="touch-manipulation min-h-[44px] sm:min-h-0"
             >
               Clear Filters
             </Button>
@@ -2449,9 +2541,13 @@ const SermonsContent = () => {
               Create powerful sermons with ✦ AI assistance, Bible integration, and smart writing tools.
             </p>
             <Button 
-              onClick={handleNewSermon} 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleNewSermon();
+              }} 
               size="lg"
-              className="bg-orange-600 hover:bg-orange-700 text-white"
+              className="bg-orange-600 hover:bg-orange-700 text-white touch-manipulation min-h-[44px]"
             >
               <Plus className="h-5 w-5 mr-2" />
               Create Your First Sermon
