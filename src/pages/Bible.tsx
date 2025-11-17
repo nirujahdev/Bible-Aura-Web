@@ -1077,60 +1077,75 @@ How can I apply this to my life?
 
         {/* Clean Tabs Design */}
         <Tabs 
-          value={activeTab} 
+          value={isMobileSidebar ? 'search' : activeTab} 
           onValueChange={(value) => {
             if (value === 'read' || value === 'search') {
-              setActiveTab(value);
-              tabStateRef.current = value;
+              // On mobile sidebar, always stay on search tab
+              if (!isMobileSidebar) {
+                setActiveTab(value);
+                tabStateRef.current = value;
+              }
               if (value === 'read') {
                 setSearchResults([]);
               }
               if (isMobileSidebar) {
-                // Don't close sidebar when switching to search tab
-                // Only close when switching back to read tab
-                if (value === 'read') {
-                  setTimeout(() => {
-                    setMobileSidebarOpen(false);
-                    if (effectiveContext?.setRightSidebarOpen) {
-                      effectiveContext.setRightSidebarOpen(false);
-                    }
-                  }, 150);
-                }
+                // Mobile sidebar only shows search, so don't handle tab changes
+                return;
+              }
+              // Desktop: close sidebar when switching back to read tab
+              if (value === 'read') {
+                setTimeout(() => {
+                  setMobileSidebarOpen(false);
+                  if (effectiveContext?.setRightSidebarOpen) {
+                    effectiveContext.setRightSidebarOpen(false);
+                  }
+                }, 150);
               }
             }
           }}
           className="flex-1 flex flex-col overflow-hidden"
         >
-          <div className={cn(
-            "px-4 pt-4 pb-2 border-b border-gray-100",
-            isMobileSidebar && "px-3"
-          )}>
-            <TabsList className="grid w-full grid-cols-2 bg-gray-100/50 p-1 h-10">
-              <TabsTrigger 
-                value="read" 
-                className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
-              >
-                <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
-                Books
-              </TabsTrigger>
-              <TabsTrigger 
-                value="search" 
-                className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
-              >
-                <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
-                Results
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          {/* Only show tabs on desktop - Mobile sidebar only shows search */}
+          {!isMobileSidebar && (
+            <div className={cn(
+              "px-4 pt-4 pb-2 border-b border-gray-100",
+              isMobileSidebar && "px-3"
+            )}>
+              <TabsList className="grid w-full grid-cols-2 bg-gray-100/50 p-1 h-10">
+                <TabsTrigger 
+                  value="read" 
+                  className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
+                >
+                  <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+                  Books
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="search" 
+                  className="text-xs sm:text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm transition-all"
+                >
+                  <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+                  Results
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          )}
+          
+          {/* Mobile sidebar - force search tab */}
+          {isMobileSidebar && (
+            <div className="px-3 pt-3 pb-2 border-b border-gray-100">
+              <div className="text-xs font-medium text-gray-600 uppercase tracking-wide">Search Results</div>
+            </div>
+          )}
 
           <div className="flex-1 overflow-auto scrollbar-hide">
-            {/* Read Tab Content - Clean Modern Design */}
-            <TabsContent value="read" className={cn(
-              "mt-0 space-y-4 data-[state=active]:animate-in",
-              isMobileSidebar ? "p-3" : "p-4"
-            )}>
-              {/* Book Selection - Ultra Clean List Design */}
-              <div className="space-y-2 sm:space-y-3">
+            {/* Read Tab Content - Clean Modern Design - Only show on desktop */}
+            {!isMobileSidebar && (
+              <TabsContent value="read" className={cn(
+                "mt-0 space-y-4 data-[state=active]:animate-in",
+                isMobileSidebar ? "p-3" : "p-4"
+              )}>
+                {/* Book Selection - Ultra Clean List Design */}
+                <div className="space-y-2 sm:space-y-3">
                 <Collapsible defaultOpen={!selectedBook || oldTestamentBooks.some(b => b.id === selectedBook.id)}>
                   <CollapsibleTrigger asChild>
                     <Button 
@@ -1254,9 +1269,13 @@ How can I apply this to my life?
                 </Collapsible>
               </div>
             </TabsContent>
+            )}
 
-            {/* Search Tab Content - Clean Modern Design */}
-            <TabsContent value="search" className="mt-0 p-4 space-y-4 data-[state=active]:animate-in">
+            {/* Search Tab Content - Clean Modern Design - Always visible on mobile sidebar */}
+            <TabsContent value="search" className={cn(
+              "mt-0 space-y-4 data-[state=active]:animate-in",
+              isMobileSidebar ? "p-3" : "p-4"
+            )}>
               {/* Search Filters - Clean Design */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider px-1">
@@ -1567,18 +1586,75 @@ How can I apply this to my life?
           )}>
             {/* Header - Mobile optimized */}
             <div className={`flex-shrink-0 border-b border-gray-200 bg-white ${isMobile ? 'p-3 pt-2' : 'p-4'}`}>
+              {/* Mobile: Book selection dropdown at top */}
+              {isMobile && (
+                <div className="mb-3">
+                  <Select 
+                    value={selectedBook?.name || ''} 
+                    onValueChange={(value) => {
+                      const book = books.find(b => b.name === value);
+                      if (book) {
+                        setSelectedBook(book);
+                        setSelectedChapter(1);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-10 w-full border-gray-300 hover:border-orange-400 transition-colors bg-white">
+                      <SelectValue placeholder="Select a book">
+                        {selectedBook ? (
+                          <span className="text-sm font-medium">{getBookDisplayName(selectedBook.name)}</span>
+                        ) : (
+                          <span className="text-sm text-gray-500">Select a book</span>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[400px] overflow-y-auto scrollbar-hide">
+                      <div className="p-2">
+                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-2">Old Testament</div>
+                        {oldTestamentBooks.map((book) => (
+                          <SelectItem 
+                            key={book.id} 
+                            value={book.name}
+                            className="cursor-pointer text-sm"
+                          >
+                            {getBookDisplayName(book.name)}
+                          </SelectItem>
+                        ))}
+                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-4 px-2">New Testament</div>
+                        {newTestamentBooks.map((book) => (
+                          <SelectItem 
+                            key={book.id} 
+                            value={book.name}
+                            className="cursor-pointer text-sm"
+                          >
+                            {getBookDisplayName(book.name)}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div className="flex items-center justify-center gap-2">
                 {selectedBook && (
                   <>
-                    <h1 className="font-bold text-gray-800 text-base sm:text-xl">
-                      {getBookDisplayName(selectedBook.name)}
-                    </h1>
-                    <span className="text-gray-600 text-sm sm:text-base">-</span>
+                    {!isMobile && (
+                      <>
+                        <h1 className="font-bold text-gray-800 text-base sm:text-xl">
+                          {getBookDisplayName(selectedBook.name)}
+                        </h1>
+                        <span className="text-gray-600 text-sm sm:text-base">-</span>
+                      </>
+                    )}
                     <Select 
                       value={selectedChapter.toString()} 
                       onValueChange={(value) => setSelectedChapter(parseInt(value))}
                     >
-                      <SelectTrigger className="h-8 sm:h-9 w-auto min-w-[100px] sm:min-w-[120px] border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white">
+                      <SelectTrigger className={cn(
+                        "border-gray-300 hover:border-orange-400 transition-colors bg-orange-500 text-white",
+                        isMobile ? "h-9 w-full" : "h-8 sm:h-9 w-auto min-w-[100px] sm:min-w-[120px]"
+                      )}>
                         <SelectValue>
                           <span className="text-xs sm:text-sm font-medium">Chapter {selectedChapter}</span>
                         </SelectValue>
