@@ -1,5 +1,5 @@
 // Bible page - Clean reading and search interface
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -107,6 +107,8 @@ export default function Bible() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchAbortControllerRef = useRef<AbortController | null>(null);
   const [booksLoading, setBooksLoading] = useState(true);
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -493,8 +495,22 @@ export default function Bible() {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const handleSearch = useCallback(async (query?: string) => {
+    const searchTerm = query || searchQuery;
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      setLoading(false);
+      return;
+    }
+    
+    // Cancel previous search if it's still running
+    if (searchAbortControllerRef.current) {
+      searchAbortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller for this search
+    const abortController = new AbortController();
+    searchAbortControllerRef.current = abortController;
     
     setLoading(true);
     setVisibleResultsCount(50); // Reset visible count on new search
@@ -503,7 +519,7 @@ export default function Bible() {
       // Search BOTH English and Tamil simultaneously - no need to switch languages
       const [englishResults, tamilResults] = await Promise.all([
         searchVerses(
-          searchQuery, 
+          searchTerm, 
           'english',
           searchFilters.book !== 'all' ? searchFilters.book : undefined,
           selectedTranslation,
@@ -512,11 +528,13 @@ export default function Bible() {
             maxResults: 200
           }
         ).catch(err => {
+          // Don't log errors if search was aborted
+          if (abortController.signal.aborted) return [];
           console.error('Error searching English:', err);
           return [];
         }),
         searchVerses(
-          searchQuery, 
+          searchTerm, 
           'tamil',
           searchFilters.book !== 'all' ? searchFilters.book : undefined,
           'TAMIL',
@@ -525,10 +543,17 @@ export default function Bible() {
             maxResults: 200
           }
         ).catch(err => {
+          // Don't log errors if search was aborted
+          if (abortController.signal.aborted) return [];
           console.error('Error searching Tamil:', err);
           return [];
         })
       ]);
+      
+      // Check if search was aborted
+      if (abortController.signal.aborted) {
+        return;
+      }
       
       // Combine results from both languages
       let results = [...englishResults, ...tamilResults];
@@ -621,7 +646,11 @@ export default function Bible() {
           description: `Found ${results.length} verses (${englishCount} English, ${tamilCount} Tamil)`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Don't show error if search was aborted
+      if (abortController.signal.aborted) {
+        return;
+      }
       console.error('Error searching verses:', error);
       toast({
         title: "Search Error",
@@ -629,9 +658,54 @@ export default function Bible() {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      // Only update loading state if this search wasn't aborted
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [searchQuery, searchFilters, selectedTranslation, fuzzySearchEnabled, books, toast]);
+
+  // Debounced search effect - only search after user stops typing for 500ms
+  useEffect(() => {
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // If search query is empty, clear results immediately
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setLoading(false);
+      return;
+    }
+
+    // Set loading state immediately for better UX
+    setLoading(true);
+
+    // Debounce the search - wait 500ms after user stops typing
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch();
+    }, 500);
+
+    // Cleanup function
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, handleSearch]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      if (searchAbortControllerRef.current) {
+        searchAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Helper function to highlight exact search terms in verse text
   const highlightVerseText = (verse: BibleVerse, query: string): string => {
@@ -969,6 +1043,10 @@ How can I apply this to my life?
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   setActiveTab('search');
+                  // Clear timeout and search immediately on Enter
+                  if (searchTimeoutRef.current) {
+                    clearTimeout(searchTimeoutRef.current);
+                  }
                   handleSearch();
                 }
               }}
