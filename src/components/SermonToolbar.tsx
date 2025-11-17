@@ -412,16 +412,21 @@ export default function SermonToolbar({
 
   return (
     <TooltipProvider>
-      <div className="border-b bg-white flex-shrink-0 z-20">
+      <div className="border-b bg-white flex-shrink-0 z-20 shadow-sm">
         {/* Main Toolbar - Compact */}
-        <div className="p-1 sm:p-1.5">
-          <div className="flex items-center gap-1 justify-between flex-wrap">
-            <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="p-1.5 sm:p-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-between flex-wrap">
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap overflow-x-auto -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
               {/* Text Formatting */}
               <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size={isMobile ? "sm" : "sm"} onClick={() => formatText('bold')} className={isMobile ? "h-8 w-8 p-0" : ""}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('bold')} 
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Bold className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -430,7 +435,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('italic')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('italic')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Italic className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -439,7 +449,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('underline')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('underline')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Underline className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -449,7 +464,12 @@ export default function SermonToolbar({
                 {!isMobile && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" onClick={() => formatText('strikethrough')}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => formatText('strikethrough')}
+                        className="h-8 w-8 p-0"
+                      >
                         <Strikethrough className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
@@ -462,25 +482,57 @@ export default function SermonToolbar({
                   <DropdownMenuTrigger asChild>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                        >
                           <Palette className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Text Color</TooltipContent>
                     </Tooltip>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    <div className="p-2">
-                      <p className="text-xs font-medium mb-2">Text Color</p>
-                      <div className="grid grid-cols-6 gap-1">
-                        {['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080', '#FFC0CB', '#A52A2A', '#808080'].map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => handleColorChange('foreColor', color)}
-                            className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
-                            style={{ backgroundColor: color }}
-                            title={color}
-                          />
+                  <DropdownMenuContent align="start" className="w-56 p-3">
+                    <div>
+                      <p className="text-xs font-semibold mb-3 text-gray-700">Text Color</p>
+                      <div className="grid grid-cols-8 gap-2">
+                        {[
+                          { color: '#000000', name: 'Black' },
+                          { color: '#FF0000', name: 'Red' },
+                          { color: '#0000FF', name: 'Blue' },
+                          { color: '#008000', name: 'Green' },
+                          { color: '#FFA500', name: 'Orange' },
+                          { color: '#800080', name: 'Purple' },
+                          { color: '#FFC0CB', name: 'Pink' },
+                          { color: '#808080', name: 'Gray' },
+                          { color: '#FFFF00', name: 'Yellow' },
+                          { color: '#00FFFF', name: 'Cyan' },
+                          { color: '#FF00FF', name: 'Magenta' },
+                          { color: '#A52A2A', name: 'Brown' },
+                          { color: '#FFD700', name: 'Gold' },
+                          { color: '#4B0082', name: 'Indigo' },
+                          { color: '#FF6347', name: 'Tomato' },
+                          { color: '#32CD32', name: 'Lime' }
+                        ].map((item) => (
+                          <Tooltip key={item.color}>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => {
+                                  handleColorChange('foreColor', item.color);
+                                  toast({
+                                    title: "Text color applied",
+                                    description: `Applied ${item.name} color`,
+                                  });
+                                }}
+                                className="w-8 h-8 rounded-md border-2 border-gray-300 hover:border-orange-500 hover:scale-110 transition-all shadow-sm touch-manipulation"
+                                style={{ backgroundColor: item.color }}
+                                title={item.name}
+                                aria-label={`Apply ${item.name} text color`}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>{item.name}</TooltipContent>
+                          </Tooltip>
                         ))}
                       </div>
                     </div>
@@ -492,25 +544,57 @@ export default function SermonToolbar({
                   <DropdownMenuTrigger asChild>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                        >
                           <Highlighter className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Highlight</TooltipContent>
                     </Tooltip>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    <div className="p-2">
-                      <p className="text-xs font-medium mb-2">Highlight Color</p>
-                      <div className="grid grid-cols-6 gap-1">
-                        {['#FFFF00', '#FFE066', '#FFCC99', '#99CCFF', '#99FF99', '#FF99CC', '#CC99FF', '#FFE5B4', '#E6E6FA', '#F0E68C', '#FFB6C1', '#DDA0DD'].map((color) => (
-                          <button
-                            key={color}
-                            onClick={() => handleColorChange('backColor', color)}
-                            className="w-6 h-6 rounded border border-gray-300 hover:scale-110 transition-transform"
-                            style={{ backgroundColor: color }}
-                            title={color}
-                          />
+                  <DropdownMenuContent align="start" className="w-56 p-3">
+                    <div>
+                      <p className="text-xs font-semibold mb-3 text-gray-700">Highlight Color</p>
+                      <div className="grid grid-cols-8 gap-2">
+                        {[
+                          { color: '#FFFF00', name: 'Yellow' },
+                          { color: '#FFE066', name: 'Light Yellow' },
+                          { color: '#FFCC99', name: 'Peach' },
+                          { color: '#99CCFF', name: 'Light Blue' },
+                          { color: '#99FF99', name: 'Light Green' },
+                          { color: '#FF99CC', name: 'Pink' },
+                          { color: '#CC99FF', name: 'Lavender' },
+                          { color: '#FFE5B4', name: 'Cream' },
+                          { color: '#E6E6FA', name: 'Lavender Blue' },
+                          { color: '#F0E68C', name: 'Khaki' },
+                          { color: '#FFB6C1', name: 'Light Pink' },
+                          { color: '#DDA0DD', name: 'Plum' },
+                          { color: '#B0E0E6', name: 'Powder Blue' },
+                          { color: '#F5DEB3', name: 'Wheat' },
+                          { color: '#98FB98', name: 'Pale Green' },
+                          { color: '#FFDAB9', name: 'Peach Puff' }
+                        ].map((item) => (
+                          <Tooltip key={item.color}>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => {
+                                  handleColorChange('backColor', item.color);
+                                  toast({
+                                    title: "Highlight applied",
+                                    description: `Applied ${item.name} highlight`,
+                                  });
+                                }}
+                                className="w-8 h-8 rounded-md border-2 border-gray-300 hover:border-orange-500 hover:scale-110 transition-all shadow-sm touch-manipulation"
+                                style={{ backgroundColor: item.color }}
+                                title={item.name}
+                                aria-label={`Apply ${item.name} highlight`}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>{item.name}</TooltipContent>
+                          </Tooltip>
                         ))}
                       </div>
                     </div>
@@ -524,7 +608,12 @@ export default function SermonToolbar({
               <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('alignLeft')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('alignLeft')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <AlignLeft className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -533,7 +622,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('alignCenter')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('alignCenter')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <AlignCenter className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -542,7 +636,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('alignRight')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('alignRight')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <AlignRight className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -552,7 +651,12 @@ export default function SermonToolbar({
                 {!isMobile && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" onClick={() => formatText('alignJustify')}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => formatText('alignJustify')}
+                        className="h-8 w-8 p-0"
+                      >
                         <AlignRight className="h-4 w-4 rotate-180" />
                       </Button>
                     </TooltipTrigger>
@@ -568,18 +672,46 @@ export default function SermonToolbar({
                 <DropdownMenuTrigger asChild>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-xs">
-                        <Type className="h-4 w-4 mr-1" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className={isMobile ? "h-9 px-2 text-xs touch-manipulation" : "h-8 px-2 text-xs"}
+                      >
+                        <Type className="h-4 w-4 sm:mr-1" />
                         <span className="hidden sm:inline">Font</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Font Family</TooltipContent>
                   </Tooltip>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  {['Arial', 'Times New Roman', 'Georgia', 'Verdana', 'Courier New', 'Helvetica', 'Comic Sans MS', 'Trebuchet MS', 'Impact'].map((font) => (
-                    <DropdownMenuItem key={font} onClick={() => handleFontChange(font)}>
-                      <span style={{ fontFamily: font }}>{font}</span>
+                <DropdownMenuContent align="start" className="w-52 max-h-[300px] overflow-y-auto">
+                  {[
+                    { name: 'Arial', category: 'Sans-serif' },
+                    { name: 'Times New Roman', category: 'Serif' },
+                    { name: 'Georgia', category: 'Serif' },
+                    { name: 'Verdana', category: 'Sans-serif' },
+                    { name: 'Courier New', category: 'Monospace' },
+                    { name: 'Helvetica', category: 'Sans-serif' },
+                    { name: 'Comic Sans MS', category: 'Casual' },
+                    { name: 'Trebuchet MS', category: 'Sans-serif' },
+                    { name: 'Impact', category: 'Sans-serif' },
+                    { name: 'Calibri', category: 'Sans-serif' },
+                    { name: 'Garamond', category: 'Serif' },
+                    { name: 'Tahoma', category: 'Sans-serif' }
+                  ].map((font) => (
+                    <DropdownMenuItem 
+                      key={font.name} 
+                      onClick={() => {
+                        handleFontChange(font.name);
+                        toast({
+                          title: "Font changed",
+                          description: `Applied ${font.name} font`,
+                        });
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <span style={{ fontFamily: font.name }} className="text-sm">{font.name}</span>
+                      <span className="text-xs text-gray-500 ml-2">{font.category}</span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -590,7 +722,11 @@ export default function SermonToolbar({
                 <DropdownMenuTrigger asChild>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-xs">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className={isMobile ? "h-9 px-2 text-xs touch-manipulation" : "h-8 px-2 text-xs"}
+                      >
                         <span className="hidden sm:inline">Size</span>
                         <span className="sm:hidden">S</span>
                       </Button>
@@ -598,10 +734,36 @@ export default function SermonToolbar({
                     <TooltipContent>Font Size</TooltipContent>
                   </Tooltip>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-32">
-                  {['8', '9', '10', '11', '12', '14', '16', '18', '20', '24', '28', '32', '36', '48', '72'].map((size) => (
-                    <DropdownMenuItem key={size} onClick={() => handleSizeChange(size)}>
-                      <span className="text-sm">{size}px</span>
+                <DropdownMenuContent align="start" className="w-36 max-h-[300px] overflow-y-auto">
+                  {[
+                    { size: '8', label: '8px - Tiny' },
+                    { size: '9', label: '9px - Very Small' },
+                    { size: '10', label: '10px - Small' },
+                    { size: '11', label: '11px' },
+                    { size: '12', label: '12px - Default' },
+                    { size: '14', label: '14px' },
+                    { size: '16', label: '16px - Medium' },
+                    { size: '18', label: '18px' },
+                    { size: '20', label: '20px' },
+                    { size: '24', label: '24px - Large' },
+                    { size: '28', label: '28px' },
+                    { size: '32', label: '32px - Extra Large' },
+                    { size: '36', label: '36px' },
+                    { size: '48', label: '48px - Huge' },
+                    { size: '72', label: '72px - Giant' }
+                  ].map((item) => (
+                    <DropdownMenuItem 
+                      key={item.size} 
+                      onClick={() => {
+                        handleSizeChange(item.size);
+                        toast({
+                          title: "Font size changed",
+                          description: `Applied ${item.size}px`,
+                        });
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <span className="text-sm font-medium">{item.label}</span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -610,10 +772,15 @@ export default function SermonToolbar({
               <Separator orientation="vertical" className="h-6" />
 
               {/* Headings */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('heading1')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('heading1')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Heading1 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -622,7 +789,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('heading2')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('heading2')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Heading2 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -631,7 +803,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('heading3')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('heading3')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Heading3 className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -642,10 +819,15 @@ export default function SermonToolbar({
               <Separator orientation="vertical" className="h-6" />
 
               {/* Lists and Content */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('list')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('list')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <List className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -654,7 +836,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('orderedList')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('orderedList')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <ListOrdered className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -663,7 +850,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('quote')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('quote')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Quote className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -672,7 +864,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('link')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('link')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Link className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -682,7 +879,12 @@ export default function SermonToolbar({
                 {!isMobile && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" onClick={() => formatText('table')}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => formatText('table')}
+                        className="h-8 w-8 p-0"
+                      >
                         <Table className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
@@ -694,10 +896,15 @@ export default function SermonToolbar({
               <Separator orientation="vertical" className="h-6" />
 
               {/* Utility Actions - Simplified */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={copyToClipboard}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={copyToClipboard}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -706,7 +913,12 @@ export default function SermonToolbar({
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => formatText('removeFormat')}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => formatText('removeFormat')}
+                      className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -717,23 +929,36 @@ export default function SermonToolbar({
                   <DropdownMenuTrigger asChild>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={isMobile ? "h-9 w-9 p-0 touch-manipulation" : "h-8 w-8 p-0"}
+                        >
                           <Download className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Export Sermon</TooltipContent>
                     </Tooltip>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => exportSermon('txt')}>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={() => exportSermon('txt')}
+                      className="cursor-pointer"
+                    >
                       <FileDown className="h-4 w-4 mr-2" />
                       Export as TXT
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportSermon('md')}>
+                    <DropdownMenuItem 
+                      onClick={() => exportSermon('md')}
+                      className="cursor-pointer"
+                    >
                       <FileDown className="h-4 w-4 mr-2" />
                       Export as Markdown
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => exportSermon('html')}>
+                    <DropdownMenuItem 
+                      onClick={() => exportSermon('html')}
+                      className="cursor-pointer"
+                    >
                       <FileDown className="h-4 w-4 mr-2" />
                       Export as HTML
                     </DropdownMenuItem>

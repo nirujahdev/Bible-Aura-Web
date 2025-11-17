@@ -1875,7 +1875,6 @@ const SermonsContent = () => {
                                     <Circle className="h-4 w-4 text-gray-400" />
                                   }
                                 </Button>
-                                                                 <Heading1 className="h-3 w-3 text-orange-600" />
                                 <span className={`text-sm flex-1 ${item.completed ? 'line-through text-gray-500' : ''}`}>
                                   {item.title}
                                 </span>
@@ -1903,7 +1902,6 @@ const SermonsContent = () => {
                                       <Circle className="h-4 w-4 text-gray-400" />
                                     }
                                   </Button>
-                                                                     <Heading2 className="h-3 w-3 text-orange-500" />
                                   <span className={`text-sm flex-1 ${subItem.completed ? 'line-through text-gray-500' : ''}`}>
                                     {subItem.title}
                                   </span>

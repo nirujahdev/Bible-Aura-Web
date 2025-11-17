@@ -345,29 +345,42 @@ Provide detailed, helpful research and insights.`;
 
       {/* Enhanced Tabs - Optimized for mobile and laptop */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0 overflow-hidden h-full">
-        <TabsList className="grid grid-cols-4 mx-2 sm:mx-4 mt-2 sm:mt-3 h-8 sm:h-9 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1">
+        <TabsList className="grid grid-cols-4 mx-2 sm:mx-3 mt-2 sm:mt-3 h-9 sm:h-10 bg-gray-100 flex-shrink-0 gap-0.5 sm:gap-1 rounded-lg p-1">
           {/* Tab order: Info, Tools, Chat, History */}
-          <TabsTrigger value="info" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <Info className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Info</span>
+          <TabsTrigger 
+            value="info" 
+            className="text-[11px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all h-7 sm:h-8 touch-manipulation"
+          >
+            <Info className="h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline font-medium">Info</span>
           </TabsTrigger>
-          <TabsTrigger value="tools" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <Zap className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Tools</span>
+          <TabsTrigger 
+            value="tools" 
+            className="text-[11px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all h-7 sm:h-8 touch-manipulation"
+          >
+            <Zap className="h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline font-medium">Tools</span>
           </TabsTrigger>
-          <TabsTrigger value="chat" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <MessageSquare className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Chat</span>
+          <TabsTrigger 
+            value="chat" 
+            className="text-[11px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all h-7 sm:h-8 touch-manipulation"
+          >
+            <MessageSquare className="h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline font-medium">Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="text-[10px] sm:text-xs px-1.5 sm:px-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-            <History className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">History</span>
+          <TabsTrigger 
+            value="history" 
+            className="text-[11px] sm:text-xs px-2 sm:px-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all h-7 sm:h-8 touch-manipulation"
+          >
+            <History className="h-3.5 w-3.5 sm:mr-1.5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline font-medium">History</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Enhanced Tools Tab - Compact to fit without scroll */}
-        <TabsContent value="tools" className="flex-1 overflow-hidden p-2 m-0 min-h-0">
-          <div className="space-y-2.5 h-full overflow-y-auto pb-2">
+        <TabsContent value="tools" className="flex-1 overflow-hidden p-2 sm:p-3 m-0 min-h-0 data-[state=active]:animate-in data-[state=active]:fade-in-0">
+          <ScrollArea className="h-full">
+          <div className="space-y-2.5 pb-2">
             {agentsLoading ? (
               <div className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
                 <Loader2 className="h-8 w-8 animate-spin text-orange-500 mb-3" />
@@ -474,10 +487,11 @@ Provide detailed, helpful research and insights.`;
             }))
             }
           </div>
+          </ScrollArea>
         </TabsContent>
 
         {/* Enhanced Chat Tab */}
-        <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0 min-h-0 overflow-hidden">
+        <TabsContent value="chat" className="flex-1 flex flex-col m-0 p-0 min-h-0 overflow-hidden data-[state=active]:animate-in data-[state=active]:fade-in-0">
           <ScrollArea className="flex-1 px-4 min-h-0">
             <div className="space-y-4 py-4">
               {messages.length === 0 && (
@@ -577,7 +591,7 @@ Provide detailed, helpful research and insights.`;
         </TabsContent>
 
         {/* Enhanced History Tab */}
-        <TabsContent value="history" className="flex-1 overflow-y-auto p-3 m-0 min-h-0">
+        <TabsContent value="history" className="flex-1 overflow-y-auto p-2 sm:p-3 m-0 min-h-0 data-[state=active]:animate-in data-[state=active]:fade-in-0">
           <div className="space-y-2">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <History className="h-4 w-4 text-orange-500" />
@@ -631,7 +645,7 @@ Provide detailed, helpful research and insights.`;
         </TabsContent>
 
         {/* Info Tab - Sermon Information - EDITABLE */}
-        <TabsContent value="info" className="flex-1 overflow-y-auto p-2 sm:p-3 m-0 min-h-0">
+        <TabsContent value="info" className="flex-1 overflow-y-auto p-2 sm:p-3 m-0 min-h-0 data-[state=active]:animate-in data-[state=active]:fade-in-0">
           <ScrollArea className="h-full">
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-4">
