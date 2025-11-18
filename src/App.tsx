@@ -214,13 +214,17 @@ function App() {
                 
                 <Route path="/research-lab" element={
                   <ProtectedRoute>
-                    <ResearchLab />
+                    <ResearchLabPinProtection>
+                      <ResearchLab />
+                    </ResearchLabPinProtection>
                   </ProtectedRoute>
                 } />
                 
                 <Route path="/research-lab/:notebookId" element={
                   <ProtectedRoute>
-                    <ResearchNotebook />
+                    <ResearchLabPinProtection>
+                      <ResearchNotebook />
+                    </ResearchLabPinProtection>
                   </ProtectedRoute>
                 } />
                 
