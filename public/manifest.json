@@ -2,7 +2,7 @@
   "name": "Bible Aura - AI-Powered Biblical Insights",
   "short_name": "Bible Aura",
   "description": "Experience Bible Aura's AI-powered Bible study platform with Bible AI chat, scripture analysis, and spiritual growth tools for deeper faith journey.",
-  "start_url": "/",
+  "start_url": "/pwa-loader",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f97316",

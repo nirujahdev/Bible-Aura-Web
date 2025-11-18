@@ -13,6 +13,7 @@ import Auth from '@/pages/Auth';
 import About from '@/pages/About';
 import Dashboard from '@/pages/Dashboard';
 import NotFound from '@/pages/NotFound';
+import PWALoader from '@/pages/PWALoader';
 import Features from '@/pages/Features';
 import HelpCenter from '@/pages/HelpCenter';
 import Contact from '@/pages/Contact';
@@ -103,6 +104,7 @@ function App() {
               <Routes>
                 {/* Public routes - Accessible to Google crawlers */}
                 <Route path="/" element={<Home />} />
+                <Route path="/pwa-loader" element={<PWALoader />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={<Blog />} />

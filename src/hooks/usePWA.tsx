@@ -38,14 +38,15 @@ export function usePWA(): PWAState & PWAActions {
   const [serviceWorkerRegistration, setServiceWorkerRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   // Check if app is running in standalone mode
-  const isStandalone = useState(() => {
+  const [isStandalone, setIsStandalone] = useState(() => {
+    if (typeof window === 'undefined') return false;
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
       // @ts-expect-error - standalone is a Safari-specific property
-      window.navigator.standalone === true ||
+      (window.navigator as any).standalone === true ||
       document.referrer.includes('android-app://')
     );
-  })[0];
+  });
 
   // Register service worker
   const registerServiceWorker = useCallback(async () => {
@@ -241,9 +242,14 @@ export function usePWA(): PWAState & PWAActions {
   useEffect(() => {
     // Check if app is running as PWA
     const checkInstallStatus = () => {
-      const isInstalledApp = isStandalone || 
-        window.matchMedia('(display-mode: standalone)').matches;
+      const standaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+      // @ts-expect-error - standalone is a Safari-specific property
+      const safariStandalone = (window.navigator as any).standalone === true;
+      const androidStandalone = document.referrer.includes('android-app://');
       
+      const isInstalledApp = standaloneMode || safariStandalone || androidStandalone;
+      
+      setIsStandalone(isInstalledApp);
       setIsInstalled(isInstalledApp);
       
       // If already installed, don't show install prompt
@@ -262,7 +268,7 @@ export function usePWA(): PWAState & PWAActions {
     return () => {
       mediaQuery.removeEventListener('change', checkInstallStatus);
     };
-  }, [isStandalone]);
+  }, []);
 
   return {
     // State

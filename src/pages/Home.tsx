@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlobalNavigation } from "@/components/GlobalNavigation";
 import { 
-  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3, Calendar, Languages, ArrowRight
+  BookOpen, MessageCircle, Star, Sparkles, Send, User, Zap, Mic, Bot, FileText, BarChart3, Calendar, Languages, ArrowRight, Smartphone, Share2, Plus, Home as HomeIcon
 } from "lucide-react";
 import { Link } from "react-router-dom";
 // import { SEOBacklinks, QuickActionSEOLinks } from "@/components/SEOBacklinks"; // COMMENTED OUT TO FIX ERRORS
@@ -11,10 +12,23 @@ import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 // import FAQ from "@/components/FAQ"; // COMMENTED OUT TO FIX ERRORS
 import { useSEO, SEO_CONFIG } from "@/hooks/useSEO";
+import { usePWA } from "@/hooks/usePWA";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
+import { IOSInstallModal } from "@/components/IOSInstallModal";
 
 const Home = () => {
   // SEO optimization
   useSEO(SEO_CONFIG.HOME);
+  const { isStandalone } = usePWA();
+  const navigate = useNavigate();
+  const [showIOSModal, setShowIOSModal] = useState(false);
+
+  // Redirect to PWA loader if running in PWA mode
+  useEffect(() => {
+    if (isStandalone) {
+      navigate('/pwa-loader', { replace: true });
+    }
+  }, [isStandalone, navigate]);
 
 
 
@@ -74,14 +88,15 @@ const Home = () => {
                 </span>
               </div>
 
-              {/* CTA Button - No animations */}
-              <div className="pt-2 lg:pt-4">
+              {/* CTA Buttons - No animations */}
+              <div className="pt-2 lg:pt-4 flex flex-col sm:flex-row gap-3 items-center lg:items-start">
                 <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-base lg:text-lg px-6 lg:px-8 py-4 lg:py-5 rounded-xl shadow-lg hover:scale-105 transition-transform w-full sm:w-auto">
                   <Link to="/auth?redirect=%2Fdashboard">
                     <Sparkles className="h-4 lg:h-5 w-4 lg:w-5 mr-2" />
                     START YOUR JOURNEY
                   </Link>
                 </Button>
+                <PWAInstallButton />
               </div>
             </div>
 
@@ -643,6 +658,173 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* PWA Install Section - Android & iOS */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-orange-50 via-white to-blue-50">
+        <div className="w-full px-4 md:px-6 lg:px-10 max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-blue-600 text-white mb-6 shadow-xl">
+              <Smartphone className="h-8 w-8" />
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Install Bible Aura as an App
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+              Get the full app experience on your phone. Works offline and feels like a native app!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            {/* Android Section */}
+            <Card className="p-8 bg-white shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-green-100">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Smartphone className="h-7 w-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Android Users</h3>
+                  <p className="text-gray-600 text-sm">Chrome, Samsung Internet, etc.</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm mt-0.5">
+                    1
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-medium">Tap the Install Button</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Click the "Install Bible Aura App" button above or look for the install prompt in your browser
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-medium">Confirm Installation</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Tap "Install" in the popup. The app will be added to your home screen automatically
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-medium">Open from Home Screen</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Launch Bible Aura from your home screen icon - it works just like a native app!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <PWAInstallButton />
+              </div>
+            </Card>
+
+            {/* iOS Section */}
+            <Card className="p-8 bg-white shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-blue-100">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Smartphone className="h-7 w-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">iOS Users</h3>
+                  <p className="text-gray-600 text-sm">iPhone & iPad (Safari)</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm mt-0.5">
+                    1
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-medium">Tap the Share Button</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Look for the Share icon <Share2 className="inline h-4 w-4 text-blue-600" /> at the bottom of Safari
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-medium">Select "Add to Home Screen"</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Scroll down and tap <Plus className="inline h-4 w-4 text-blue-600" /> "Add to Home Screen"
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <p className="text-gray-900 font-medium">Tap "Add"</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Confirm by tapping "Add" in the top right. Bible Aura will appear on your home screen!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <Button
+                  onClick={() => setShowIOSModal(true)}
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                >
+                  <HomeIcon className="h-5 w-5 mr-2" />
+                  Show iOS Instructions
+                </Button>
+              </div>
+            </Card>
+          </div>
+
+          {/* Benefits Section */}
+          <div className="mt-12 p-8 bg-gradient-to-r from-orange-500 to-blue-600 rounded-2xl text-white">
+            <h3 className="text-2xl font-bold mb-6 text-center">Why Install as an App?</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Zap className="h-6 w-6" />
+                </div>
+                <h4 className="font-semibold mb-2">Faster Access</h4>
+                <p className="text-sm opacity-90">Open instantly from your home screen</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <h4 className="font-semibold mb-2">Works Offline</h4>
+                <p className="text-sm opacity-90">Access your saved content without internet</p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Star className="h-6 w-6" />
+                </div>
+                <h4 className="font-semibold mb-2">App-Like Experience</h4>
+                <p className="text-sm opacity-90">Feels like a native mobile app</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* iOS Install Modal */}
+      <IOSInstallModal open={showIOSModal} onClose={() => setShowIOSModal(false)} />
 
       {/* Footer */}
       <Footer />

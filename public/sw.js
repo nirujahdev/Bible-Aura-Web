@@ -5,6 +5,7 @@ const DYNAMIC_CACHE = 'bible-aura-dynamic-v1.0.1';
 // Files to cache immediately
 const STATIC_ASSETS = [
     '/',
+  '/pwa-loader',
   '/auth',
   '/dashboard',
   '/bible',
