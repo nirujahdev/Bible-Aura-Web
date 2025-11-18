@@ -4,6 +4,20 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // ============================================================================
+// CACHE CONFIGURATION
+// ============================================================================
+
+const CACHE_TTL = 5 * 1000; // 5 seconds cache TTL
+
+// In-memory cache for notebooks (defined before Notebook interface to avoid forward reference)
+interface NotebookCacheEntry {
+  data: Notebook[];
+  timestamp: number;
+}
+
+const notebooksCache = new Map<string, NotebookCacheEntry>();
+
+// ============================================================================
 // NOTEBOOK OPERATIONS
 // ============================================================================
 
