@@ -1,7 +1,7 @@
 import { 
   Plus, Home, Grid3X3, HelpCircle, Settings, User, MessageCircle, 
   Book, Users, Headphones, BookOpen, Mic, TreePine, Heart, FileText,
-  Star, LogOut, LogIn, LucideIcon, Menu, Search, Bookmark, PenTool, Library, MessageSquare, GraduationCap
+  Star, LogOut, LogIn, LucideIcon, Menu, Search, Bookmark, PenTool, Library, MessageSquare, GraduationCap, FlaskConical
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -313,6 +313,7 @@ function MobileNavigationHeader() {
   const mobileNavItems = [
     { icon: MessageCircle, path: "/", label: "AI Chat", description: "Biblical AI assistant" },
     { icon: BookOpen, path: "/bible", label: "Bible", description: "Read & study scripture" },
+    { icon: FlaskConical, path: "/research-lab", label: "Research Lab", description: "AI-powered research workspace" },
     { icon: Library, path: "/study-hub", label: "Study Hub", description: "Deep biblical study" },
     { icon: PenTool, path: "/journal", label: "Journal", description: "Personal reflections" },
     { icon: Users, path: "/community", label: "Community", description: "Connect with believers" },
