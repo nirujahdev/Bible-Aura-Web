@@ -351,19 +351,26 @@ function MobileNavigationHeader() {
               {/* Navigation Items - Scrollable */}
               <div className="flex-1 overflow-y-auto px-3 py-4 max-h-[calc(100vh-180px)]">
                 <div className="space-y-1">
-                  {mobileNavItems.map((item) => (
+                  {mobileNavItems.map((item) => {
+                    const isActive = item.path === '/' 
+                      ? location.pathname === '/' || location.pathname === '/dashboard'
+                      : item.path === '/research-lab'
+                      ? location.pathname === '/research-lab' || location.pathname.startsWith('/research-lab/')
+                      : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+                    
+                    return (
                     <Link
                       key={item.path}
                       to={item.path}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 ${
-                        location.pathname === item.path 
+                        isActive
                           ? 'bg-orange-50 border-l-4 border-orange-500 shadow-sm' 
                           : 'hover:bg-gray-50'
                       }`}
                     >
                       <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${
-                        location.pathname === item.path 
+                        isActive
                           ? 'bg-orange-100 text-orange-600' 
                           : 'bg-gray-100 text-gray-600'
                       }`}>
@@ -371,7 +378,7 @@ function MobileNavigationHeader() {
                       </div>
                       <div className="flex-1">
                         <div className={`font-semibold text-sm ${
-                          location.pathname === item.path 
+                          isActive
                             ? 'text-orange-600' 
                             : 'text-gray-900'
                         }`}>
