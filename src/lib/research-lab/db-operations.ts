@@ -154,6 +154,13 @@ export async function getNotebook(
 
     // Check if error is due to missing table
     if (error) {
+      console.error('Supabase error in getNotebook:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      
       const errorMessage = error.message || String(error);
       if (
         (errorMessage.includes('relation') && errorMessage.includes('does not exist')) ||
@@ -166,6 +173,19 @@ export async function getNotebook(
             message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
             code: 'TABLE_NOT_FOUND',
             hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+          }
+        };
+      }
+      
+      // Check for RLS policy errors
+      if (error.code === '42501' || errorMessage.includes('permission denied') || errorMessage.includes('row-level security')) {
+        return {
+          data: null,
+          error: {
+            message: 'Permission denied. Please check Row Level Security policies.',
+            code: 'RLS_ERROR',
+            hint: 'The RLS policies may not be set up correctly. Please verify the migration was run completely.',
+            originalError: error
           }
         };
       }
