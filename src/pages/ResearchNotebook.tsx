@@ -53,7 +53,10 @@ export default function ResearchNotebook() {
     try {
       const { data, error } = await getNotebook(notebookId, user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('getNotebook error:', error);
+        throw error;
+      }
 
       if (!data) {
         toast({
