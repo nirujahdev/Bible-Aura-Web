@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernLayout } from '@/components/ModernLayout';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
@@ -56,11 +57,34 @@ export default function ResearchLab() {
       setNotebooks(data || []);
     } catch (error: any) {
       console.error('Error loading notebooks:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load notebooks. Please ensure database tables are created.',
-        variant: 'destructive',
-      });
+      
+      // Check if it's a table doesn't exist error
+      const isTableMissing = error?.message?.includes('relation') && 
+                             error?.message?.includes('does not exist');
+      
+      if (isTableMissing) {
+        toast({
+          title: 'Database Setup Required',
+          description: (
+            <div className="space-y-2">
+              <p>Research Lab tables need to be created. Please run the migration:</p>
+              <ol className="list-decimal list-inside text-sm space-y-1">
+                <li>Go to Supabase Dashboard → SQL Editor</li>
+                <li>Open: <code className="bg-gray-100 px-1 rounded">supabase/migrations/20241118000000_create_research_lab_tables.sql</code></li>
+                <li>Copy and paste the SQL, then click Run</li>
+              </ol>
+            </div>
+          ),
+          variant: 'destructive',
+          duration: 10000,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error?.message || 'Failed to load notebooks. Please try again.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }

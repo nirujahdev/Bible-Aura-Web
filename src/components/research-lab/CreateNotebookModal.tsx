@@ -137,11 +137,25 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
       handleClose();
     } catch (error: any) {
       console.error('Error creating notebook:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create notebook',
-        variant: 'destructive',
-      });
+      
+      // Check if it's a table doesn't exist error
+      const isTableMissing = error?.message?.includes('relation') && 
+                             error?.message?.includes('does not exist');
+      
+      if (isTableMissing) {
+        toast({
+          title: 'Database Setup Required',
+          description: 'Please run the migration SQL file first. See the error message on the Research Lab page for instructions.',
+          variant: 'destructive',
+          duration: 8000,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to create notebook',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsCreating(false);
     }
