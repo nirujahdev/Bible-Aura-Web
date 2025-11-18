@@ -96,33 +96,8 @@ export default function WhatIsBibleAura() {
                     1. AI-Powered Verse Explanations
                   </h3>
                 </div>
-                <p className="text-base text-gray-700 leading-relaxed mb-4">
-                  Type a question like "What does Romans 8:28 mean?" and Bible Aura gives you:
-                </p>
-                <ul className="space-y-2 mb-4">
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Verse text</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Historical and cultural context</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Theological meaning</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Related Bible verses</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">A clear, short summary</span>
-                  </li>
-                </ul>
-                <p className="text-base text-gray-700 leading-relaxed">
-                  This makes Bible study faster, especially when you're confused by difficult passages.
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Get verse explanations with context, theological meaning, and related passages.
                 </p>
               </div>
 
@@ -135,33 +110,8 @@ export default function WhatIsBibleAura() {
                     2. Structured Bible Study Modes
                   </h3>
                 </div>
-                <p className="text-base text-gray-700 leading-relaxed mb-4">
-                  Bible Aura doesn't just give random answers. It has study modes such as:
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                  <div className="flex items-center gap-2 text-base text-gray-700">
-                    <CheckCircle className="h-4 w-4 text-orange-500" />
-                    <span>Verse analysis</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-base text-gray-700">
-                    <CheckCircle className="h-4 w-4 text-orange-500" />
-                    <span>Parable study</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-base text-gray-700">
-                    <CheckCircle className="h-4 w-4 text-orange-500" />
-                    <span>Character study</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-base text-gray-700">
-                    <CheckCircle className="h-4 w-4 text-orange-500" />
-                    <span>Topical study</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-base text-gray-700">
-                    <CheckCircle className="h-4 w-4 text-orange-500" />
-                    <span>Quick Q&A</span>
-                  </div>
-                </div>
-                <p className="text-base text-gray-700 leading-relaxed">
-                  Each mode follows a fixed format, helping you build a consistent Bible study habit.
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Multiple study modes: verse analysis, parables, characters, topics, and Q&A.
                 </p>
               </div>
 
@@ -174,25 +124,8 @@ export default function WhatIsBibleAura() {
                     3. Tamil and English Bible Support
                   </h3>
                 </div>
-                <p className="text-base text-gray-700 leading-relaxed mb-4">
-                  One of the strongest features of Bible Aura is Tamil language support.
-                </p>
-                <ul className="space-y-2 mb-4">
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Ask questions in Tamil</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Get explanations based on the Tamil Bible</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Switch between Tamil and English as needed</span>
-                  </li>
-                </ul>
-                <p className="text-base text-gray-700 leading-relaxed">
-                  This makes Bible Aura especially valuable for Tamil-speaking Christians in Sri Lanka, India, Malaysia, Singapore, and around the world.
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Ask questions in Tamil or English. Get explanations in both languages with full Bible support.
                 </p>
               </div>
 
@@ -205,25 +138,8 @@ export default function WhatIsBibleAura() {
                     4. Reading Plans and Daily Progress
                   </h3>
                 </div>
-                <p className="text-base text-gray-700 leading-relaxed mb-4">
-                  Bible Aura can generate a custom Bible reading plan based on:
-                </p>
-                <ul className="space-y-2 mb-4">
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">How long you want to read (30, 90, 365 days)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">How many days per week</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-500 mt-1">•</span>
-                    <span className="text-base text-gray-700">Which parts of the Bible you want to cover</span>
-                  </li>
-                </ul>
-                <p className="text-base text-gray-700 leading-relaxed">
-                  You can then mark days as "read" and track your progress over time.
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Create custom reading plans (30, 90, 365 days) and track your daily progress.
                 </p>
               </div>
             </div>
@@ -286,7 +202,7 @@ export default function WhatIsBibleAura() {
           <section className="mb-16">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Final Thoughts</h2>
             <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-              Bible Aura is more than a Bible app — it's a smart Bible assistant that helps you understand Scripture with clarity and structure. If you're looking for a modern, AI-powered Bible study tool in 2025, Bible Aura is an excellent place to start.
+              Bible Aura is more than a Bible app — it's a Bible AI that helps you understand Scripture with clarity and structure. If you're looking for a modern, AI-powered Bible study tool in 2025, Bible Aura is an excellent place to start.
             </p>
           </section>
         </div>

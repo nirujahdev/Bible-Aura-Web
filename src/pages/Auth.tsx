@@ -193,7 +193,7 @@ export default function Auth() {
     
     // Function to check session and redirect
     const checkAndRedirect = async () => {
-      let isAuthenticated = user || session;
+      let isAuthenticated = !!(user || session);
       
       // If user/session not in state yet, check directly from Supabase
       // This is important for new users where state might not be updated yet

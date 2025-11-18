@@ -7,7 +7,8 @@ import {
   Sparkles,
   FileText,
   BookOpen,
-  Users
+  Users,
+  CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -15,7 +16,7 @@ import { Link } from 'react-router-dom';
 export default function TamilBibleStudy() {
   useSEO({
     title: "Tamil Bible Study in 2025: Why Tamil Christians Need AI Bible Tools",
-    description: "Discover why Tamil Christians increasingly rely on AI Bible tools like Bible Aura for Tamil Bible verse explanations, study help, and spiritual growth.",
+    description: "Discover why Tamil Christians increasingly rely on AI Bible tools like Bible Aura for Tamil Bible verse explanations and study help.",
     keywords: "tamil bible study, tamil bible ai, tamil christian app, tamil bible verse explanation, tamil bible study tool"
   });
 
@@ -24,129 +25,144 @@ export default function TamilBibleStudy() {
       <GlobalNavigation variant="landing" />
       
       {/* Hero Section */}
-      <section className="pt-24 md:pt-32 pb-12 px-4 md:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 shadow-lg">
-            <FileText className="h-8 w-8" />
+      <section className="pt-20 md:pt-28 pb-16 px-4 md:px-6 lg:px-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-8 shadow-xl">
+            <FileText className="h-10 w-10" />
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
             <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">
               Tamil Bible Study in 2025: Why Tamil Christians Need AI Bible Tools
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
             Tamil-speaking Christians are spread across Sri Lanka, India, Malaysia, Singapore, and the global diaspora. Many love Scripture deeply, but lack access to rich study tools in their own language. That's where AI Bible tools for Tamil — like Bible Aura — become incredibly valuable.
           </p>
+          
+          <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+            <span>Bible Aura Team</span>
+            <span>•</span>
+            <span>2025</span>
+            <span>•</span>
+            <span>5 min read</span>
+          </div>
         </div>
       </section>
 
       {/* Article Content */}
       <article className="pb-20 px-4 md:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">The Challenges of Tamil Bible Study</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
+        <div className="max-w-3xl mx-auto">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">The Challenges of Tamil Bible Study</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
               Many Tamil believers face at least one of these challenges:
             </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Limited Tamil commentaries and study Bibles</li>
-              <li>Fewer theological resources compared to English</li>
-              <li>Difficulty understanding older Tamil phrases or complex passages</li>
-              <li>Lack of tools for youth and new believers</li>
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <span className="text-base text-gray-700">Limited Tamil commentaries and study Bibles</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <span className="text-base text-gray-700">Fewer theological resources compared to English</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <span className="text-base text-gray-700">Difficulty understanding older Tamil phrases or complex passages</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <span className="text-base text-gray-700">Lack of tools for youth and new believers</span>
+              </li>
             </ul>
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed">
               This can make serious Bible study feel out of reach.
             </p>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">How AI Can Help Tamil Christians Study the Bible</h2>
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">How AI Can Help Tamil Christians Study the Bible</h2>
             
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Languages className="h-6 w-6 text-orange-500" />
-                  1. Verse Explanations in Tamil
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  With Bible Aura, Tamil users can ask:
-                </p>
-                <div className="bg-gray-100 rounded-lg p-4 mb-4 font-mono text-sm">
-                  <p>"யோவான் 3:16 அர்த்தம் என்ன?"</p>
-                  <p>"ரோமர் 8:28 என்ன சொல்கிறது?"</p>
+            <div className="space-y-10">
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-orange-50">
+                    <Languages className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    1. Verse Explanations in Tamil
+                  </h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  The system can respond in Tamil, explaining:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-4">
-                  <li>Meaning of the verse</li>
-                  <li>What God is promising or teaching</li>
-                  <li>How it connects to other parts of the Bible</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <BookOpen className="h-6 w-6 text-orange-500" />
-                  2. Bilingual Study – Tamil + English
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  Many Tamil Christians are comfortable with both Tamil and English.
-                </p>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  Bible Aura makes it easy to:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-4">
-                  <li>Ask a question in Tamil</li>
-                  <li>Compare explanations with English</li>
-                  <li>Cross-check verses in both languages</li>
-                </ul>
-                <p className="text-gray-700 leading-relaxed">
-                  This approach is great for families, youth groups, and mixed-language churches.
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Ask questions in Tamil and get explanations with verse meaning, biblical context, and connections to other passages.
                 </p>
               </div>
 
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Users className="h-6 w-6 text-orange-500" />
-                  3. Help for Pastors and Lay Leaders
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  Pastors, cell group leaders, and youth workers can use AI to:
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-orange-50">
+                    <BookOpen className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    2. Bilingual Study – Tamil + English
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Switch between Tamil and English. Compare explanations and cross-check verses in both languages.
                 </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-4">
-                  <li>Prepare message outlines</li>
-                  <li>Look up cross-references</li>
-                  <li>Generate simple explanations for complex doctrines</li>
-                </ul>
-                <p className="text-gray-700 leading-relaxed">
-                  AI doesn't replace prayer, calling, or preaching — it simply reduces the research workload.
+              </div>
+
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-orange-50">
+                    <Users className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    3. Help for Pastors and Lay Leaders
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Research cross-references, prepare outlines, and get explanations for complex doctrines to support your ministry.
                 </p>
               </div>
             </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Empowering the Next Generation of Tamil Believers</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Empowering the Next Generation of Tamil Believers</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
               Younger Christians are digital natives. They learn through apps, web tools, and AI.
             </p>
-            <p className="text-gray-700 leading-relaxed mb-4">
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
               A platform like Bible Aura can:
             </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Answer questions immediately</li>
-              <li>Support Bible-related doubts</li>
-              <li>Help youth leaders with quick study preparation</li>
-              <li>Encourage personal Bible reading beyond Sunday services</li>
-            </ul>
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 md:p-8 border border-orange-100">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Answer questions immediately</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Support Bible-related research</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Help youth leaders with quick study preparation</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Encourage personal Bible reading beyond Sunday services</span>
+                </li>
+              </ul>
+            </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Final Thoughts</h2>
-            <p className="text-gray-700 leading-relaxed">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Final Thoughts</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed">
               The Tamil church is growing and vibrant. With AI tools like Bible Aura, Tamil Christians now have better access to understandable, structured Bible study resources that honor Scripture and support discipleship.
             </p>
           </section>

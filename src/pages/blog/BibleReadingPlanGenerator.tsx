@@ -7,7 +7,8 @@ import {
   Sparkles,
   FileText,
   CheckCircle,
-  Target
+  Target,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -24,126 +25,100 @@ export default function BibleReadingPlanGenerator() {
       <GlobalNavigation variant="landing" />
       
       {/* Hero Section */}
-      <section className="pt-24 md:pt-32 pb-12 px-4 md:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 shadow-lg">
-            <FileText className="h-8 w-8" />
+      <section className="pt-20 md:pt-28 pb-16 px-4 md:px-6 lg:px-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-8 shadow-xl">
+            <FileText className="h-10 w-10" />
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
             <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">
               The Best Free Bible Reading Plan Generator: Build Your Plan with Bible Aura
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
             Many Christians say, "I want to read the whole Bible," but don't know where to start. A good Bible reading plan can turn that desire into a simple, daily habit. Bible Aura offers a free Bible Reading Planner that designs a custom plan just for you.
           </p>
+          
+          <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+            <span>Bible Aura Team</span>
+            <span>•</span>
+            <span>2025</span>
+            <span>•</span>
+            <span>4 min read</span>
+          </div>
         </div>
       </section>
 
       {/* Article Content */}
       <article className="pb-20 px-4 md:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why You Need a Bible Reading Plan</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Without a plan, Bible reading can feel:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Random</li>
-              <li>Inconsistent</li>
-              <li>Overwhelming</li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              A clear plan:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Tells you exactly what to read each day</li>
-              <li>Prevents decision fatigue</li>
-              <li>Helps you see long-term progress</li>
-            </ul>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="h-8 w-8 text-orange-500" />
-              How Bible Aura's Reading Planner Works
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Bible Aura allows you to set:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li><strong>Duration</strong> – 30 days, 90 days, 1 year, etc.</li>
-              <li><strong>Scope</strong> – Whole Bible, New Testament, Gospels, Psalms, etc.</li>
-              <li><strong>Frequency</strong> – How many days per week you can realistically read</li>
-              <li><strong>Reading size</strong> – Short, medium, or deep sessions</li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed">
-              Based on your preferences, it generates a structured, day-by-day reading schedule.
+        <div className="max-w-3xl mx-auto">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Why You Need a Bible Reading Plan</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
+              Without a plan, Bible reading can feel random, inconsistent, or overwhelming. A clear plan tells you exactly what to read each day, prevents decision fatigue, and helps you see long-term progress.
             </p>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Example of a Custom Bible Reading Plan</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              If you choose:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>New Testament</li>
-              <li>90 days</li>
-              <li>5 days per week</li>
-              <li>Medium reading size</li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Your plan might look like:
-            </p>
-            <div className="bg-gray-100 rounded-lg p-4 mb-4 font-mono text-sm">
-              <p>Day 1: Matthew 1–2</p>
-              <p>Day 2: Matthew 3–4</p>
-              <p>Day 3: Matthew 5</p>
-              <p>… and so on</p>
+          <section className="mb-16">
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-orange-50">
+                  <Calendar className="h-6 w-6 text-orange-500" />
+                </div>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                  How Bible Aura's Reading Planner Works
+                </h2>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Set duration (30, 90, 365 days), scope (Whole Bible, New Testament, etc.), frequency, and reading size. Get a structured, day-by-day reading schedule.
+              </p>
             </div>
-            <p className="text-gray-700 leading-relaxed">
-              You can then mark each day as completed as you go.
+          </section>
+
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Example of a Custom Bible Reading Plan</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-4">
+              Choose New Testament, 90 days, 5 days per week, medium reading size. Your plan will include daily readings like "Day 1: Matthew 1–2", "Day 2: Matthew 3–4", and so on. Mark each day as completed as you progress.
             </p>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Target className="h-8 w-8 text-orange-500" />
-              Tracking Your Bible Reading Progress
-            </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Bible Aura's planner isn't just a static list. It helps you:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Tick off completed days</li>
-              <li>See total progress as a percentage</li>
-              <li>Get motivated to continue</li>
-              <li>Restart or adjust the plan if life gets busy</li>
-            </ul>
+          <section className="mb-16">
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-orange-50">
+                  <Target className="h-6 w-6 text-orange-500" />
+                </div>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                  Tracking Your Bible Reading Progress
+                </h2>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Track completed days, see progress percentage, and adjust your plan as needed. Works on mobile and desktop.
+              </p>
+            </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Benefits of a Digital Reading Plan</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Compared to paper plans, a digital planner:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Updates instantly</li>
-              <li>Adjusts for missed days</li>
-              <li>Works on mobile and desktop</li>
-              <li>Can integrate with verse explanations</li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed">
-              You can read the scheduled passage, then immediately ask Bible Aura to explain what you just read.
-            </p>
+          <section className="mb-16">
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-orange-50">
+                  <BookOpen className="h-6 w-6 text-orange-500" />
+                </div>
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">
+                  Benefits of a Digital Reading Plan
+                </h2>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Updates instantly, adjusts for missed days, and integrates with verse explanations. Read the scheduled passage, then ask Bible Aura to explain what you just read.
+              </p>
+            </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Start Your Free Bible Reading Plan Today</h2>
-            <p className="text-gray-700 leading-relaxed">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Start Your Free Bible Reading Plan Today</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed">
               If you've been wanting to read the Bible more consistently, Bible Aura's free Bible Reading Planner gives you structure, flexibility, and encouragement — all in one place.
             </p>
           </section>

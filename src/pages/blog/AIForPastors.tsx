@@ -8,7 +8,8 @@ import {
   FileText,
   BookOpen,
   Search,
-  Users
+  Users,
+  CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -25,134 +26,127 @@ export default function AIForPastors() {
       <GlobalNavigation variant="landing" />
       
       {/* Hero Section */}
-      <section className="pt-24 md:pt-32 pb-12 px-4 md:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-6 shadow-lg">
-            <FileText className="h-8 w-8" />
+      <section className="pt-20 md:pt-28 pb-16 px-4 md:px-6 lg:px-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white mb-8 shadow-xl">
+            <FileText className="h-10 w-10" />
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
             <span className="text-transparent bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text">
               AI for Pastors and Bible Teachers: How Bible Aura Helps with Sermon Prep
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
             Sermon preparation takes time, prayer, and careful study. While AI will never replace the calling of a pastor, tools like Bible Aura can make the research and preparation process faster and more efficient.
           </p>
+          
+          <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+            <span>Bible Aura Team</span>
+            <span>•</span>
+            <span>2025</span>
+            <span>•</span>
+            <span>5 min read</span>
+          </div>
         </div>
       </section>
 
       {/* Article Content */}
       <article className="pb-20 px-4 md:px-6 lg:px-10">
-        <div className="max-w-4xl mx-auto prose prose-lg max-w-none">
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">The Reality of Sermon Preparation Today</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Many pastors and teachers:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Prepare multiple sermons or studies each week</li>
-              <li>Balance ministry, family, and other responsibilities</li>
-              <li>Need quick access to cross-references and background information</li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed">
-              That's where AI Bible tools can play a supportive role.
+        <div className="max-w-3xl mx-auto">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">The Reality of Sermon Preparation Today</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
+              Many pastors and teachers prepare multiple sermons each week while balancing ministry, family, and other responsibilities. They need quick access to cross-references and background information. That's where AI Bible tools can play a supportive role.
             </p>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">How Bible Aura Supports Sermon Prep</h2>
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">How Bible Aura Supports Sermon Prep</h2>
             
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <BookOpen className="h-6 w-6 text-orange-500" />
-                  1. Fast Verse and Passage Analysis
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  Type a key text (e.g., "Romans 12:1–2 sermon help") and Bible Aura can:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-4">
-                  <li>Summarize the main idea</li>
-                  <li>Provide doctrinal emphasis</li>
-                  <li>Suggest related verses</li>
-                </ul>
-                <p className="text-gray-700 leading-relaxed">
-                  This helps you quickly see the theological "frame" of your message.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Users className="h-6 w-6 text-orange-500" />
-                  2. Character and Theme Studies
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  If you are preaching on:
-                </p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4 ml-4">
-                  <li>David</li>
-                  <li>Peter</li>
-                  <li>Faith</li>
-                  <li>Forgiveness</li>
-                </ul>
-                <p className="text-gray-700 leading-relaxed">
-                  Bible Aura can generate structured character profiles or topical outlines that you can refine and deepen through further study.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Search className="h-6 w-6 text-orange-500" />
-                  3. Cross-References and Supporting Texts
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-3">
-                  Instead of flipping through multiple tools, you can ask:
-                </p>
-                <div className="bg-gray-100 rounded-lg p-4 mb-4 font-mono text-sm">
-                  <p>"Cross-references for 'love your enemies'"</p>
-                  <p>"Verses that support justification by faith"</p>
+            <div className="space-y-10">
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-orange-50">
+                    <BookOpen className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    1. Fast Verse and Passage Analysis
+                  </h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed">
-                  Bible Aura helps gather supporting texts in seconds.
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Get main ideas, doctrinal emphasis, and related verses quickly. See the theological framework of your message.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-orange-50">
+                    <Users className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    2. Character and Theme Studies
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Generate structured character profiles or topical outlines for characters like David, Peter, or themes like faith and forgiveness.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-orange-50">
+                    <Search className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold text-gray-900">
+                    3. Cross-References and Supporting Texts
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Ask for cross-references or supporting verses. Gather supporting texts in seconds instead of flipping through multiple tools.
                 </p>
               </div>
             </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Using AI Responsibly in Ministry</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              AI is a tool, not a substitute for:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Personal Bible reading</li>
-              <li>Serious exegesis and hermeneutics</li>
-              <li>Prayer and dependence on God</li>
-              <li>Listening to the Holy Spirit</li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed">
-              Pastors can use Bible Aura as a starting point, then add their own study, insight, and pastoral application.
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Using AI Responsibly in Ministry</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
+              AI is a tool, not a substitute for personal Bible reading, serious exegesis, prayer, or listening to the Holy Spirit. Pastors can use Bible Aura as a starting point, then add their own study, insight, and pastoral application.
             </p>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Benefits for Small Churches and Bi-Vocational Pastors</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Benefits for Small Churches and Bi-Vocational Pastors</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
               For leaders with limited time or resources, Bible Aura:
             </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6 ml-4">
-              <li>Reduces the research load</li>
-              <li>Offers structure for sermon or study outlines</li>
-              <li>Helps create teaching plans faster</li>
-              <li>Supports both English and Tamil congregations</li>
-            </ul>
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 md:p-8 border border-orange-100">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Reduces the research load</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Offers structure for sermon or study outlines</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Helps create teaching plans faster</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-base text-gray-700">Supports both English and Tamil congregations</span>
+                </li>
+              </ul>
+            </div>
           </section>
 
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Final Thoughts</h2>
-            <p className="text-gray-700 leading-relaxed">
+          <section className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Final Thoughts</h2>
+            <p className="text-base md:text-lg text-gray-700 leading-relaxed">
               AI should never write your sermon for you. But a tool like Bible Aura can help you prepare more efficiently, freeing more time for prayer, pastoral care, and personal growth — the things no technology can replace.
             </p>
           </section>
