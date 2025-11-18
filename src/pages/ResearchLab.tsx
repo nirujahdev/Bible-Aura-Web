@@ -65,16 +65,7 @@ export default function ResearchLab() {
       if (isTableMissing) {
         toast({
           title: 'Database Setup Required',
-          description: (
-            <div className="space-y-2">
-              <p>Research Lab tables need to be created. Please run the migration:</p>
-              <ol className="list-decimal list-inside text-sm space-y-1">
-                <li>Go to Supabase Dashboard → SQL Editor</li>
-                <li>Open: <code className="bg-gray-100 px-1 rounded">supabase/migrations/20241118000000_create_research_lab_tables.sql</code></li>
-                <li>Copy and paste the SQL, then click Run</li>
-              </ol>
-            </div>
-          ),
+          description: 'Research Lab tables need to be created. Go to Supabase Dashboard → SQL Editor, open supabase/migrations/20241118000000_create_research_lab_tables.sql, copy the SQL, and run it.',
           variant: 'destructive',
           duration: 10000,
         });
