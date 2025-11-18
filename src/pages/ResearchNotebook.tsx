@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernLayout } from '@/components/ModernLayout';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { getNotebook, updateNotebookTitle, type Notebook } from '@/lib/research-lab/db-operations';
 import { SourcesPanel } from '@/components/research-lab/SourcesPanel';
 import { ChatPanel } from '@/components/research-lab/ChatPanel';
 import { StudioPanel } from '@/components/research-lab/StudioPanel';
