@@ -180,85 +180,93 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Sermon Writing Feature Showcase */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Sermon Research Assistant Feature Showcase */}
+      <section className="py-20 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-purple-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-indigo-200/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <Mic className="h-8 w-8 text-purple-600" />
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-lg transform hover:scale-105 transition-transform">
+                <Mic className="h-10 w-10 text-white" />
               </div>
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Professional Sermon Writer
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              <span className="text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text">
+                Sermon Research Assistant
+              </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Create compelling sermons with our advanced writing tools, Bible integration, and AI assistance
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Research Bible verses, find related passages, and gather biblical insights to support your sermon preparation
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="flex items-start space-x-4">
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-white/50 transition-colors group">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <BookOpen className="h-5 w-5 text-purple-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <BookOpen className="h-6 w-6 text-white" />
                   </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Integrated Bible Access
+                    Bible Verse Research
                   </h3>
-                  <p className="text-gray-600">
-                    Access multiple Bible translations instantly. Click any verse to add it directly to your sermon with proper formatting.
+                  <p className="text-gray-600 leading-relaxed">
+                    Search and explore multiple Bible translations. Find related verses, cross-references, and contextual insights for your sermon topics.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-4">
+              <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-white/50 transition-colors group">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-purple-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <Bot className="h-6 w-6 text-white" />
                   </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    AI Writing Assistant
+                    AI Research Assistant
                   </h3>
-                  <p className="text-gray-600">
-                    Get inspiration, theological insights, and writing suggestions from our biblical AI assistant trained on sound doctrine.
+                  <p className="text-gray-600 leading-relaxed">
+                    Get biblical insights, theological context, and research suggestions from our AI assistant to enhance your sermon preparation.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-4">
+              <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-white/50 transition-colors group">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-purple-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <FileText className="h-6 w-6 text-white" />
                   </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Professional Templates
+                    Topic Research
                   </h3>
-                  <p className="text-gray-600">
-                    Start with proven sermon structures including three-point sermons, expository preaching, and topical studies.
+                  <p className="text-gray-600 leading-relaxed">
+                    Research biblical topics, themes, and doctrines. Find relevant passages and organize your research for sermon development.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-4">
+              <div className="flex items-start space-x-4 p-4 rounded-xl hover:bg-white/50 transition-colors group">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="h-5 w-5 text-purple-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                    <BarChart3 className="h-6 w-6 text-white" />
                   </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Smart Analytics
+                    Research Organization
                   </h3>
-                  <p className="text-gray-600">
-                    Track word count, estimated speaking time, and reading level to perfect your sermon delivery.
+                  <p className="text-gray-600 leading-relaxed">
+                    Organize your research notes, save key verses, and structure your findings to streamline your sermon preparation process.
                   </p>
                 </div>
               </div>
@@ -267,23 +275,25 @@ const Home = () => {
                 <Button 
                   asChild 
                   size="lg" 
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all"
                 >
                   <Link to="/sermon-writer">
                     <Mic className="h-5 w-5 mr-2" />
-                    Start Writing Sermons
+                    Start Researching
                   </Link>
                 </Button>
               </div>
             </div>
 
             <div className="lg:pl-8">
-              <div className="bg-white rounded-xl shadow-2xl p-6 border">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 transform hover:scale-[1.02] transition-transform">
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
-                      <Mic className="h-5 w-5 text-purple-600" />
-                      <span className="font-semibold text-gray-900">Sermon Writer</span>
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <Mic className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-semibold text-gray-900">Sermon Assistant</span>
                     </div>
                     <div className="flex space-x-1">
                       <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -293,37 +303,52 @@ const Home = () => {
                   </div>
                   <div className="border-b border-gray-200 mb-4">
                     <div className="flex space-x-1 -mb-px">
-                      <div className="bg-purple-50 text-purple-600 px-3 py-2 text-sm font-medium border-b-2 border-purple-600">
-                        Editor
+                      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-600 px-4 py-2 text-sm font-medium border-b-2 border-purple-600 rounded-t-lg">
+                        Research
                       </div>
-                      <div className="text-gray-500 px-3 py-2 text-sm">
+                      <div className="text-gray-500 px-4 py-2 text-sm hover:text-gray-700 transition-colors">
                         Bible
                       </div>
-                      <div className="text-gray-500 px-3 py-2 text-sm">
+                      <div className="text-gray-500 px-4 py-2 text-sm hover:text-gray-700 transition-colors">
                         AI Chat
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <span className="font-medium">Title:</span>
-                    <span className="bg-gray-50 px-2 py-1 rounded">The Good Shepherd</span>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2 text-sm">
+                    <span className="font-medium text-gray-700">Research Topic:</span>
+                    <span className="bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1 rounded-lg text-purple-700 font-medium">The Good Shepherd</span>
                   </div>
                   
-                  <div className="bg-gray-50 p-3 rounded-lg text-sm leading-relaxed">
-                    <div className="font-semibold text-gray-900 mb-2"># Introduction</div>
-                    <div className="text-gray-700 mb-3">
-                      Jesus said, "I am the good shepherd. The good shepherd lays down his life for the sheep." - John 10:11
+                  <div className="bg-gradient-to-br from-gray-50 to-purple-50/30 p-4 rounded-xl border border-purple-100">
+                    <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-purple-600" />
+                      Key Verses Found
                     </div>
-                    <div className="font-semibold text-gray-900 mb-1">## Main Point 1: The Shepherd's Love</div>
-                    <div className="text-gray-600 text-xs">The depth of Christ's sacrificial love...</div>
+                    <div className="space-y-2 text-sm">
+                      <div className="text-gray-700 bg-white p-2 rounded border-l-4 border-purple-500">
+                        <span className="font-semibold text-purple-600">John 10:11</span> - "I am the good shepherd. The good shepherd lays down his life for the sheep."
+                      </div>
+                      <div className="text-gray-700 bg-white p-2 rounded border-l-4 border-indigo-500">
+                        <span className="font-semibold text-indigo-600">Psalm 23:1</span> - "The Lord is my shepherd, I lack nothing."
+                      </div>
+                      <div className="text-gray-700 bg-white p-2 rounded border-l-4 border-blue-500">
+                        <span className="font-semibold text-blue-600">1 Peter 5:4</span> - "And when the Chief Shepherd appears..."
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="flex justify-between text-xs text-gray-500 pt-2 border-t">
-                    <span>1,247 words • 8 min read</span>
-                    <span className="text-green-600">✓ Live saved</span>
+                  <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t">
+                    <span className="flex items-center gap-1">
+                      <BarChart3 className="h-3 w-3" />
+                      12 verses • 3 topics
+                    </span>
+                    <span className="text-green-600 font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      Research saved
+                    </span>
                   </div>
                 </div>
               </div>
@@ -524,21 +549,21 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Feature 4: Sermon Writing */}
+            {/* Feature 4: Sermon Research Assistant */}
             <div className="group relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
                   <Mic className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">
-                  Sermon Writing
+                  Sermon Research Assistant
                 </h3>
                 <p className="text-gray-600 mb-4 leading-relaxed">
-                  Create and organize sermons with AI assistance, Bible references, and professional templates.
+                  Research Bible verses, find related passages, and gather biblical insights for sermon preparation.
                 </p>
                 <div className="flex items-center gap-2 text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <span>Start Writing</span>
+                  <span>Start Researching</span>
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </div>
