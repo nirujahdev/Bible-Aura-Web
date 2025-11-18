@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Share2, Plus, Home } from 'lucide-react';
+import { Share2, Plus, Home as HomeIcon } from 'lucide-react';
 
 interface IOSInstallModalProps {
   open: boolean;
@@ -20,7 +20,7 @@ export function IOSInstallModal({ open, onClose }: IOSInstallModalProps) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Home className="h-5 w-5 text-orange-600" />
+            <HomeIcon className="h-5 w-5 text-orange-600" />
             Add Bible Aura to Home Screen
           </DialogTitle>
           <DialogDescription>
