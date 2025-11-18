@@ -187,7 +187,64 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
   };
 
   const handleGenerateAgent = async (agentId: string) => {
-    if (!user || !notebookId) return;
+    if (!user || !notebookId) {
+      toast({
+        title: 'Error',
+        description: 'Please log in to use this feature',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Check if user has sources first
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: 'Error',
+          description: 'Please log in to use this feature',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Quick check for sources before starting generation
+      const { data: sourcesCheck, error: sourcesCheckError } = await supabase
+        .from('research_sources')
+        .select('id')
+        .eq('notebook_id', notebookId)
+        .eq('user_id', user.id)
+        .eq('is_included', true)
+        .limit(1);
+
+      if (sourcesCheckError) {
+        console.error('Sources check error:', sourcesCheckError);
+        toast({
+          title: 'Error',
+          description: 'Failed to check sources. Please try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!sourcesCheck || sourcesCheck.length === 0) {
+        toast({
+          title: 'No Sources',
+          description: 'Please add at least one source to your notebook before using AI agents.',
+          variant: 'destructive',
+          duration: 5000,
+        });
+        return;
+      }
+    } catch (error: any) {
+      console.error('Pre-generation check error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to validate request. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     // Mark as generating
     setGeneratingOutputs(prev => new Set(prev).add(agentId));
@@ -199,6 +256,11 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
           title: 'Error',
           description: 'Please log in to use this feature',
           variant: 'destructive',
+        });
+        setGeneratingOutputs(prev => {
+          const next = new Set(prev);
+          next.delete(agentId);
+          return next;
         });
         return;
       }
@@ -356,15 +418,6 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
         variant: 'destructive',
         duration: 5000,
       });
-    } finally {
-      // Remove from generating set after a delay
-      setTimeout(() => {
-        setGeneratingOutputs(prev => {
-          const next = new Set(prev);
-          next.delete(agentId);
-          return next;
-        });
-      }, 1000);
     }
   };
 

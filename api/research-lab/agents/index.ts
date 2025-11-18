@@ -124,9 +124,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .join('\n\n---\n\n');
 
     // Call GLM-4.5-Air API
-    const glmApiKey = process.env.GLM_API_KEY;
-    if (!glmApiKey) {
-      res.status(500).json({ error: 'GLM API key not configured' });
+    const glmApiKey = process.env.GLM_API_KEY || process.env.VITE_GLM_API_KEY;
+    if (!glmApiKey || glmApiKey.trim() === '') {
+      console.error('[Agent API] GLM_API_KEY not configured');
+      console.error('[Agent API] Environment check:', {
+        hasGLMKey: !!process.env.GLM_API_KEY,
+        hasViteGLMKey: !!process.env.VITE_GLM_API_KEY,
+        nodeEnv: process.env.NODE_ENV,
+      });
+      res.status(500).json({ 
+        error: 'GLM API key not configured',
+        message: 'Please set GLM_API_KEY in Vercel environment variables. Go to Vercel Dashboard → Settings → Environment Variables → Add GLM_API_KEY.'
+      });
       return;
     }
 
@@ -272,22 +281,43 @@ Format as structured JSON with clear sections.`;
       }
     }
 
-    const response = await fetch(`${GLM_API_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${glmApiKey}`,
-      },
-      body: JSON.stringify({
-        model: GLM_MODEL,
-        messages: [
-          { role: 'system', content: BIBLE_SYSTEM_PROMPTS[agentType as keyof typeof BIBLE_SYSTEM_PROMPTS] },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: agentType === 'curriculum' || agentType === 'sermon' || agentType === 'doctrinal' ? 3000 : 2000,
-      }),
+    // Log API call details (without sensitive data)
+    console.log(`[${agentType} Agent] Calling GLM API:`, {
+      url: `${GLM_API_BASE_URL}/chat/completions`,
+      model: GLM_MODEL,
+      hasApiKey: !!glmApiKey,
+      apiKeyLength: glmApiKey?.length || 0,
+      promptLength: userPrompt.length,
+      sourceCount: sources.length,
     });
+
+    let response: Response;
+    try {
+      response = await fetch(`${GLM_API_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${glmApiKey}`,
+        },
+        body: JSON.stringify({
+          model: GLM_MODEL,
+          messages: [
+            { role: 'system', content: BIBLE_SYSTEM_PROMPTS[agentType as keyof typeof BIBLE_SYSTEM_PROMPTS] },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: agentType === 'curriculum' || agentType === 'sermon' || agentType === 'doctrinal' ? 3000 : 2000,
+        }),
+      });
+    } catch (fetchError: any) {
+      console.error(`[${agentType} Agent] Fetch error:`, fetchError);
+      res.status(503).json({ 
+        error: 'Failed to connect to AI service',
+        message: 'Network error. Please check your connection and try again.',
+        details: process.env.NODE_ENV === 'development' ? fetchError.message : undefined
+      });
+      return;
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -313,8 +343,41 @@ Format as structured JSON with clear sections.`;
       return;
     }
 
-    const glmData = await response.json();
-    const result = glmData.choices?.[0]?.message?.content || 'No output generated';
+    let glmData: any;
+    try {
+      glmData = await response.json();
+    } catch (jsonError: any) {
+      console.error(`[${agentType} Agent] JSON parse error:`, jsonError);
+      const errorText = await response.text().catch(() => 'Unable to read error response');
+      res.status(500).json({ 
+        error: 'Invalid response from AI service',
+        message: 'The AI service returned an invalid response. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? errorText : undefined
+      });
+      return;
+    }
+
+    // Validate response structure
+    if (!glmData || !glmData.choices || !Array.isArray(glmData.choices) || glmData.choices.length === 0) {
+      console.error(`[${agentType} Agent] Invalid response structure:`, glmData);
+      res.status(500).json({ 
+        error: 'Invalid response from AI service',
+        message: 'The AI service returned an unexpected response format. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? JSON.stringify(glmData) : undefined
+      });
+      return;
+    }
+
+    const result = glmData.choices[0]?.message?.content || 'No output generated';
+    
+    if (!result || result === 'No output generated') {
+      console.warn(`[${agentType} Agent] Empty response from GLM API`);
+      res.status(500).json({ 
+        error: 'Empty response from AI service',
+        message: 'The AI service did not generate any content. Please try again.',
+      });
+      return;
+    }
 
     // Build output content based on agent type
     switch (agentType) {
