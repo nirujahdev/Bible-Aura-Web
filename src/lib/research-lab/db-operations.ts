@@ -26,18 +26,58 @@ export async function createNotebook(
   title: string = 'Untitled notebook',
   description?: string
 ): Promise<{ data: Notebook | null; error: any }> {
-  const { data, error } = await supabase
-    .from('research_notebooks')
-    .insert({
-      user_id: userId,
-      title,
-      description: description || null,
-      source_count: 0,
-    })
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('research_notebooks')
+      .insert({
+        user_id: userId,
+        title,
+        description: description || null,
+        source_count: 0,
+      })
+      .select()
+      .single();
 
-  return { data, error };
+    // Check if error is due to missing table
+    if (error) {
+      const errorMessage = error.message || String(error);
+      if (
+        errorMessage.includes('relation') && 
+        errorMessage.includes('does not exist') ||
+        errorMessage.includes('PGRST116') ||
+        error.code === 'PGRST116'
+      ) {
+        return {
+          data: null,
+          error: {
+            message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+            code: 'TABLE_NOT_FOUND',
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+          }
+        };
+      }
+    }
+
+    return { data, error };
+  } catch (err: any) {
+    // Handle JSON parsing errors (when Supabase returns HTML)
+    if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+      return {
+        data: null,
+        error: {
+          message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+          code: 'TABLE_NOT_FOUND',
+          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
+          originalError: err.message
+        }
+      };
+    }
+    
+    return {
+      data: null,
+      error: err
+    };
+  }
 }
 
 /**
@@ -47,14 +87,54 @@ export async function getUserNotebooks(
   userId: string,
   limit: number = 10
 ): Promise<{ data: Notebook[] | null; error: any }> {
-  const { data, error } = await supabase
-    .from('research_notebooks')
-    .select('*')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false })
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from('research_notebooks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+      .limit(limit);
 
-  return { data, error };
+    // Check if error is due to missing table
+    if (error) {
+      const errorMessage = error.message || String(error);
+      if (
+        errorMessage.includes('relation') && 
+        errorMessage.includes('does not exist') ||
+        errorMessage.includes('PGRST116') ||
+        error.code === 'PGRST116'
+      ) {
+        return {
+          data: null,
+          error: {
+            message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+            code: 'TABLE_NOT_FOUND',
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+          }
+        };
+      }
+    }
+
+    return { data, error };
+  } catch (err: any) {
+    // Handle JSON parsing errors (when Supabase returns HTML)
+    if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+      return {
+        data: null,
+        error: {
+          message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+          code: 'TABLE_NOT_FOUND',
+          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
+          originalError: err.message
+        }
+      };
+    }
+    
+    return {
+      data: null,
+      error: err
+    };
+  }
 }
 
 /**

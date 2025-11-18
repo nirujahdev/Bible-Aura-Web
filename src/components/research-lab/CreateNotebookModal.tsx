@@ -124,7 +124,14 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
         notebookTitle.trim() || 'Untitled notebook'
       );
 
-      if (notebookError || !notebook) throw notebookError || new Error('Failed to create notebook');
+      if (notebookError) {
+        // Re-throw with the error object to preserve error details
+        throw notebookError;
+      }
+
+      if (!notebook) {
+        throw new Error('Failed to create notebook: No data returned');
+      }
 
       // TODO: Upload files and create sources
       // This will be implemented in the next phase
@@ -139,21 +146,28 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
     } catch (error: any) {
       console.error('Error creating notebook:', error);
       
-      // Check if it's a table doesn't exist error
-      const isTableMissing = error?.message?.includes('relation') && 
-                             error?.message?.includes('does not exist');
+      // Check for various error types
+      const errorMessage = error?.message || String(error) || '';
+      const errorCode = error?.code || error?.error?.code;
+      const isTableMissing = 
+        errorCode === 'TABLE_NOT_FOUND' ||
+        errorMessage.includes('relation') && errorMessage.includes('does not exist') ||
+        errorMessage.includes('PGRST116') ||
+        errorMessage.includes('JSON') && errorMessage.includes('DOCTYPE') ||
+        error?.error?.code === 'TABLE_NOT_FOUND';
       
-      if (isTableMissing) {
+      if (isTableMissing || error?.error?.code === 'TABLE_NOT_FOUND') {
         toast({
           title: 'Database Setup Required',
-          description: 'Please run the migration SQL file first. See the error message on the Research Lab page for instructions.',
+          description: 'Research Lab tables need to be created. Go to Supabase Dashboard → SQL Editor, open supabase/migrations/20241118000000_create_research_lab_tables.sql, copy the SQL, and run it.',
           variant: 'destructive',
-          duration: 8000,
+          duration: 12000,
         });
       } else {
+        const displayMessage = error?.error?.message || error?.message || 'Failed to create notebook';
         toast({
           title: 'Error',
-          description: error.message || 'Failed to create notebook',
+          description: displayMessage,
           variant: 'destructive',
         });
       }
