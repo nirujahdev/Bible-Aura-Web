@@ -117,18 +117,13 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
     setIsCreating(true);
 
     try {
-      // Create notebook
-      const { data: notebook, error: notebookError } = await supabase
-        .from('research_notebooks')
-        .insert({
-          user_id: user.id,
-          title: notebookTitle.trim() || 'Untitled notebook',
-          source_count: 0,
-        })
-        .select()
-        .single();
+      // Create notebook using db-operations helper
+      const { data: notebook, error: notebookError } = await createNotebook(
+        user.id,
+        notebookTitle.trim() || 'Untitled notebook'
+      );
 
-      if (notebookError) throw notebookError;
+      if (notebookError || !notebook) throw notebookError || new Error('Failed to create notebook');
 
       // TODO: Upload files and create sources
       // This will be implemented in the next phase

@@ -28,15 +28,7 @@ import {
 import { CreateNotebookModal } from '@/components/research-lab/CreateNotebookModal';
 import { NotebookCard } from '@/components/research-lab/NotebookCard';
 
-interface Notebook {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  source_count: number;
-  created_at: string;
-  updated_at: string;
-}
+// Notebook type imported from db-operations
 
 export default function ResearchLab() {
   useSEO(SEO_CONFIG.RESEARCH_LAB || { title: 'Research Lab - Bible Aura', description: 'Advanced Bible research with AI' });
@@ -59,20 +51,14 @@ export default function ResearchLab() {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('research_notebooks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(10);
-
+      const { data, error } = await getUserNotebooks(user.id, 10);
       if (error) throw error;
       setNotebooks(data || []);
     } catch (error: any) {
       console.error('Error loading notebooks:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load notebooks',
+        description: 'Failed to load notebooks. Please ensure database tables are created.',
         variant: 'destructive',
       });
     } finally {

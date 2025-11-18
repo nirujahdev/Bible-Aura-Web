@@ -9,13 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Send, Upload, ArrowUp, FlaskConical, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  sources_used?: string[];
-  created_at: string;
-}
+// Message type from db-operations (ChatMessage)
+type Message = ChatMessage;
 
 interface ChatPanelProps {
   notebookId: string;
@@ -43,17 +38,12 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
     if (!notebookId || !user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('research_chat_messages')
-        .select('*')
-        .eq('notebook_id', notebookId)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
-
+      const { data, error } = await getChatMessages(notebookId, user.id);
       if (error) throw error;
       setMessages(data || []);
     } catch (error: any) {
       console.error('Error loading messages:', error);
+      // Don't show toast for initial load errors
     }
   };
 
@@ -75,14 +65,12 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
 
     try {
       // Save user message
-      const { error: saveError } = await supabase
-        .from('research_chat_messages')
-        .insert({
-          notebook_id: notebookId,
-          user_id: user.id,
-          role: 'user',
-          content: messageText,
-        });
+      const { data: savedMessage, error: saveError } = await createChatMessage({
+        notebook_id: notebookId,
+        user_id: user.id,
+        role: 'user',
+        content: messageText,
+      });
 
       if (saveError) throw saveError;
 
@@ -90,24 +78,21 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
       // For now, show placeholder response
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'This is a placeholder response. GLM-4.5-Air integration will be implemented in the next phase.',
-        created_at: new Date().toISOString(),
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
+      const aiResponse = 'This is a placeholder response. GLM-4.5-Air integration will be implemented in the next phase.';
 
       // Save AI message
-      await supabase
-        .from('research_chat_messages')
-        .insert({
-          notebook_id: notebookId,
-          user_id: user.id,
-          role: 'assistant',
-          content: aiMessage.content,
-        });
+      const { data: aiMessage, error: aiError } = await createChatMessage({
+        notebook_id: notebookId,
+        user_id: user.id,
+        role: 'assistant',
+        content: aiResponse,
+      });
+
+      if (aiError) throw aiError;
+
+      if (aiMessage) {
+        setMessages(prev => [...prev, aiMessage]);
+      }
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({

@@ -30,15 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 
-interface Source {
-  id: string;
-  title: string;
-  source_type: string;
-  is_included: boolean;
-  processing_status: string;
-  file_url?: string;
-  link_url?: string;
-}
+// Source type imported from db-operations
 
 interface SourcesPanelProps {
   notebookId: string;
@@ -63,20 +55,14 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('research_sources')
-        .select('*')
-        .eq('notebook_id', notebookId)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await getNotebookSources(notebookId, user.id);
       if (error) throw error;
       setSources(data || []);
     } catch (error: any) {
       console.error('Error loading sources:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load sources',
+        description: 'Failed to load sources. Please ensure database tables are created.',
         variant: 'destructive',
       });
     } finally {
@@ -88,12 +74,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('research_sources')
-        .update({ is_included: !currentValue })
-        .eq('id', sourceId)
-        .eq('user_id', user.id);
-
+      const { error } = await toggleSourceInclude(sourceId, user.id, !currentValue);
       if (error) throw error;
       loadSources();
     } catch (error: any) {
@@ -114,12 +95,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
     }
 
     try {
-      const { error } = await supabase
-        .from('research_sources')
-        .delete()
-        .eq('id', sourceId)
-        .eq('user_id', user.id);
-
+      const { error } = await deleteSource(sourceId, user.id);
       if (error) throw error;
       loadSources();
       toast({

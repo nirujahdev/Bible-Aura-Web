@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadFile } from '@/lib/supabase-storage';
+import { createSource, updateNotebookSourceCount } from '@/lib/research-lab/db-operations';
 import {
   Upload,
   Link as LinkIcon,
@@ -127,79 +128,53 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           .from('research-lab-sources')
           .getPublicUrl(filePath);
 
-        // Create source record
-        const { error: sourceError } = await supabase
-          .from('research_sources')
-          .insert({
-            notebook_id: notebookId,
-            user_id: user.id,
-            source_type: getSourceType(file),
-            title: file.name,
-            file_path: filePath,
-            file_url: urlData.publicUrl,
-            file_size: file.size,
-            mime_type: file.type,
-            processing_status: 'pending',
-          });
+        // Create source record using db-operations helper
+        const { error: sourceError } = await createSource({
+          notebook_id: notebookId,
+          user_id: user.id,
+          source_type: getSourceType(file) as any,
+          title: file.name,
+          file_path: filePath,
+          file_url: urlData.publicUrl,
+          file_size: file.size,
+          mime_type: file.type,
+        });
 
         if (sourceError) throw sourceError;
       }
 
       // Add link source
       if (linkUrl) {
-        const { error: linkError } = await supabase
-          .from('research_sources')
-          .insert({
-            notebook_id: notebookId,
-            user_id: user.id,
-            source_type: 'link',
-            title: linkUrl,
-            link_url: linkUrl,
-            processing_status: 'pending',
-          });
+        const { error: linkError } = await createSource({
+          notebook_id: notebookId,
+          user_id: user.id,
+          source_type: 'link',
+          title: linkUrl,
+          link_url: linkUrl,
+        });
 
         if (linkError) throw linkError;
       }
 
       // Add pasted text source
       if (pastedText) {
-        const { error: textError } = await supabase
-          .from('research_sources')
-          .insert({
-            notebook_id: notebookId,
-            user_id: user.id,
-            source_type: 'text',
-            title: 'Pasted Text',
-            content_text: pastedText,
-            processing_status: 'completed',
-          });
+        const { error: textError } = await createSource({
+          notebook_id: notebookId,
+          user_id: user.id,
+          source_type: 'text',
+          title: 'Pasted Text',
+          content_text: pastedText,
+        });
 
         if (textError) throw textError;
       }
 
       // Update notebook source count
       const sourceCount = selectedFiles.length + (linkUrl ? 1 : 0) + (pastedText ? 1 : 0);
-      try {
-        await supabase.rpc('increment', {
-          table_name: 'research_notebooks',
-          id: notebookId,
-          column_name: 'source_count',
-          increment_value: sourceCount,
-        });
-      } catch {
-        // If RPC doesn't exist, manually update
-        const { data: notebook } = await supabase
-          .from('research_notebooks')
-          .select('source_count')
-          .eq('id', notebookId)
-          .single();
-
-        if (notebook) {
-          await supabase
-            .from('research_notebooks')
-            .update({ source_count: (notebook.source_count || 0) + sourceCount })
-            .eq('id', notebookId);
-        }
+      const { error: countError } = await updateNotebookSourceCount(notebookId, user.id, sourceCount);
+      if (countError) {
+        console.warn('Failed to update source count:', countError);
+        // Don't throw - source creation was successful
       }
 
       toast({

@@ -43,12 +43,7 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
     }
 
     try {
-      const { error } = await supabase
-        .from('research_notebooks')
-        .delete()
-        .eq('id', notebook.id)
-        .eq('user_id', user.id);
-
+      const { error } = await deleteNotebook(notebook.id, user.id);
       if (error) throw error;
 
       toast({

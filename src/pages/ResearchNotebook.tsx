@@ -26,12 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface Notebook {
-  id: string;
-  title: string;
-  description: string | null;
-  source_count: number;
-}
+// Notebook type imported from db-operations
 
 export default function ResearchNotebook() {
   useSEO(SEO_CONFIG.RESEARCH_LAB || { title: 'Research Notebook - Bible Aura', description: 'Advanced Bible research with AI' });
@@ -56,12 +51,7 @@ export default function ResearchNotebook() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('research_notebooks')
-        .select('*')
-        .eq('id', notebookId)
-        .eq('user_id', user.id)
-        .single();
+      const { data, error } = await getNotebook(notebookId, user.id);
 
       if (error) throw error;
 
@@ -81,7 +71,7 @@ export default function ResearchNotebook() {
       console.error('Error loading notebook:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load notebook',
+        description: 'Failed to load notebook. Please ensure database tables are created.',
         variant: 'destructive',
       });
       navigate('/research-lab');
@@ -94,20 +84,18 @@ export default function ResearchNotebook() {
     if (!notebookId || !user || !editedTitle.trim()) return;
 
     try {
-      const { error } = await supabase
-        .from('research_notebooks')
-        .update({ title: editedTitle.trim() })
-        .eq('id', notebookId)
-        .eq('user_id', user.id);
+      const { data, error } = await updateNotebookTitle(notebookId, user.id, editedTitle.trim());
 
       if (error) throw error;
 
-      setNotebook(prev => prev ? { ...prev, title: editedTitle.trim() } : null);
-      setIsEditingTitle(false);
-      toast({
-        title: 'Title updated',
-        description: 'Notebook title has been updated',
-      });
+      if (data) {
+        setNotebook(data);
+        setIsEditingTitle(false);
+        toast({
+          title: 'Title updated',
+          description: 'Notebook title has been updated',
+        });
+      }
     } catch (error: any) {
       console.error('Error updating title:', error);
       toast({
