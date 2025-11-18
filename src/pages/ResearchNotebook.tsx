@@ -16,7 +16,8 @@ import {
   Share2, 
   Settings, 
   MoreVertical,
-  Edit2
+  Edit2,
+  FlaskConical
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -152,6 +153,7 @@ export default function ResearchNotebook() {
             
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1 min-w-0">
+                <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0" />
                 <Input
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
@@ -170,11 +172,12 @@ export default function ResearchNotebook() {
               </div>
             ) : (
               <h1
-                className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2"
+                className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group"
                 onClick={() => setIsEditingTitle(true)}
               >
+                <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0" />
                 {notebook.title}
-                <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100" />
+                <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
               </h1>
             )}
           </div>

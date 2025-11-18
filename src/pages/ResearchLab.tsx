@@ -14,9 +14,10 @@ import {
   FileText, 
   Calendar,
   ChevronRight,
-  Search,
+  FlaskConical,
   Globe,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -89,9 +90,14 @@ export default function ResearchLab() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Research Lab</h1>
-              <p className="text-gray-600 mt-1">Upload sources and chat with AI about your Bible research</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                <FlaskConical className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Research Lab</h1>
+                <p className="text-gray-600 mt-1">Upload sources and chat with AI about your Bible research</p>
+              </div>
             </div>
             <Button
               onClick={() => setCreateModalOpen(true)}

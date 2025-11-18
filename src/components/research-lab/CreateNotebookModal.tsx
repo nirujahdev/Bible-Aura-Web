@@ -18,7 +18,8 @@ import {
   Image as ImageIcon,
   Video,
   Music,
-  Loader2
+  Loader2,
+  FlaskConical
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -179,7 +180,10 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create new notebook</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <FlaskConical className="h-5 w-5 text-orange-600" />
+            Create new notebook
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

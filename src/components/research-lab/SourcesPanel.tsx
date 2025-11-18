@@ -18,8 +18,8 @@ import {
   Link as LinkIcon,
   MoreVertical,
   Trash2,
-  ToggleLeft,
-  ToggleRight
+  FlaskConical,
+  BookOpen
 } from 'lucide-react';
 import { AddSourceModal } from './AddSourceModal';
 import {
@@ -202,8 +202,8 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
           <div className="p-4 text-center text-gray-500">Loading sources...</div>
         ) : filteredSources.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <FileText className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-lg bg-orange-100 flex items-center justify-center mx-auto mb-4">
+              <FlaskConical className="h-8 w-8 text-orange-600" />
             </div>
             <p className="text-sm text-gray-600 mb-2">Saved sources will appear here.</p>
             <p className="text-xs text-gray-500 mb-4">

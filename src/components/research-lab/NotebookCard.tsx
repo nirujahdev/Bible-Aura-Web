@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreVertical, FileText, Calendar } from 'lucide-react';
+import { MoreVertical, FileText, Calendar, BookOpen, FlaskConical } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,19 +87,17 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
   const colorIndex = parseInt(notebook.id.slice(0, 8), 16) % colors.length;
   const cardColor = colors[colorIndex];
 
-  // Simple emoji/icon based on title
+  // Icon based on title - using Lucide icons
   const getNotebookIcon = () => {
     const title = notebook.title.toLowerCase();
-    if (title.includes('ict') || title.includes('tech')) {
-      return '💻';
-    } else if (title.includes('ai') || title.includes('artificial')) {
-      return '🤖';
-    } else if (title.includes('bible') || title.includes('scripture')) {
-      return '📖';
+    if (title.includes('bible') || title.includes('scripture')) {
+      return <BookOpen className="h-8 w-8 text-blue-600" />;
     } else if (title.includes('study') || title.includes('research')) {
-      return '🔬';
+      return <FlaskConical className="h-8 w-8 text-orange-600" />;
+    } else if (title.includes('sermon') || title.includes('preach')) {
+      return <FileText className="h-8 w-8 text-purple-600" />;
     }
-    return '📝';
+    return <FileText className="h-8 w-8 text-gray-600" />;
   };
 
   return (
@@ -132,7 +130,7 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
 
         {/* Thumbnail/Icon */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center text-3xl shadow-sm">
+          <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center shadow-sm">
             {notebook.thumbnail_url ? (
               <img
                 src={notebook.thumbnail_url}
@@ -140,7 +138,7 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
-              <span>{getNotebookIcon()}</span>
+              getNotebookIcon()
             )}
           </div>
         </div>

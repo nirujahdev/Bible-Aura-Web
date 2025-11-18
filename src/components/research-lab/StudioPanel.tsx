@@ -63,12 +63,12 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
           </div>
 
           {/* Info Message */}
-          <div className="bg-gray-50 rounded-lg p-4 text-center">
-            <Sparkles className="h-5 w-5 text-gray-400 mx-auto mb-2" />
-            <p className="text-xs text-gray-600 mb-1">
+          <div className="bg-orange-50 rounded-lg p-4 text-center border border-orange-200">
+            <Sparkles className="h-5 w-5 text-orange-600 mx-auto mb-2" />
+            <p className="text-xs text-gray-700 mb-1 font-medium">
               Studio output will be saved here.
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-600">
               After adding sources, click to add Audio Overview, study guide, mind map and more!
             </p>
           </div>

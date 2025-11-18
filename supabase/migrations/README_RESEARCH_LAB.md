@@ -1,0 +1,98 @@
+# Research Lab Database Migration
+
+## Overview
+This migration creates all necessary tables for the Research Lab feature, including:
+- `research_notebooks` - User notebooks
+- `research_sources` - Uploaded sources (PDFs, videos, audio, links, etc.)
+- `research_chat_messages` - Chat conversation history
+- `research_studio_outputs` - Generated studio tools outputs
+- `research_agentic_actions` - Function calling actions from GLM-4.5-Air
+
+## How to Apply
+
+### Option 1: Supabase Dashboard (Recommended)
+1. Go to your Supabase project dashboard
+2. Navigate to **SQL Editor**
+3. Copy the contents of `20241118000000_create_research_lab_tables.sql`
+4. Paste and run the SQL
+
+### Option 2: Supabase CLI
+```bash
+supabase migration up
+```
+
+### Option 3: Direct SQL Execution
+Run the SQL file directly in your database using any PostgreSQL client.
+
+## Storage Bucket Setup
+
+After running the migration, create the storage bucket:
+
+1. Go to **Storage** in Supabase dashboard
+2. Click **New bucket**
+3. Name: `research-lab-sources`
+4. **Public**: No (private bucket)
+5. **File size limit**: 50MB
+6. **Allowed MIME types**: 
+   - Documents: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `text/plain`, `text/markdown`
+   - Images: `image/*`
+   - Audio: `audio/*`
+   - Video: `video/*`
+
+## Storage RLS Policies
+
+After creating the bucket, add these RLS policies:
+
+```sql
+-- Allow users to upload to their own folder
+CREATE POLICY "Users can upload to their own folder"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'research-lab-sources' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to read their own files
+CREATE POLICY "Users can read their own files"
+ON storage.objects FOR SELECT
+USING (
+  bucket_id = 'research-lab-sources' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to delete their own files
+CREATE POLICY "Users can delete their own files"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'research-lab-sources' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+## Verification
+
+After applying the migration, verify tables exist:
+
+```sql
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name LIKE 'research%'
+ORDER BY table_name;
+```
+
+You should see:
+- research_agentic_actions
+- research_chat_messages
+- research_notebooks
+- research_sources
+- research_studio_outputs
+
+## Notes
+
+- All tables have Row Level Security (RLS) enabled
+- Users can only access their own data
+- Foreign keys ensure data integrity
+- Automatic `updated_at` timestamps via triggers
+- Indexes optimized for common queries
+

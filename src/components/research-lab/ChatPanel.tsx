@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Upload, ArrowUp } from 'lucide-react';
+import { Send, Upload, ArrowUp, FlaskConical, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -126,8 +126,8 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
       <ScrollArea className="flex-1 p-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <ArrowUp className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
+              <MessageSquare className="h-8 w-8 text-orange-600" />
             </div>
             <p className="text-gray-600 font-medium mb-2">Add a source to get started</p>
             <Button

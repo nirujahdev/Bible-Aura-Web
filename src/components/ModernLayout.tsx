@@ -4,7 +4,7 @@ import {
   MessageCircle, BookOpen, BarChart3, 
   Heart, FileText, User, Settings,
   Headphones, Home, PenTool, Users, Calendar,
-  Search
+  FlaskConical
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
@@ -29,7 +29,7 @@ const sidebarItems: SidebarItem[] = [
   { name: 'Bible', href: '/bible', icon: BookOpen, tooltip: 'Bible Study' },
   { name: 'Reading Plan', href: '/reading-plan', icon: Calendar, tooltip: 'Bible Reading Planner' },
   { name: 'Sermons', href: '/sermons', icon: PenTool, tooltip: 'Sermons' },
-  { name: 'Research Lab', href: '/research-lab', icon: Search, tooltip: 'Research Lab' },
+  { name: 'Research Lab', href: '/research-lab', icon: FlaskConical, tooltip: 'Research Lab' },
   { name: 'Favorites', href: '/favorites', icon: Heart, tooltip: 'Favorites' },
 ];
 
