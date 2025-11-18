@@ -46,13 +46,14 @@ export function DoctrinalAgentModal({ notebookId, open, onClose }: DoctrinalAgen
         return;
       }
 
-      const response = await fetch('/api/research-lab/agents/doctrinal', {
+      const response = await fetch('/api/research-lab/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          agentType: 'doctrinal',
           notebookId,
           doctrinalQuestion: doctrinalQuestion.trim(),
           includePerspectives,

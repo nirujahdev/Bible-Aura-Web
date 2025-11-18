@@ -36,13 +36,14 @@ export function SummarizeAgentModal({ notebookId, open, onClose }: SummarizeAgen
         return;
       }
 
-      const response = await fetch('/api/research-lab/agents/summarize', {
+      const response = await fetch('/api/research-lab/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          agentType: 'summarize',
           notebookId,
           summaryType,
         }),

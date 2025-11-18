@@ -47,13 +47,14 @@ export function CurriculumAgentModal({ notebookId, open, onClose }: CurriculumAg
         return;
       }
 
-      const response = await fetch('/api/research-lab/agents/curriculum', {
+      const response = await fetch('/api/research-lab/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          agentType: 'curriculum',
           notebookId,
           topic: topic.trim(),
           duration: duration.trim() || undefined,

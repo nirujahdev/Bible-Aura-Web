@@ -44,13 +44,14 @@ export function SearchQAAgentModal({ notebookId, open, onClose }: SearchQAAgentM
         return;
       }
 
-      const response = await fetch('/api/research-lab/agents/search-qa', {
+      const response = await fetch('/api/research-lab/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          agentType: 'search_qa',
           notebookId,
           question: question.trim(),
         }),

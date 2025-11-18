@@ -46,13 +46,14 @@ export function CrossReferenceAgentModal({ notebookId, open, onClose }: CrossRef
         return;
       }
 
-      const response = await fetch('/api/research-lab/agents/cross-reference', {
+      const response = await fetch('/api/research-lab/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          agentType: 'cross_reference',
           notebookId,
           verseReference: verseReference.trim() || undefined,
           theme: theme.trim() || undefined,

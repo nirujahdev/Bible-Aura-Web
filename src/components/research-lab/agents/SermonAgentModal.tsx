@@ -37,13 +37,14 @@ export function SermonAgentModal({ notebookId, open, onClose }: SermonAgentModal
         return;
       }
 
-      const response = await fetch('/api/research-lab/agents/sermon', {
+      const response = await fetch('/api/research-lab/agents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          agentType: 'sermon',
           notebookId,
           scriptureReference: scriptureReference.trim() || undefined,
           sermonType,
