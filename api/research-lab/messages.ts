@@ -50,10 +50,11 @@ function setCache(key: string, data: any) {
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   if (req.method === 'OPTIONS') {
     setCORSHeaders(res);
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   setCORSHeaders(res);
@@ -74,12 +75,14 @@ export default async function handler(
     }
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
 
     const notebookId = req.query.notebookId as string;
     if (!notebookId) {
-      return res.status(400).json({ error: 'notebookId is required' });
+      res.status(400).json({ error: 'notebookId is required' });
+      return;
     }
 
     // GET - List messages
@@ -87,7 +90,8 @@ export default async function handler(
       const cacheKey = `messages:${notebookId}:${userId}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        return res.status(200).json(cached);
+        res.status(200).json(cached);
+        return;
       }
 
       const { data, error } = await supabase
@@ -99,12 +103,14 @@ export default async function handler(
 
       if (error) {
         console.error('Error fetching messages:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       const response = { data: data || [] };
       setCache(cacheKey, response);
-      return res.status(200).json(response);
+      res.status(200).json(response);
+      return;
     }
 
     // POST - Create message
@@ -112,11 +118,13 @@ export default async function handler(
       const { role, content, sources_used, citations, tool_calls, confidence_score } = req.body;
 
       if (!role || !content) {
-        return res.status(400).json({ error: 'role and content are required' });
+        res.status(400).json({ error: 'role and content are required' });
+        return;
       }
 
       if (role !== 'user' && role !== 'assistant') {
-        return res.status(400).json({ error: 'role must be "user" or "assistant"' });
+        res.status(400).json({ error: 'role must be "user" or "assistant"' });
+        return;
       }
 
       const { data, error } = await supabase
@@ -136,13 +144,15 @@ export default async function handler(
 
       if (error) {
         console.error('Error creating message:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`messages:${notebookId}:${userId}`);
 
-      return res.status(201).json({ data });
+      res.status(201).json({ data });
+      return;
     }
 
     // DELETE - Delete message
@@ -157,22 +167,26 @@ export default async function handler(
 
       if (error) {
         console.error('Error deleting message:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`messages:${notebookId}:${userId}`);
 
-      return res.status(200).json({ success: true });
+      res.status(200).json({ success: true });
+      return;
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   } catch (error: any) {
     console.error('API Error:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 
     });
+    return;
   }
 }
 

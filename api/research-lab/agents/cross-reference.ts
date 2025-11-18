@@ -99,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Build source content with verse references
     const sourceTexts = sources
       .map(s => {
-        const content = s.processed_content || s.content || '';
+        const content = String(s.processed_content || s.content || '');
         const verses = s.extracted_verses ? JSON.stringify(s.extracted_verses) : 'None found';
         return `[Source: ${s.title}]\nContent: ${content.substring(0, 8000)}\nVerses mentioned: ${verses}`;
       })

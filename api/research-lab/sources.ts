@@ -50,10 +50,11 @@ function setCache(key: string, data: any) {
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   if (req.method === 'OPTIONS') {
     setCORSHeaders(res);
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   setCORSHeaders(res);
@@ -74,12 +75,14 @@ export default async function handler(
     }
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
 
     const notebookId = req.query.notebookId as string;
     if (!notebookId) {
-      return res.status(400).json({ error: 'notebookId is required' });
+      res.status(400).json({ error: 'notebookId is required' });
+      return;
     }
 
     // GET - List sources
@@ -87,7 +90,8 @@ export default async function handler(
       const cacheKey = `sources:${notebookId}:${userId}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        return res.status(200).json(cached);
+        res.status(200).json(cached);
+        return;
       }
 
       const { data, error } = await supabase
@@ -99,12 +103,14 @@ export default async function handler(
 
       if (error) {
         console.error('Error fetching sources:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       const response = { data: data || [] };
       setCache(cacheKey, response);
-      return res.status(200).json(response);
+      res.status(200).json(response);
+      return;
     }
 
     // POST - Create source
@@ -112,7 +118,8 @@ export default async function handler(
       const { source_type, title, file_path, file_url, link_url, content_text, file_size, mime_type } = req.body;
 
       if (!source_type || !title) {
-        return res.status(400).json({ error: 'source_type and title are required' });
+        res.status(400).json({ error: 'source_type and title are required' });
+        return;
       }
 
       const { data, error } = await supabase
@@ -136,13 +143,15 @@ export default async function handler(
 
       if (error) {
         console.error('Error creating source:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`sources:${notebookId}:${userId}`);
 
-      return res.status(201).json({ data });
+      res.status(201).json({ data });
+      return;
     }
 
     // PUT - Update source (toggle include/exclude, update status)
@@ -155,7 +164,8 @@ export default async function handler(
       if (processing_status !== undefined) updateData.processing_status = processing_status;
 
       if (Object.keys(updateData).length === 0) {
-        return res.status(400).json({ error: 'No fields to update' });
+        res.status(400).json({ error: 'No fields to update' });
+        return;
       }
 
       const { data, error } = await supabase
@@ -168,13 +178,15 @@ export default async function handler(
 
       if (error) {
         console.error('Error updating source:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`sources:${notebookId}:${userId}`);
 
-      return res.status(200).json({ data });
+      res.status(200).json({ data });
+      return;
     }
 
     // DELETE - Delete source
@@ -189,22 +201,26 @@ export default async function handler(
 
       if (error) {
         console.error('Error deleting source:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`sources:${notebookId}:${userId}`);
 
-      return res.status(200).json({ success: true });
+      res.status(200).json({ success: true });
+      return;
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   } catch (error: any) {
     console.error('API Error:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 
     });
+    return;
   }
 }
 

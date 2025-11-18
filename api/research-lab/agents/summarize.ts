@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Build source content
     const sourceTexts = sources
       .map(s => {
-        const content = s.processed_content || s.content || '';
+        const content = String(s.processed_content || s.content || '');
         return `[Source: ${s.title}]\n${content.substring(0, 10000)}`;
       })
       .join('\n\n---\n\n');

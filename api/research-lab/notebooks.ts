@@ -71,11 +71,12 @@ function cleanCache() {
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     setCORSHeaders(res);
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   setCORSHeaders(res);
@@ -97,16 +98,18 @@ export default async function handler(
     }
 
     // GET /api/research-lab/notebooks - List notebooks
-    if (req.method === 'GET') {
+    if (req.method === 'GET' && !req.query.id) {
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       cleanCache();
       const cacheKey = `notebooks:${userId}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        return res.status(200).json(cached);
+        res.status(200).json(cached);
+        return;
       }
 
       const limit = parseInt(req.query.limit as string) || 10;
@@ -119,25 +122,29 @@ export default async function handler(
 
       if (error) {
         console.error('Error fetching notebooks:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       const response = { data: data || [] };
       setCache(cacheKey, response);
-      return res.status(200).json(response);
+      res.status(200).json(response);
+      return;
     }
 
     // GET /api/research-lab/notebooks?id=xxx - Get single notebook
     if (req.method === 'GET' && req.query.id) {
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const notebookId = req.query.id as string;
       const cacheKey = `notebook:${notebookId}:${userId}`;
       const cached = getCached(cacheKey);
       if (cached) {
-        return res.status(200).json(cached);
+        res.status(200).json(cached);
+        return;
       }
 
       const { data, error } = await supabase
@@ -149,28 +156,33 @@ export default async function handler(
 
       if (error) {
         console.error('Error fetching notebook:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       if (!data) {
-        return res.status(404).json({ error: 'Notebook not found' });
+        res.status(404).json({ error: 'Notebook not found' });
+        return;
       }
 
       const response = { data };
       setCache(cacheKey, response);
-      return res.status(200).json(response);
+      res.status(200).json(response);
+      return;
     }
 
     // POST /api/research-lab/notebooks - Create notebook
     if (req.method === 'POST') {
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const { title, description } = req.body;
 
       if (!title || typeof title !== 'string') {
-        return res.status(400).json({ error: 'Title is required' });
+        res.status(400).json({ error: 'Title is required' });
+        return;
       }
 
       const { data, error } = await supabase
@@ -186,20 +198,23 @@ export default async function handler(
 
       if (error) {
         console.error('Error creating notebook:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       const cacheKey = `notebooks:${userId}`;
       cache.delete(cacheKey);
 
-      return res.status(201).json({ data });
+      res.status(201).json({ data });
+      return;
     }
 
     // PUT /api/research-lab/notebooks?id=xxx - Update notebook
     if (req.method === 'PUT' && req.query.id) {
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const notebookId = req.query.id as string;
@@ -210,7 +225,8 @@ export default async function handler(
       if (description !== undefined) updateData.description = description;
 
       if (Object.keys(updateData).length === 0) {
-        return res.status(400).json({ error: 'No fields to update' });
+        res.status(400).json({ error: 'No fields to update' });
+        return;
       }
 
       const { data, error } = await supabase
@@ -223,20 +239,23 @@ export default async function handler(
 
       if (error) {
         console.error('Error updating notebook:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`notebook:${notebookId}:${userId}`);
       cache.delete(`notebooks:${userId}`);
 
-      return res.status(200).json({ data });
+      res.status(200).json({ data });
+      return;
     }
 
     // DELETE /api/research-lab/notebooks?id=xxx - Delete notebook
     if (req.method === 'DELETE' && req.query.id) {
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
       }
 
       const notebookId = req.query.id as string;
@@ -249,23 +268,27 @@ export default async function handler(
 
       if (error) {
         console.error('Error deleting notebook:', error);
-        return res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
+        return;
       }
 
       // Invalidate cache
       cache.delete(`notebook:${notebookId}:${userId}`);
       cache.delete(`notebooks:${userId}`);
 
-      return res.status(200).json({ success: true });
+      res.status(200).json({ success: true });
+      return;
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   } catch (error: any) {
     console.error('API Error:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 
     });
+    return;
   }
 }
 
