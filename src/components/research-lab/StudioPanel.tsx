@@ -296,9 +296,27 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
         body: JSON.stringify(requestBody),
       });
 
+      // Check if response is ok before parsing JSON
+      if (!response.ok) {
+        let errorMessage = 'Failed to generate';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorData.details || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, try to get text
+          try {
+            const errorText = await response.text();
+            errorMessage = errorText || errorMessage;
+          } catch (e2) {
+            errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!data || data.error) {
         throw new Error(data.error || data.message || 'Failed to generate');
       }
 
@@ -312,10 +330,31 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
       setTimeout(() => loadOutputs(), 2000);
     } catch (error: any) {
       console.error('Agent generation error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        agentId,
+        notebookId,
+        requestBody,
+      });
+      
+      // Provide more specific error messages
+      let errorMessage = error.message || 'Failed to generate';
+      if (error.message?.includes('fetch')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.message?.includes('GLM API key')) {
+        errorMessage = 'AI service configuration error. Please contact support.';
+      } else if (error.message?.includes('No sources')) {
+        errorMessage = 'No sources found in notebook. Please add sources first.';
+      }
+      
       toast({
         title: 'Error',
-        description: error.message || 'Failed to generate',
+        description: errorMessage,
         variant: 'destructive',
+        duration: 5000,
       });
     } finally {
       // Remove from generating set after a delay

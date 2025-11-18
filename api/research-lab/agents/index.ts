@@ -291,8 +291,25 @@ Format as structured JSON with clear sections.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[${agentType} Agent] GLM API error:`, errorText);
-      res.status(500).json({ error: 'GLM API error', details: errorText });
+      console.error(`[${agentType} Agent] GLM API error:`, {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+      });
+      
+      let errorMessage = 'GLM API error';
+      if (response.status === 401) {
+        errorMessage = 'GLM API authentication failed. Please check API key.';
+      } else if (response.status === 429) {
+        errorMessage = 'Rate limit exceeded. Please try again later.';
+      } else if (response.status >= 500) {
+        errorMessage = 'GLM API service error. Please try again later.';
+      }
+      
+      res.status(500).json({ 
+        error: errorMessage, 
+        details: process.env.NODE_ENV === 'development' ? errorText : undefined 
+      });
       return;
     }
 
@@ -422,7 +439,30 @@ Format as structured JSON with clear sections.`;
 
   } catch (error: any) {
     console.error('[Agent API] Error:', error);
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    console.error('[Agent API] Error stack:', error.stack);
+    console.error('[Agent API] Request body:', req.body);
+    
+    // Provide more detailed error messages
+    let errorMessage = 'Internal server error';
+    let statusCode = 500;
+    
+    if (error.message?.includes('GLM API key')) {
+      errorMessage = 'GLM API key not configured. Please set GLM_API_KEY environment variable.';
+      statusCode = 500;
+    } else if (error.message?.includes('Supabase')) {
+      errorMessage = 'Database connection error. Please try again.';
+      statusCode = 500;
+    } else if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      errorMessage = 'Failed to connect to AI service. Please try again.';
+      statusCode = 503;
+    } else {
+      errorMessage = error.message || 'Internal server error';
+    }
+    
+    res.status(statusCode).json({ 
+      error: errorMessage, 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
     return;
   }
 }
