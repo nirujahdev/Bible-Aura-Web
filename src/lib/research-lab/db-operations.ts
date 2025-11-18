@@ -82,18 +82,33 @@ export async function createNotebook(
 
 /**
  * Get all notebooks for a user
+ * Optimized: Only select necessary fields, with caching for better performance
  */
 export async function getUserNotebooks(
   userId: string,
   limit: number = 10
 ): Promise<{ data: Notebook[] | null; error: any }> {
+  const cacheKey = `${userId}-${limit}`;
+  
+  // Check cache first
+  const cached = notebooksCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log('Returning cached notebooks');
+    return { data: cached.data, error: null };
+  }
+
   try {
+    const startTime = performance.now();
+    
     const { data, error } = await supabase
       .from('research_notebooks')
-      .select('*')
+      .select('id, user_id, title, description, thumbnail_url, source_count, created_at, updated_at')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(limit);
+
+    const queryTime = performance.now() - startTime;
+    console.log(`Database query took ${queryTime.toFixed(2)}ms`);
 
     // Check if error is due to missing table
     if (error) {
@@ -115,6 +130,11 @@ export async function getUserNotebooks(
       }
     }
 
+    // Cache the result
+    if (data) {
+      notebooksCache.set(cacheKey, { data, timestamp: Date.now() });
+    }
+
     return { data, error };
   } catch (err: any) {
     // Handle JSON parsing errors (when Supabase returns HTML)
@@ -134,6 +154,25 @@ export async function getUserNotebooks(
       data: null,
       error: err
     };
+  }
+}
+
+/**
+ * Clear notebooks cache (useful after creating/updating/deleting notebooks)
+ */
+export function clearNotebooksCache(userId?: string) {
+  if (userId) {
+    // Clear cache for specific user
+    const keysToDelete: string[] = [];
+    notebooksCache.forEach((_, key) => {
+      if (key.startsWith(`${userId}-`)) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach(key => notebooksCache.delete(key));
+  } else {
+    // Clear all cache
+    notebooksCache.clear();
   }
 }
 
@@ -229,6 +268,11 @@ export async function updateNotebookTitle(
     .select()
     .single();
 
+  // Clear cache after updating notebook
+  if (data) {
+    clearNotebooksCache(userId);
+  }
+
   return { data, error };
 }
 
@@ -244,6 +288,11 @@ export async function deleteNotebook(
     .delete()
     .eq('id', notebookId)
     .eq('user_id', userId);
+
+  // Clear cache after deleting notebook
+  if (!error) {
+    clearNotebooksCache(userId);
+  }
 
   return { error };
 }

@@ -52,9 +52,15 @@ export default function ResearchLab() {
     if (!user) return;
     
     setLoading(true);
+    const startTime = performance.now();
+    
     try {
       const { data, error } = await getUserNotebooks(user.id, 10);
       if (error) throw error;
+      
+      const loadTime = performance.now() - startTime;
+      console.log(`Notebooks loaded in ${loadTime.toFixed(2)}ms`);
+      
       setNotebooks(data || []);
     } catch (error: any) {
       console.error('Error loading notebooks:', error);
@@ -83,6 +89,11 @@ export default function ResearchLab() {
   };
 
   const handleCreateNotebook = (notebookId: string) => {
+    // Clear cache and reload notebooks after creation
+    if (user) {
+      clearNotebooksCache(user.id);
+      loadNotebooks();
+    }
     navigate(`/research-lab/${notebookId}`);
   };
 

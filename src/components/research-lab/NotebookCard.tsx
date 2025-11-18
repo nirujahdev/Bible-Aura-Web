@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { deleteNotebook } from '@/lib/research-lab/db-operations';
+import { deleteNotebook, clearNotebooksCache } from '@/lib/research-lab/db-operations';
 
 interface Notebook {
   id: string;
@@ -46,6 +46,9 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
     try {
       const { error } = await deleteNotebook(notebook.id, user.id);
       if (error) throw error;
+
+      // Clear cache after deletion
+      clearNotebooksCache(user.id);
 
       toast({
         title: 'Notebook deleted',
