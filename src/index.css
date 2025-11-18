@@ -396,6 +396,10 @@ Simple, Clean Design Philosophy
     padding-right: env(safe-area-inset-right);
   }
 
+  .safe-area-bottom {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
   .mobile-scroll {
     -webkit-overflow-scrolling: touch;
     overflow-scrolling: touch;

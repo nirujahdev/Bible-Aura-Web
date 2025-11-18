@@ -202,64 +202,67 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto sm:max-h-[85vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FlaskConical className="h-5 w-5 text-orange-600" />
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <FlaskConical className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
             Create new notebook
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Notebook Title */}
           <div>
-            <Label htmlFor="notebook-title">Notebook Title</Label>
+            <Label htmlFor="notebook-title" className="text-sm sm:text-base">Notebook Title</Label>
             <Input
               id="notebook-title"
               value={notebookTitle}
               onChange={(e) => setNotebookTitle(e.target.value)}
               placeholder="Untitled notebook"
-              className="mt-1"
+              className="mt-1 text-sm sm:text-base"
             />
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 border-b">
+          <div className="flex gap-1 sm:gap-2 border-b overflow-x-auto">
             <button
               onClick={() => setActiveTab('upload')}
               className={cn(
-                'px-4 py-2 border-b-2 transition-colors',
+                'px-3 sm:px-4 py-2 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm flex items-center gap-1 sm:gap-2',
                 activeTab === 'upload'
                   ? 'border-orange-500 text-orange-600'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               )}
             >
-              <Upload className="h-4 w-4 inline mr-2" />
-              Upload Files
+              <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Upload Files</span>
+              <span className="sm:hidden">Upload</span>
             </button>
             <button
               onClick={() => setActiveTab('link')}
               className={cn(
-                'px-4 py-2 border-b-2 transition-colors',
+                'px-3 sm:px-4 py-2 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm flex items-center gap-1 sm:gap-2',
                 activeTab === 'link'
                   ? 'border-orange-500 text-orange-600'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               )}
             >
-              <LinkIcon className="h-4 w-4 inline mr-2" />
-              Add Link
+              <LinkIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Add Link</span>
+              <span className="sm:hidden">Link</span>
             </button>
             <button
               onClick={() => setActiveTab('paste')}
               className={cn(
-                'px-4 py-2 border-b-2 transition-colors',
+                'px-3 sm:px-4 py-2 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm flex items-center gap-1 sm:gap-2',
                 activeTab === 'paste'
                   ? 'border-orange-500 text-orange-600'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               )}
             >
-              <Clipboard className="h-4 w-4 inline mr-2" />
-              Paste Text
+              <Clipboard className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Paste Text</span>
+              <span className="sm:hidden">Paste</span>
             </button>
           </div>
 
@@ -273,16 +276,16 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
                 className={cn(
-                  'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
+                  'border-2 border-dashed rounded-lg p-4 sm:p-8 text-center transition-colors',
                   dragActive
                     ? 'border-orange-500 bg-orange-50'
                     : 'border-gray-300 hover:border-gray-400'
                 )}
               >
-                <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-700 font-medium mb-2">Upload sources</p>
-                <p className="text-sm text-gray-500 mb-4">
-                  Drag and drop or{' '}
+                <Upload className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-gray-400" />
+                <p className="text-sm sm:text-base text-gray-700 font-medium mb-2">Upload sources</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+                  <span className="hidden sm:inline">Drag and drop or </span>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="text-orange-600 hover:text-orange-700 underline"
@@ -302,16 +305,18 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
 
               {/* Selected Files */}
               {selectedFiles.length > 0 && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-3 sm:mt-4 space-y-2">
                   {selectedFiles.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
                     >
-                      <div className="flex items-center gap-3">
-                        {getFileIcon(file)}
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0">
+                          {getFileIcon(file)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{file.name}</p>
                           <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                         </div>
                       </div>
@@ -319,9 +324,9 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
                         variant="ghost"
                         size="sm"
                         onClick={() => removeFile(index)}
-                        className="h-8 w-8 p-0"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   ))}
@@ -347,25 +352,25 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
 
           {/* Link Tab */}
           {activeTab === 'link' && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <Label htmlFor="link-url">Website URL</Label>
+                <Label htmlFor="link-url" className="text-sm sm:text-base">Website URL</Label>
                 <Input
                   id="link-url"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="https://example.com/article"
-                  className="mt-1"
+                  className="mt-1 text-sm sm:text-base"
                 />
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
-                  <Globe className="h-4 w-4 mr-2" />
-                  Website
+                <Button variant="outline" className="flex-1 text-xs sm:text-sm">
+                  <Globe className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Website</span>
                 </Button>
-                <Button variant="outline" className="flex-1">
-                  <Video className="h-4 w-4 mr-2" />
-                  YouTube
+                <Button variant="outline" className="flex-1 text-xs sm:text-sm">
+                  <Video className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">YouTube</span>
                 </Button>
               </div>
             </div>
@@ -374,19 +379,19 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
           {/* Paste Text Tab */}
           {activeTab === 'paste' && (
             <div>
-              <Label htmlFor="pasted-text">Paste your text</Label>
+              <Label htmlFor="pasted-text" className="text-sm sm:text-base">Paste your text</Label>
               <textarea
                 id="pasted-text"
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
                 placeholder="Paste your text here..."
-                className="mt-1 w-full min-h-[200px] p-3 border rounded-lg resize-none"
+                className="mt-1 w-full min-h-[150px] sm:min-h-[200px] p-3 border rounded-lg resize-none text-sm sm:text-base"
               />
             </div>
           )}
 
           {/* Source Limit */}
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
             <span>Source limit</span>
             <span>
               {selectedFiles.length + (linkUrl ? 1 : 0) + (pastedText ? 1 : 0)}/50
@@ -394,22 +399,25 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleClose} disabled={isCreating}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
+            <Button variant="outline" onClick={handleClose} disabled={isCreating} className="w-full sm:w-auto text-sm sm:text-base">
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={isCreating}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto text-sm sm:text-base"
             >
               {isCreating ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                   Creating...
                 </>
               ) : (
-                'Create Notebook'
+                <>
+                  <span className="hidden sm:inline">Create Notebook</span>
+                  <span className="sm:hidden">Create</span>
+                </>
               )}
             </Button>
           </div>

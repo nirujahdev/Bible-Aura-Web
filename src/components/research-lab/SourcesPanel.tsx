@@ -163,33 +163,34 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900">Sources</h2>
+      <div className="p-3 sm:p-4 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <h2 className="font-semibold text-gray-900 text-sm sm:text-base">Sources</h2>
           <Button
             size="sm"
             onClick={() => setAddModalOpen(true)}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm px-2 sm:px-3"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            Add source
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Add source</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
           <Input
             placeholder="Search the web for new sources"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9"
+            className="pl-7 sm:pl-9 pr-16 sm:pr-9 text-sm h-9 sm:h-10"
           />
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
-            <Button variant="ghost" size="sm" className="h-6 px-2">
+          <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+            <Button variant="ghost" size="sm" className="h-6 w-6 sm:w-auto sm:px-2 p-0">
               <Globe className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2">
+            <Button variant="ghost" size="sm" className="h-6 w-6 sm:w-auto sm:px-2 p-0">
               <Sparkles className="h-3 w-3" />
             </Button>
           </div>
@@ -234,25 +235,25 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
             {filteredSources.map((source, index) => (
               <div
                 key={source.id}
-                className="group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:shadow-sm"
+                className="group flex items-center gap-2 p-2 sm:p-3 rounded-lg hover:bg-gray-100 active:bg-gray-100 transition-all duration-200 hover:shadow-sm touch-manipulation"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex-shrink-0 text-gray-500">
                   {getSourceIcon(source.source_type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{source.title}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{source.title}</p>
                   <p className="text-xs text-gray-500 capitalize">{source.source_type}</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <Switch
                     checked={source.is_included}
                     onCheckedChange={() => handleToggleInclude(source.id, source.is_included)}
-                    className="scale-75 transition-all"
+                    className="scale-75 sm:scale-100 transition-all"
                   />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Button variant="ghost" size="sm" className="h-6 w-6 sm:h-8 sm:w-8 p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -272,7 +273,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
       </ScrollArea>
 
       {/* Source Count */}
-      <div className="p-4 border-t border-gray-200 bg-white text-sm text-gray-600">
+      <div className="p-3 sm:p-4 border-t border-gray-200 bg-white text-xs sm:text-sm text-gray-600">
         {sources.length} {sources.length === 1 ? 'source' : 'sources'}
       </div>
 

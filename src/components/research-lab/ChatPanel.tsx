@@ -123,24 +123,25 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-3 sm:p-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-              <MessageSquare className="h-8 w-8 text-orange-600" />
+          <div className="flex flex-col items-center justify-center h-full text-center px-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
+              <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
             </div>
-            <p className="text-gray-600 font-medium mb-2">Add a source to get started</p>
+            <p className="text-sm sm:text-base text-gray-600 font-medium mb-2">Add a source to get started</p>
             <Button
               variant="outline"
               size="sm"
-              className="mt-4"
+              className="mt-4 text-xs sm:text-sm"
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload a source
+              <Upload className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Upload a source</span>
+              <span className="sm:hidden">Upload</span>
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {messages.map((message, index) => (
               <div
                 key={message.id}
@@ -152,15 +153,15 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
               >
                 <div
                   className={cn(
-                    'max-w-[80%] rounded-lg px-4 py-3 transition-all duration-200',
+                    'max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 transition-all duration-200 text-sm sm:text-base',
                     message.role === 'user'
                       ? 'bg-orange-500 text-white shadow-sm hover:shadow-md'
                       : 'bg-gray-100 text-gray-900 shadow-sm hover:shadow-md'
                   )}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
                   {message.sources_used && message.sources_used.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="mt-2 pt-2 border-t border-gray-200/30">
                       <p className="text-xs text-gray-500">
                         Sources: {message.sources_used.length}
                       </p>
@@ -186,7 +187,7 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 p-4 bg-white">
+      <div className="border-t border-gray-200 p-3 sm:p-4 bg-white safe-area-bottom">
         <div className="flex gap-2">
           <Textarea
             value={input}
@@ -198,13 +199,13 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
               }
             }}
             placeholder="Ask about your sources..."
-            className="min-h-[60px] resize-none"
+            className="min-h-[50px] sm:min-h-[60px] resize-none text-sm"
             disabled={loading}
           />
           <Button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="bg-orange-500 hover:bg-orange-600 text-white self-end"
+            className="bg-orange-500 hover:bg-orange-600 text-white self-end p-2 sm:p-2 h-auto"
           >
             <Send className="h-4 w-4" />
           </Button>

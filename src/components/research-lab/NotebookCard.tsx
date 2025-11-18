@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { deleteNotebook } from '@/lib/research-lab/db-operations';
 
 interface Notebook {
   id: string;
@@ -97,20 +98,20 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
 
   return (
     <Card
-      className={`cursor-pointer hover:shadow-lg transition-all ${cardColor} border-2`}
+      className={`cursor-pointer hover:shadow-lg transition-all ${cardColor} border-2 active:scale-95 touch-manipulation`}
       onClick={onSelect}
     >
-      <CardContent className="p-6 relative">
+      <CardContent className="p-4 sm:p-6 relative">
         {/* Menu Button */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              className="absolute top-2 right-2 h-8 w-8 p-0"
+              className="absolute top-2 right-2 h-7 w-7 sm:h-8 sm:w-8 p-0"
               onClick={(e) => e.stopPropagation()}
             >
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -124,8 +125,8 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
         </DropdownMenu>
 
         {/* Thumbnail/Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center shadow-sm">
+        <div className="flex justify-center mb-3 sm:mb-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-white flex items-center justify-center shadow-sm">
             {notebook.thumbnail_url ? (
               <img
                 src={notebook.thumbnail_url}
@@ -133,15 +134,17 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
-              getNotebookIcon()
+              <div className="scale-75 sm:scale-100">
+                {getNotebookIcon()}
+              </div>
             )}
           </div>
         </div>
 
         {/* Notebook Info */}
         <div className="space-y-2">
-          <h3 className="font-semibold text-gray-900 truncate">{notebook.title}</h3>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">{notebook.title}</h3>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               <span>{format(new Date(notebook.updated_at), 'd MMM yyyy')}</span>

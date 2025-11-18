@@ -14,13 +14,18 @@ import { ShareNotebookModal } from '@/components/research-lab/ShareNotebookModal
 import { NotebookSettingsModal } from '@/components/research-lab/NotebookSettingsModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   ArrowLeft, 
   Share2, 
   Settings, 
   MoreVertical,
   Edit2,
-  FlaskConical
+  FlaskConical,
+  FileText,
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -38,12 +43,14 @@ export default function ResearchNotebook() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [notebook, setNotebook] = useState<Notebook | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'sources' | 'chat' | 'studio'>('sources');
 
   useEffect(() => {
     if (notebookId && user) {
@@ -161,21 +168,21 @@ export default function ResearchNotebook() {
     <ModernLayout>
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-white">
         {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-4 py-3 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+        <div className="border-b border-gray-200 bg-white px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/research-lab')}
-              className="flex-shrink-0 hover:bg-gray-100 transition-colors"
+              className="flex-shrink-0 hover:bg-gray-100 transition-colors p-2 sm:p-2"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              <ArrowLeft className="h-4 w-4 sm:mr-2" />
+              {!isMobile && <span>Back</span>}
             </Button>
             
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0" />
+                {!isMobile && <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0" />}
                 <Input
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
@@ -188,47 +195,55 @@ export default function ResearchNotebook() {
                       setIsEditingTitle(false);
                     }
                   }}
-                  className="flex-1 max-w-md"
+                  className="flex-1 max-w-md text-sm sm:text-base"
                   autoFocus
                 />
               </div>
             ) : (
               <h1
-                className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group transition-colors"
+                className="text-base sm:text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group transition-colors"
                 onClick={() => setIsEditingTitle(true)}
               >
-                <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0 transition-transform group-hover:scale-110" />
-                {notebook.title}
-                <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                {!isMobile && <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0 transition-transform group-hover:scale-110" />}
+                <span className="truncate">{notebook.title}</span>
+                {!isMobile && <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />}
               </h1>
             )}
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            {!isMobile && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="hover:bg-gray-100 transition-colors"
+                onClick={() => setShareModalOpen(true)}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
-              className="hover:bg-gray-100 transition-colors"
-              onClick={() => setShareModalOpen(true)}
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="hover:bg-gray-100 transition-colors"
+              className="hover:bg-gray-100 transition-colors p-2"
               onClick={() => setSettingsModalOpen(true)}
             >
               <Settings className="h-4 w-4" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="p-2">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {!isMobile && (
+                  <DropdownMenuItem onClick={() => setShareModalOpen(true)}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem>Export</DropdownMenuItem>
                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
@@ -237,23 +252,76 @@ export default function ResearchNotebook() {
           </div>
         </div>
 
-        {/* Three-Column Layout */}
-        <div className="flex-1 flex overflow-hidden animate-in fade-in duration-300">
-          {/* Left Panel: Sources */}
-          <div className="w-80 border-r border-gray-200 bg-gray-50 flex flex-col transition-all">
-            <SourcesPanel notebookId={notebookId!} />
-          </div>
+        {/* Mobile: Tab Navigation */}
+        {isMobile ? (
+          <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-300">
+            {/* Tab Navigation */}
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'sources' | 'chat' | 'studio')} className="w-full">
+              <div className="border-b border-gray-200 bg-white px-2">
+                <TabsList className="w-full grid grid-cols-3 h-12 bg-transparent">
+                  <TabsTrigger 
+                    value="sources" 
+                    className="flex items-center gap-2 data-[state=active]:bg-orange-50 data-[state=active]:text-orange-600 data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span className="hidden xs:inline">Sources</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="chat"
+                    className="flex items-center gap-2 data-[state=active]:bg-orange-50 data-[state=active]:text-orange-600 data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span className="hidden xs:inline">Chat</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="studio"
+                    className="flex items-center gap-2 data-[state=active]:bg-orange-50 data-[state=active]:text-orange-600 data-[state=active]:border-b-2 data-[state=active]:border-orange-600 rounded-none"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span className="hidden xs:inline">Studio</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-          {/* Center Panel: Chat */}
-          <div className="flex-1 flex flex-col bg-white">
-            <ChatPanel notebookId={notebookId!} />
+              {/* Tab Content */}
+              <div className="flex-1 overflow-hidden">
+                {activeTab === 'sources' && (
+                  <div className="h-full bg-gray-50">
+                    <SourcesPanel notebookId={notebookId!} />
+                  </div>
+                )}
+                {activeTab === 'chat' && (
+                  <div className="h-full bg-white">
+                    <ChatPanel notebookId={notebookId!} />
+                  </div>
+                )}
+                {activeTab === 'studio' && (
+                  <div className="h-full bg-gray-50">
+                    <StudioPanel notebookId={notebookId!} />
+                  </div>
+                )}
+              </div>
+            </Tabs>
           </div>
+        ) : (
+          /* Desktop: Three-Column Layout */
+          <div className="flex-1 flex overflow-hidden animate-in fade-in duration-300">
+            {/* Left Panel: Sources */}
+            <div className="w-80 border-r border-gray-200 bg-gray-50 flex flex-col transition-all">
+              <SourcesPanel notebookId={notebookId!} />
+            </div>
 
-          {/* Right Panel: Studio */}
-          <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col transition-all">
-            <StudioPanel notebookId={notebookId!} />
+            {/* Center Panel: Chat */}
+            <div className="flex-1 flex flex-col bg-white">
+              <ChatPanel notebookId={notebookId!} />
+            </div>
+
+            {/* Right Panel: Studio */}
+            <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col transition-all">
+              <StudioPanel notebookId={notebookId!} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Share Modal */}
         {notebook && (
