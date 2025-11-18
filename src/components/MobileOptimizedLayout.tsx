@@ -194,6 +194,9 @@ function MobileNavigationMenu({ isOpen, onClose, items }: { isOpen: boolean; onC
     if (href === '/dashboard') {
       return ['/', '/dashboard', '/app', '/ai-chat'].includes(location.pathname);
     }
+    if (href === '/research-lab') {
+      return location.pathname === '/research-lab' || location.pathname.startsWith('/research-lab/');
+    }
     return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
