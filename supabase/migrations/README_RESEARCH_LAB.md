@@ -26,7 +26,19 @@ Run the SQL file directly in your database using any PostgreSQL client.
 
 ## Storage Bucket Setup
 
-After running the migration, create the storage bucket:
+### Option 1: SQL Migration (Recommended)
+
+Run the storage bucket migration:
+
+1. Go to **SQL Editor** in Supabase dashboard
+2. Copy the contents of `20241118000003_create_storage_bucket.sql`
+3. Paste and run the SQL
+
+This will create the bucket and all RLS policies automatically.
+
+### Option 2: Manual Setup via Dashboard
+
+If you prefer to create it manually:
 
 1. Go to **Storage** in Supabase dashboard
 2. Click **New bucket**
@@ -34,14 +46,12 @@ After running the migration, create the storage bucket:
 4. **Public**: No (private bucket)
 5. **File size limit**: 50MB
 6. **Allowed MIME types**: 
-   - Documents: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `text/plain`, `text/markdown`
-   - Images: `image/*`
-   - Audio: `audio/*`
-   - Video: `video/*`
+   - Documents: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `text/plain`, `text/markdown`, `application/json`
+   - Images: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/svg+xml`
+   - Audio: `audio/mpeg`, `audio/mp3`, `audio/wav`, `audio/ogg`, `audio/webm`
+   - Video: `video/mp4`, `video/webm`, `video/ogg`, `video/quicktime`
 
-## Storage RLS Policies
-
-After creating the bucket, add these RLS policies:
+Then add these RLS policies in **SQL Editor**:
 
 ```sql
 -- Allow users to upload to their own folder
@@ -55,6 +65,14 @@ WITH CHECK (
 -- Allow users to read their own files
 CREATE POLICY "Users can read their own files"
 ON storage.objects FOR SELECT
+USING (
+  bucket_id = 'research-lab-sources' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow users to update their own files
+CREATE POLICY "Users can update their own files"
+ON storage.objects FOR UPDATE
 USING (
   bucket_id = 'research-lab-sources' AND
   (storage.foldername(name))[1] = auth.uid()::text

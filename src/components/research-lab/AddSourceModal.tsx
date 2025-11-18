@@ -118,8 +118,12 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
       for (const file of selectedFiles) {
         const filePath = `${user.id}/${notebookId}/${Date.now()}-${file.name}`;
         const uploadResult = await uploadFile('research-lab-sources', file, filePath);
-
+        
         if (!uploadResult.success) {
+          // Check if bucket doesn't exist
+          if (uploadResult.error?.includes('Bucket not found') || uploadResult.error?.includes('not found')) {
+            throw new Error('Storage bucket "research-lab-sources" not found. Please run the SQL migration: supabase/migrations/20241118000003_create_storage_bucket.sql in Supabase Dashboard → SQL Editor.');
+          }
           throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
         }
 
@@ -135,7 +139,7 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           source_type: getSourceType(file) as any,
           title: file.name,
           file_path: filePath,
-          file_url: urlData.publicUrl,
+          file_url: urlData?.signedUrl || filePath, // Use signed URL for private bucket
           file_size: file.size,
           mime_type: file.type,
         });
