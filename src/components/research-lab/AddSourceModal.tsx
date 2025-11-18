@@ -179,12 +179,14 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
       // Update notebook source count
       const sourceCount = selectedFiles.length + (linkUrl ? 1 : 0) + (pastedText ? 1 : 0);
-      await supabase.rpc('increment', {
-        table_name: 'research_notebooks',
-        id: notebookId,
-        column_name: 'source_count',
-        increment_value: sourceCount,
-      }).catch(() => {
+      try {
+        await supabase.rpc('increment', {
+          table_name: 'research_notebooks',
+          id: notebookId,
+          column_name: 'source_count',
+          increment_value: sourceCount,
+        });
+      } catch {
         // If RPC doesn't exist, manually update
         const { data: notebook } = await supabase
           .from('research_notebooks')
@@ -198,7 +200,7 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
             .update({ source_count: (notebook.source_count || 0) + sourceCount })
             .eq('id', notebookId);
         }
-      });
+      }
 
       toast({
         title: 'Sources added',
