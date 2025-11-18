@@ -38,6 +38,7 @@ import Profile from '@/pages/Profile';
 import SermonLibrary from '@/pages/SermonLibrary';
 import ResearchLab from '@/pages/ResearchLab';
 import ResearchNotebook from '@/pages/ResearchNotebook';
+import { ResearchLabPinProtection } from '@/components/research-lab/ResearchLabPinProtection';
 
 // Import blog posts
 import WhatIsBibleAura from '@/pages/blog/WhatIsBibleAura';
