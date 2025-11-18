@@ -245,7 +245,11 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{source.title}</p>
-                  <p className="text-xs text-gray-500 capitalize">{source.source_type}</p>
+                  {source.key_insights ? (
+                    <p className="text-xs text-gray-600 line-clamp-2 mt-0.5">{source.key_insights}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 capitalize">{source.source_type}</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <Switch

@@ -40,34 +40,30 @@ interface StudioPanelProps {
 const aiAgents = [
   { 
     id: 'summarize', 
-    name: 'Summarization & Synthesis', 
+    name: 'Summarize', 
     icon: FileText, 
     color: 'bg-blue-50 text-blue-600',
-    description: 'Summarize and synthesize multiple sources',
     outputType: 'summarization' as const
   },
   { 
     id: 'search-qa', 
-    name: 'Theology Q&A', 
+    name: 'AskScripture', 
     icon: Search, 
     color: 'bg-purple-50 text-purple-600',
-    description: 'Bible-focused questions and answers',
     outputType: 'theology_qa' as const
   },
   { 
     id: 'cross-reference', 
-    name: 'Cross-Reference Discovery', 
+    name: 'Cross-Reference', 
     icon: Link2, 
     color: 'bg-green-50 text-green-600',
-    description: 'Find related Bible verses and connections',
     outputType: 'cross_references' as const
   },
   { 
     id: 'curriculum', 
-    name: 'Study Plan Builder', 
+    name: 'Study Builder', 
     icon: BookOpen, 
     color: 'bg-orange-50 text-orange-600',
-    description: 'Create Bible study curricula',
     outputType: 'curriculum' as const
   },
   { 
@@ -75,15 +71,13 @@ const aiAgents = [
     name: 'Sermon Assistant', 
     icon: Mic, 
     color: 'bg-pink-50 text-pink-600',
-    description: 'Prepare sermon outlines and content',
     outputType: 'sermon' as const
   },
   { 
     id: 'doctrinal', 
-    name: 'Doctrinal Harmonization', 
+    name: 'Doctrine Lens', 
     icon: Scale, 
     color: 'bg-indigo-50 text-indigo-600',
-    description: 'Harmonize doctrine and perspectives',
     outputType: 'doctrinal_harmony' as const
   },
 ];
@@ -468,8 +462,7 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${agent.color} flex items-center justify-center mb-1.5 transition-transform duration-200`}>
                       <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <p className="text-[10px] sm:text-xs font-medium text-gray-900 leading-tight mb-0.5">{agent.name}</p>
-                    <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">{agent.description}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-gray-900 leading-tight">{agent.name}</p>
                   </CardContent>
                 </Card>
               );

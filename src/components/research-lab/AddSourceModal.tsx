@@ -20,7 +20,8 @@ import {
   Image as ImageIcon,
   Video,
   Music,
-  Loader2
+  Loader2,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -40,7 +41,10 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [linkUrl, setLinkUrl] = useState('');
   const [pastedText, setPastedText] = useState('');
-  const [activeTab, setActiveTab] = useState<'upload' | 'link' | 'paste'>('upload');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<Array<{ title: string; url: string; summary: string }>>([]);
+  const [activeTab, setActiveTab] = useState<'upload' | 'link' | 'paste' | 'search'>('upload');
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -141,7 +145,7 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
         }
 
         // Create source record using db-operations helper
-        const { error: sourceError } = await createSource({
+        const { data: newSource, error: sourceError } = await createSource({
           notebook_id: notebookId,
           user_id: user.id,
           source_type: getSourceType(file) as any,
@@ -153,11 +157,20 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
         });
 
         if (sourceError) throw sourceError;
+
+        // Generate summary in background (don't wait for it)
+        if (newSource?.id) {
+          fetch('/api/research-lab/generate-summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceId: newSource.id }),
+          }).catch(err => console.error('Failed to generate summary:', err));
+        }
       }
 
       // Add link source
       if (linkUrl) {
-        const { error: linkError } = await createSource({
+        const { data: newSource, error: linkError } = await createSource({
           notebook_id: notebookId,
           user_id: user.id,
           source_type: 'link',
@@ -166,11 +179,20 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
         });
 
         if (linkError) throw linkError;
+
+        // Generate summary in background
+        if (newSource?.id) {
+          fetch('/api/research-lab/generate-summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceId: newSource.id }),
+          }).catch(err => console.error('Failed to generate summary:', err));
+        }
       }
 
       // Add pasted text source
       if (pastedText) {
-        const { error: textError } = await createSource({
+        const { data: newSource, error: textError } = await createSource({
           notebook_id: notebookId,
           user_id: user.id,
           source_type: 'text',
@@ -179,6 +201,15 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
         });
 
         if (textError) throw textError;
+
+        // Generate summary in background
+        if (newSource?.id) {
+          fetch('/api/research-lab/generate-summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceId: newSource.id }),
+          }).catch(err => console.error('Failed to generate summary:', err));
+        }
       }
 
       // Update notebook source count
@@ -208,10 +239,114 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
     }
   };
 
+  const handleWebSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: 'Empty query',
+        description: 'Please enter a search query',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch('/api/research-lab/web-search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: searchQuery.trim() }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Search failed');
+      }
+
+      const data = await response.json();
+      
+      // For now, add the search result as a link source
+      // In the future, we can enhance this to add multiple results
+      if (data.summary) {
+        setSearchResults([{
+          title: `Web Search: ${searchQuery}`,
+          url: '',
+          summary: data.summary
+        }]);
+      }
+    } catch (error: any) {
+      console.error('Web search error:', error);
+      toast({
+        title: 'Search failed',
+        description: error.message || 'Failed to perform web search',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleAddSearchResult = async (result: { title: string; url: string; summary: string }) => {
+    if (!user || !notebookId) return;
+
+    setIsUploading(true);
+    try {
+      // Add as text source with summary
+      const { data: newSource, error } = await createSource({
+        notebook_id: notebookId,
+        user_id: user.id,
+        source_type: 'text',
+        title: result.title,
+        content_text: result.summary,
+        link_url: result.url || undefined,
+      });
+
+      if (error) throw error;
+
+      // Summary is already provided, but we can still update key_insights
+      if (newSource?.id && result.summary) {
+        // Update key_insights with the summary
+        const { error: updateError } = await supabase
+          .from('research_sources')
+          .update({ key_insights: result.summary })
+          .eq('id', newSource.id);
+        
+        if (updateError) {
+          console.error('Failed to update key_insights:', updateError);
+        }
+      }
+
+      // Update notebook source count
+      await updateNotebookSourceCount(notebookId, user.id, 1);
+
+      toast({
+        title: 'Source added',
+        description: 'Web search result added to notebook',
+      });
+
+      setSearchResults([]);
+      setSearchQuery('');
+      handleClose();
+      onAdded();
+    } catch (error: any) {
+      console.error('Error adding search result:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add source',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleClose = () => {
     setSelectedFiles([]);
     setLinkUrl('');
     setPastedText('');
+    setSearchQuery('');
+    setSearchResults([]);
     setActiveTab('upload');
     onClose();
   };
@@ -264,6 +399,19 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
               <Clipboard className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Paste Text</span>
               <span className="sm:hidden">Paste</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('search')}
+              className={cn(
+                'px-3 sm:px-4 py-2 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm flex items-center gap-1 sm:gap-2',
+                activeTab === 'search'
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              )}
+            >
+              <Search className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Web Search</span>
+              <span className="sm:hidden">Search</span>
             </button>
           </div>
 
@@ -359,6 +507,69 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
                 placeholder="Paste your text here..."
                 className="mt-1 w-full min-h-[150px] sm:min-h-[200px] p-3 border rounded-lg resize-none text-sm sm:text-base"
               />
+            </div>
+          )}
+
+          {/* Web Search Tab */}
+          {activeTab === 'search' && (
+            <div className="space-y-3 sm:space-y-4">
+              <div>
+                <Label htmlFor="search-query" className="text-sm sm:text-base">Search the web</Label>
+                <div className="mt-1 flex gap-2">
+                  <Input
+                    id="search-query"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !isSearching) {
+                        handleWebSearch();
+                      }
+                    }}
+                    placeholder="Search for Bible articles, theological content..."
+                    className="text-sm sm:text-base"
+                  />
+                  <Button
+                    onClick={handleWebSearch}
+                    disabled={isSearching || !searchQuery.trim()}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    {isSearching ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="space-y-2">
+                  {searchResults.map((result, index) => (
+                    <div
+                      key={index}
+                      className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <h4 className="text-sm font-medium text-gray-900 mb-1">{result.title}</h4>
+                      <p className="text-xs text-gray-600 mb-2 line-clamp-3">{result.summary}</p>
+                      <Button
+                        onClick={() => handleAddSearchResult(result)}
+                        disabled={isUploading}
+                        size="sm"
+                        className="w-full text-xs"
+                      >
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          'Add to Notebook'
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
