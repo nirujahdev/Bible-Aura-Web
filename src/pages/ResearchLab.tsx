@@ -9,6 +9,7 @@ import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernLayout } from '@/components/ModernLayout';
 import { useSEO, SEO_CONFIG } from '@/hooks/useSEO';
+import { getUserNotebooks, type Notebook } from '@/lib/research-lab/db-operations';
 import { 
   Plus, 
   MoreVertical, 
