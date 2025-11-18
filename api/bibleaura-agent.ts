@@ -648,6 +648,130 @@ function improveTamilText(text: string): string {
   return improved;
 }
 
+// Check if question is Bible-related
+async function isBibleRelated(
+  userInput: string,
+  client: OpenAI
+): Promise<{ isBibleRelated: boolean; reason?: string }> {
+  try {
+    const prompt = `Analyze if this question is related to the Bible, Christianity, biblical studies, theology, or scripture.
+
+Question: "${userInput}"
+
+Respond with JSON only:
+{
+  "isBibleRelated": true or false,
+  "reason": "brief explanation"
+}
+
+A question is Bible-related if it asks about:
+- Bible verses, books, chapters, characters, stories
+- Biblical concepts, theology, doctrine
+- Christian faith, prayer, worship
+- Biblical history, geography, culture
+- Scripture interpretation or study
+- Parables, teachings, or biblical themes
+
+A question is NOT Bible-related if it asks about:
+- General knowledge, science, math, history (non-biblical)
+- Current events, politics, sports, entertainment
+- Personal advice unrelated to scripture
+- Technical questions about computers, programming, etc.`;
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-4.1-nano",
+      messages: [
+        {
+          role: "system",
+          content: "You are a classifier. Always return valid JSON. Be strict - only mark as Bible-related if it clearly relates to Bible, Christianity, or biblical studies."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1,
+      max_tokens: 100
+    });
+
+    const responseText = completion.choices[0]?.message?.content || "";
+    const parsed = JSON.parse(responseText);
+    
+    return {
+      isBibleRelated: parsed.isBibleRelated === true,
+      reason: parsed.reason
+    };
+  } catch (error: any) {
+    console.error("[Bible Check] Error:", error.message);
+    // Default to allowing if check fails (fail-safe)
+    return { isBibleRelated: true };
+  }
+}
+
+// Check if question is sensitive/spiritual (requires personal guidance)
+async function isSensitiveSpiritualQuestion(
+  userInput: string,
+  client: OpenAI
+): Promise<{ isSensitive: boolean; reason?: string }> {
+  try {
+    const prompt = `Analyze if this question requires personal spiritual guidance, counseling, or pastoral care that should be handled by a pastor or spiritual advisor, not an AI assistant.
+
+Question: "${userInput}"
+
+Respond with JSON only:
+{
+  "isSensitive": true or false,
+  "reason": "brief explanation"
+}
+
+A question is sensitive/spiritual if it asks for:
+- Personal spiritual guidance or counseling
+- Advice on personal spiritual struggles, doubts, or crises
+- Interpretation of personal spiritual experiences or dreams
+- Guidance on major life decisions (marriage, career, health) from a spiritual perspective
+- Help with personal sin, guilt, or spiritual warfare
+- Personal prayer requests that need pastoral care
+- Questions about personal salvation or spiritual condition
+
+A question is NOT sensitive if it asks for:
+- General Bible study or scripture explanation
+- Biblical facts, history, or theology
+- Explanation of Bible verses or stories
+- Academic or educational questions about the Bible
+- General Christian teachings or doctrine`;
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-4.1-nano",
+      messages: [
+        {
+          role: "system",
+          content: "You are a classifier. Always return valid JSON. Be careful - only mark as sensitive if it clearly requires personal pastoral guidance."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1,
+      max_tokens: 100
+    });
+
+    const responseText = completion.choices[0]?.message?.content || "";
+    const parsed = JSON.parse(responseText);
+    
+    return {
+      isSensitive: parsed.isSensitive === true,
+      reason: parsed.reason
+    };
+  } catch (error: any) {
+    console.error("[Sensitive Check] Error:", error.message);
+    // Default to not sensitive if check fails (fail-safe)
+    return { isSensitive: false };
+  }
+}
+
 /**
  * Main API Handler
  */
@@ -719,6 +843,47 @@ export default async function handler(
       detectedLanguage: detectLanguage(sanitizedMessage),
       usingLanguage: preferredLanguage || detectLanguage(sanitizedMessage)
     });
+
+    const client = getOpenAIClient();
+    const lang = preferredLanguage || detectLanguage(sanitizedMessage);
+
+    // Check if question is Bible-related (BEFORE RAG pipeline)
+    const bibleCheck = await isBibleRelated(sanitizedMessage, client);
+    
+    if (!bibleCheck.isBibleRelated) {
+      const response = lang === "ta" 
+        ? "மன்னிக்கவும், நான் வேதாகமம் தொடர்பான கேள்விகளுக்கு மட்டுமே பதிலளிக்க முடியும்."
+        : "Sorry, I can only answer Bible-related questions.";
+      
+      console.log('[Bible Aura AI] Question not Bible-related, rejecting');
+      res.status(200).json({
+        text: response,
+        mode: "chat",
+        lang: lang,
+        sources: [],
+        crossReferences: []
+      });
+      return;
+    }
+
+    // Check if question is sensitive/spiritual (BEFORE RAG pipeline)
+    const sensitiveCheck = await isSensitiveSpiritualQuestion(sanitizedMessage, client);
+    
+    if (sensitiveCheck.isSensitive) {
+      const response = lang === "ta"
+        ? "நான் ஒரு உதவியாளர் மட்டுமே. உங்கள் சொந்த பரிசுத்த ஆவியார் உங்களை வழிநடத்துவார். தயவுசெய்து உங்கள் மேய்ப்பரை அணுகவும்."
+        : "I am just an assistant. Pray at your own, the Holy Spirit will guide you, or contact your pastor.";
+      
+      console.log('[Bible Aura AI] Question is sensitive/spiritual, redirecting to pastor');
+      res.status(200).json({
+        text: response,
+        mode: "chat",
+        lang: lang,
+        sources: [],
+        crossReferences: []
+      });
+      return;
+    }
 
     // Check cache first
     const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage, 'aura-1.0');
