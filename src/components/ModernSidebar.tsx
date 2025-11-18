@@ -389,7 +389,8 @@ function MobileNavigationHeader() {
                         </div>
                       </div>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
