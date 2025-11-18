@@ -14,15 +14,10 @@ CREATE TABLE IF NOT EXISTS research_notebook_shares (
   shared_with UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- nullable for link sharing
   permission TEXT NOT NULL CHECK (permission IN ('owner', 'editor', 'viewer')),
   access_type TEXT NOT NULL CHECK (access_type IN ('user', 'link')) DEFAULT 'user',
-  share_token TEXT UNIQUE, -- for link sharing, nullable
+  share_token TEXT, -- for link sharing, nullable
   notify_user BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  -- Ensure unique user shares per notebook
-  CONSTRAINT unique_user_share UNIQUE (notebook_id, shared_with) WHERE shared_with IS NOT NULL,
-  -- Ensure unique link shares per notebook
-  CONSTRAINT unique_link_share UNIQUE (notebook_id, share_token) WHERE share_token IS NOT NULL
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create indexes for performance
@@ -31,6 +26,22 @@ CREATE INDEX IF NOT EXISTS idx_notebook_shares_shared_with ON research_notebook_
 CREATE INDEX IF NOT EXISTS idx_notebook_shares_shared_by ON research_notebook_shares(shared_by);
 CREATE INDEX IF NOT EXISTS idx_notebook_shares_token ON research_notebook_shares(share_token) WHERE share_token IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_notebook_shares_access_type ON research_notebook_shares(access_type);
+
+-- Create partial unique indexes for constraints
+-- Ensure unique user shares per notebook (only when shared_with is not null)
+CREATE UNIQUE INDEX IF NOT EXISTS unique_user_share 
+  ON research_notebook_shares(notebook_id, shared_with) 
+  WHERE shared_with IS NOT NULL;
+
+-- Ensure unique link shares per notebook (only when share_token is not null)
+CREATE UNIQUE INDEX IF NOT EXISTS unique_link_share 
+  ON research_notebook_shares(notebook_id, share_token) 
+  WHERE share_token IS NOT NULL;
+
+-- Ensure unique share_token globally (for link sharing)
+CREATE UNIQUE INDEX IF NOT EXISTS unique_share_token 
+  ON research_notebook_shares(share_token) 
+  WHERE share_token IS NOT NULL;
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_research_notebook_shares_updated_at()
