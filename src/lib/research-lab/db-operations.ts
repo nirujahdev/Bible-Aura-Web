@@ -58,6 +58,11 @@ export async function createNotebook(
       }
     }
 
+    // Clear cache after creating notebook
+    if (data) {
+      clearNotebooksCache(userId);
+    }
+
     return { data, error };
   } catch (err: any) {
     // Handle JSON parsing errors (when Supabase returns HTML)
