@@ -779,6 +779,21 @@ export default function Auth() {
                   </Button>
                 </TabsContent>
               </Tabs>
+              
+              {/* Platform Disclaimer */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <Alert className="bg-blue-50/80 border-blue-200">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-xs text-gray-700 leading-relaxed">
+                    <p className="font-semibold text-blue-900 mb-1">Important Notice</p>
+                    <p>
+                      This platform provides Bible-based AI assistance and research resources. 
+                      It does not guide your spiritual life or replace pastors or churches. 
+                      Use it wisely. May God bless you.
+                    </p>
+                  </AlertDescription>
+                </Alert>
+              </div>
             </CardContent>
           </Card>
         </div>
