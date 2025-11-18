@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <!-- Main Sitemap - Core public pages -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/main-sitemap.xml</loc>
+    <lastmod>2025-11-18</lastmod>
+  </sitemap>
+
+  <!-- Blog Sitemap - All blog posts -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/blog-sitemap.xml</loc>
+    <lastmod>2025-11-18</lastmod>
+  </sitemap>
+
+  <!-- Bible Books Sitemap - Bible translations and books -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/bible-books-sitemap.xml</loc>
+    <lastmod>2025-11-18</lastmod>
+  </sitemap>
+
+  <!-- Features Sitemap - Feature pages -->
+  <sitemap>
+    <loc>https://bibleaura.xyz/features-sitemap.xml</loc>
+    <lastmod>2025-11-18</lastmod>
+  </sitemap>
+
+</sitemapindex>
+

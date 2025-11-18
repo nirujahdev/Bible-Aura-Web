@@ -1,66 +1,20 @@
 # Robots.txt for Bible Aura - AI-Powered Biblical Insight Platform
-# Updated: February 2025 - FULL INDEXING ENABLED
+# Updated: November 2025
 
 User-agent: *
 Allow: /
 
-# Allow all main content areas for maximum indexing
-Allow: /bible-ai
-Allow: /bible-ai-chat
-Allow: /bible
-Allow: /bible/*
-Allow: /features
-Allow: /features/*
+# Allow all main content areas for indexing
 Allow: /blog
 Allow: /blog/*
-Allow: /study-hub
-Allow: /study-hub/*
-Allow: /journal
-Allow: /sermons
-Allow: /sermons/*
-Allow: /topical-study
-Allow: /topical-study/*
-Allow: /parables-study
-Allow: /parables-study/*
-Allow: /pricing
+Allow: /features
+Allow: /features/*
 Allow: /about
 Allow: /contact
-Allow: /bible-qa
-Allow: /dashboard
-Allow: /favorites
-Allow: /songs
-Allow: /sermon-writer
-Allow: /sermon-library
-Allow: /community
-Allow: /community/*
+Allow: /help-center
+Allow: /faq
 
-# Allow all Bible content and translations
-Allow: /bible/kjv/*
-Allow: /bible/niv/*
-Allow: /bible/esv/*
-Allow: /bible/nasb/*
-Allow: /bible/nlt/*
-Allow: /bible/nkjv/*
-Allow: /bible/web/*
-Allow: /bible/asv/*
-Allow: /bible/net/*
-Allow: /bible/tamil/*
-
-# Allow study resources
-Allow: /studies/*
-Allow: /characters/*
-Allow: /parables/*
-Allow: /topical/*
-
-# Allow all feature pages
-Allow: /features/bible-study
-Allow: /features/ai-features
-Allow: /features/personal-tools
-Allow: /features/advanced-study
-Allow: /features/content-creation
-Allow: /features/learning-resources
-
-# Only disallow sensitive authentication and admin areas
+# Disallow sensitive authentication and admin areas
 Disallow: /auth
 Disallow: /login
 Disallow: /signup
@@ -75,13 +29,23 @@ Disallow: /supabase/
 Disallow: /.env*
 Disallow: /debug*
 
-# Allow important Bible Aura SEO pages
-Allow: /bible-aura*
-Allow: /bible-ai*
-Allow: /ai-bible*
-Allow: /christian-ai*
+# Disallow protected routes (require authentication)
+Disallow: /app
+Disallow: /dashboard
+Disallow: /ai-chat
+Disallow: /bible
+Disallow: /enhanced-bible
+Disallow: /favorites
+Disallow: /profile
+Disallow: /sermons
+Disallow: /sermon-writer
+Disallow: /bible-qa
+Disallow: /reading-plan
+Disallow: /topical-study
+Disallow: /parables-study
+Disallow: /sermon-library
 
-# Special directives for major search engines - MAXIMUM CRAWLING
+# Special directives for major search engines
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0.5
@@ -93,6 +57,7 @@ Crawl-delay: 0.5
 User-agent: Slurp
 Allow: /
 Crawl-delay: 1
+
 User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 0.5
@@ -112,19 +77,12 @@ Allow: /
 User-agent: TelegramBot
 Allow: /
 
-# Comprehensive Sitemaps - 10 Specialized Sitemaps
+# Sitemaps - Only include existing sitemaps
 Sitemap: https://bibleaura.xyz/sitemap-index.xml
 Sitemap: https://bibleaura.xyz/main-sitemap.xml
+Sitemap: https://bibleaura.xyz/blog-sitemap.xml
 Sitemap: https://bibleaura.xyz/bible-books-sitemap.xml
 Sitemap: https://bibleaura.xyz/features-sitemap.xml
-Sitemap: https://bibleaura.xyz/blog-sitemap.xml
-Sitemap: https://bibleaura.xyz/study-resources-sitemap.xml
-Sitemap: https://bibleaura.xyz/community-sitemap.xml
-Sitemap: https://bibleaura.xyz/tools-dashboard-sitemap.xml
-Sitemap: https://bibleaura.xyz/spiritual-content-sitemap.xml
-Sitemap: https://bibleaura.xyz/sermons-content-sitemap.xml
-Sitemap: https://bibleaura.xyz/educational-sitemap.xml
 
 # Host information
 Host: https://bibleaura.xyz
-
