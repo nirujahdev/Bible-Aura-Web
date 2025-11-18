@@ -57,7 +57,7 @@ const Home = () => {
                 </h1>
                 
                 <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                  Grow deeper in your faith with Bible Aura's AI-powered spiritual tools and biblical insights.
+                  Answer Bible-related questions, search Scripture, and conduct biblical research with AI-powered tools and insights.
                 </p>
               </div>
 
@@ -349,7 +349,7 @@ const Home = () => {
               </span>
             </h3>
             <p className="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto px-4">
-              Grow deeper in your faith with Bible Aura's AI-powered spiritual tools and biblical insights.
+              Answer Bible-related questions, search Scripture, and conduct biblical research with AI-powered tools and insights.
             </p>
           </div>
 
@@ -378,7 +378,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4 group-hover:text-blue-600 transition-colors duration-300">AI Companion</h3>
               <p className="text-gray-600 leading-relaxed text-sm md:text-base group-hover:text-gray-700 transition-colors duration-300">
-                Chat with our AI for spiritual guidance and questions
+                Chat with our AI to answer Bible-related questions and search Scripture
               </p>
               <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 <div className="flex justify-center gap-2">
@@ -413,10 +413,10 @@ const Home = () => {
       <section className="py-12 md:py-20 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
         <div className="w-full px-4 md:px-6 lg:px-10 max-w-4xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight">
-            Transform Your Spiritual Life with AI-Powered Insights
+            Enhance Your Bible Study with AI-Powered Insights
           </h2>
           <p className="text-base md:text-lg lg:text-xl mb-6 md:mb-8 opacity-90 max-w-3xl mx-auto">
-            Start your spiritual transformation today with AI-powered biblical insights and community support.
+            Start studying the Bible today with AI-powered tools that help you answer questions, search Scripture, and conduct biblical research.
           </p>
           <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100 text-base md:text-lg px-6 md:px-8 py-4 md:py-6 rounded-xl shadow-lg w-full sm:w-auto">
                             <span className="text-orange-500 mr-2">✦</span>
