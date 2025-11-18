@@ -35,6 +35,8 @@ import ParablesStudy from '@/pages/ParablesStudy';
 import Profile from '@/pages/Profile';
 
 import SermonLibrary from '@/pages/SermonLibrary';
+import ResearchLab from '@/pages/ResearchLab';
+import ResearchNotebook from '@/pages/ResearchNotebook';
 
 // Import blog posts
 import WhatIsBibleAura from '@/pages/blog/WhatIsBibleAura';
@@ -204,6 +206,18 @@ function App() {
                 <Route path="/sermon-library" element={
                   <ProtectedRoute>
                     <SermonLibrary />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/research-lab" element={
+                  <ProtectedRoute>
+                    <ResearchLab />
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/research-lab/:notebookId" element={
+                  <ProtectedRoute>
+                    <ResearchNotebook />
                   </ProtectedRoute>
                 } />
                 

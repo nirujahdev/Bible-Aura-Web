@@ -239,6 +239,12 @@ export const SEO_CONFIG = {
     description: "Access Bible Aura's comprehensive sermon library with biblical messages, preaching resources, and spiritual guidance. Find sermons organized by topic, scripture, and theme.",
     keywords: "sermon library, biblical sermons, christian sermons, preaching library, bible aura sermon library, sermon collection, biblical messages, christian messages, spiritual messages, faith messages, sermon archive, biblical archive, christian archive, preaching archive, ministry archive, sermon database, biblical database, christian database, preaching database, ministry database, theological sermons, biblical preaching, christian preaching, expository preaching, topical preaching",
     canonicalUrl: "https://bibleaura.xyz/sermon-library"
+  },
+  RESEARCH_LAB: {
+    title: "Research Lab | Advanced Bible Research with AI | Bible Aura",
+    description: "Upload Bible-related sources (PDFs, videos, audio, links) and chat with AI that responds exclusively from your sources. Create study guides, sermon outlines, and research insights with Bible Aura's Research Lab.",
+    keywords: "Bible research lab, AI Bible research, Bible study research, biblical research tools, bible aura research lab, AI research assistant, Bible source analysis, biblical document analysis, Bible PDF analysis, sermon research, theological research, Bible commentary research, biblical study research, christian research tools, scripture research, biblical text analysis, AI-powered Bible research, Bible research platform, biblical knowledge base, Bible study resources, research notebook, Bible research workspace",
+    canonicalUrl: "https://bibleaura.xyz/research-lab"
   }
 };
 
