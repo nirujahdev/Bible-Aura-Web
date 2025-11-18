@@ -6,16 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Scale, Loader2 } from 'lucide-react';
+import { Scale } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
 interface DoctrinalAgentModalProps {
   notebookId: string;
   open: boolean;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export function DoctrinalAgentModal({ notebookId, open, onClose }: DoctrinalAgentModalProps) {
+export function DoctrinalAgentModal({ notebookId, open, onClose, onGenerated }: DoctrinalAgentModalProps) {
   const [doctrinalQuestion, setDoctrinalQuestion] = useState('');
   const [includePerspectives, setIncludePerspectives] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -71,6 +73,11 @@ export function DoctrinalAgentModal({ notebookId, open, onClose }: DoctrinalAgen
         title: 'Success',
         description: 'Doctrinal harmonization generated successfully',
       });
+      // Notify parent and close modal for background processing
+      if (onGenerated) {
+        onGenerated();
+      }
+      onClose();
     } catch (error: any) {
       console.error('Doctrinal error:', error);
       toast({
@@ -88,6 +95,11 @@ export function DoctrinalAgentModal({ notebookId, open, onClose }: DoctrinalAgen
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <img 
+              src="/✦Bible Aura (2).png" 
+              alt="Bible Aura" 
+              className="h-6 w-6 rounded"
+            />
             <Scale className="h-5 w-5 text-indigo-600" />
             Doctrinal Harmonization
           </DialogTitle>
@@ -120,20 +132,21 @@ export function DoctrinalAgentModal({ notebookId, open, onClose }: DoctrinalAgen
           </div>
 
           {!result && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !doctrinalQuestion.trim()}
-              className="w-full"
-            >
+            <>
               {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Harmonizing...
-                </>
+                <div className="py-6">
+                  <BibleAuraLoadingAnimation message="Harmonizing doctrine..." size="medium" />
+                </div>
               ) : (
-                'Harmonize Doctrine'
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !doctrinalQuestion.trim()}
+                  className="w-full"
+                >
+                  Harmonize Doctrine
+                </Button>
               )}
-            </Button>
+            </>
           )}
 
           {result && (

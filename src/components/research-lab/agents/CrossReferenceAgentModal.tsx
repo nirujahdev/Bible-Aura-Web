@@ -6,16 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Link2, Loader2 } from 'lucide-react';
+import { Link2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
 interface CrossReferenceAgentModalProps {
   notebookId: string;
   open: boolean;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export function CrossReferenceAgentModal({ notebookId, open, onClose }: CrossReferenceAgentModalProps) {
+export function CrossReferenceAgentModal({ notebookId, open, onClose, onGenerated }: CrossReferenceAgentModalProps) {
   const [verseReference, setVerseReference] = useState('');
   const [theme, setTheme] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -71,6 +73,11 @@ export function CrossReferenceAgentModal({ notebookId, open, onClose }: CrossRef
         title: 'Success',
         description: 'Cross-references found successfully',
       });
+      // Notify parent and close modal for background processing
+      if (onGenerated) {
+        onGenerated();
+      }
+      onClose();
     } catch (error: any) {
       console.error('Cross-reference error:', error);
       toast({
@@ -88,6 +95,11 @@ export function CrossReferenceAgentModal({ notebookId, open, onClose }: CrossRef
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <img 
+              src="/✦Bible Aura (2).png" 
+              alt="Bible Aura" 
+              className="h-6 w-6 rounded"
+            />
             <Link2 className="h-5 w-5 text-green-600" />
             Cross-Reference Discovery
           </DialogTitle>
@@ -119,20 +131,21 @@ export function CrossReferenceAgentModal({ notebookId, open, onClose }: CrossRef
           </div>
 
           {!result && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || (!verseReference.trim() && !theme.trim())}
-              className="w-full"
-            >
+            <>
               {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Finding cross-references...
-                </>
+                <div className="py-6">
+                  <BibleAuraLoadingAnimation message="Finding cross-references..." size="medium" />
+                </div>
               ) : (
-                'Find Cross-References'
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || (!verseReference.trim() && !theme.trim())}
+                  className="w-full"
+                >
+                  Find Cross-References
+                </Button>
               )}
-            </Button>
+            </>
           )}
 
           {result && (

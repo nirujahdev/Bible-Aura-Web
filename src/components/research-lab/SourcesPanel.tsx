@@ -51,6 +51,8 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
   useEffect(() => {
     if (notebookId && user) {
       loadSources();
+    } else if (!user) {
+      setLoading(false);
     }
   }, [notebookId, user]);
 

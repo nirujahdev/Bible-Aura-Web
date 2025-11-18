@@ -6,16 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Mic, Loader2 } from 'lucide-react';
+import { Mic } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
 interface SermonAgentModalProps {
   notebookId: string;
   open: boolean;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export function SermonAgentModal({ notebookId, open, onClose }: SermonAgentModalProps) {
+export function SermonAgentModal({ notebookId, open, onClose, onGenerated }: SermonAgentModalProps) {
   const [scriptureReference, setScriptureReference] = useState('');
   const [sermonType, setSermonType] = useState<'expository' | 'topical' | 'narrative'>('expository');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -62,6 +64,11 @@ export function SermonAgentModal({ notebookId, open, onClose }: SermonAgentModal
         title: 'Success',
         description: 'Sermon outline generated successfully',
       });
+      // Notify parent and close modal for background processing
+      if (onGenerated) {
+        onGenerated();
+      }
+      onClose();
     } catch (error: any) {
       console.error('Sermon error:', error);
       toast({
@@ -79,6 +86,11 @@ export function SermonAgentModal({ notebookId, open, onClose }: SermonAgentModal
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <img 
+              src="/✦Bible Aura (2).png" 
+              alt="Bible Aura" 
+              className="h-6 w-6 rounded"
+            />
             <Mic className="h-5 w-5 text-pink-600" />
             Sermon Preparation Assistant
           </DialogTitle>
@@ -110,20 +122,21 @@ export function SermonAgentModal({ notebookId, open, onClose }: SermonAgentModal
           </div>
 
           {!result && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full"
-            >
+            <>
               {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating sermon outline...
-                </>
+                <div className="py-6">
+                  <BibleAuraLoadingAnimation message="Generating sermon outline..." size="medium" />
+                </div>
               ) : (
-                'Generate Sermon Outline'
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="w-full"
+                >
+                  Generate Sermon Outline
+                </Button>
               )}
-            </Button>
+            </>
           )}
 
           {result && (

@@ -128,12 +128,16 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
         }
 
         // Get signed URL (since bucket is private)
+        let signedUrl = filePath; // Fallback to file_path
         const { data: urlData, error: urlError } = await supabase.storage
           .from('research-lab-sources')
           .createSignedUrl(filePath, 3600); // 1 hour expiry
         
         if (urlError) {
           console.error('Error creating signed URL:', urlError);
+          // Continue with file_path as fallback
+        } else if (urlData?.signedUrl) {
+          signedUrl = urlData.signedUrl;
         }
 
         // Create source record using db-operations helper
@@ -143,7 +147,7 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           source_type: getSourceType(file) as any,
           title: file.name,
           file_path: filePath,
-          file_url: urlData?.signedUrl || filePath, // Use signed URL for private bucket
+          file_url: signedUrl, // Use signed URL or fallback to file_path
           file_size: file.size,
           mime_type: file.type,
         });

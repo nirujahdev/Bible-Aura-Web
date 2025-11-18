@@ -55,6 +55,8 @@ export default function ResearchNotebook() {
   useEffect(() => {
     if (notebookId && user) {
       loadNotebook();
+    } else if (!user) {
+      setLoading(false);
     }
   }, [notebookId, user]);
 

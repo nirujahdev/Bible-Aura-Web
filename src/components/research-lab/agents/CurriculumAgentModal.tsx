@@ -6,16 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpen, Loader2 } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
 interface CurriculumAgentModalProps {
   notebookId: string;
   open: boolean;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export function CurriculumAgentModal({ notebookId, open, onClose }: CurriculumAgentModalProps) {
+export function CurriculumAgentModal({ notebookId, open, onClose, onGenerated }: CurriculumAgentModalProps) {
   const [topic, setTopic] = useState('');
   const [duration, setDuration] = useState('');
   const [audience, setAudience] = useState('');
@@ -73,6 +75,11 @@ export function CurriculumAgentModal({ notebookId, open, onClose }: CurriculumAg
         title: 'Success',
         description: 'Curriculum generated successfully',
       });
+      // Notify parent and close modal for background processing
+      if (onGenerated) {
+        onGenerated();
+      }
+      onClose();
     } catch (error: any) {
       console.error('Curriculum error:', error);
       toast({
@@ -90,6 +97,11 @@ export function CurriculumAgentModal({ notebookId, open, onClose }: CurriculumAg
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <img 
+              src="/✦Bible Aura (2).png" 
+              alt="Bible Aura" 
+              className="h-6 w-6 rounded"
+            />
             <BookOpen className="h-5 w-5 text-orange-600" />
             Curriculum & Study Plan Builder
           </DialogTitle>
@@ -127,20 +139,21 @@ export function CurriculumAgentModal({ notebookId, open, onClose }: CurriculumAg
           </div>
 
           {!result && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !topic.trim()}
-              className="w-full"
-            >
+            <>
               {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating curriculum...
-                </>
+                <div className="py-6">
+                  <BibleAuraLoadingAnimation message="Generating curriculum..." size="medium" />
+                </div>
               ) : (
-                'Generate Curriculum'
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !topic.trim()}
+                  className="w-full"
+                >
+                  Generate Curriculum
+                </Button>
               )}
-            </Button>
+            </>
           )}
 
           {result && (

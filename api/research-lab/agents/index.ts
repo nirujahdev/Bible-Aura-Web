@@ -378,6 +378,7 @@ Format as structured JSON with clear sections.`;
 
     if (saveError) {
       console.error(`[${agentType} Agent] Save error:`, saveError);
+      // Continue even if save fails - still return the result
     } else {
       console.log(`[${agentType} Agent] Output saved successfully:`, savedOutput?.id);
     }

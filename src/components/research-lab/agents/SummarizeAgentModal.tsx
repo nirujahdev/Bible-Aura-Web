@@ -6,16 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
 interface SummarizeAgentModalProps {
   notebookId: string;
   open: boolean;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export function SummarizeAgentModal({ notebookId, open, onClose }: SummarizeAgentModalProps) {
+export function SummarizeAgentModal({ notebookId, open, onClose, onGenerated }: SummarizeAgentModalProps) {
   const [summaryType, setSummaryType] = useState<'brief' | 'detailed' | 'thematic'>('detailed');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -60,6 +62,11 @@ export function SummarizeAgentModal({ notebookId, open, onClose }: SummarizeAgen
         title: 'Success',
         description: 'Summary generated successfully',
       });
+      // Notify parent and close modal for background processing
+      if (onGenerated) {
+        onGenerated();
+      }
+      onClose();
     } catch (error: any) {
       console.error('Summarize error:', error);
       toast({
@@ -77,6 +84,11 @@ export function SummarizeAgentModal({ notebookId, open, onClose }: SummarizeAgen
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <img 
+              src="/✦Bible Aura (2).png" 
+              alt="Bible Aura" 
+              className="h-6 w-6 rounded"
+            />
             <FileText className="h-5 w-5 text-blue-600" />
             Summarization & Synthesis Agent
           </DialogTitle>
@@ -98,20 +110,21 @@ export function SummarizeAgentModal({ notebookId, open, onClose }: SummarizeAgen
           </div>
 
           {!result && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full"
-            >
+            <>
               {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
+                <div className="py-6">
+                  <BibleAuraLoadingAnimation message="Generating summary..." size="medium" />
+                </div>
               ) : (
-                'Generate Summary'
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="w-full"
+                >
+                  Generate Summary
+                </Button>
               )}
-            </Button>
+            </>
           )}
 
           {result && (

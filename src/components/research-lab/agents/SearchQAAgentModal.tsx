@@ -5,16 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Loader2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
 interface SearchQAAgentModalProps {
   notebookId: string;
   open: boolean;
   onClose: () => void;
+  onGenerated?: () => void;
 }
 
-export function SearchQAAgentModal({ notebookId, open, onClose }: SearchQAAgentModalProps) {
+export function SearchQAAgentModal({ notebookId, open, onClose, onGenerated }: SearchQAAgentModalProps) {
   const [question, setQuestion] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<{ question: string; answer: string } | null>(null);
@@ -68,6 +70,11 @@ export function SearchQAAgentModal({ notebookId, open, onClose }: SearchQAAgentM
         title: 'Success',
         description: 'Answer generated successfully',
       });
+      // Notify parent and close modal for background processing
+      if (onGenerated) {
+        onGenerated();
+      }
+      onClose();
     } catch (error: any) {
       console.error('Search Q&A error:', error);
       toast({
@@ -85,6 +92,11 @@ export function SearchQAAgentModal({ notebookId, open, onClose }: SearchQAAgentM
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <img 
+              src="/✦Bible Aura (2).png" 
+              alt="Bible Aura" 
+              className="h-6 w-6 rounded"
+            />
             <Search className="h-5 w-5 text-purple-600" />
             Theology-Specific Search & Q&A
           </DialogTitle>
@@ -106,20 +118,21 @@ export function SearchQAAgentModal({ notebookId, open, onClose }: SearchQAAgentM
           </div>
 
           {!result && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !question.trim()}
-              className="w-full"
-            >
+            <>
               {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Searching...
-                </>
+                <div className="py-6">
+                  <BibleAuraLoadingAnimation message="Searching for answer..." size="medium" />
+                </div>
               ) : (
-                'Get Answer'
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !question.trim()}
+                  className="w-full"
+                >
+                  Get Answer
+                </Button>
               )}
-            </Button>
+            </>
           )}
 
           {result && (

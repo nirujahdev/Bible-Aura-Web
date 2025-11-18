@@ -32,6 +32,8 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
   useEffect(() => {
     if (notebookId && user) {
       loadMessages();
+    } else if (!user) {
+      setMessages([]);
     }
   }, [notebookId, user]);
 

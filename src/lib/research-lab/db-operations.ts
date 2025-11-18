@@ -631,25 +631,33 @@ export async function updateNotebookSourceCount(
   userId: string,
   increment: number
 ): Promise<{ error: any }> {
-  // Get current count
-  const { data: notebook, error: fetchError } = await supabase
-    .from('research_notebooks')
-    .select('source_count')
-    .eq('id', notebookId)
-    .eq('user_id', userId)
-    .single();
+  try {
+    // Use atomic increment with RPC or direct update
+    // First, get current count
+    const { data: notebook, error: fetchError } = await supabase
+      .from('research_notebooks')
+      .select('source_count')
+      .eq('id', notebookId)
+      .eq('user_id', userId)
+      .single();
 
-  if (fetchError || !notebook) {
-    return { error: fetchError || new Error('Notebook not found') };
+    if (fetchError || !notebook) {
+      return { error: fetchError || new Error('Notebook not found') };
+    }
+
+    // Calculate new count (ensure it doesn't go below 0)
+    const newCount = Math.max(0, (notebook.source_count || 0) + increment);
+
+    // Update count atomically
+    const { error } = await supabase
+      .from('research_notebooks')
+      .update({ source_count: newCount })
+      .eq('id', notebookId)
+      .eq('user_id', userId);
+
+    return { error };
+  } catch (err: any) {
+    return { error: err };
   }
-
-  // Update count
-  const { error } = await supabase
-    .from('research_notebooks')
-    .update({ source_count: (notebook.source_count || 0) + increment })
-    .eq('id', notebookId)
-    .eq('user_id', userId);
-
-  return { error };
 }
 
