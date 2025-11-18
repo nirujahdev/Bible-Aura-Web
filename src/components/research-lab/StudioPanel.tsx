@@ -1,35 +1,83 @@
-// Studio Panel - Right panel in notebook view
+// Studio Panel - Right panel in notebook view with 6 AI Agents
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Music, 
-  Video, 
-  Network, 
   FileText, 
-  CreditCard, 
-  HelpCircle,
+  Search,
+  Link2,
+  BookOpen,
+  Mic,
+  Scale,
   Sparkles,
   FilePlus
 } from 'lucide-react';
+import { SummarizeAgentModal } from './agents/SummarizeAgentModal';
+import { SearchQAAgentModal } from './agents/SearchQAAgentModal';
+import { CrossReferenceAgentModal } from './agents/CrossReferenceAgentModal';
+import { CurriculumAgentModal } from './agents/CurriculumAgentModal';
+import { SermonAgentModal } from './agents/SermonAgentModal';
+import { DoctrinalAgentModal } from './agents/DoctrinalAgentModal';
 
 interface StudioPanelProps {
   notebookId: string;
 }
 
-const studioTools = [
-  { id: 'audio', name: 'Audio Overview', icon: Music, color: 'bg-blue-50 text-blue-600' },
-  { id: 'video', name: 'Video Overview', icon: Video, color: 'bg-purple-50 text-purple-600' },
-  { id: 'mindmap', name: 'Mind Map', icon: Network, color: 'bg-green-50 text-green-600' },
-  { id: 'reports', name: 'Reports', icon: FileText, color: 'bg-orange-50 text-orange-600' },
-  { id: 'flashcards', name: 'Flashcards', icon: CreditCard, color: 'bg-pink-50 text-pink-600' },
-  { id: 'quiz', name: 'Quiz', icon: HelpCircle, color: 'bg-indigo-50 text-indigo-600' },
+const aiAgents = [
+  { 
+    id: 'summarize', 
+    name: 'Summarization & Synthesis', 
+    icon: FileText, 
+    color: 'bg-blue-50 text-blue-600',
+    description: 'Summarize and synthesize multiple sources'
+  },
+  { 
+    id: 'search-qa', 
+    name: 'Theology Q&A', 
+    icon: Search, 
+    color: 'bg-purple-50 text-purple-600',
+    description: 'Bible-focused questions and answers'
+  },
+  { 
+    id: 'cross-reference', 
+    name: 'Cross-Reference Discovery', 
+    icon: Link2, 
+    color: 'bg-green-50 text-green-600',
+    description: 'Find related Bible verses and connections'
+  },
+  { 
+    id: 'curriculum', 
+    name: 'Study Plan Builder', 
+    icon: BookOpen, 
+    color: 'bg-orange-50 text-orange-600',
+    description: 'Create Bible study curricula'
+  },
+  { 
+    id: 'sermon', 
+    name: 'Sermon Assistant', 
+    icon: Mic, 
+    color: 'bg-pink-50 text-pink-600',
+    description: 'Prepare sermon outlines and content'
+  },
+  { 
+    id: 'doctrinal', 
+    name: 'Doctrinal Harmonization', 
+    icon: Scale, 
+    color: 'bg-indigo-50 text-indigo-600',
+    description: 'Harmonize doctrine and perspectives'
+  },
 ];
 
 export function StudioPanel({ notebookId }: StudioPanelProps) {
-  const handleGenerate = (toolId: string) => {
-    // TODO: Implement tool generation with GLM-4.5-Air
-    console.log('Generate:', toolId);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  const handleOpenAgent = (agentId: string) => {
+    setActiveModal(agentId);
+  };
+
+  const handleCloseModal = () => {
+    setActiveModal(null);
   };
 
   return (
@@ -37,25 +85,27 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
       {/* Header */}
       <div className="p-3 sm:p-4 border-b border-gray-200 bg-white">
         <h2 className="font-semibold text-gray-900 text-sm sm:text-base">Studio</h2>
+        <p className="text-xs text-gray-500 mt-1">AI-powered Bible research agents</p>
       </div>
 
-      {/* Tools Grid */}
+      {/* Agents Grid */}
       <ScrollArea className="flex-1">
         <div className="p-3 sm:p-4">
           <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
-            {studioTools.map((tool) => {
-              const Icon = tool.icon;
+            {aiAgents.map((agent) => {
+              const Icon = agent.icon;
               return (
                 <Card
-                  key={tool.id}
+                  key={agent.id}
                   className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation"
-                  onClick={() => handleGenerate(tool.id)}
+                  onClick={() => handleOpenAgent(agent.id)}
                 >
                   <CardContent className="p-3 sm:p-4 flex flex-col items-center text-center">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${tool.color} flex items-center justify-center mb-2 transition-transform duration-200 group-hover:scale-110`}>
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${agent.color} flex items-center justify-center mb-2 transition-transform duration-200 group-hover:scale-110`}>
                       <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
-                    <p className="text-xs font-medium text-gray-900 leading-tight">{tool.name}</p>
+                    <p className="text-xs font-medium text-gray-900 leading-tight mb-1">{agent.name}</p>
+                    <p className="text-[10px] text-gray-500 leading-tight">{agent.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -66,10 +116,10 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
           <div className="bg-orange-50 rounded-lg p-3 sm:p-4 text-center border border-orange-200">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 mx-auto mb-2" />
             <p className="text-xs text-gray-700 mb-1 font-medium">
-              Studio output will be saved here.
+              AI agents analyze your notebook sources.
             </p>
             <p className="text-xs text-gray-600">
-              After adding sources, click to add Audio Overview, study guide, mind map and more!
+              All agents are Bible-focused and work with your uploaded content.
             </p>
           </div>
         </div>
@@ -85,7 +135,50 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
           Add note
         </Button>
       </div>
+
+      {/* Agent Modals */}
+      {activeModal === 'summarize' && (
+        <SummarizeAgentModal
+          notebookId={notebookId}
+          open={true}
+          onClose={handleCloseModal}
+        />
+      )}
+      {activeModal === 'search-qa' && (
+        <SearchQAAgentModal
+          notebookId={notebookId}
+          open={true}
+          onClose={handleCloseModal}
+        />
+      )}
+      {activeModal === 'cross-reference' && (
+        <CrossReferenceAgentModal
+          notebookId={notebookId}
+          open={true}
+          onClose={handleCloseModal}
+        />
+      )}
+      {activeModal === 'curriculum' && (
+        <CurriculumAgentModal
+          notebookId={notebookId}
+          open={true}
+          onClose={handleCloseModal}
+        />
+      )}
+      {activeModal === 'sermon' && (
+        <SermonAgentModal
+          notebookId={notebookId}
+          open={true}
+          onClose={handleCloseModal}
+        />
+      )}
+      {activeModal === 'doctrinal' && (
+        <DoctrinalAgentModal
+          notebookId={notebookId}
+          open={true}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
-

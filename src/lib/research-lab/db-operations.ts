@@ -498,7 +498,7 @@ export interface StudioOutput {
   id: string;
   notebook_id: string;
   user_id: string;
-  output_type: 'summary' | 'audio_overview' | 'mind_map' | 'flashcards' | 'quiz' | 'report' | 'study_guide' | 'sermon' | 'timeline' | 'glossary';
+  output_type: 'summary' | 'audio_overview' | 'mind_map' | 'flashcards' | 'quiz' | 'report' | 'study_guide' | 'sermon' | 'timeline' | 'glossary' | 'summarization' | 'theology_qa' | 'cross_references' | 'curriculum' | 'doctrinal_harmony';
   content: any;
   generated_at: string;
   updated_at: string;
