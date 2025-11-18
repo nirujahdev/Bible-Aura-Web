@@ -13,7 +13,8 @@ import {
   PenTool,
   Heart,
   User,
-  LogOut
+  LogOut,
+  FlaskConical
 } from 'lucide-react';
 
 // Context for right sidebar state
@@ -29,7 +30,7 @@ export const useRightSidebar = () => {
   return context;
 };
 
-type NavIcon = 'star' | 'bible' | 'sermon' | 'favorites' | 'profile';
+type NavIcon = 'star' | 'bible' | 'sermon' | 'favorites' | 'profile' | 'research';
 
 interface MobileNavItem {
   name: string;
@@ -41,6 +42,7 @@ interface MobileNavItem {
 const NAV_ITEMS: MobileNavItem[] = [
   { name: 'AI Chat', href: '/dashboard', icon: 'star', description: 'Biblical AI Assistant' },
   { name: 'Bible', href: '/bible', icon: 'bible', description: 'Read Scripture' },
+  { name: 'Research Lab', href: '/research-lab', icon: 'research', description: 'AI-powered research workspace' },
   { name: 'Reading Plan', href: '/reading-plan', icon: 'favorites', description: 'Bible Reading Planner' },
   { name: 'Sermons', href: '/sermons', icon: 'sermon', description: 'Sermon Library' },
   { name: 'Favorites', href: '/favorites', icon: 'favorites', description: 'Saved Content' },
@@ -53,6 +55,8 @@ const renderIcon = (icon: NavIcon, className: string): ReactNode => {
       return <span className={cn('font-semibold', className)}>✦</span>;
     case 'bible':
       return <BookOpen className={className} />;
+    case 'research':
+      return <FlaskConical className={className} />;
     case 'sermon':
       return <PenTool className={className} />;
     case 'favorites':
