@@ -218,7 +218,7 @@ function getDefaultBooks(): BibleBook[] {
   ];
 }
 
-// Get verses for a specific chapter
+// Get verses for a specific chapter (with offline caching)
 export async function getChapterVerses(
   bookName: string, 
   chapter: number, 
@@ -226,6 +226,21 @@ export async function getChapterVerses(
   translationCode: TranslationCode = 'KJV'
 ): Promise<BibleVerse[]> {
   try {
+    // Try to get from offline cache first
+    try {
+      const { getCachedBibleChapter } = await import('./offline-storage');
+      const cachedChapter = await getCachedBibleChapter(bookName, chapter, translationCode);
+      if (cachedChapter && cachedChapter.length > 0) {
+        console.log(`📦 Using cached chapter: ${bookName} ${chapter}`);
+        return cachedChapter;
+      }
+    } catch (error) {
+      // Offline storage not available, continue with normal loading
+      console.log('Offline cache not available, loading from source');
+    }
+
+    let verses: BibleVerse[] = [];
+
     if (language === 'english') {
       const bible = await loadBibleTranslation(translationCode);
       const bookData = bible[bookName];
@@ -235,7 +250,7 @@ export async function getChapterVerses(
       }
 
       const chapterData = bookData[chapter.toString()];
-      return Object.entries(chapterData).map(([verseNum, text]) => ({
+      verses = Object.entries(chapterData).map(([verseNum, text]) => ({
         id: `${bookName}-${chapter}-${verseNum}-${translationCode}`,
         book_id: bookName,
         book_name: bookName,
@@ -256,7 +271,7 @@ export async function getChapterVerses(
         return [];
       }
 
-      return chapterData.verses.map((verse: any) => ({
+      verses = chapterData.verses.map((verse: any) => ({
         id: `${bookName}-${chapter}-${verse.verse}-TAMIL`,
         book_id: bookName,
         book_name: tamilBookData.book.tamil || bookName,
@@ -267,8 +282,32 @@ export async function getChapterVerses(
         translation: 'TAMIL' as TranslationCode
       }));
     }
+
+    // Cache the chapter for offline access
+    try {
+      const { cacheBibleChapter } = await import('./offline-storage');
+      await cacheBibleChapter(bookName, chapter, translationCode, verses);
+    } catch (error) {
+      // Silently fail if caching doesn't work
+      console.log('Failed to cache chapter (non-critical):', error);
+    }
+
+    return verses;
   } catch (error) {
     console.error('Error getting chapter verses:', error);
+    
+    // Try to return cached version as fallback
+    try {
+      const { getCachedBibleChapter } = await import('./offline-storage');
+      const cachedChapter = await getCachedBibleChapter(bookName, chapter, translationCode);
+      if (cachedChapter && cachedChapter.length > 0) {
+        console.log(`📦 Using cached chapter as fallback: ${bookName} ${chapter}`);
+        return cachedChapter;
+      }
+    } catch (cacheError) {
+      // Both failed
+    }
+    
     return [];
   }
 }

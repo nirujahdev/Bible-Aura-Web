@@ -1,4 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
+import {
+  saveFavoriteOffline,
+  getFavoritesOffline,
+  removeFavoriteOffline,
+  saveBookmarkOffline,
+  getBookmarksOffline,
+  removeBookmarkOffline,
+  isOnline,
+  addToSyncQueue
+} from './offline-storage';
 
 // Types for Bible verse data
 export interface BibleVerse {
@@ -60,22 +70,44 @@ export class FavoritesService {
     try {
       console.log('🔍 Fetching favorites for user:', userId);
       
-      const { data, error } = await supabase
-        .from('user_bible_favorites')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('❌ Error fetching favorites:', error);
-        throw error;
+      // Offline-first: Try to get from local storage first
+      const offlineFavorites = await getFavoritesOffline(userId);
+      
+      if (!isOnline()) {
+        console.log('📴 Offline mode - returning cached favorites');
+        return offlineFavorites;
       }
 
-      console.log('✅ Favorites fetched:', data?.length || 0);
-      return data || [];
+      // Online: Fetch from server and sync
+      try {
+        const { data, error } = await supabase
+          .from('user_bible_favorites')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.warn('⚠️ Error fetching from server, using offline data:', error);
+          return offlineFavorites;
+        }
+
+        // Update offline storage with fresh data
+        if (data) {
+          for (const favorite of data) {
+            await saveFavoriteOffline(favorite);
+          }
+        }
+
+        console.log('✅ Favorites fetched:', data?.length || 0);
+        return data || [];
+      } catch (error) {
+        console.warn('⚠️ Network error, using offline data:', error);
+        return offlineFavorites;
+      }
     } catch (error) {
       console.error('❌ Error in getUserFavorites:', error);
-      throw new Error(`Failed to fetch favorites: ${error.message}`);
+      // Fallback to offline data
+      return await getFavoritesOffline(userId);
     }
   }
 
@@ -86,7 +118,8 @@ export class FavoritesService {
       const verseId = generateVerseId(verse);
       const verseReference = generateVerseReference(verse);
 
-      const favoriteData = {
+      const favoriteData: any = {
+        id: `temp_${Date.now()}_${verseId}`, // Temporary ID for offline
         user_id: userId,
         verse_id: verseId,
         book_name: verse.book_name,
@@ -96,26 +129,60 @@ export class FavoritesService {
         verse_reference: verseReference,
         translation: translation,
         notes: notes || null,
-        tags: []
+        tags: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      console.log('📝 Inserting favorite data:', favoriteData);
+      // Always save to offline storage first
+      await saveFavoriteOffline(favoriteData);
 
-      const { data, error } = await supabase
-        .from('user_bible_favorites')
-        .upsert(favoriteData, {
-          onConflict: 'user_id,verse_id'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Error adding favorite:', error);
-        throw error;
+      if (!isOnline()) {
+        // Queue for sync when online
+        await addToSyncQueue('favorite', 'add', userId, favoriteData);
+        console.log('📴 Offline mode - favorite saved locally, queued for sync');
+        return favoriteData;
       }
-      
-      console.log('✅ Favorite added successfully:', data);
-      return data;
+
+      // Online: Try to sync with server
+      try {
+        const { data, error } = await supabase
+          .from('user_bible_favorites')
+          .upsert({
+            user_id: userId,
+            verse_id: verseId,
+            book_name: verse.book_name,
+            chapter: verse.chapter,
+            verse_number: verse.verse,
+            verse_text: verse.text,
+            verse_reference: verseReference,
+            translation: translation,
+            notes: notes || null,
+            tags: []
+          }, {
+            onConflict: 'user_id,verse_id'
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.warn('⚠️ Error syncing to server, saved locally:', error);
+          await addToSyncQueue('favorite', 'add', userId, favoriteData);
+          return favoriteData;
+        }
+
+        // Update offline storage with server data (has real ID)
+        if (data) {
+          await saveFavoriteOffline(data);
+        }
+        
+        console.log('✅ Favorite added successfully:', data);
+        return data;
+      } catch (error) {
+        console.warn('⚠️ Network error, saved locally:', error);
+        await addToSyncQueue('favorite', 'add', userId, favoriteData);
+        return favoriteData;
+      }
     } catch (error) {
       console.error('❌ Error in addToFavorites:', error);
       throw new Error(`Failed to add verse to favorites: ${error.message}`);
@@ -126,19 +193,36 @@ export class FavoritesService {
     try {
       const verseId = generateVerseId(verse);
       
-      const { error } = await supabase
-        .from('user_bible_favorites')
-        .delete()
-        .eq('user_id', userId)
-        .eq('verse_id', verseId);
+      // Always remove from offline storage first
+      await removeFavoriteOffline(verseId, userId);
 
-      if (error) {
-        console.error('❌ Error removing favorite:', error);
-        throw error;
+      if (!isOnline()) {
+        // Queue for sync when online
+        await addToSyncQueue('favorite', 'remove', userId, { verse_id: verseId });
+        console.log('📴 Offline mode - favorite removed locally, queued for sync');
+        return true;
       }
 
-      console.log('✅ Favorite removed successfully');
-      return true;
+      // Online: Try to sync with server
+      try {
+        const { error } = await supabase
+          .from('user_bible_favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('verse_id', verseId);
+
+        if (error) {
+          console.warn('⚠️ Error syncing removal to server, removed locally:', error);
+          await addToSyncQueue('favorite', 'remove', userId, { verse_id: verseId });
+        }
+
+        console.log('✅ Favorite removed successfully');
+        return true;
+      } catch (error) {
+        console.warn('⚠️ Network error, removed locally:', error);
+        await addToSyncQueue('favorite', 'remove', userId, { verse_id: verseId });
+        return true;
+      }
     } catch (error) {
       console.error('❌ Error in removeFromFavorites:', error);
       throw new Error(`Failed to remove verse from favorites: ${error.message}`);
@@ -175,22 +259,44 @@ export class BookmarksService {
     try {
       console.log('🔍 Fetching bookmarks for user:', userId);
       
-      const { data, error } = await supabase
-        .from('user_bible_bookmarks')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('❌ Error fetching bookmarks:', error);
-        throw error;
+      // Offline-first: Try to get from local storage first
+      const offlineBookmarks = await getBookmarksOffline(userId);
+      
+      if (!isOnline()) {
+        console.log('📴 Offline mode - returning cached bookmarks');
+        return offlineBookmarks;
       }
 
-      console.log('✅ Bookmarks fetched:', data?.length || 0);
-      return data || [];
+      // Online: Fetch from server and sync
+      try {
+        const { data, error } = await supabase
+          .from('user_bible_bookmarks')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.warn('⚠️ Error fetching from server, using offline data:', error);
+          return offlineBookmarks;
+        }
+
+        // Update offline storage with fresh data
+        if (data) {
+          for (const bookmark of data) {
+            await saveBookmarkOffline(bookmark);
+          }
+        }
+
+        console.log('✅ Bookmarks fetched:', data?.length || 0);
+        return data || [];
+      } catch (error) {
+        console.warn('⚠️ Network error, using offline data:', error);
+        return offlineBookmarks;
+      }
     } catch (error) {
       console.error('❌ Error in getUserBookmarks:', error);
-      throw new Error(`Failed to fetch bookmarks: ${error.message}`);
+      // Fallback to offline data
+      return await getBookmarksOffline(userId);
     }
   }
 
@@ -208,7 +314,8 @@ export class BookmarksService {
       const verseId = generateVerseId(verse);
       const verseReference = generateVerseReference(verse);
 
-      const bookmarkData = {
+      const bookmarkData: any = {
+        id: `temp_${Date.now()}_${verseId}`, // Temporary ID for offline
         user_id: userId,
         verse_id: verseId,
         book_name: verse.book_name,
@@ -220,26 +327,62 @@ export class BookmarksService {
         category: category,
         highlight_color: highlightColor,
         notes: notes || null,
-        tags: []
+        tags: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      console.log('📝 Inserting bookmark data:', bookmarkData);
+      // Always save to offline storage first
+      await saveBookmarkOffline(bookmarkData);
 
-      const { data, error } = await supabase
-        .from('user_bible_bookmarks')
-        .upsert(bookmarkData, {
-          onConflict: 'user_id,verse_id'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Error adding bookmark:', error);
-        throw error;
+      if (!isOnline()) {
+        // Queue for sync when online
+        await addToSyncQueue('bookmark', 'add', userId, bookmarkData);
+        console.log('📴 Offline mode - bookmark saved locally, queued for sync');
+        return bookmarkData;
       }
-      
-      console.log('✅ Bookmark added successfully:', data);
-      return data;
+
+      // Online: Try to sync with server
+      try {
+        const { data, error } = await supabase
+          .from('user_bible_bookmarks')
+          .upsert({
+            user_id: userId,
+            verse_id: verseId,
+            book_name: verse.book_name,
+            chapter: verse.chapter,
+            verse_number: verse.verse,
+            verse_text: verse.text,
+            verse_reference: verseReference,
+            translation: translation,
+            category: category,
+            highlight_color: highlightColor,
+            notes: notes || null,
+            tags: []
+          }, {
+            onConflict: 'user_id,verse_id'
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.warn('⚠️ Error syncing to server, saved locally:', error);
+          await addToSyncQueue('bookmark', 'add', userId, bookmarkData);
+          return bookmarkData;
+        }
+
+        // Update offline storage with server data (has real ID)
+        if (data) {
+          await saveBookmarkOffline(data);
+        }
+        
+        console.log('✅ Bookmark added successfully:', data);
+        return data;
+      } catch (error) {
+        console.warn('⚠️ Network error, saved locally:', error);
+        await addToSyncQueue('bookmark', 'add', userId, bookmarkData);
+        return bookmarkData;
+      }
     } catch (error) {
       console.error('❌ Error in addToBookmarks:', error);
       throw new Error(`Failed to add verse to bookmarks: ${error.message}`);
@@ -250,19 +393,36 @@ export class BookmarksService {
     try {
       const verseId = generateVerseId(verse);
       
-      const { error } = await supabase
-        .from('user_bible_bookmarks')
-        .delete()
-        .eq('user_id', userId)
-        .eq('verse_id', verseId);
+      // Always remove from offline storage first
+      await removeBookmarkOffline(verseId, userId);
 
-      if (error) {
-        console.error('❌ Error removing bookmark:', error);
-        throw error;
+      if (!isOnline()) {
+        // Queue for sync when online
+        await addToSyncQueue('bookmark', 'remove', userId, { verse_id: verseId });
+        console.log('📴 Offline mode - bookmark removed locally, queued for sync');
+        return true;
       }
 
-      console.log('✅ Bookmark removed successfully');
-      return true;
+      // Online: Try to sync with server
+      try {
+        const { error } = await supabase
+          .from('user_bible_bookmarks')
+          .delete()
+          .eq('user_id', userId)
+          .eq('verse_id', verseId);
+
+        if (error) {
+          console.warn('⚠️ Error syncing removal to server, removed locally:', error);
+          await addToSyncQueue('bookmark', 'remove', userId, { verse_id: verseId });
+        }
+
+        console.log('✅ Bookmark removed successfully');
+        return true;
+      } catch (error) {
+        console.warn('⚠️ Network error, removed locally:', error);
+        await addToSyncQueue('bookmark', 'remove', userId, { verse_id: verseId });
+        return true;
+      }
     } catch (error) {
       console.error('❌ Error in removeFromBookmarks:', error);
       throw new Error(`Failed to remove verse from bookmarks: ${error.message}`);

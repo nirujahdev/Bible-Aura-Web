@@ -14,7 +14,9 @@ const STATIC_ASSETS = [
   '/manifest.json',
   '/assets/hero-spiritual.jpg',
   '/✦Bible Aura.svg',
-  '/✦Bible Aura secondary.svg'
+  '/✦Bible Aura secondary.svg',
+  // Bible JSON files for offline access
+  '/Bible/KJV_bible.json'
 ];
 
 // API endpoints to cache with strategy
@@ -90,6 +92,9 @@ self.addEventListener('fetch', (event) => {
   } else if (url.pathname.startsWith('/api/') || API_ENDPOINTS.some(endpoint => url.href.includes(endpoint))) {
     // API requests - Network First Strategy
     event.respondWith(networkFirstStrategy(request, DYNAMIC_CACHE));
+  } else if (url.pathname.startsWith('/Bible/') || url.pathname.includes('.json')) {
+    // Bible JSON files - Cache First Strategy (offline access)
+    event.respondWith(cacheFirstStrategy(request, STATIC_CACHE));
   } else if (url.pathname.includes('.') && (url.pathname.includes('.js') || url.pathname.includes('.css') || url.pathname.includes('.png') || url.pathname.includes('.jpg') || url.pathname.includes('.svg'))) {
     // Assets - Cache First Strategy
     event.respondWith(cacheFirstStrategy(request, STATIC_CACHE));

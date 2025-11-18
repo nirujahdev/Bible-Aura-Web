@@ -71,31 +71,22 @@ export default function Favorites() {
     
     setLoading(true);
     try {
-      // Load favorite verses
-      const { data: favoritesData, error: favoritesError } = await supabase
-        .from('user_bible_favorites')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (favoritesError) throw favoritesError;
+      // Use offline-first service
+      const { FavoritesService, BookmarksService } = await import('@/lib/bookmarks-favorites-service');
+      
+      // Load favorite verses (works offline)
+      const favoritesData = await FavoritesService.getUserFavorites(user.id);
       setFavoriteVerses(favoritesData || []);
 
-      // Load bookmarked verses
-      const { data: bookmarksData, error: bookmarksError } = await supabase
-        .from('user_bible_bookmarks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (bookmarksError) throw bookmarksError;
+      // Load bookmarked verses (works offline)
+      const bookmarksData = await BookmarksService.getUserBookmarks(user.id);
       setBookmarkedVerses(bookmarksData || []);
 
     } catch (error) {
       console.error('Error loading favorites and bookmarks:', error);
       toast({
         title: "Error",
-        description: "Failed to load favorites and bookmarks",
+        description: "Failed to load favorites and bookmarks. Using offline data if available.",
         variant: "destructive",
       });
     } finally {
