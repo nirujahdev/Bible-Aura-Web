@@ -144,14 +144,53 @@ export async function getNotebook(
   notebookId: string,
   userId: string
 ): Promise<{ data: Notebook | null; error: any }> {
-  const { data, error } = await supabase
-    .from('research_notebooks')
-    .select('*')
-    .eq('id', notebookId)
-    .eq('user_id', userId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('research_notebooks')
+      .select('*')
+      .eq('id', notebookId)
+      .eq('user_id', userId)
+      .single();
 
-  return { data, error };
+    // Check if error is due to missing table
+    if (error) {
+      const errorMessage = error.message || String(error);
+      if (
+        (errorMessage.includes('relation') && errorMessage.includes('does not exist')) ||
+        errorMessage.includes('PGRST116') ||
+        error.code === 'PGRST116'
+      ) {
+        return {
+          data: null,
+          error: {
+            message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+            code: 'TABLE_NOT_FOUND',
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+          }
+        };
+      }
+    }
+
+    return { data, error };
+  } catch (err: any) {
+    // Handle JSON parsing errors (when Supabase returns HTML)
+    if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+      return {
+        data: null,
+        error: {
+          message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+          code: 'TABLE_NOT_FOUND',
+          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
+          originalError: err.message
+        }
+      };
+    }
+    
+    return {
+      data: null,
+      error: err
+    };
+  }
 }
 
 /**

@@ -69,12 +69,37 @@ export default function ResearchNotebook() {
       setEditedTitle(data.title);
     } catch (error: any) {
       console.error('Error loading notebook:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load notebook. Please ensure database tables are created.',
-        variant: 'destructive',
-      });
-      navigate('/research-lab');
+      
+      // Check for various error types
+      const errorMessage = error?.message || String(error) || '';
+      const errorCode = error?.code || error?.error?.code;
+      const isTableMissing = 
+        errorCode === 'TABLE_NOT_FOUND' ||
+        (errorMessage.includes('relation') && errorMessage.includes('does not exist')) ||
+        errorMessage.includes('PGRST116') ||
+        (errorMessage.includes('JSON') && errorMessage.includes('DOCTYPE')) ||
+        error?.error?.code === 'TABLE_NOT_FOUND';
+      
+      if (isTableMissing || error?.error?.code === 'TABLE_NOT_FOUND') {
+        toast({
+          title: 'Database Setup Required',
+          description: 'Research Lab tables need to be created. Go to Supabase Dashboard → SQL Editor, open supabase/migrations/20241118000000_create_research_lab_tables.sql, copy the SQL, and run it.',
+          variant: 'destructive',
+          duration: 12000,
+        });
+      } else {
+        const displayMessage = error?.error?.message || error?.message || 'Failed to load notebook';
+        toast({
+          title: 'Error',
+          description: displayMessage,
+          variant: 'destructive',
+        });
+      }
+      
+      // Don't navigate away if it's just a table missing error - let user see the message
+      if (!isTableMissing && error?.error?.code !== 'TABLE_NOT_FOUND') {
+        navigate('/research-lab');
+      }
     } finally {
       setLoading(false);
     }
