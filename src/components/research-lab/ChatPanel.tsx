@@ -6,6 +6,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  getChatMessages, 
+  createChatMessage, 
+  type ChatMessage 
+} from '@/lib/research-lab/db-operations';
 import { Send, Upload, ArrowUp, FlaskConical, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +48,17 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
       setMessages(data || []);
     } catch (error: any) {
       console.error('Error loading messages:', error);
-      // Don't show toast for initial load errors
+      // Only show error if it's not a table missing error (to avoid spam)
+      const errorMessage = error?.message || String(error) || '';
+      const isTableMissing = 
+        errorMessage.includes('relation') && errorMessage.includes('does not exist') ||
+        errorMessage.includes('PGRST116') ||
+        (errorMessage.includes('JSON') && errorMessage.includes('DOCTYPE'));
+      
+      if (!isTableMissing) {
+        // Don't show toast for initial load errors to avoid UI clutter
+        // Errors will be handled at the notebook level
+      }
     }
   };
 
@@ -126,20 +141,21 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <div
                 key={message.id}
                 className={cn(
-                  'flex',
+                  'flex animate-in fade-in slide-in-from-bottom-2 duration-300',
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 )}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div
                   className={cn(
-                    'max-w-[80%] rounded-lg px-4 py-3',
+                    'max-w-[80%] rounded-lg px-4 py-3 transition-all duration-200',
                     message.role === 'user'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-900'
+                      ? 'bg-orange-500 text-white shadow-sm hover:shadow-md'
+                      : 'bg-gray-100 text-gray-900 shadow-sm hover:shadow-md'
                   )}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
@@ -154,12 +170,12 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
               </div>
             ))}
             {loading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg px-4 py-3">
+              <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2">
+                <div className="bg-gray-100 rounded-lg px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                   </div>
                 </div>
               </div>

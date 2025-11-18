@@ -7,6 +7,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
+  getNotebookSources, 
+  toggleSourceInclude, 
+  deleteSource, 
+  type Source 
+} from '@/lib/research-lab/db-operations';
+import { 
   Plus, 
   Search, 
   Globe, 
@@ -29,8 +35,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-
-// Source type imported from db-operations
 
 interface SourcesPanelProps {
   notebookId: string;
@@ -60,11 +64,31 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
       setSources(data || []);
     } catch (error: any) {
       console.error('Error loading sources:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load sources. Please ensure database tables are created.',
-        variant: 'destructive',
-      });
+      
+      // Check for various error types
+      const errorMessage = error?.message || String(error) || '';
+      const errorCode = error?.code || error?.error?.code;
+      const isTableMissing = 
+        errorCode === 'TABLE_NOT_FOUND' ||
+        (errorMessage.includes('relation') && errorMessage.includes('does not exist')) ||
+        errorMessage.includes('PGRST116') ||
+        (errorMessage.includes('JSON') && errorMessage.includes('DOCTYPE')) ||
+        error?.error?.code === 'TABLE_NOT_FOUND';
+      
+      if (isTableMissing || error?.error?.code === 'TABLE_NOT_FOUND') {
+        toast({
+          title: 'Database Setup Required',
+          description: 'Research Lab tables need to be created. Go to Supabase Dashboard → SQL Editor, open supabase/migrations/20241118000000_create_research_lab_tables.sql, copy the SQL, and run it.',
+          variant: 'destructive',
+          duration: 12000,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error?.error?.message || error?.message || 'Failed to load sources',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -175,7 +199,18 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
       {/* Sources List */}
       <ScrollArea className="flex-1">
         {loading ? (
-          <div className="p-4 text-center text-gray-500">Loading sources...</div>
+          <div className="p-4 space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-2 p-2 rounded-lg animate-pulse">
+                <div className="w-5 h-5 bg-gray-200 rounded"></div>
+                <div className="flex-1 space-y-1">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+                <div className="w-8 h-4 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
         ) : filteredSources.length === 0 ? (
           <div className="p-8 text-center">
             <div className="w-16 h-16 rounded-lg bg-orange-100 flex items-center justify-center mx-auto mb-4">
@@ -196,10 +231,11 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
           </div>
         ) : (
           <div className="p-2 space-y-1">
-            {filteredSources.map((source) => (
+            {filteredSources.map((source, index) => (
               <div
                 key={source.id}
-                className="group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="group flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 hover:shadow-sm"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex-shrink-0 text-gray-500">
                   {getSourceIcon(source.source_type)}
@@ -212,11 +248,11 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
                   <Switch
                     checked={source.is_included}
                     onCheckedChange={() => handleToggleInclude(source.id, source.is_included)}
-                    className="scale-75"
+                    className="scale-75 transition-all"
                   />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

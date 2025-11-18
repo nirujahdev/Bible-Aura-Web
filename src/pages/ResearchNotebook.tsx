@@ -10,6 +10,8 @@ import { getNotebook, updateNotebookTitle, type Notebook } from '@/lib/research-
 import { SourcesPanel } from '@/components/research-lab/SourcesPanel';
 import { ChatPanel } from '@/components/research-lab/ChatPanel';
 import { StudioPanel } from '@/components/research-lab/StudioPanel';
+import { ShareNotebookModal } from '@/components/research-lab/ShareNotebookModal';
+import { NotebookSettingsModal } from '@/components/research-lab/NotebookSettingsModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -40,6 +42,8 @@ export default function ResearchNotebook() {
   const [loading, setLoading] = useState(true);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -138,10 +142,11 @@ export default function ResearchNotebook() {
   if (loading) {
     return (
       <ModernLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
+        <div className="flex-1 flex items-center justify-center bg-white">
+          <div className="text-center animate-in fade-in">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading notebook...</p>
+            <p className="text-gray-600 font-medium">Loading notebook...</p>
+            <p className="text-sm text-gray-400 mt-2">Preparing your research workspace</p>
           </div>
         </div>
       </ModernLayout>
@@ -156,13 +161,13 @@ export default function ResearchNotebook() {
     <ModernLayout>
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-white">
         {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-4 py-3 flex items-center justify-between">
+        <div className="border-b border-gray-200 bg-white px-4 py-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/research-lab')}
-              className="flex-shrink-0"
+              className="flex-shrink-0 hover:bg-gray-100 transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
@@ -189,22 +194,32 @@ export default function ResearchNotebook() {
               </div>
             ) : (
               <h1
-                className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group"
+                className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group transition-colors"
                 onClick={() => setIsEditingTitle(true)}
               >
-                <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0" />
+                <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0 transition-transform group-hover:scale-110" />
                 {notebook.title}
-                <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               </h1>
             )}
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hover:bg-gray-100 transition-colors"
+              onClick={() => setShareModalOpen(true)}
+            >
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hover:bg-gray-100 transition-colors"
+              onClick={() => setSettingsModalOpen(true)}
+            >
               <Settings className="h-4 w-4" />
             </Button>
             <DropdownMenu>
@@ -223,9 +238,9 @@ export default function ResearchNotebook() {
         </div>
 
         {/* Three-Column Layout */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden animate-in fade-in duration-300">
           {/* Left Panel: Sources */}
-          <div className="w-80 border-r border-gray-200 bg-gray-50 flex flex-col">
+          <div className="w-80 border-r border-gray-200 bg-gray-50 flex flex-col transition-all">
             <SourcesPanel notebookId={notebookId!} />
           </div>
 
@@ -235,10 +250,29 @@ export default function ResearchNotebook() {
           </div>
 
           {/* Right Panel: Studio */}
-          <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col">
+          <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col transition-all">
             <StudioPanel notebookId={notebookId!} />
           </div>
         </div>
+
+        {/* Share Modal */}
+        {notebook && (
+          <>
+            <ShareNotebookModal
+              open={shareModalOpen}
+              onClose={() => setShareModalOpen(false)}
+              notebookId={notebook.id}
+              notebookTitle={notebook.title}
+            />
+            <NotebookSettingsModal
+              open={settingsModalOpen}
+              onClose={() => setSettingsModalOpen(false)}
+              notebookId={notebook.id}
+              notebookTitle={notebook.title}
+              onUpdate={loadNotebook}
+            />
+          </>
+        )}
       </div>
     </ModernLayout>
   );

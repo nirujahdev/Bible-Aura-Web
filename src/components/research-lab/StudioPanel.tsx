@@ -48,11 +48,11 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
               return (
                 <Card
                   key={tool.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 active:scale-95"
                   onClick={() => handleGenerate(tool.id)}
                 >
                   <CardContent className="p-4 flex flex-col items-center text-center">
-                    <div className={`w-12 h-12 rounded-lg ${tool.color} flex items-center justify-center mb-2`}>
+                    <div className={`w-12 h-12 rounded-lg ${tool.color} flex items-center justify-center mb-2 transition-transform duration-200 group-hover:scale-110`}>
                       <Icon className="h-6 w-6" />
                     </div>
                     <p className="text-xs font-medium text-gray-900">{tool.name}</p>
