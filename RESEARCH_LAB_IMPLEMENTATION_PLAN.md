@@ -39,19 +39,24 @@ The following screenshots were provided as design references:
    - `id` (UUID, primary key)
    - `notebook_id` (UUID, foreign key to research_notebooks)
    - `user_id` (UUID, foreign key to auth.users)
-   - `source_type` (TEXT: 'pdf', 'docx', 'txt', 'markdown', 'link', 'text', 'image', 'audio')
+   - `source_type` (TEXT: 'pdf', 'docx', 'txt', 'markdown', 'link', 'text', 'image', 'audio', 'video')
    - `title` (TEXT)
    - `file_path` (TEXT, nullable - Supabase storage path)
    - `file_url` (TEXT, nullable - public/signed URL)
    - `link_url` (TEXT, nullable - for web links)
    - `content_text` (TEXT, nullable - extracted text for text sources)
+   - `processed_content` (TEXT, nullable - GLM-processed content)
+   - `processing_status` (TEXT, default 'pending': 'pending' | 'processing' | 'completed' | 'failed')
    - `file_size` (BIGINT, nullable)
    - `mime_type` (TEXT, nullable)
    - `is_included` (BOOLEAN, default true - toggle include/exclude)
-   - `metadata` (JSONB, nullable - file metadata, page count, etc.)
+   - `metadata` (JSONB, nullable - file metadata, page count, duration, etc.)
+   - `extracted_verses` (JSONB, nullable - array of verse references found)
+   - `key_insights` (JSONB, nullable - AI-extracted insights from GLM-4.5-Air)
+   - `toc_structure` (JSONB, nullable - table of contents structure)
    - `created_at` (TIMESTAMPTZ)
    - `updated_at` (TIMESTAMPTZ)
-   - Indexes: notebook_id, user_id, source_type
+   - Indexes: notebook_id, user_id, source_type, processing_status
    - RLS policies: users can only access sources in their notebooks
 
 3. **research_chat_messages** table
@@ -61,6 +66,9 @@ The following screenshots were provided as design references:
    - `role` (TEXT: 'user' | 'assistant')
    - `content` (TEXT)
    - `sources_used` (JSONB, nullable - array of source IDs used in response)
+   - `citations` (JSONB, nullable - detailed citations with excerpts)
+   - `tool_calls` (JSONB, nullable - function calls made by GLM-4.5-Air)
+   - `confidence_score` (FLOAT, nullable - AI confidence in response)
    - `created_at` (TIMESTAMPTZ)
    - Indexes: notebook_id, user_id, created_at
    - RLS policies: users can only access messages in their notebooks
@@ -69,36 +77,138 @@ The following screenshots were provided as design references:
    - `id` (UUID, primary key)
    - `notebook_id` (UUID, foreign key to research_notebooks)
    - `user_id` (UUID, foreign key to auth.users)
-   - `output_type` (TEXT: 'summary', 'audio_overview', 'mind_map', 'flashcards', 'quiz', 'report')
+   - `output_type` (TEXT: 'summary', 'audio_overview', 'mind_map', 'flashcards', 'quiz', 'report', 'study_guide', 'sermon', 'timeline', 'glossary')
    - `content` (JSONB - structured output data)
    - `generated_at` (TIMESTAMPTZ)
    - `updated_at` (TIMESTAMPTZ)
    - Indexes: notebook_id, user_id, output_type
    - RLS policies: users can only access outputs in their notebooks
 
+5. **research_agentic_actions** table (NEW - for GLM-4.5-Air function calling)
+   - `id` (UUID, primary key)
+   - `notebook_id` (UUID, foreign key to research_notebooks)
+   - `user_id` (UUID, foreign key to auth.users)
+   - `action_type` (TEXT NOT NULL: 'search', 'synthesize', 'extract', 'generate', 'build')
+   - `tool_name` (TEXT NOT NULL - GLM function name)
+   - `parameters` (JSONB - function parameters)
+   - `result` (JSONB - function execution result)
+   - `status` (TEXT DEFAULT 'pending': 'pending' | 'processing' | 'completed' | 'failed')
+   - `created_at` (TIMESTAMPTZ DEFAULT NOW())
+   - `completed_at` (TIMESTAMPTZ, nullable)
+   - Indexes: notebook_id, user_id, action_type, status
+   - RLS policies: users can only access actions in their notebooks
+
 ## Storage Bucket
 
 Create new Supabase storage bucket: `research-lab-sources`
 - Public: false (private bucket)
 - File size limit: 50MB per file
-- Allowed file types: PDF, DOCX, TXT, Markdown, images, audio files
+- Allowed file types: 
+  - Documents: PDF, DOCX, TXT, Markdown
+  - Media: Images (JPG, PNG, GIF, WebP), Audio (MP3, WAV, M4A), Video (MP4, WebM)
+  - Links: Web URLs (processed via content fetching)
 - RLS policies: users can only upload/access files in their own folders (`{user_id}/{notebook_id}/`)
 
-## API Endpoints
+**Multi-Modal Processing:**
+- PDF files: Text extraction → stored in `content_text`
+- Video files: Frame extraction + audio transcription → both analyzed
+- Audio files: Speech-to-text via GLM-4.5-Air → transcript analyzed
+- Image files: Direct GLM-4.5-Air vision API analysis
+- Links: Content fetched → text extracted → analyzed
 
-### New API: `api/research-lab-chat.ts`
-- Handles chat requests with source context
-- Accepts: `notebook_id`, `message`, `conversation_history`
+## AI Integration: GLM-4.5-Air
+
+### Overview
+This Research Lab uses **GLM-4.5-Air** (Z.AI) for advanced multi-modal research capabilities:
+- **Chat Completions**: Source-aware conversations with citations
+- **Function Calling**: Agentic actions for research tasks
+- **Vision Understanding**: Image and video frame analysis
+- **Speech-to-Text**: Audio transcription and analysis
+- **Web Search**: Link content analysis
+
+### API Configuration
+
+**Environment Variables Required:**
+```bash
+# GLM-4.5-Air API Configuration
+GLM_API_KEY=your_glm_api_key_here
+GLM_API_BASE_URL=https://api.z.ai/api/paas/v4
+GLM_MODEL=glm-4.5-air  # or glm-4.6 for latest
+```
+
+**Get API Key:**
+1. Access [Z.AI Open Platform](https://z.ai/model-api)
+2. Register or Login
+3. Create API Key in [API Keys Management](https://z.ai/manage-apikey/apikey-list)
+4. Copy API Key for use
+
+### API Endpoints
+
+#### 1. `api/research-lab-glm-chat.ts` (Primary Chat Endpoint)
+- Handles GLM-4.5-Air chat requests with source context
+- Accepts: `notebook_id`, `message`, `conversation_history`, `stream`
 - Retrieves included sources from database
-- Extracts text from sources (if needed)
-- Calls OpenAI API with source context + Bible-specific prompts
+- Builds source context from processed content
+- Calls GLM-4.5-Air API with:
+  - Source context + Bible-specific system prompts
+  - Function calling tools for agentic actions
+  - Streaming support for real-time responses
 - Returns: AI response with citations to sources used
 - Tracks AI usage via existing `AIUsageTracker`
 
-### Optional: `api/research-lab-process-source.ts`
-- Processes uploaded files (extract text from PDFs, etc.)
-- Uses OpenAI File API or client-side extraction
-- Stores extracted text in `research_sources.content_text`
+**Request Format:**
+```typescript
+{
+  notebook_id: string;
+  message: string;
+  conversation_history?: Array<{role: string, content: string}>;
+  stream?: boolean;
+  tools?: string[]; // Optional: specific tools to use
+}
+```
+
+**Response Format:**
+```typescript
+{
+  content: string;
+  sources_used: string[]; // Source IDs
+  citations: Array<{source_id: string, excerpt: string}>;
+  tool_calls?: Array<{tool: string, result: any}>;
+  confidence_score?: number;
+}
+```
+
+#### 2. `api/research-lab-process-source.ts` (Multi-Modal Processing)
+- Processes uploaded files using appropriate method:
+  - **PDF**: Extract text using pdf-parse or pdfjs-dist
+  - **Video**: Extract frames + transcribe audio
+  - **Audio**: GLM-4.5-Air speech-to-text → analyze transcript
+  - **Link**: Fetch content → extract text → analyze
+  - **Image**: Direct GLM-4.5-Air vision API
+- Stores extracted content in `research_sources.content_text`
+- Auto-generates insights, verse references, TOC
+- Updates processing status in database
+
+**Processing Flow:**
+1. Upload file to Supabase Storage
+2. Detect file type (PDF, video, audio, image, link)
+3. Route to appropriate processor
+4. Extract/process content
+5. Store processed content + metadata
+6. Auto-analyze with GLM-4.5-Air for insights
+7. Update database with results
+
+#### 3. `api/research-lab-agentic-action.ts` (Agentic Actions)
+- Handles function calling for research actions
+- Available tools:
+  - `search_sources`: Semantic search within sources
+  - `extract_verses`: Find and link Bible verses
+  - `synthesize_sources`: Combine multiple sources
+  - `generate_summary`: Create summaries
+  - `create_study_guide`: Generate study guides
+  - `build_sermon`: Extract sermon points
+- Executes tool calls via GLM-4.5-Air function calling
+- Stores results in `research_agentic_actions` table
 
 ## Frontend Components
 
@@ -193,18 +303,29 @@ Create new Supabase storage bucket: `research-lab-sources`
 - Generates Bible study guides, sermon outlines, doctrinal themes
 - Simplifies theological texts for lay readers
 
-### Source Management
-- Upload files to Supabase Storage
-- Extract and store text content for searchability
+### Source Management (Multi-Modal Support)
+- Upload files to Supabase Storage (PDF, video, audio, images, links)
+- **PDF**: Extract text, detect verses, generate TOC
+- **Video**: Extract frames, transcribe audio, analyze both
+- **Audio**: Transcribe via GLM-4.5-Air speech-to-text, analyze transcript
+- **Images**: Direct GLM-4.5-Air vision API analysis
+- **Links**: Fetch content, extract text, analyze
+- Auto-generate insights on upload
+- Extract Bible verses automatically
 - Toggle sources on/off for chat context
 - Delete and rename sources
-- Track source metadata (file size, type, upload date)
+- Track source metadata (file size, type, upload date, processing status)
+- Show processing progress indicators
 
-### Chat Functionality
-- AI responds ONLY from included sources
-- Citations show which sources were used
+### Chat Functionality (GLM-4.5-Air Powered)
+- AI responds ONLY from included sources using GLM-4.5-Air
+- Real-time streaming responses for better UX
+- Citations show which sources were used with excerpts
 - Conversation history saved per notebook
 - Bible-specific context understanding
+- Function calling for agentic research actions
+- Confidence scores for AI responses
+- Multi-turn conversations with context retention
 
 ### Studio Tools
 - **Summary**: Auto-generated overview of all sources
@@ -480,34 +601,108 @@ When AI summarizes or answers:
 
 ## Implementation Steps
 
-1. Create database migration files for new tables
+### Phase 0: GLM-4.5-Air Setup
+1. Get GLM-4.5-Air API key from Z.AI platform
+2. Configure environment variables (GLM_API_KEY, GLM_API_BASE_URL)
+3. Create `src/lib/research-lab/glm-api-helper.ts` for API integration
+4. Test basic GLM-4.5-Air API connection
+
+### Phase 1: Core Infrastructure
+1. Create database migration files for new tables (including agentic_actions)
 2. Set up Supabase storage bucket with RLS policies
-3. Create API endpoint for source-based chat
-4. Build Research Lab dashboard page
-5. Build Create Notebook modal
-6. Build Notebook view with three-column layout
-7. Implement Sources panel with upload functionality
-8. Implement Chat panel with source-aware AI
-9. Implement Studio panel with tool generation
-10. Add routing in App.tsx
-11. Add navigation link in sidebar (if using ModernLayout)
-12. Test file uploads, chat, and studio tools
+3. Create `api/research-lab-glm-chat.ts` endpoint
+4. Create `api/research-lab-process-source.ts` for multi-modal processing
+5. Create `api/research-lab-agentic-action.ts` for function calling
+6. Build Research Lab dashboard page
+7. Build Create Notebook modal
+8. Build Notebook view with three-column layout
+
+### Phase 2: Source Management
+9. Implement Sources panel with upload functionality
+10. Add multi-modal file upload support (PDF, video, audio, images, links)
+11. Implement source processing pipeline
+12. Add processing status indicators
+13. Auto-generate insights on upload
+
+### Phase 3: Advanced Chat
+14. Implement Chat panel with GLM-4.5-Air integration
+15. Add streaming support for real-time responses
+16. Implement source citations with excerpts
+17. Add function calling UI for agentic actions
+18. Save conversation history
+
+### Phase 4: Studio Tools
+19. Implement Studio panel with tool generation
+20. Connect tools to GLM-4.5-Air function calling
+21. Generate summaries, study guides, flashcards, etc.
+
+### Phase 5: Integration & Testing
+22. Add routing in App.tsx
+23. Add navigation link in sidebar (if using ModernLayout)
+24. Test file uploads (all types)
+25. Test chat with source context
+26. Test agentic actions
+27. Test studio tools
+28. Performance optimization
+29. Error handling and edge cases
 
 ## Technical Considerations
 
+### GLM-4.5-Air Integration
 - Use existing `uploadFile` utility from `src/lib/supabase-storage.ts`
+- Create new `src/lib/research-lab/glm-api-helper.ts` for GLM-4.5-Air API calls
+- Implement streaming support for real-time chat responses
+- Handle function calling for agentic actions
+- Process multi-modal content (PDF, video, audio, images, links)
+- Cache processed content to avoid reprocessing
+
+### General Considerations
 - Extend existing AI usage tracking for research lab features
 - Reuse UI components from shadcn/ui (Dialog, Button, Card, etc.)
 - Follow existing code patterns (ProtectedRoute, useAuth, etc.)
-- Handle file size limits and validation
+- Handle file size limits and validation (50MB max)
 - Implement proper error handling and loading states
 - Add toast notifications for user feedback
 - Ensure mobile responsiveness (use existing responsive hooks)
+- Async processing for large files (show progress indicators)
+- Rate limiting on GLM-4.5-Air API calls
+
+### Multi-Modal Processing Strategy
+1. **Client-Side**: Light processing (small PDFs, image previews)
+2. **Server-Side**: Heavy processing (large PDFs, video frames, audio transcription)
+3. **Hybrid**: Upload → queue → process → notify when complete
+4. **Caching**: Store processed content to avoid reprocessing
 
 ## Dependencies
 
-- No new npm packages required (use existing OpenAI, Supabase, React Router)
-- May need PDF text extraction library if doing client-side processing (optional)
+### Required Packages
+```bash
+# GLM-4.5-Air SDK (Python SDK available, but we'll use HTTP API)
+# No npm package needed - use fetch API directly
+
+# PDF Processing
+npm install pdf-parse pdfjs-dist
+
+# Video/Audio Processing (if client-side)
+npm install @ffmpeg/ffmpeg @ffmpeg/util
+
+# Link Content Extraction
+npm install cheerio jsdom readability
+
+# Optional: For better PDF handling
+npm install pdf-lib
+```
+
+### API Integration
+- **GLM-4.5-Air API**: Direct HTTP calls to `https://api.z.ai/api/paas/v4/chat/completions`
+- **Authentication**: Bearer token with API key
+- **Model**: `glm-4.5-air` or `glm-4.6` (latest)
+- **Features Used**:
+  - Chat completions with streaming
+  - Function calling (agentic actions)
+  - Vision API (for images and video frames)
+  - Speech-to-text (for audio files)
+  - Web search tool (for link analysis)
 
 ## Feature Implementation Priority
 
@@ -657,6 +852,196 @@ This page becomes one of your strongest product features — something no Bible 
 
 ---
 
+## GLM-4.5-Air Integration Details
+
+### Function Calling Tools
+
+GLM-4.5-Air supports function calling for agentic research actions. Define these tools:
+
+```typescript
+const researchTools = [
+  {
+    type: "function",
+    function: {
+      name: "search_sources",
+      description: "Search within uploaded sources for specific content, verses, or concepts",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search query" },
+          source_ids: { type: "array", items: { type: "string" }, description: "Source IDs to search" }
+        },
+        required: ["query"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "extract_verses",
+      description: "Extract and link Bible verses from sources",
+      parameters: {
+        type: "object",
+        properties: {
+          source_id: { type: "string", description: "Source ID" },
+          verse_reference: { type: "string", description: "Optional verse reference to find" }
+        },
+        required: ["source_id"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "synthesize_sources",
+      description: "Combine multiple sources into unified explanation",
+      parameters: {
+        type: "object",
+        properties: {
+          source_ids: { type: "array", items: { type: "string" } },
+          question: { type: "string", description: "Question to answer by synthesizing sources" }
+        },
+        required: ["source_ids", "question"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_summary",
+      description: "Generate summary of selected sources",
+      parameters: {
+        type: "object",
+        properties: {
+          source_ids: { type: "array", items: { type: "string" } },
+          summary_type: { type: "string", enum: ["brief", "detailed", "thematic"] }
+        },
+        required: ["source_ids"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_study_guide",
+      description: "Create Bible study guide from sources",
+      parameters: {
+        type: "object",
+        properties: {
+          source_ids: { type: "array", items: { type: "string" } },
+          topic: { type: "string", description: "Study topic" }
+        },
+        required: ["source_ids", "topic"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "build_sermon",
+      description: "Extract sermon points and structure from sources",
+      parameters: {
+        type: "object",
+        properties: {
+          source_ids: { type: "array", items: { type: "string" } },
+          scripture_reference: { type: "string", description: "Main scripture reference" }
+        },
+        required: ["source_ids"]
+      }
+    }
+  }
+];
+```
+
+### System Prompts for Bible Context
+
+```typescript
+const BIBLE_RESEARCH_SYSTEM_PROMPT = `You are a Bible research assistant powered by GLM-4.5-Air. Your role is to help users understand Bible-related content from their uploaded sources.
+
+Key Guidelines:
+1. Always respond based ONLY on the provided sources
+2. Cite specific sources when referencing content
+3. Understand Bible verse references and theological concepts
+4. Link uploaded content to relevant Bible verses
+5. Provide accurate, Bible-focused insights
+6. Use function calling tools when appropriate for research tasks
+
+When analyzing sources:
+- Detect and link Bible verse references
+- Identify theological themes and doctrines
+- Extract key insights and quotes
+- Understand context and historical background
+- Connect concepts across different sources
+
+Always cite your sources clearly.`;
+```
+
+### Multi-Modal Processing Examples
+
+**PDF Processing:**
+```typescript
+// Extract text from PDF
+const pdfText = await extractPDFText(file);
+// Analyze with GLM-4.5-Air
+const analysis = await glmChat({
+  messages: [{ role: "user", content: `Analyze this PDF content and extract key insights:\n\n${pdfText}` }]
+});
+```
+
+**Video Processing:**
+```typescript
+// Extract frames and transcribe audio
+const frames = await extractVideoFrames(videoFile);
+const transcript = await glmSpeechToText(audioFile);
+// Analyze both
+const analysis = await glmChat({
+  messages: [
+    { role: "user", content: `Analyze this video transcript:\n\n${transcript}` },
+    ...frames.map(frame => ({ role: "user", content: `Frame: ${frame}` }))
+  ]
+});
+```
+
+**Audio Processing:**
+```typescript
+// Transcribe audio
+const transcript = await glmSpeechToText(audioFile);
+// Analyze transcript
+const analysis = await glmChat({
+  messages: [{ role: "user", content: `Analyze this audio transcript:\n\n${transcript}` }]
+});
+```
+
+**Link Processing:**
+```typescript
+// Fetch and extract content
+const content = await fetchLinkContent(url);
+// Analyze with GLM-4.5-Air
+const analysis = await glmChat({
+  messages: [{ role: "user", content: `Analyze this web content:\n\n${content}` }]
+});
+```
+
+### Error Handling
+
+```typescript
+// Handle GLM-4.5-Air API errors
+try {
+  const response = await glmChat({...});
+} catch (error) {
+  if (error.status === 401) {
+    // Invalid API key
+  } else if (error.status === 429) {
+    // Rate limit exceeded
+  } else if (error.status === 500) {
+    // Server error
+  }
+}
+```
+
+---
+
 *Plan created: [Current Date]*
-*Status: Ready for Implementation*
+*Status: Ready for Implementation with GLM-4.5-Air*
+*Last Updated: Added GLM-4.5-Air integration details*
 
