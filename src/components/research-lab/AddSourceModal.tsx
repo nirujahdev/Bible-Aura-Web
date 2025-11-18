@@ -127,10 +127,14 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
         }
 
-        // Get public URL
-        const { data: urlData } = supabase.storage
+        // Get signed URL (since bucket is private)
+        const { data: urlData, error: urlError } = await supabase.storage
           .from('research-lab-sources')
-          .getPublicUrl(filePath);
+          .createSignedUrl(filePath, 3600); // 1 hour expiry
+        
+        if (urlError) {
+          console.error('Error creating signed URL:', urlError);
+        }
 
         // Create source record using db-operations helper
         const { error: sourceError } = await createSource({
