@@ -5,7 +5,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { getCachedSources } from '../cache.js';
-import { searchSimilarSources } from '../../../src/lib/research-lab/vector-operations';
+import { searchSimilarSources } from '../../../src/lib/research-lab/vector-operations.js';
 
 const GLM_API_BASE_URL = 'https://api.z.ai/api/paas/v4';
 const GLM_MODEL = 'glm-4.5-air';

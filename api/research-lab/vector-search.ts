@@ -2,7 +2,7 @@
 // Searches for similar sources using Pinecone vector similarity
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { searchSimilarSources } from '../../src/lib/research-lab/vector-operations';
+import { searchSimilarSources } from '../../src/lib/research-lab/vector-operations.js';
 import { createClient } from '@supabase/supabase-js';
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;

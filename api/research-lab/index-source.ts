@@ -3,7 +3,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { indexSource } from '../../src/lib/research-lab/vector-operations';
+import { indexSource } from '../../src/lib/research-lab/vector-operations.js';
 import type { Source } from '../../src/lib/research-lab/db-operations';
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
