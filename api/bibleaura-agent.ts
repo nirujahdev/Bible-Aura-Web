@@ -241,7 +241,7 @@ async function retrieveBibleContext(
       searchWeb(userInput)
     ]);
 
-    // Extract Bible sources from Pinecone results
+    // Extract Bible sources from results
     const bibleSources = bibleRAGResult.sources || [];
 
     // Add web sources
@@ -257,7 +257,7 @@ async function retrieveBibleContext(
     const maxWebSources = 3;
     const allSources = [...bibleSources, ...webSources].slice(0, MODEL_CONFIG.maxChunks + maxWebSources);
 
-    // Build context: Bible chunks from Pinecone + Web snippets
+    // Build context: Bible chunks from hybrid/Pinecone search + Web snippets
     const bibleContext = bibleRAGResult.context || userInput;
     
     const webContext = webResults
@@ -371,7 +371,8 @@ Return JSON only:
 
 async function runMetaAgent(
   ragResult: RAGResult,
-  client: OpenAI
+  client: OpenAI,
+  options: { useCoT?: boolean } = {}
 ): Promise<z.infer<typeof MetaAgentResponseSchema>> {
   try {
     // Extract verse references from context
@@ -585,8 +586,8 @@ async function runFastRAGPipeline(
     preferredLanguage as "en" | "ta" | undefined
   );
 
-  // Node 2: Meta-Agent
-  const metaAgentResult = await runMetaAgent(ragResult, client);
+  // Node 2: Meta-Agent with Chain-of-Thought reasoning
+  const metaAgentResult = await runMetaAgent(ragResult, client, { useCoT: true });
 
   // Node 3: Global Guardrails
   let safeText = await runGlobalGuardrails(

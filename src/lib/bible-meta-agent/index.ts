@@ -8,7 +8,8 @@ import { z } from "zod";
 const MetaAgentResponseSchema = z.object({
   lang: z.enum(["en", "ta"]),
   mode: z.enum(["chat", "verse", "qa", "topical", "parable", "character"]),
-  response: z.string()
+  response: z.string(),
+  reasoning: z.string().optional(), // Chain-of-thought reasoning trace
 });
 
 export type MetaAgentResponse = z.infer<typeof MetaAgentResponseSchema>;
@@ -56,11 +57,14 @@ Return JSON only:
  */
 export async function runMetaAgent(
   ragResult: { lang: "en" | "ta"; context: string; query: string },
-  client: OpenAI
+  client: OpenAI,
+  options: { useCoT?: boolean } = {}
 ): Promise<MetaAgentResponse> {
+  const { useCoT = true } = options;
+  
   try {
-    // Build prompt with RAG context
-    const prompt = getMetaAgentPrompt(ragResult.context, ragResult.query);
+    // Build prompt with RAG context and chain-of-thought reasoning
+    const prompt = getMetaAgentPrompt(ragResult.context, ragResult.query, useCoT);
 
     // Call OpenAI API with structured output
     const completion = await client.chat.completions.create({
