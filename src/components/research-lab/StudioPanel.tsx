@@ -91,6 +91,15 @@ const aiAgents = [
 
 // Helper function to get agent info from output type
 function getAgentInfo(outputType: string) {
+  if (outputType === 'manual_note') {
+    return {
+      id: 'manual_note',
+      name: 'Manual Note',
+      icon: FileText,
+      color: 'bg-gray-50 text-gray-600',
+      outputType: 'manual_note' as const,
+    };
+  }
   return aiAgents.find(a => a.outputType === outputType) || aiAgents[0];
 }
 
