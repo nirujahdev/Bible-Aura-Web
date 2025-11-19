@@ -451,9 +451,10 @@ export async function getNotebookSources(
     try {
       const startTime = performance.now();
       
+      // Optimized field selection: only fetch fields needed for SourcesPanel display
       const { data, error } = await supabase
         .from('research_sources')
-        .select('id, notebook_id, user_id, source_type, title, file_path, file_url, link_url, content_text, processed_content, processing_status, file_size, mime_type, is_included, metadata, extracted_verses, key_insights, toc_structure, created_at, updated_at')
+        .select('id, notebook_id, user_id, source_type, title, file_path, file_url, link_url, processed_content, processing_status, is_included, key_insights, created_at, updated_at')
         .eq('notebook_id', notebookId)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -560,6 +561,12 @@ export async function createSource(
   if (data) {
     const cacheKey = `sources-${sourceData.notebook_id}-${sourceData.user_id}`;
     notebooksCache.delete(cacheKey);
+    // Also clear any filtered cache keys
+    for (const key of notebooksCache.keys()) {
+      if (key.startsWith(`sources-${sourceData.notebook_id}-${sourceData.user_id}:`)) {
+        notebooksCache.delete(key);
+      }
+    }
   }
 
   return { data, error };
@@ -591,6 +598,12 @@ export async function toggleSourceInclude(
   if (!error && source) {
     const cacheKey = `sources-${source.notebook_id}-${userId}`;
     notebooksCache.delete(cacheKey);
+    // Also clear any filtered cache keys
+    for (const key of notebooksCache.keys()) {
+      if (key.startsWith(`sources-${source.notebook_id}-${userId}:`)) {
+        notebooksCache.delete(key);
+      }
+    }
   }
 
   return { error };
@@ -623,6 +636,12 @@ export async function deleteSource(
     // Clear sources cache after deleting source
     const cacheKey = `sources-${source.notebook_id}-${userId}`;
     notebooksCache.delete(cacheKey);
+    // Also clear any filtered cache keys
+    for (const key of notebooksCache.keys()) {
+      if (key.startsWith(`sources-${source.notebook_id}-${userId}:`)) {
+        notebooksCache.delete(key);
+      }
+    }
   }
 
   return { error };
@@ -638,6 +657,14 @@ export async function updateSourceProcessingStatus(
   processedContent?: string,
   metadata?: any
 ): Promise<{ error: any }> {
+  // First get the source to know which notebook it belongs to
+  const { data: source } = await supabase
+    .from('research_sources')
+    .select('notebook_id')
+    .eq('id', sourceId)
+    .eq('user_id', userId)
+    .single();
+
   const updateData: any = { processing_status: status };
   if (processedContent) updateData.processed_content = processedContent;
   if (metadata) updateData.metadata = metadata;
@@ -647,6 +674,18 @@ export async function updateSourceProcessingStatus(
     .update(updateData)
     .eq('id', sourceId)
     .eq('user_id', userId);
+
+  // Clear sources cache after updating processing status (processed_content may have changed)
+  if (!error && source) {
+    const cacheKey = `sources-${source.notebook_id}-${userId}`;
+    notebooksCache.delete(cacheKey);
+    // Also clear any filtered cache keys
+    for (const key of notebooksCache.keys()) {
+      if (key.startsWith(`sources-${source.notebook_id}-${userId}:`)) {
+        notebooksCache.delete(key);
+      }
+    }
+  }
 
   return { error };
 }

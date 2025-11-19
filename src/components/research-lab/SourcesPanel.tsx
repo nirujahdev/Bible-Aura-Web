@@ -47,6 +47,8 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
   const [loading, setLoading] = useState(true);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -56,16 +58,32 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
     }
   }, [notebookId, user]);
 
-  const loadSources = async () => {
+  const loadSources = async (isRetry = false) => {
     if (!notebookId || !user) return;
 
     setLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await getNotebookSources(notebookId, user.id);
-      if (error) throw error;
+      const { data, error: fetchError } = await getNotebookSources(notebookId, user.id);
+      
+      if (fetchError) {
+        throw fetchError;
+      }
+      
       setSources(data || []);
+      setRetryCount(0); // Reset retry count on success
     } catch (error: any) {
-      console.error('Error loading sources:', error);
+      console.error('[SourcesPanel] Error loading sources:', {
+        error,
+        context: 'load_sources',
+        notebookId,
+        userId: user.id,
+        code: error?.code,
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint
+      });
       
       // Check for various error types
       const errorMessage = error?.message || String(error) || '';
@@ -78,22 +96,37 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
         error?.error?.code === 'TABLE_NOT_FOUND';
       
       if (isTableMissing || error?.error?.code === 'TABLE_NOT_FOUND') {
-        toast({
-          title: 'Database Setup Required',
-          description: 'Research Lab tables need to be created. Go to Supabase Dashboard → SQL Editor, open supabase/migrations/20241118000000_create_research_lab_tables.sql, copy the SQL, and run it.',
-          variant: 'destructive',
-          duration: 12000,
-        });
+        setError('Database setup required. Please run the migration SQL file.');
+        if (!isRetry) {
+          toast({
+            title: 'Database Setup Required',
+            description: 'Research Lab tables need to be created. Go to Supabase Dashboard → SQL Editor, open supabase/migrations/20241118000000_create_research_lab_tables.sql, copy the SQL, and run it.',
+            variant: 'destructive',
+            duration: 12000,
+          });
+        }
       } else {
-        toast({
-          title: 'Error',
-          description: error?.error?.message || error?.message || 'Failed to load sources',
-          variant: 'destructive',
-        });
+        const displayError = error?.error?.message || error?.message || 'Failed to load sources';
+        setError(displayError);
+        if (!isRetry) {
+          toast({
+            title: 'Error',
+            description: displayError,
+            variant: 'destructive',
+          });
+        }
       }
+      
+      // Set empty array for graceful fallback
+      setSources([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    loadSources(true);
   };
 
   const handleToggleInclude = async (sourceId: string, currentValue: boolean) => {
@@ -213,6 +246,33 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
                 <div className="w-8 h-4 bg-gray-200 rounded"></div>
               </div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center">
+            <div className="w-16 h-16 rounded-lg bg-red-100 flex items-center justify-center mx-auto mb-4">
+              <FileText className="h-8 w-8 text-red-600" />
+            </div>
+            <p className="text-sm font-medium text-gray-900 mb-2">Failed to load sources</p>
+            <p className="text-xs text-gray-600 mb-4">{error}</p>
+            <div className="flex gap-2 justify-center">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRetry}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setError(null);
+                  setSources([]);
+                }}
+              >
+                Continue without sources
+              </Button>
+            </div>
           </div>
         ) : filteredSources.length === 0 ? (
           <div className="p-8 text-center">

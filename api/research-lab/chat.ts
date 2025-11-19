@@ -3,6 +3,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { getCachedSources } from './cache';
 
 const GLM_API_BASE_URL = 'https://api.z.ai/api/paas/v4';
 const GLM_MODEL = 'glm-4.5-air';
@@ -94,25 +95,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const supabase = getSupabaseClient();
 
-    // Get notebook sources
-    const { data: sources, error: sourcesError } = await supabase
-      .from('research_sources')
-      .select('id, title, content, processed_content, source_type')
-      .eq('notebook_id', notebookId)
-      .eq('user_id', userId)
-      .eq('is_included', true);
+    // Get notebook sources with caching and optimized field selection
+    const { data: sources, error: sourcesError } = await getCachedSources(
+      notebookId,
+      userId,
+      ['id', 'title', 'processed_content', 'source_type'] // Optimized: removed 'content' field
+    );
 
     if (sourcesError) {
-      console.error('[Chat API] Sources error:', sourcesError);
-      res.status(500).json({ error: 'Failed to fetch sources', details: sourcesError.message });
-      return;
+      console.error('[Chat API] Sources error:', {
+        error: sourcesError,
+        context: 'fetch_sources',
+        notebookId,
+        userId,
+        code: sourcesError.code,
+        message: sourcesError.message,
+        details: sourcesError.details,
+        hint: sourcesError.hint
+      });
+
+      // Return graceful fallback instead of error
+      if (sourcesError.code === 'TABLE_NOT_FOUND') {
+        res.status(500).json({ 
+          error: 'Database setup required',
+          message: sourcesError.hint || 'Please run the migration SQL file in Supabase Dashboard.',
+          details: process.env.NODE_ENV === 'development' ? sourcesError.message : undefined
+        });
+        return;
+      }
+
+      if (sourcesError.code === 'RLS_ERROR') {
+        res.status(500).json({ 
+          error: 'Permission denied',
+          message: sourcesError.hint || 'Please check Row Level Security policies.',
+          details: process.env.NODE_ENV === 'development' ? sourcesError.message : undefined
+        });
+        return;
+      }
+
+      // For other errors, return empty sources array (graceful degradation)
+      console.warn('[Chat API] Returning empty sources due to error');
     }
 
-    // Build source context
-    const sourceContext = sources && sources.length > 0
-      ? sources
+    // Build source context (use processed_content only, fallback to empty string)
+    const validSources = sources && !sourcesError ? sources : [];
+    const sourceContext = validSources.length > 0
+      ? validSources
           .map(s => {
-            const content = String(s.processed_content || s.content || '');
+            const content = String(s.processed_content || '');
             return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
           })
           .join('\n\n---\n\n')
@@ -130,22 +160,73 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const userPrompt = `Question: ${message}\n\nAnswer based on these notebook sources:\n\n${sourceContext}\n\nProvide a clear, Bible-focused answer with citations from the sources.`;
 
-    const response = await fetch(`${GLM_API_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${glmApiKey}`,
-      },
-      body: JSON.stringify({
-        model: GLM_MODEL,
-        messages: [
-          { role: 'system', content: BIBLE_CHAT_SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
+    // Fetch with timeout and retry logic
+    const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2): Promise<Response> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`[Chat API] Retry attempt ${attempt}/${maxRetries}`);
+            await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // Exponential backoff
+          }
+
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            return response;
+          }
+
+          // Don't retry on 4xx errors (client errors)
+          if (response.status >= 400 && response.status < 500) {
+            return response;
+          }
+
+          // Retry on 5xx errors or network errors
+          if (attempt === maxRetries) {
+            return response;
+          }
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+          
+          if (error.name === 'AbortError') {
+            throw new Error('Request timeout: AI service took too long to respond');
+          }
+
+          if (attempt === maxRetries) {
+            throw error;
+          }
+        }
+      }
+
+      throw new Error('Failed to fetch after retries');
+    };
+
+    const response = await fetchWithRetry(
+      `${GLM_API_BASE_URL}/chat/completions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${glmApiKey}`,
+        },
+        body: JSON.stringify({
+          model: GLM_MODEL,
+          messages: [
+            { role: 'system', content: BIBLE_CHAT_SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -190,7 +271,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user_id: userId,
         role: 'user',
         content: message,
-        sources_used: sources?.map(s => ({ id: s.id, title: s.title })) || [],
+        sources_used: validSources.map(s => ({ id: s.id, title: s.title })),
       });
 
     if (userMsgError) {
@@ -204,7 +285,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user_id: userId,
         role: 'assistant',
         content: aiResponse,
-        sources_used: sources?.map(s => ({ id: s.id, title: s.title })) || [],
+        sources_used: validSources.map(s => ({ id: s.id, title: s.title })),
       })
       .select()
       .single();

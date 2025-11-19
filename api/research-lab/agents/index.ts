@@ -3,6 +3,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { getCachedSources } from '../cache';
 
 const GLM_API_BASE_URL = 'https://api.z.ai/api/paas/v4';
 const GLM_MODEL = 'glm-4.5-air';
@@ -86,23 +87,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const supabase = getSupabaseClient();
 
-    // Get notebook sources
-    let query = supabase
-      .from('research_sources')
-      .select('id, title, content, processed_content, source_type, extracted_verses')
-      .eq('notebook_id', notebookId)
-      .eq('user_id', userId)
-      .eq('is_included', true);
-
-    if (params.sourceIds && Array.isArray(params.sourceIds) && params.sourceIds.length > 0) {
-      query = query.in('id', params.sourceIds);
-    }
-
-    const { data: sources, error: sourcesError } = await query;
+    // Get notebook sources with caching and optimized field selection
+    const fields = ['id', 'title', 'processed_content', 'source_type', 'extracted_verses'];
+    const { data: sources, error: sourcesError } = await getCachedSources(
+      notebookId,
+      userId,
+      fields,
+      params.sourceIds && Array.isArray(params.sourceIds) && params.sourceIds.length > 0 
+        ? params.sourceIds 
+        : undefined
+    );
 
     if (sourcesError) {
-      console.error(`[${agentType} Agent] Sources error:`, sourcesError);
-      res.status(500).json({ error: 'Failed to fetch sources', details: sourcesError.message });
+      console.error(`[${agentType} Agent] Sources error:`, {
+        error: sourcesError,
+        context: 'fetch_sources',
+        notebookId,
+        userId,
+        agentType,
+        code: sourcesError.code,
+        message: sourcesError.message,
+        details: sourcesError.details,
+        hint: sourcesError.hint
+      });
+
+      // Return graceful error instead of generic failure
+      if (sourcesError.code === 'TABLE_NOT_FOUND') {
+        res.status(500).json({ 
+          error: 'Database setup required',
+          message: sourcesError.hint || 'Please run the migration SQL file in Supabase Dashboard.',
+          details: process.env.NODE_ENV === 'development' ? sourcesError.message : undefined
+        });
+        return;
+      }
+
+      if (sourcesError.code === 'RLS_ERROR') {
+        res.status(500).json({ 
+          error: 'Permission denied',
+          message: sourcesError.hint || 'Please check Row Level Security policies.',
+          details: process.env.NODE_ENV === 'development' ? sourcesError.message : undefined
+        });
+        return;
+      }
+
+      res.status(500).json({ 
+        error: 'Failed to fetch sources',
+        message: sourcesError.message || 'Unable to load notebook sources.',
+        details: process.env.NODE_ENV === 'development' ? sourcesError.message : undefined
+      });
       return;
     }
 
@@ -111,10 +143,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // Build source content
+    // Build source content (use processed_content only, no 'content' field)
     const sourceTexts = sources
       .map(s => {
-        const content = String(s.processed_content || s.content || '');
+        const content = String(s.processed_content || '');
         if (agentType === 'cross_reference') {
           const verses = s.extracted_verses ? JSON.stringify(s.extracted_verses) : 'None found';
           return `[Source: ${s.title}]\nContent: ${content.substring(0, 8000)}\nVerses mentioned: ${verses}`;
@@ -291,20 +323,59 @@ Format as structured JSON with clear sections.`;
       sourceCount: sources.length,
     });
 
-    // Retry logic for GLM API calls
-    let response: Response | null = null;
-    const maxRetries = 2;
-    let lastError: any = null;
-    
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          console.log(`[${agentType} Agent] Retry attempt ${attempt}/${maxRetries}`);
-          // Exponential backoff: wait 1s, 2s
-          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+    // Fetch with timeout and retry logic
+    const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2): Promise<Response> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for agents (longer than chat)
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`[${agentType} Agent] Retry attempt ${attempt}/${maxRetries}`);
+            await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // Exponential backoff
+          }
+
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            return response;
+          }
+
+          // Don't retry on 4xx errors (client errors)
+          if (response.status >= 400 && response.status < 500) {
+            return response;
+          }
+
+          // Retry on 5xx errors or network errors
+          if (attempt === maxRetries) {
+            return response;
+          }
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+          
+          if (error.name === 'AbortError') {
+            throw new Error('Request timeout: AI service took too long to respond');
+          }
+
+          if (attempt === maxRetries) {
+            throw error;
+          }
         }
-        
-        response = await fetch(`${GLM_API_BASE_URL}/chat/completions`, {
+      }
+
+      throw new Error('Failed to fetch after retries');
+    };
+
+    let response: Response;
+    try {
+      response = await fetchWithRetry(
+        `${GLM_API_BASE_URL}/chat/completions`,
+        {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -319,42 +390,14 @@ Format as structured JSON with clear sections.`;
             temperature: 0.7,
             max_tokens: agentType === 'curriculum' || agentType === 'sermon' || agentType === 'doctrinal' ? 3000 : 2000,
           }),
-        });
-        
-        // If response is ok, break out of retry loop
-        if (response.ok) {
-          break;
         }
-        
-        // If it's a client error (4xx), don't retry
-        if (response.status >= 400 && response.status < 500) {
-          break;
-        }
-        
-        // For server errors (5xx) or network errors, retry
-        lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
-        
-      } catch (fetchError: any) {
-        lastError = fetchError;
-        // If it's the last attempt, throw the error
-        if (attempt === maxRetries) {
-          console.error(`[${agentType} Agent] Fetch error after ${maxRetries + 1} attempts:`, fetchError);
-          res.status(503).json({ 
-            error: 'Failed to connect to AI service',
-            message: 'Network error. Please check your connection and try again.',
-            details: process.env.NODE_ENV === 'development' ? fetchError.message : undefined
-          });
-          return;
-        }
-      }
-    }
-    
-    // If we still don't have a response after retries, return error
-    if (!response) {
+      );
+    } catch (fetchError: any) {
+      console.error(`[${agentType} Agent] Fetch error:`, fetchError);
       res.status(503).json({ 
         error: 'Failed to connect to AI service',
-        message: 'Unable to reach AI service after multiple attempts. Please try again later.',
-        details: process.env.NODE_ENV === 'development' ? lastError?.message : undefined
+        message: fetchError.message || 'Network error. Please check your connection and try again.',
+        details: process.env.NODE_ENV === 'development' ? fetchError.message : undefined
       });
       return;
     }
