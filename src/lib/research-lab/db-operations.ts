@@ -756,7 +756,7 @@ export interface StudioOutput {
   id: string;
   notebook_id: string;
   user_id: string;
-  output_type: 'summary' | 'audio_overview' | 'mind_map' | 'flashcards' | 'quiz' | 'report' | 'study_guide' | 'sermon' | 'timeline' | 'glossary' | 'summarization' | 'theology_qa' | 'cross_references' | 'curriculum' | 'doctrinal_harmony';
+  output_type: 'summary' | 'audio_overview' | 'mind_map' | 'flashcards' | 'quiz' | 'report' | 'study_guide' | 'sermon' | 'timeline' | 'glossary' | 'summarization' | 'theology_qa' | 'cross_references' | 'curriculum' | 'doctrinal_harmony' | 'manual_note';
   content: any;
   metadata?: any; // Optional - may not exist if migration not run
   generated_at: string;
