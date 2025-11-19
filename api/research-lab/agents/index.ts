@@ -734,13 +734,13 @@ Format as structured JSON with clear sections.`;
     
     try {
       // First, try to find existing output
-      const { data: existingOutput } = await supabase
+      const { data: existingOutput, error: findError } = await supabase
         .from('research_studio_outputs')
         .select('id')
         .eq('notebook_id', notebookId)
         .eq('user_id', userId)
         .eq('output_type', outputType)
-        .single();
+        .maybeSingle(); // Use maybeSingle() to avoid error when no row found
 
       if (existingOutput) {
         // Update existing output
