@@ -9,10 +9,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, FileText, Calendar, BookOpen, FlaskConical } from 'lucide-react';
 import { format } from 'date-fns';
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { deleteNotebook, clearNotebooksCache } from '@/lib/research-lab/db-operations';
+import { RenameNotebookModal } from './RenameNotebookModal';
 
 interface Notebook {
   id: string;
@@ -33,6 +35,7 @@ interface NotebookCardProps {
 export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -68,11 +71,7 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
 
   const handleRename = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement rename functionality
-    toast({
-      title: 'Coming soon',
-      description: 'Rename functionality will be available soon',
-    });
+    setRenameModalOpen(true);
   };
 
   // Generate a simple color based on notebook ID for visual variety
@@ -159,6 +158,19 @@ export function NotebookCard({ notebook, onSelect, onDelete }: NotebookCardProps
           </div>
         </div>
       </CardContent>
+      
+      {/* Rename Modal */}
+      {user && (
+        <RenameNotebookModal
+          open={renameModalOpen}
+          onOpenChange={setRenameModalOpen}
+          notebookId={notebook.id}
+          currentTitle={notebook.title}
+          currentDescription={notebook.description}
+          userId={user.id}
+          onSuccess={onDelete} // Refresh the list after rename
+        />
+      )}
     </Card>
   );
 }

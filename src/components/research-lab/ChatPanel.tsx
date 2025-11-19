@@ -1,4 +1,4 @@
-// Chat Panel - Center panel in notebook view
+// Chat Panel - Center panel in notebook view - Enhanced UI
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   getChatMessages, 
   createChatMessage, 
@@ -143,6 +144,23 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorData.message || errorMessage;
+          
+          // Handle specific error cases
+          if (errorData.error === 'Sources are still processing') {
+            toast({
+              title: 'Sources are processing',
+              description: errorData.message || 'Please wait for sources to finish processing before asking questions.',
+              variant: 'default',
+              duration: 5000,
+            });
+          } else if (errorData.error === 'No sources found in notebook') {
+            toast({
+              title: 'No sources available',
+              description: errorData.message || 'Please add sources to your notebook before asking questions.',
+              variant: 'destructive',
+              duration: 5000,
+            });
+          }
         } catch (e) {
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
@@ -179,15 +197,18 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
       {/* Chat Messages */}
       <ScrollArea className="flex-1 p-3 sm:p-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-              <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 animate-in fade-in duration-500">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center mb-5 shadow-lg">
+              <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-orange-600" />
             </div>
-            <p className="text-sm sm:text-base text-gray-600 font-medium mb-2">Add a source to get started</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Start Your Research</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4 max-w-md">
+              Add sources to your notebook and ask questions about Bible, theology, or Christian content
+            </p>
             <Button
               variant="outline"
               size="sm"
-              className="mt-4 text-xs sm:text-sm"
+              className="mt-2 text-xs sm:text-sm border-orange-200 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200"
             >
               <Upload className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
               <span className="hidden sm:inline">Upload a source</span>
@@ -205,23 +226,26 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                   className={cn(
-                    'max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 transition-all duration-200 text-sm sm:text-base',
+                    'max-w-[85%] sm:max-w-[80%] rounded-xl px-4 py-3 sm:px-5 sm:py-4 transition-all duration-300 text-sm sm:text-base shadow-sm hover:shadow-md',
                     message.role === 'user'
-                      ? 'bg-orange-500 text-white shadow-sm hover:shadow-md'
-                      : 'bg-gray-100 text-gray-900 shadow-sm hover:shadow-md'
+                      ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white'
+                      : 'bg-gradient-to-br from-gray-50 to-white text-gray-900 border border-gray-200'
                   )}
                 >
-                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                  <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
                   {message.sources_used && message.sources_used.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200/30">
-                      <p className="text-xs text-gray-500">
-                        Sources: {message.sources_used.length}
+                    <div className="mt-3 pt-3 border-t border-gray-200/30">
+                      <p className="text-xs font-medium opacity-80">
+                        📚 {message.sources_used.length} source{message.sources_used.length !== 1 ? 's' : ''} used
                       </p>
                     </div>
                   )}
-                </div>
+                </motion.div>
               </div>
             ))}
             {loading && (
@@ -240,9 +264,9 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
         )}
       </ScrollArea>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-200 p-3 sm:p-4 bg-white safe-area-bottom">
-        <div className="flex gap-2">
+      {/* Input Area - Enhanced */}
+      <div className="border-t border-gray-200 p-3 sm:p-4 bg-gradient-to-b from-white to-gray-50/50 safe-area-bottom shadow-lg">
+        <div className="flex gap-2 sm:gap-3">
           <div className="relative flex-1">
             <Textarea
               value={input}

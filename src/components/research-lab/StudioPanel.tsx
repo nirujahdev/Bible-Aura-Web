@@ -24,7 +24,8 @@ import {
   MoreVertical,
   X,
   Copy,
-  Trash2
+  Trash2,
+  Globe
 } from 'lucide-react';
 import { BibleAuraLoadingAnimation, InlineLoadingIndicator } from '@/components/BibleAuraLoadingAnimation';
 import { getStudioOutputs, type StudioOutput } from '@/lib/research-lab/db-operations';
@@ -86,6 +87,13 @@ const aiAgents = [
     color: 'bg-indigo-50 text-indigo-600',
     outputType: 'doctrinal_harmony' as const
   },
+  { 
+    id: 'translate', 
+    name: 'Translate', 
+    icon: Globe, 
+    color: 'bg-teal-50 text-teal-600',
+    outputType: 'translation' as const
+  },
 ];
 
 
@@ -118,6 +126,8 @@ function getOutputIcon(outputType: string) {
       return Mic;
     case 'doctrinal_harmony':
       return Scale;
+    case 'translation':
+      return Globe;
     case 'manual_note':
       return FileText;
     default:
@@ -241,24 +251,31 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
       {/* Agents Grid & Outputs */}
       <ScrollArea className="flex-1">
         <div className="p-3 sm:p-4">
-          {/* Agents Grid - Smaller Icons */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
+          {/* Agents Grid - Enhanced with better styling */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
             {aiAgents.map((agent) => {
               const Icon = agent.icon;
               const isGenerating = generatingTypes.includes(agent.id);
               return (
                 <Card
                   key={agent.id}
-                  className={`cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation ${
-                    activeAgentModal === agent.id ? 'ring-2 ring-orange-500' : ''
+                  className={`cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation border-2 ${
+                    activeAgentModal === agent.id 
+                      ? 'ring-2 ring-orange-500 border-orange-300 shadow-lg' 
+                      : 'border-transparent hover:border-gray-200'
                   }`}
                   onClick={() => handleOpenAgent(agent.id)}
                 >
-                  <CardContent className="p-2 sm:p-3 flex flex-col items-center text-center">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${agent.color} flex items-center justify-center mb-1.5 transition-transform duration-200`}>
-                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <CardContent className="p-3 sm:p-4 flex flex-col items-center text-center group">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${agent.color} flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
-                    <p className="text-[10px] sm:text-xs font-medium text-gray-900 leading-tight">{agent.name}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-gray-900 leading-tight group-hover:text-orange-600 transition-colors">{agent.name}</p>
+                    {isGenerating && (
+                      <div className="mt-1.5">
+                        <div className="w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -278,7 +295,7 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
             />
           )}
 
-          {/* Generating Status - NotebookLM Style */}
+          {/* Generating Status - NotebookLM Style with Progress */}
           {generatingTypes.length > 0 && !activeAgentModal && (
             <div className="mb-4 space-y-2">
               {generatingTypes.map((agentId) => {
@@ -298,8 +315,15 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                           Generating {agent.name.toLowerCase()}...
                         </p>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          based on {sourceCount} source{sourceCount !== 1 ? 's' : ''}
+                          Analyzing {sourceCount} source{sourceCount !== 1 ? 's' : ''} • This may take 10-30 seconds
                         </p>
+                        {/* Progress bar */}
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className="bg-orange-500 h-1.5 rounded-full animate-pulse"
+                            style={{ width: '60%' }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

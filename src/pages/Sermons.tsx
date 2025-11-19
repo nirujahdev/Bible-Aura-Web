@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,7 @@ import {
   GripVertical, Trash, Edit2, MoreVertical, Brain
 } from "lucide-react";
 import { format } from 'date-fns';
+import { logger } from '@/lib/research-lab/logger';
 
 // Interfaces
 interface Sermon {
@@ -127,7 +128,7 @@ const SermonsContent = () => {
   try {
     sermonAI = useSermonAI();
   } catch (error) {
-    console.error('SermonsContent: SermonAI context error:', error);
+    logger.error('SermonsContent: SermonAI context error', error, 'sermons');
     // Provide fallback functions if context is unavailable
     sermonAI = {
       state: {
@@ -239,8 +240,17 @@ const SermonsContent = () => {
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [seriesFilter, setSeriesFilter] = useState("all");
+  
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Enhanced UI states
   const [showBibleDialog, setShowBibleDialog] = useState(false);
@@ -276,10 +286,10 @@ const SermonsContent = () => {
     if (user?.id) {
       // Load data asynchronously - errors are handled within each function
       loadSermons().catch(error => {
-        console.error('Error in loadSermons:', error);
+        logger.error('Error in loadSermons', error, 'sermons');
       });
       loadBooks().catch(error => {
-        console.error('Error in loadBooks:', error);
+        logger.error('Error in loadBooks', error, 'sermons');
       });
     }
   }, [user?.id]);
@@ -303,7 +313,7 @@ const SermonsContent = () => {
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase error:', error);
+        logger.error('Supabase error loading sermons', error, 'sermons');
         
         // Handle specific database errors
         if (error.message.includes('column') && error.message.includes('does not exist')) {
@@ -356,7 +366,7 @@ const SermonsContent = () => {
       
       setSermons(processedData);
     } catch (error: any) {
-      console.error('Error loading sermons:', error);
+      logger.error('Error loading sermons', error, 'sermons');
       
       // Show user-friendly error message
       const errorMessage = error?.message || 'Unknown error occurred';
@@ -389,7 +399,7 @@ const SermonsContent = () => {
         loadChapter(bibleBooks[0], 1);
       }
     } catch (error: any) {
-      console.error('Error loading Bible books:', error);
+      logger.error('Error loading Bible books', error, 'sermons');
       toast({
         title: "Error",
         description: error?.message || "Failed to load Bible books",
@@ -410,7 +420,7 @@ const SermonsContent = () => {
         setSelectedChapter(chapter);
       }
     } catch (error: any) {
-      console.error('Error loading chapter:', error);
+      logger.error('Error loading chapter', error, 'sermons');
       toast({
         title: "Error",
         description: error?.message || "Failed to load Bible chapter",
@@ -465,12 +475,12 @@ const SermonsContent = () => {
           .single();
         
         if (error) {
-          console.error('Error updating sermon:', error);
+          logger.error('Error updating sermon', error, 'sermons');
           
           // Handle specific database column issues
           if (error.message?.includes('column') && error.message?.includes('does not exist')) {
             const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
-            console.log(`Missing column detected: ${missingColumn}`);
+            logger.warn(`Missing column detected: ${missingColumn}`, undefined, 'sermons');
             
             // Retry with basic data only
             const basicData = {
@@ -519,12 +529,12 @@ const SermonsContent = () => {
           .single();
         
         if (error) {
-          console.error('Error creating sermon:', error);
+          logger.error('Error creating sermon', error, 'sermons');
           
           // Handle specific database column issues
           if (error.message?.includes('column') && error.message?.includes('does not exist')) {
             const missingColumn = error.message.match(/column "([^"]+)"/)?.[1];
-            console.log(`Missing column detected: ${missingColumn}`);
+            logger.warn(`Missing column detected: ${missingColumn}`, undefined, 'sermons');
             
             // Retry with basic data only (minimal required fields)
             const basicData = {
@@ -588,7 +598,7 @@ const SermonsContent = () => {
         });
       }
     } catch (error: any) {
-      console.error('Error saving sermon:', error);
+      logger.error('Error saving sermon', error, 'sermons');
       
       // Provide more specific error messages
       let errorMessage = "Failed to save sermon. Please try again.";
@@ -698,7 +708,7 @@ const SermonsContent = () => {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error deleting sermon:', error);
+        logger.error('Error deleting sermon', error, 'sermons');
         if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
           throw new Error('You do not have permission to delete this sermon.');
         }
@@ -723,7 +733,7 @@ const SermonsContent = () => {
         description: "Sermon deleted successfully",
       });
     } catch (error: any) {
-      console.error('Error deleting sermon:', error);
+      logger.error('Error deleting sermon', error, 'sermons');
       toast({
         title: "Error",
         description: error.message || "Failed to delete sermon. Please try again.",
@@ -833,7 +843,7 @@ const SermonsContent = () => {
       
       setSearchResults(sortedResults);
     } catch (error) {
-      console.error('Error searching Bible:', error);
+      logger.error('Error searching Bible', error, 'sermons');
       toast({
         title: "Search Error",
         description: error instanceof Error ? error.message : "Failed to search the Bible. Please try again.",
@@ -987,7 +997,7 @@ const SermonsContent = () => {
         description: "Sermon exported as PDF",
       });
     } catch (error: any) {
-      console.error('Export error:', error);
+      logger.error('Export error', error, 'sermons');
       toast({
         title: "Export failed",
         description: error?.message || "Failed to export sermon",
@@ -1052,17 +1062,19 @@ const SermonsContent = () => {
     }
   };
 
-  // Filter sermons
-  const filteredSermons = sermons.filter(sermon => {
-    const matchesSearch = !searchQuery || 
-      sermon.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (sermon.content && sermon.content.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'all' || sermon.status === statusFilter;
-    const matchesSeries = seriesFilter === 'all' || sermon.series_name === seriesFilter;
-    
-    return matchesSearch && matchesStatus && matchesSeries;
-  });
+  // Filter sermons with debounced search
+  const filteredSermons = useMemo(() => {
+    return sermons.filter(sermon => {
+      const matchesSearch = !debouncedSearchQuery || 
+        sermon.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        (sermon.content && sermon.content.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
+      
+      const matchesStatus = statusFilter === 'all' || sermon.status === statusFilter;
+      const matchesSeries = seriesFilter === 'all' || sermon.series_name === seriesFilter;
+      
+      return matchesSearch && matchesStatus && matchesSeries;
+    });
+  }, [sermons, debouncedSearchQuery, statusFilter, seriesFilter]);
 
   const seriesOptions = [...new Set(sermons.map(s => s.series_name).filter(Boolean))];
 
@@ -1271,7 +1283,7 @@ const SermonsContent = () => {
               editor.scrollTop = Math.max(0, editor.scrollTop - 100);
             }
           } catch (e) {
-            console.error('Error scrolling to outline item:', e);
+            logger.error('Error scrolling to outline item', e, 'sermons');
           }
         }
       }
@@ -2228,7 +2240,7 @@ const SermonsContent = () => {
             <SermonAIGenerator
               onSermonGenerated={(sermon) => {
                 // Handle AI sermon generation
-                console.log('AI sermon generated:', sermon);
+                logger.log('AI sermon generated', sermon, 'sermons');
                 setShowAIGenerator(false);
                 toast({
                   title: "AI Sermon Generated! ✨",
@@ -2354,8 +2366,14 @@ const SermonsContent = () => {
             )}
           </div>
           
-          {/* Results Count */}
-          {filteredSermons.length !== sermons.length && (
+          {/* Results Count and Loading Indicator */}
+          {loading && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span>Loading sermons...</span>
+            </div>
+          )}
+          {!loading && filteredSermons.length !== sermons.length && (
             <p className="text-sm text-gray-600">
               Showing {filteredSermons.length} of {sermons.length} sermons
             </p>
@@ -2414,8 +2432,28 @@ const SermonsContent = () => {
         </div>
 
         {/* Clean Sermons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {filteredSermons.map((sermon) => (
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="border border-gray-200 animate-pulse">
+                <CardHeader className="pb-3">
+                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+        
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {filteredSermons.map((sermon) => (
             <Card key={sermon.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white cursor-default">
               <CardHeader className="pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
                 <div className="flex items-start justify-between gap-2">
@@ -2572,7 +2610,7 @@ const SermonsContent = () => {
             <SermonAIGenerator
               onSermonGenerated={(sermon) => {
                 // Handle AI sermon generation
-                console.log('AI sermon generated:', sermon);
+                logger.log('AI sermon generated', sermon, 'sermons');
                 setShowAIGenerator(false);
                 toast({
                   title: "AI Sermon Generated! ✨",

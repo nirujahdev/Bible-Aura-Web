@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, X, FileText, BookOpen, PenTool, Sparkles, Scale } from 'lucide-react';
+import { ArrowLeft, X, FileText, BookOpen, PenTool, Sparkles, Scale, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
@@ -121,10 +121,31 @@ const formatOptions: Record<string, FormatOption[]> = {
       icon: BookOpen,
     },
   ],
+  translate: [
+    {
+      id: 'document',
+      title: 'Document Translation',
+      description: 'Translate entire documents while preserving theological accuracy',
+      icon: FileText,
+    },
+    {
+      id: 'verse',
+      title: 'Verse Translation',
+      description: 'Translate Bible verses with context and theological precision',
+      icon: BookOpen,
+    },
+    {
+      id: 'summary',
+      title: 'Summary Translation',
+      description: 'Translate summaries and key points from your sources',
+      icon: Sparkles,
+    },
+  ],
 };
 
 const languages = [
-  { value: 'en', label: 'English (default)' },
+  { value: 'en', label: 'English' },
+  { value: 'ta', label: 'Tamil' },
   { value: 'es', label: 'Spanish' },
   { value: 'fr', label: 'French' },
   { value: 'de', label: 'German' },
@@ -132,6 +153,9 @@ const languages = [
   { value: 'zh', label: 'Chinese' },
   { value: 'ja', label: 'Japanese' },
   { value: 'ko', label: 'Korean' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'ru', label: 'Russian' },
 ];
 
 export function AgentModal({
@@ -194,6 +218,7 @@ export function AgentModal({
         'curriculum': 'curriculum',
         'sermon': 'sermon',
         'doctrinal': 'doctrinal',
+        'translate': 'translate',
       };
 
       const agentType = agentTypeMap[agentId] || 'summarize';
@@ -217,6 +242,9 @@ export function AgentModal({
         requestBody.scriptureReference = description;
       } else if (agentId === 'doctrinal' && description) {
         requestBody.doctrinalQuestion = description;
+      } else if (agentId === 'translate' && description) {
+        requestBody.textToTranslate = description;
+        requestBody.targetLanguage = selectedLanguage;
       } else if (agentId === 'summarize') {
         // Map frontend format IDs to API summaryType
         const formatToSummaryType: Record<string, string> = {
@@ -241,6 +269,28 @@ export function AgentModal({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        
+        // Handle specific error cases
+        if (errorData.error === 'Sources are still processing') {
+          toast({
+            title: 'Sources are processing',
+            description: errorData.message || 'Please wait for sources to finish processing. This usually takes a few seconds.',
+            variant: 'default',
+            duration: 5000,
+          });
+          throw new Error(errorData.message || 'Sources are still processing');
+        }
+        
+        if (errorData.error === 'No sources found in notebook' || errorData.error === 'No ready sources available') {
+          toast({
+            title: 'No sources available',
+            description: errorData.message || 'Please add sources to your notebook before using agents.',
+            variant: 'destructive',
+            duration: 5000,
+          });
+          throw new Error(errorData.message || 'No sources available');
+        }
+        
         throw new Error(errorData.error || errorData.message || 'Failed to generate output');
       }
 
@@ -360,10 +410,10 @@ export function AgentModal({
             </div>
           </div>
 
-          {/* Language Selection */}
+          {/* Language Selection - Show prominently for translate agent */}
           <div>
             <Label htmlFor="language" className="text-base font-semibold mb-2 block">
-              Choose language
+              {agentId === 'translate' ? 'Target Language' : 'Choose language'}
             </Label>
             <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
               <SelectTrigger id="language" className="w-full">
@@ -377,6 +427,11 @@ export function AgentModal({
                 ))}
               </SelectContent>
             </Select>
+            {agentId === 'translate' && (
+              <p className="text-xs text-gray-500 mt-1.5">
+                The translation will preserve theological accuracy and biblical terminology
+              </p>
+            )}
           </div>
 
           {/* Description Input */}
@@ -464,6 +519,7 @@ function getPlaceholder(agentId: string): string {
     curriculum: 'Enter the topic, duration, and target audience...',
     sermon: 'Enter the scripture reference and sermon type...',
     doctrinal: 'Enter your doctrinal question...',
+    translate: 'Enter the text you want to translate...',
   };
 
   return placeholders[agentId] || 'Enter your instructions...';

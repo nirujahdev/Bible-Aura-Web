@@ -238,14 +238,14 @@ export default function ResearchNotebook() {
   return (
     <ModernLayout>
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-white">
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between shadow-sm">
+        {/* Header - Enhanced */}
+        <div className="border-b border-gray-200 bg-gradient-to-r from-white to-orange-50/20 px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between shadow-sm backdrop-blur-sm">
           <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/research-lab')}
-              className="flex-shrink-0 hover:bg-gray-100 transition-colors p-2 sm:p-2"
+              className="flex-shrink-0 hover:bg-orange-50 transition-all duration-200 p-2 sm:p-2 rounded-lg hover:scale-105"
             >
               <ArrowLeft className="h-4 w-4 sm:mr-2" />
               {!isMobile && <span>Back</span>}
@@ -266,18 +266,22 @@ export default function ResearchNotebook() {
                       setIsEditingTitle(false);
                     }
                   }}
-                  className="flex-1 max-w-md text-sm sm:text-base"
+                  className="flex-1 max-w-md text-sm sm:text-base border-orange-200 focus:border-orange-400 focus:ring-orange-400"
                   autoFocus
                 />
               </div>
             ) : (
               <h1
-                className="text-base sm:text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group transition-colors"
+                className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 truncate cursor-pointer hover:text-orange-600 flex items-center gap-2 group transition-all duration-200"
                 onClick={() => setIsEditingTitle(true)}
               >
-                {!isMobile && <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0 transition-transform group-hover:scale-110" />}
+                {!isMobile && (
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center flex-shrink-0 shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-200">
+                    <FlaskConical className="h-4 w-4 text-orange-600" />
+                  </div>
+                )}
                 <span className="truncate">{notebook?.title || 'Untitled'}</span>
-                {!isMobile && <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />}
+                {!isMobile && <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-orange-500" />}
               </h1>
             )}
           </div>
@@ -287,7 +291,7 @@ export default function ResearchNotebook() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="hover:bg-gray-100 transition-colors"
+                className="hover:bg-orange-50 transition-all duration-200 rounded-lg hover:scale-105"
                 onClick={() => setShareModalOpen(true)}
               >
                 <Share2 className="h-4 w-4 mr-2" />
@@ -297,7 +301,7 @@ export default function ResearchNotebook() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="hover:bg-gray-100 transition-colors p-2"
+              className="hover:bg-orange-50 transition-all duration-200 p-2 rounded-lg hover:scale-105"
               onClick={() => setSettingsModalOpen(true)}
             >
               <Settings className="h-4 w-4" />
@@ -375,20 +379,20 @@ export default function ResearchNotebook() {
             </Tabs>
           </div>
         ) : (
-          /* Desktop: Three-Column Layout */
-          <div className="flex-1 flex overflow-hidden animate-in fade-in duration-300">
+          /* Desktop: Three-Column Layout - Enhanced */
+          <div className="flex-1 flex overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Left Panel: Sources */}
-            <div className="w-80 border-r border-gray-200 bg-gray-50 flex flex-col transition-all">
+            <div className="w-80 border-r border-gray-200 bg-gradient-to-b from-gray-50 to-white flex flex-col transition-all shadow-sm">
               {notebookId && <SourcesPanel notebookId={notebookId} />}
             </div>
 
             {/* Center Panel: Chat */}
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-white border-x border-gray-100">
               {notebookId && <ChatPanel notebookId={notebookId} />}
             </div>
 
             {/* Right Panel: Studio */}
-            <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col transition-all">
+            <div className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50 to-white flex flex-col transition-all shadow-sm">
               {notebookId && <StudioPanel notebookId={notebookId} />}
             </div>
           </div>

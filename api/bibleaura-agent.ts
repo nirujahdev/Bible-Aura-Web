@@ -68,9 +68,10 @@ const DEFAULT_ALLOWED_ORIGIN =
   process.env.VITE_APP_URL ??
   'https://www.bibleaura.xyz';
 
-// Vector Store IDs
-const ENGLISH_VECTOR_STORE = "vs_6914c8f2ecf48191b8c80e0911d335cf";
-const TAMIL_VECTOR_STORE = "vs_6914ce9d39b4819188024077258a0db3";
+// Vector Store IDs - DEPRECATED: Now using Pinecone for Bible content
+// These are kept for reference but no longer used
+// const ENGLISH_VECTOR_STORE = "vs_6914c8f2ecf48191b8c80e0911d335cf";
+// const TAMIL_VECTOR_STORE = "vs_6914ce9d39b4819188024077258a0db3";
 
 // Model Config
 interface ModelConfig {
@@ -222,37 +223,26 @@ async function retrieveBibleContext(
 ): Promise<RAGResult> {
   // Always respect preferred language if provided
   const lang = determineLanguage(userInput, preferredLanguage);
-  const vectorStoreId = lang === "en" ? ENGLISH_VECTOR_STORE : TAMIL_VECTOR_STORE;
   
-  console.log('[RAG Retriever] Language:', lang, 'Preferred:', preferredLanguage, 'Vector Store:', vectorStoreId);
+  console.log('[RAG Retriever] Language:', lang, 'Preferred:', preferredLanguage, 'Using Pinecone');
 
   try {
-    // Parallel: Vector store search + Web search
-    const [vectorSearchResults, webResults] = await Promise.all([
-      client.vectorStores.search(vectorStoreId, {
+    // Use Pinecone for Bible retrieval (import dynamically to avoid issues in serverless)
+    const { retrieveBibleContextFromPinecone } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
+    
+    // Parallel: Pinecone Bible search + Web search
+    const [bibleRAGResult, webResults] = await Promise.all([
+      retrieveBibleContextFromPinecone(userInput, client, preferredLanguage).catch(() => ({
+        lang,
+        context: userInput,
         query: userInput,
-        max_num_results: MODEL_CONFIG.maxChunks
-      }).catch(() => ({ data: [] })),
+        sources: []
+      })),
       searchWeb(userInput)
     ]);
 
-    // Extract Bible sources - only include actual results with valid filenames and scores
-    const bibleSources = vectorSearchResults.data
-      .filter((result) => {
-        // Only include results with valid filename and meaningful score
-        // Exclude JSON files
-        const filename = result.filename || "";
-        return filename && 
-               filename !== "Unknown" && 
-               filename.trim() !== "" &&
-               !filename.toLowerCase().endsWith('.json') &&
-               (result.score || 0) > 0;
-      })
-      .map((result) => ({
-        id: result.file_id,
-        filename: result.filename || "Unknown",
-        score: result.score || 0
-      }));
+    // Extract Bible sources from Pinecone results
+    const bibleSources = bibleRAGResult.sources || [];
 
     // Add web sources
     const webSources = webResults.map((result, idx) => ({
@@ -267,15 +257,9 @@ async function retrieveBibleContext(
     const maxWebSources = 3;
     const allSources = [...bibleSources, ...webSources].slice(0, MODEL_CONFIG.maxChunks + maxWebSources);
 
-    // Build context: Bible chunks + Web snippets
-    const bibleContext = vectorSearchResults.data
-      .map((result) => {
-        const text = (result as any).text || result.filename || "";
-        return text;
-      })
-      .filter(Boolean)
-      .join("\n---\n");
-
+    // Build context: Bible chunks from Pinecone + Web snippets
+    const bibleContext = bibleRAGResult.context || userInput;
+    
     const webContext = webResults
       .map((result) => `${result.title}\n${result.snippet}`)
       .join("\n---\n");
@@ -283,7 +267,7 @@ async function retrieveBibleContext(
     const combinedContext = [bibleContext, webContext].filter(Boolean).join("\n\n[Web Sources]\n---\n");
 
     return {
-      lang,
+      lang: bibleRAGResult.lang || lang,
       context: combinedContext || userInput,
       query: userInput,
       sources: allSources

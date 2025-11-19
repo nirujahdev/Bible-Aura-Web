@@ -6,9 +6,19 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { getCachedSources } from './cache.js';
 import { searchSimilarSources } from '../../src/lib/research-lab/vector-operations.js';
+import logger from '../../src/lib/research-lab/logger.js';
+import { EnhancedRateLimiter } from '../../src/lib/enhancedRateLimiter.js';
 
 const GLM_API_BASE_URL = 'https://api.z.ai/api/paas/v4';
 const GLM_MODEL = 'glm-4.5-air';
+
+// Rate limiter for chat API (20 requests per minute per user)
+const chatRateLimiter = new EnhancedRateLimiter({
+  maxRequests: 20,
+  windowMs: 60000, // 1 minute
+  burstLimit: 5,
+  errorMessage: 'Rate limit exceeded. Please wait a moment before sending another message.'
+});
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
@@ -161,13 +171,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (notebookError) {
-      console.error('[Chat API] Notebook fetch error:', {
+      logger.error('[Chat API] Notebook fetch error', {
         error: notebookError,
         code: notebookError.code,
         message: notebookError.message,
         notebookId,
         userId,
-      });
+      }, 'chat');
       
       // Check for specific error types
       if (notebookError.code === 'PGRST116' || notebookError.message?.includes('does not exist')) {
@@ -208,13 +218,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data: sources, error: sourcesError } = await getCachedSources(
       notebookId,
       userId,
-      ['id', 'title', 'processed_content', 'source_type'], // Optimized: removed 'content' field
+      ['id', 'title', 'processed_content', 'source_type', 'processing_status'], // Include processing_status for filtering
       undefined, // sourceIds
       authToken // Pass auth token for authenticated queries
     );
 
     if (sourcesError) {
-      console.error('[Chat API] Sources error:', {
+      logger.error('[Chat API] Sources error', {
         error: sourcesError,
         context: 'fetch_sources',
         notebookId,
@@ -223,7 +233,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: sourcesError.message,
         details: sourcesError.details,
         hint: sourcesError.hint
-      });
+      }, 'chat');
 
       // Return graceful fallback instead of error
       if (sourcesError.code === 'TABLE_NOT_FOUND') {
@@ -245,7 +255,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // For other errors, return empty sources array (graceful degradation)
-      console.warn('[Chat API] Returning empty sources due to error');
+      logger.warn('[Chat API] Returning empty sources due to error', undefined, 'chat');
     }
 
     // Use Pinecone for semantic source retrieval (with graceful fallback)
@@ -254,6 +264,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Always fallback to all included sources if Pinecone fails
     const validSources = sources && !sourcesError ? sources : [];
+    
+    // Filter to only ready sources (have processed_content)
+    const readySources = validSources.filter(source => {
+      const hasContent = source.processed_content && source.processed_content.trim().length > 0;
+      const isReady = source.processing_status === 'completed' || 
+                     (source.processing_status === null && hasContent);
+      return hasContent && isReady;
+    });
+
+    const processingSources = validSources.filter(source => 
+      source.processing_status === 'pending' || 
+      source.processing_status === 'processing' ||
+      (!source.processed_content || source.processed_content.trim().length === 0)
+    );
+
+    // Check if we have any ready sources
+    if (readySources.length === 0 && processingSources.length > 0) {
+      res.status(400).json({ 
+        error: 'Sources are still processing',
+        message: `Please wait for ${processingSources.length} source(s) to finish processing before asking questions. This usually takes a few seconds.`,
+        processingCount: processingSources.length,
+        readyCount: 0
+      });
+      return;
+    }
+
+    if (readySources.length === 0) {
+      res.status(400).json({ 
+        error: 'No ready sources available',
+        message: 'This notebook has no sources with processed content. Please add sources and wait for them to be processed.'
+      });
+      return;
+    }
     
     try {
       // Search Pinecone for similar sources (top 5-10)
@@ -265,40 +308,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const pineconeSourceIds = [...new Set(pineconeResults.map(r => r.sourceId))];
         const { data: pineconeSources, error: pineconeError } = await supabase
           .from('research_sources')
-          .select('id, title, processed_content, source_type')
+          .select('id, title, processed_content, source_type, processing_status')
           .eq('notebook_id', notebookId)
           .eq('user_id', userId)
           .in('id', pineconeSourceIds);
         
         if (!pineconeError && pineconeSources && pineconeSources.length > 0) {
-          // Build context from Pinecone-retrieved sources (semantically relevant)
-          selectedSources = pineconeSources;
-          sourceContext = pineconeSources
-            .map(s => {
-              const content = String(s.processed_content || '');
-              const result = pineconeResults.find(r => r.sourceId === s.id);
-              return `[Source: ${s.title}${result ? ` (Relevance: ${(result.score * 100).toFixed(0)}%)` : ''}]\n${content.substring(0, 5000)}`;
-            })
-            .join('\n\n---\n\n');
+          // Filter to only ready sources from Pinecone results
+          const readyPineconeSources = pineconeSources.filter(s => {
+            const hasContent = s.processed_content && s.processed_content.trim().length > 0;
+            const isReady = s.processing_status === 'completed' || 
+                           (s.processing_status === null && hasContent);
+            return hasContent && isReady;
+          });
           
-          console.log(`[Chat API] Using ${pineconeSources.length} Pinecone-retrieved sources`);
+          // Build context from Pinecone-retrieved sources (semantically relevant)
+          if (readyPineconeSources.length > 0) {
+            selectedSources = readyPineconeSources;
+            sourceContext = readyPineconeSources
+              .map(s => {
+                const content = String(s.processed_content || '');
+                const result = pineconeResults.find(r => r.sourceId === s.id);
+                return `[Source: ${s.title}${result ? ` (Relevance: ${(result.score * 100).toFixed(0)}%)` : ''}]\n${content.substring(0, 5000)}`;
+              })
+              .join('\n\n---\n\n');
+            
+            logger.log(`[Chat API] Using ${readyPineconeSources.length} Pinecone-retrieved ready sources`, undefined, 'chat');
+          }
         }
       }
     } catch (pineconeError: any) {
       // Log but don't break - will use fallback
-      console.warn('[Chat API] Pinecone search error, using fallback:', pineconeError?.message || pineconeError);
+      logger.warn('[Chat API] Pinecone search error, using fallback', pineconeError?.message || pineconeError, 'chat');
     }
     
-    // Fallback: If Pinecone returns no results or fails, use all included sources
-    if (selectedSources.length === 0 && validSources.length > 0) {
-      selectedSources = validSources;
-      sourceContext = validSources
+    // Fallback: If Pinecone returns no results or fails, use ready sources
+    if (selectedSources.length === 0 && readySources.length > 0) {
+      selectedSources = readySources;
+      sourceContext = readySources
         .map(s => {
           const content = String(s.processed_content || '');
           return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
         })
         .join('\n\n---\n\n');
-      console.log(`[Chat API] Using ${validSources.length} included sources (Pinecone unavailable or no matches)`);
+      logger.log(`[Chat API] Using ${readySources.length} ready sources (Pinecone unavailable or no matches)`, undefined, 'chat');
     }
 
     // Ensure we have sources or provide a helpful message
@@ -340,7 +393,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
           if (attempt > 0) {
-            console.log(`[Chat API] Retry attempt ${attempt}/${maxRetries}`);
+            logger.log(`[Chat API] Retry attempt ${attempt}/${maxRetries}`, undefined, 'chat');
             await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // Exponential backoff
           }
 
@@ -402,11 +455,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[Chat API] GLM API error:', {
+      logger.error('[Chat API] GLM API error', {
         status: response.status,
         statusText: response.statusText,
         error: errorText,
-      });
+      }, 'chat');
       
       let errorMessage = 'AI service error';
       if (response.status === 401) {
@@ -428,7 +481,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       glmData = await response.json();
     } catch (jsonError: any) {
-      console.error('[Chat API] JSON parse error:', jsonError);
+      logger.error('[Chat API] JSON parse error', jsonError, 'chat');
       const errorText = await response.text().catch(() => 'Unable to read error response');
       res.status(500).json({ 
         error: 'Invalid response from AI service',
@@ -440,7 +493,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate response structure
     if (!glmData || !glmData.choices || !Array.isArray(glmData.choices) || glmData.choices.length === 0) {
-      console.error('[Chat API] Invalid response structure:', glmData);
+      logger.error('[Chat API] Invalid response structure', glmData, 'chat');
       res.status(500).json({ 
         error: 'Invalid response from AI service',
         message: 'The AI service returned an unexpected response format. Please try again.',
@@ -452,7 +505,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const aiResponse = glmData.choices[0]?.message?.content || glmData.choices[0]?.content || 'No response generated';
 
     if (!aiResponse || aiResponse.trim().length === 0 || aiResponse === 'No response generated') {
-      console.error('[Chat API] Empty response from AI:', { glmData });
+      logger.error('[Chat API] Empty response from AI', { glmData }, 'chat');
       res.status(500).json({ 
         error: 'Empty response from AI service',
         message: 'The AI service did not generate a response. Please try again.',
@@ -473,7 +526,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
 
     if (userMsgError) {
-      console.error('[Chat API] Error saving user message:', userMsgError);
+      logger.error('[Chat API] Error saving user message', userMsgError, 'chat');
     }
 
     const { data: aiMessage, error: aiMsgError } = await supabase
@@ -489,7 +542,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (aiMsgError) {
-      console.error('[Chat API] Error saving AI message:', aiMsgError);
+      logger.error('[Chat API] Error saving AI message', aiMsgError, 'chat');
     }
 
     res.status(200).json({
@@ -500,9 +553,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
   } catch (error: any) {
-    console.error('[Chat API] Error:', error);
-    console.error('[Chat API] Error stack:', error.stack);
-    console.error('[Chat API] Request body:', req.body);
+    logger.error('[Chat API] Error', error, 'chat');
+    logger.error('[Chat API] Error stack', error.stack, 'chat');
+    logger.debug('[Chat API] Request body', req.body, 'chat');
     
     let errorMessage = 'Internal server error';
     let statusCode = 500;

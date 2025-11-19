@@ -426,20 +426,35 @@ export interface Source {
 }
 
 /**
+ * Force refresh sources (bypass cache)
+ */
+export async function refreshNotebookSources(
+  notebookId: string,
+  userId: string
+): Promise<{ data: Source[] | null; error: any }> {
+  const cacheKey = `sources-${notebookId}-${userId}`;
+  notebooksCache.delete(cacheKey);
+  return getNotebookSources(notebookId, userId, true);
+}
+
+/**
  * Get all sources for a notebook
  * Optimized: Caching, request deduplication, and error handling
  */
 export async function getNotebookSources(
   notebookId: string,
-  userId: string
+  userId: string,
+  forceRefresh: boolean = false
 ): Promise<{ data: Source[] | null; error: any }> {
   const cacheKey = `sources-${notebookId}-${userId}`;
   
-  // Check cache first
-  const cached = notebooksCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log('Returning cached sources');
-    return { data: cached.data as any, error: null };
+  // Check cache first (unless force refresh)
+  if (!forceRefresh) {
+    const cached = notebooksCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('Returning cached sources');
+      return { data: cached.data as any, error: null };
+    }
   }
 
   // Check if there's already a pending request for this key
@@ -633,10 +648,8 @@ export async function deleteSource(
     .eq('id', sourceId)
     .eq('user_id', userId);
 
-  // Update notebook source count and clear cache
+  // Clear sources cache after deleting source
   if (!error && source) {
-    await updateNotebookSourceCount(source.notebook_id, userId, -1);
-    // Clear sources cache after deleting source
     const cacheKey = `sources-${source.notebook_id}-${userId}`;
     notebooksCache.delete(cacheKey);
     // Also clear any filtered cache keys
@@ -648,6 +661,91 @@ export async function deleteSource(
   }
 
   return { error };
+}
+
+/**
+ * Bulk delete sources
+ */
+export async function bulkDeleteSources(
+  sourceIds: string[],
+  userId: string
+): Promise<{ error: any; deletedCount: number }> {
+  if (!sourceIds || sourceIds.length === 0) {
+    return { error: null, deletedCount: 0 };
+  }
+
+  // Get notebook IDs for cache clearing
+  const { data: sources } = await supabase
+    .from('research_sources')
+    .select('id, notebook_id')
+    .in('id', sourceIds)
+    .eq('user_id', userId);
+
+  const { error } = await supabase
+    .from('research_sources')
+    .delete()
+    .in('id', sourceIds)
+    .eq('user_id', userId);
+
+  // Clear sources cache for affected notebooks
+  if (!error && sources) {
+    const notebookIds = [...new Set(sources.map(s => s.notebook_id))];
+    notebookIds.forEach(notebookId => {
+      const cacheKey = `sources-${notebookId}-${userId}`;
+      notebooksCache.delete(cacheKey);
+      // Also clear any filtered cache keys
+      for (const key of notebooksCache.keys()) {
+        if (key.startsWith(`sources-${notebookId}-${userId}:`)) {
+          notebooksCache.delete(key);
+        }
+      }
+    });
+  }
+
+  return { error, deletedCount: sources?.length || 0 };
+}
+
+/**
+ * Bulk toggle source include status
+ */
+export async function bulkToggleSourceInclude(
+  sourceIds: string[],
+  userId: string,
+  isIncluded: boolean
+): Promise<{ error: any; updatedCount: number }> {
+  if (!sourceIds || sourceIds.length === 0) {
+    return { error: null, updatedCount: 0 };
+  }
+
+  // Get notebook IDs for cache clearing
+  const { data: sources } = await supabase
+    .from('research_sources')
+    .select('id, notebook_id')
+    .in('id', sourceIds)
+    .eq('user_id', userId);
+
+  const { error } = await supabase
+    .from('research_sources')
+    .update({ is_included: isIncluded })
+    .in('id', sourceIds)
+    .eq('user_id', userId);
+
+  // Clear sources cache for affected notebooks
+  if (!error && sources) {
+    const notebookIds = [...new Set(sources.map(s => s.notebook_id))];
+    notebookIds.forEach(notebookId => {
+      const cacheKey = `sources-${notebookId}-${userId}`;
+      notebooksCache.delete(cacheKey);
+      // Also clear any filtered cache keys
+      for (const key of notebooksCache.keys()) {
+        if (key.startsWith(`sources-${notebookId}-${userId}:`)) {
+          notebooksCache.delete(key);
+        }
+      }
+    });
+  }
+
+  return { error, updatedCount: sources?.length || 0 };
 }
 
 /**

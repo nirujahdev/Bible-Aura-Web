@@ -19,15 +19,22 @@ import {
   BookOpen,
   Mic,
   Scale,
+  Download,
+  Globe,
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { formatRelativeTime } from '@/lib/research-lab/utils';
+import { exportContent, formatAgentOutputForExport, type ExportOptions } from '@/lib/research-lab/export-utils';
 
 interface StudioOutputViewProps {
   output: {
@@ -58,6 +65,8 @@ function getOutputIcon(outputType: string) {
       return Mic;
     case 'doctrinal_harmony':
       return Scale;
+    case 'translation':
+      return Globe;
     default:
       return FileText;
   }
@@ -77,6 +86,8 @@ function getOutputTypeLabel(outputType: string): string {
       return 'Sermon';
     case 'doctrinal_harmony':
       return 'Doctrine Analysis';
+    case 'translation':
+      return 'Translation';
     default:
       return 'Output';
   }
@@ -130,6 +141,30 @@ export function StudioOutputView({
     });
   };
 
+  const handleExport = async (format: 'pdf' | 'markdown' | 'txt' | 'json', includeMetadata = true, includeSources = true) => {
+    try {
+      const exportData = formatAgentOutputForExport(output);
+      const options: ExportOptions = {
+        format,
+        filename: `${exportData.title || 'export'}.${format === 'markdown' ? 'md' : format === 'txt' ? 'txt' : format}`,
+        includeMetadata,
+        includeSources,
+      };
+      await exportContent(exportData, options);
+      toast({
+        title: 'Export started',
+        description: `Exporting as ${format.toUpperCase()}...`,
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast({
+        title: 'Export failed',
+        description: error.message || 'Failed to export output',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Extract content text
   let contentText = '';
   if (!output || !output.content) {
@@ -137,16 +172,32 @@ export function StudioOutputView({
   } else if (typeof output.content === 'string') {
     contentText = output.content;
   } else if (output.content && typeof output.content === 'object') {
-    // Try different content fields
-    contentText = output.content.text || 
-                  output.content.summary || 
-                  output.content.content ||
-                  output.content.output ||
-                  output.content.sermon ||
-                  output.content.curriculum ||
-                  output.content.harmonization ||
-                  output.content.answer ||
-                  JSON.stringify(output.content, null, 2);
+    // Handle translation output specially
+    if (output.output_type === 'translation' && output.content.translation) {
+      const langNames: Record<string, string> = {
+        'en': 'English', 'ta': 'Tamil', 'es': 'Spanish', 'fr': 'French',
+        'de': 'German', 'pt': 'Portuguese', 'zh': 'Chinese', 'ja': 'Japanese',
+        'ko': 'Korean', 'hi': 'Hindi', 'ar': 'Arabic', 'ru': 'Russian',
+      };
+      const targetLang = langNames[output.content.targetLanguage] || output.content.targetLanguage || 'Unknown';
+      contentText = `🌐 Translation to ${targetLang}\n\n`;
+      if (output.content.originalText) {
+        contentText += `Original Text:\n${output.content.originalText}\n\n`;
+        contentText += `${'='.repeat(50)}\n\n`;
+      }
+      contentText += `Translation:\n${output.content.translation}`;
+    } else {
+      // Try different content fields
+      contentText = output.content.text || 
+                    output.content.summary || 
+                    output.content.content ||
+                    output.content.output ||
+                    output.content.sermon ||
+                    output.content.curriculum ||
+                    output.content.harmonization ||
+                    output.content.answer ||
+                    JSON.stringify(output.content, null, 2);
+    }
   } else {
     contentText = 'No content available';
   }
@@ -205,6 +256,31 @@ export function StudioOutputView({
                       <Copy className="h-4 w-4 mr-2" />
                       Copy
                     </DropdownMenuItem>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Export as PDF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('markdown')}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Export as Markdown
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Export as Text
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('json')}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Export as JSON
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => onEdit?.(output.id)}>
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
@@ -223,6 +299,36 @@ export function StudioOutputView({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('markdown')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as Markdown
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('txt')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as Text
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('json')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant="ghost"
             size="sm"

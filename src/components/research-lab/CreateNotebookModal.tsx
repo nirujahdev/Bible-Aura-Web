@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { createNotebook } from '@/lib/research-lab/db-operations';
+import { createNotebook, createSource, updateNotebookSourceCount } from '@/lib/research-lab/db-operations';
+import { uploadFile } from '@/lib/supabase-storage';
+import { sanitizeFileName } from '@/lib/research-lab/utils';
 import {
   Upload,
   Link as LinkIcon,
@@ -133,13 +135,257 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
         throw new Error('Failed to create notebook: No data returned');
       }
 
-      // TODO: Upload files and create sources
-      // This will be implemented in the next phase
+      // Process sources if any were provided
+      const hasSources = selectedFiles.length > 0 || linkUrl.trim() || pastedText.trim();
+      let sourceCount = 0;
+      const uploadErrors: string[] = [];
 
-      toast({
-        title: 'Notebook created',
-        description: `"${notebookTitle}" has been created successfully`,
-      });
+      if (hasSources) {
+        // Upload files
+        for (const file of selectedFiles) {
+          try {
+            // Validate file size
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            if (file.size > maxSize) {
+              uploadErrors.push(`${file.name}: File exceeds 50MB limit`);
+              continue;
+            }
+
+            // Validate file type
+            const allowedTypes = [
+              'application/pdf',
+              'text/plain',
+              'text/markdown',
+              'application/msword',
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              'image/',
+              'video/',
+              'audio/',
+            ];
+            const isValidType = allowedTypes.some(type => 
+              file.type === type || (type.endsWith('/') && file.type.startsWith(type))
+            );
+            if (!isValidType && !file.name.match(/\.(txt|md|pdf|doc|docx)$/i)) {
+              uploadErrors.push(`${file.name}: Unsupported file type`);
+              continue;
+            }
+
+            // Get source type
+            const getSourceType = (file: File): string => {
+              if (file.type === 'application/pdf') return 'pdf';
+              if (file.type.startsWith('image/')) return 'image';
+              if (file.type.startsWith('video/')) return 'video';
+              if (file.type.startsWith('audio/')) return 'audio';
+              if (file.name.endsWith('.txt')) return 'txt';
+              if (file.name.endsWith('.md')) return 'markdown';
+              return 'text';
+            };
+
+            // Sanitize filename
+            const sanitizedFileName = sanitizeFileName(file.name);
+            const filePath = `${user.id}/${notebook.id}/${Date.now()}-${sanitizedFileName}`;
+            const uploadResult = await uploadFile('research-lab-sources', file, filePath);
+            
+            if (!uploadResult.success) {
+              uploadErrors.push(`${file.name}: ${uploadResult.error || 'Upload failed'}`);
+              continue;
+            }
+
+            // Get signed URL
+            let signedUrl = filePath;
+            try {
+              const { data: urlData } = await supabase.storage
+                .from('research-lab-sources')
+                .createSignedUrl(filePath, 3600 * 24 * 7);
+              if (urlData?.signedUrl) {
+                signedUrl = urlData.signedUrl;
+              }
+            } catch (urlErr) {
+              console.error('Error creating signed URL:', urlErr);
+            }
+
+            // Create source record
+            const { data: newSource, error: sourceError } = await createSource({
+              notebook_id: notebook.id,
+              user_id: user.id,
+              source_type: getSourceType(file) as any,
+              title: file.name,
+              file_path: filePath,
+              file_url: signedUrl,
+              file_size: file.size,
+              mime_type: file.type,
+            });
+
+            if (sourceError) {
+              uploadErrors.push(`${file.name}: Failed to create source - ${sourceError.message || 'Unknown error'}`);
+              continue;
+            }
+
+            sourceCount++;
+
+            // Index source and trigger summary (async, non-blocking)
+            if (newSource?.id) {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                await supabase
+                  .from('research_sources')
+                  .update({ indexing_status: 'indexing' })
+                  .eq('id', newSource.id);
+
+                const contentToIndex = newSource.processed_content || newSource.content_text || '';
+                if (contentToIndex) {
+                  fetch('/api/research-lab/index-source', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                      sourceId: newSource.id,
+                      notebookId: notebook.id,
+                      content: contentToIndex,
+                    }),
+                  }).catch(err => console.error('Failed to index source:', err));
+                }
+              }
+            }
+          } catch (fileError: any) {
+            uploadErrors.push(`${file.name}: ${fileError.message || 'Upload failed'}`);
+          }
+        }
+
+        // Add link source
+        if (linkUrl.trim()) {
+          try {
+            const { data: newSource, error: linkError } = await createSource({
+              notebook_id: notebook.id,
+              user_id: user.id,
+              source_type: 'link',
+              title: linkUrl.trim(),
+              link_url: linkUrl.trim(),
+            });
+
+            if (linkError) {
+              uploadErrors.push(`Link: Failed to add - ${linkError.message || 'Unknown error'}`);
+            } else {
+              sourceCount++;
+              // Index link source (async)
+              if (newSource?.id) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                  await supabase
+                    .from('research_sources')
+                    .update({ indexing_status: 'indexing' })
+                    .eq('id', newSource.id);
+
+                  const contentToIndex = newSource.processed_content || newSource.content_text || '';
+                  if (contentToIndex) {
+                    fetch('/api/research-lab/index-source', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                      },
+                      body: JSON.stringify({
+                        sourceId: newSource.id,
+                        notebookId: notebook.id,
+                        content: contentToIndex,
+                      }),
+                    }).catch(err => console.error('Failed to index source:', err));
+                  }
+                }
+              }
+            }
+          } catch (linkErr: any) {
+            uploadErrors.push(`Link: ${linkErr.message || 'Failed to add'}`);
+          }
+        }
+
+        // Add pasted text source
+        if (pastedText.trim()) {
+          try {
+            const { data: newSource, error: textError } = await createSource({
+              notebook_id: notebook.id,
+              user_id: user.id,
+              source_type: 'text',
+              title: 'Pasted Text',
+              content_text: pastedText.trim(),
+            });
+
+            if (textError) {
+              uploadErrors.push(`Pasted text: Failed to add - ${textError.message || 'Unknown error'}`);
+            } else {
+              sourceCount++;
+              // Index text source (async)
+              if (newSource?.id) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                  await supabase
+                    .from('research_sources')
+                    .update({ indexing_status: 'indexing' })
+                    .eq('id', newSource.id);
+
+                  const contentToIndex = newSource.processed_content || newSource.content_text || '';
+                  if (contentToIndex) {
+                    fetch('/api/research-lab/index-source', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                      },
+                      body: JSON.stringify({
+                        sourceId: newSource.id,
+                        notebookId: notebook.id,
+                        content: contentToIndex,
+                      }),
+                    }).catch(err => console.error('Failed to index source:', err));
+                  }
+                }
+              }
+            }
+          } catch (textErr: any) {
+            uploadErrors.push(`Pasted text: ${textErr.message || 'Failed to add'}`);
+          }
+        }
+
+        // Update notebook source count
+        if (sourceCount > 0) {
+          await updateNotebookSourceCount(notebook.id, user.id, sourceCount);
+        }
+
+        // Show results
+        if (uploadErrors.length > 0 && sourceCount > 0) {
+          toast({
+            title: 'Notebook created with partial sources',
+            description: `Added ${sourceCount} source(s), but ${uploadErrors.length} failed.`,
+            variant: 'default',
+            duration: 5000,
+          });
+        } else if (uploadErrors.length > 0) {
+          toast({
+            title: 'Notebook created, but sources failed',
+            description: `All ${uploadErrors.length} source(s) failed to add.`,
+            variant: 'destructive',
+            duration: 5000,
+          });
+        } else if (sourceCount > 0) {
+          toast({
+            title: 'Notebook created',
+            description: `"${notebookTitle}" created with ${sourceCount} source(s). Sources are being processed...`,
+            duration: 4000,
+          });
+        } else {
+          toast({
+            title: 'Notebook created',
+            description: `"${notebookTitle}" has been created successfully`,
+          });
+        }
+      } else {
+        toast({
+          title: 'Notebook created',
+          description: `"${notebookTitle}" has been created successfully`,
+        });
+      }
 
       onCreated(notebook.id);
       handleClose();

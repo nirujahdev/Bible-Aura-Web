@@ -4,6 +4,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { OpenAI } from 'openai';
+import { logger } from '../../src/lib/research-lab/logger.js';
 
 // CORS headers helper
 function setCORSHeaders(res: VercelResponse, origin?: string) {
@@ -39,22 +40,22 @@ export default async function handler(
   setCORSHeaders(res, req.headers.origin);
 
   try {
-    console.log('[Sermon AI API] ===== Request Received =====');
-    console.log('[Sermon AI API] Method:', req.method);
-    console.log('[Sermon AI API] Origin:', req.headers.origin);
-    console.log('[Sermon AI API] Body keys:', req.body ? Object.keys(req.body) : 'no body');
+    logger.debug('[Sermon AI API] Request received', {
+      method: req.method,
+      origin: req.headers.origin,
+      bodyKeys: req.body ? Object.keys(req.body) : 'no body'
+    }, 'sermon-ai');
     
     // Security: Get API key from server-side environment variable (NOT exposed to client)
     const apiKey = process.env.Sermon_AI_API;
     
-    console.log('[Sermon AI API] API Key check:', {
+    logger.debug('[Sermon AI API] API Key check', {
       hasKey: !!apiKey,
       keyLength: apiKey?.length || 0,
-      keyPrefix: apiKey?.substring(0, 7) || 'none'
-    });
+    }, 'sermon-ai');
     
     if (!apiKey || apiKey === 'demo-key' || apiKey === 'your_sermon_ai_api_key_here' || apiKey.trim() === '') {
-      console.error('[Sermon AI API] ❌ Sermon_AI_API not configured');
+      logger.error('[Sermon AI API] Sermon_AI_API not configured', undefined, 'sermon-ai');
       res.status(500).json({
         error: 'Service unavailable',
         message: 'Sermon AI API key not configured. Please set Sermon_AI_API in Vercel environment variables.'
@@ -65,7 +66,7 @@ export default async function handler(
     // Validate API key format
     const isValidKeyFormat = apiKey.startsWith('sk-') || apiKey.startsWith('sk-proj-');
     if (!isValidKeyFormat || apiKey.length < 20) {
-      console.error('[Sermon AI] Invalid API key format');
+      logger.error('[Sermon AI] Invalid API key format', undefined, 'sermon-ai');
       res.status(500).json({
         error: 'Service unavailable',
         message: 'Sermon AI API configuration error'
@@ -128,12 +129,12 @@ export default async function handler(
     // Use gpt-4o for better performance and cost-effectiveness
     const modelName = 'gpt-4o';
     
-    console.log('[Sermon AI API] Calling OpenAI API:', {
+    logger.debug('[Sermon AI API] Calling OpenAI API', {
       model: modelName,
       messagesCount: messageArray.length,
       maxTokens: Math.min(maxTokens, 4000),
       temperature: Math.max(0, Math.min(2, temperature))
-    });
+    }, 'sermon-ai');
 
     const startTime = Date.now();
     // Call OpenAI API with GPT-4o
@@ -145,15 +146,15 @@ export default async function handler(
     });
 
     const duration = Date.now() - startTime;
-    console.log('[Sermon AI API] OpenAI response received:', {
+    logger.debug('[Sermon AI API] OpenAI response received', {
       duration: `${duration}ms`,
       hasChoices: !!completion.choices,
       choicesCount: completion.choices?.length || 0,
       usage: completion.usage
-    });
+    }, 'sermon-ai');
 
     if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
-      console.error('[Sermon AI API] ❌ Invalid response from OpenAI');
+      logger.error('[Sermon AI API] Invalid response from OpenAI', undefined, 'sermon-ai');
       res.status(500).json({
         error: 'Invalid response',
         message: 'Invalid response from OpenAI API'
@@ -162,8 +163,7 @@ export default async function handler(
     }
 
     const content = completion.choices[0].message.content || '';
-    console.log('[Sermon AI API] ===== Success =====');
-    console.log('[Sermon AI API] Content length:', content.length);
+    logger.log('[Sermon AI API] Success', { contentLength: content.length }, 'sermon-ai');
 
     res.status(200).json({
       content: content,
@@ -172,14 +172,15 @@ export default async function handler(
     });
 
   } catch (error: any) {
-    console.error('[Sermon AI API] ===== Error =====');
-    console.error('[Sermon AI API] Error type:', error?.constructor?.name);
-    console.error('[Sermon AI API] Error message:', error?.message);
-    console.error('[Sermon AI API] Error response status:', error?.response?.status);
-    console.error('[Sermon AI API] Full error:', error);
+    logger.error('[Sermon AI API] Error', {
+      errorType: error?.constructor?.name,
+      errorMessage: error?.message,
+      responseStatus: error?.response?.status,
+      error: error
+    }, 'sermon-ai');
     
     if (error.response?.status === 401) {
-      console.error('[Sermon AI API] ❌ Authentication failed');
+      logger.error('[Sermon AI API] Authentication failed', error, 'sermon-ai');
       res.status(401).json({
         error: 'Authentication failed',
         message: 'Sermon AI API authentication failed. Please check your API key.'
