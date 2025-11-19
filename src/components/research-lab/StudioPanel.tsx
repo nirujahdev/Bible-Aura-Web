@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AgentModal } from './agents/AgentModal';
 import { StudioOutputView } from './StudioOutputView';
+import { AddManualNoteModal } from './AddManualNoteModal';
 import { formatRelativeTime, getOutputTitle, getFormatLabel } from '@/lib/research-lab/utils';
 
 interface StudioPanelProps {
@@ -108,6 +109,8 @@ function getOutputIcon(outputType: string) {
       return Mic;
     case 'doctrinal_harmony':
       return Scale;
+    case 'manual_note':
+      return FileText;
     default:
       return FileText;
   }
@@ -122,6 +125,7 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
   const [generatingOutputs, setGeneratingOutputs] = useState<Set<string>>(new Set());
   const [sourceCount, setSourceCount] = useState(0);
   const [selectedOutput, setSelectedOutput] = useState<StudioOutput | null>(null);
+  const [addNoteModalOpen, setAddNoteModalOpen] = useState(false);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -413,11 +417,24 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
         <Button
           variant="outline"
           className="w-full bg-black text-white hover:bg-gray-800 text-sm sm:text-base h-10 sm:h-auto"
+          onClick={() => setAddNoteModalOpen(true)}
         >
           <FilePlus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
           Add note
         </Button>
       </div>
+
+      {/* Add Manual Note Modal */}
+      {notebookId && (
+        <AddManualNoteModal
+          open={addNoteModalOpen}
+          onClose={() => setAddNoteModalOpen(false)}
+          notebookId={notebookId}
+          onSaved={() => {
+            loadOutputs();
+          }}
+        />
+      )}
     </div>
   );
 }
