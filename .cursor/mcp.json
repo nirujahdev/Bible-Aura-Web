@@ -6,7 +6,7 @@
     "pinecone": {
       "command": "node",
       "args": [
-        "node_modules/@pinecone-database/mcp/dist/index.js"
+        "./node_modules/@pinecone-database/mcp/dist/index.js"
       ],
       "env": {
         "PINECONE_API_KEY": "pcsk_2PXYxm_HqC9Gfs5sJ1KFmDQN1T2XwCCKYSfyymiuw5wjPDtCfZKjCtVp3vsSvyUdppRqRt",
