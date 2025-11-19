@@ -35,7 +35,8 @@ interface StudioOutputViewProps {
     output_type: string;
     content: any;
     metadata?: any;
-    created_at: string;
+    created_at?: string;
+    generated_at?: string;
   };
   sourceCount: number;
   onClose: () => void;
@@ -266,7 +267,7 @@ export function StudioOutputView({
             </Button>
           </div>
           <div className="text-xs text-gray-500">
-            {formatRelativeTime(output.created_at)}
+            {formatRelativeTime(output.generated_at || output.created_at || new Date().toISOString())}
           </div>
         </div>
       </div>
