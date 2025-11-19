@@ -644,8 +644,8 @@ Format as structured JSON with clear sections.`;
           duration: params.duration,
           audience: params.audience,
           curriculum: result,
-          sourceIds: sources.map(s => s.id),
-          sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+          sourceIds: selectedSources.map(s => s.id),
+          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
         };
         break;
@@ -654,8 +654,8 @@ Format as structured JSON with clear sections.`;
           scriptureReference: params.scriptureReference,
           sermonType: params.sermonType || 'expository',
           sermon: result,
-          sourceIds: sources.map(s => s.id),
-          sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+          sourceIds: selectedSources.map(s => s.id),
+          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
         };
         break;
@@ -664,8 +664,8 @@ Format as structured JSON with clear sections.`;
           doctrinalQuestion: params.doctrinalQuestion,
           includePerspectives: params.includePerspectives !== false,
           harmonization: result,
-          sourceIds: sources.map(s => s.id),
-          sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+          sourceIds: selectedSources.map(s => s.id),
+          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
         };
         break;
@@ -769,7 +769,7 @@ Format as structured JSON with clear sections.`;
     const responseData: any = {
       success: true,
       status: 'completed',
-      sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+      sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
       outputId: savedOutput?.id || null,
     };
 
