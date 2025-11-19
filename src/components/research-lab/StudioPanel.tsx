@@ -22,7 +22,9 @@ import {
   FilePlus,
   Play,
   MoreVertical,
-  X
+  X,
+  Copy,
+  Trash2
 } from 'lucide-react';
 import { BibleAuraLoadingAnimation, InlineLoadingIndicator } from '@/components/BibleAuraLoadingAnimation';
 import { getStudioOutputs, type StudioOutput } from '@/lib/research-lab/db-operations';
@@ -33,6 +35,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AgentModal } from './agents/AgentModal';
+import { StudioOutputView } from './StudioOutputView';
+import { formatRelativeTime, getOutputTitle } from '@/lib/research-lab/utils';
 
 interface StudioPanelProps {
   notebookId: string;
@@ -83,21 +87,6 @@ const aiAgents = [
   },
 ];
 
-// Helper function to format relative time
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-}
 
 // Helper function to get agent info from output type
 function getAgentInfo(outputType: string) {
@@ -132,6 +121,7 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
   const [loading, setLoading] = useState(true);
   const [generatingOutputs, setGeneratingOutputs] = useState<Set<string>>(new Set());
   const [sourceCount, setSourceCount] = useState(0);
+  const [selectedOutput, setSelectedOutput] = useState<StudioOutput | null>(null);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -427,6 +417,27 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
   const completedOutputs = outputs.filter(o => o.content);
   const generatingTypes = Array.from(generatingOutputs);
 
+  // Show output view if one is selected
+  if (selectedOutput) {
+    return (
+      <StudioOutputView
+        output={selectedOutput}
+        sourceCount={sourceCount}
+        onClose={() => setSelectedOutput(null)}
+        onDelete={async (id) => {
+          const { error } = await supabase
+            .from('research_studio_outputs')
+            .delete()
+            .eq('id', id);
+          if (!error) {
+            loadOutputs();
+            toast({ title: 'Deleted', description: 'Output removed' });
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -482,27 +493,29 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
             />
           )}
 
-          {/* Generating Status */}
+          {/* Generating Status - NotebookLM Style */}
           {generatingTypes.length > 0 && !activeAgentModal && (
             <div className="mb-4 space-y-2">
-              {generatingTypes.map((outputType) => {
-                const agent = getAgentInfo(outputType);
+              {generatingTypes.map((agentId) => {
+                const agent = aiAgents.find(a => a.id === agentId) || aiAgents[0];
+                const outputType = agent.outputType;
                 return (
                   <div
-                    key={outputType}
-                    className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+                    key={agentId}
+                    className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"
                   >
-                    <div className="flex items-center gap-3 mb-2">
-                      <img 
-                        src="/✦Bible Aura (2).png" 
-                        alt="Bible Aura" 
-                        className="h-5 w-5 rounded flex-shrink-0"
-                      />
-                      <p className="text-sm font-medium text-gray-900">Generating {agent.name}...</p>
-                    </div>
-                    <div className="pl-8">
-                      <InlineLoadingIndicator />
-                      <p className="text-xs text-gray-500 mt-2">Come back in a few minutes</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <BibleAuraLoadingAnimation className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          Generating {agent.name.toLowerCase()}...
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          based on {sourceCount} source{sourceCount !== 1 ? 's' : ''}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -510,56 +523,94 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
             </div>
           )}
 
-          {/* Completed Outputs List */}
+          {/* Completed Outputs List - NotebookLM Style */}
           {completedOutputs.length > 0 && (
-            <div className="mb-4 space-y-2">
+            <div className="mb-4 space-y-1">
               {completedOutputs.map((output) => {
                 const agent = getAgentInfo(output.output_type);
                 const OutputIcon = getOutputIcon(output.output_type);
-                const sourceCount = output.content?.sourcesUsed?.length || output.content?.sourceIds?.length || 0;
-                const outputTitle = output.content?.topic || 
-                                  output.content?.verseReference || 
-                                  output.content?.question || 
-                                  output.content?.scriptureReference ||
-                                  output.content?.doctrinalQuestion ||
-                                  agent.name;
+                const outputSourceCount = output.content?.sourcesUsed?.length || 
+                                        output.content?.sourceIds?.length || 
+                                        output.metadata?.sourcesUsed?.length || 
+                                        sourceCount || 0;
+                const outputTitle = getOutputTitle(output);
+                const formatLabel = getFormatLabel(output.output_type, output.metadata?.format);
+                const timeAgo = formatRelativeTime((output as any).generated_at || output.created_at);
                 
                 return (
                   <div
                     key={output.id}
-                    className="bg-white rounded-lg p-3 flex items-center gap-3 border border-gray-200 hover:shadow-sm transition-shadow"
+                    className="bg-white rounded-lg p-3 flex items-center gap-3 border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+                    onClick={() => setSelectedOutput(output)}
                   >
-                    <div className={`w-8 h-8 rounded-lg ${agent.color} flex items-center justify-center flex-shrink-0`}>
-                      <OutputIcon className="h-4 w-4" />
+                    <div className={`w-10 h-10 rounded-lg ${agent.color} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105`}>
+                      <OutputIcon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{outputTitle}</p>
-                      <p className="text-xs text-gray-500">
-                        {sourceCount > 0 ? `${sourceCount} sources` : 'No sources'} · {formatRelativeTime(output.generated_at)}
+                      <p className="text-sm font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                        {outputTitle}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {formatLabel && `${formatLabel} · `}
+                        {outputSourceCount} source{outputSourceCount !== 1 ? 's' : ''} · {timeAgo}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        onClick={() => {
-                          // TODO: Open output viewer
-                          console.log('View output:', output);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOutput(output);
                         }}
                       >
-                        <Play className="h-4 w-4" />
+                        <Play className="h-4 w-4 text-blue-600" />
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View</DropdownMenuItem>
-                          <DropdownMenuItem>Export</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={() => setSelectedOutput(output)}>
+                            <Play className="h-4 w-4 mr-2" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={async () => {
+                            const text = typeof output.content === 'string' 
+                              ? output.content 
+                              : JSON.stringify(output.content, null, 2);
+                            await navigator.clipboard.writeText(text);
+                            toast({ title: 'Copied', description: 'Output copied to clipboard' });
+                          }}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copy
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={async () => {
+                              if (confirm('Delete this output?')) {
+                                const { error } = await supabase
+                                  .from('research_studio_outputs')
+                                  .delete()
+                                  .eq('id', output.id);
+                                if (!error) {
+                                  loadOutputs();
+                                  toast({ title: 'Deleted', description: 'Output removed' });
+                                }
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
