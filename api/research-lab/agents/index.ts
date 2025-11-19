@@ -764,19 +764,29 @@ Format as structured JSON with clear sections.`;
           contentToSave = { text: String(outputContent) };
         }
         
+        // Build update data - only include metadata if column exists
+        const updateData: any = {
+          content: contentToSave, // Ensure it's a valid object for JSONB
+          updated_at: new Date().toISOString(),
+        };
+        
+        // Try to include metadata (will fail gracefully if column doesn't exist)
+        try {
+          updateData.metadata = {
+            status: 'completed',
+            completedAt: new Date().toISOString(),
+            agentType: agentType,
+            format: params.format || 'detailed',
+            language: params.language || 'en',
+          };
+        } catch (e) {
+          // Metadata column might not exist, continue without it
+          console.warn(`[${agentType} Agent] Could not add metadata:`, e);
+        }
+        
         const updateResult = await supabase
           .from('research_studio_outputs')
-          .update({
-            content: contentToSave, // Ensure it's a valid object for JSONB
-            metadata: {
-              status: 'completed',
-              completedAt: new Date().toISOString(),
-              agentType: agentType,
-              format: params.format || 'detailed',
-              language: params.language || 'en',
-            },
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq('id', existingOutput.id)
           .select()
           .single();
@@ -805,21 +815,31 @@ Format as structured JSON with clear sections.`;
           contentToSave = { text: String(outputContent) };
         }
         
+        // Build insert data - only include metadata if column exists
+        const insertData: any = {
+          notebook_id: notebookId,
+          user_id: userId,
+          output_type: outputType as any,
+          content: contentToSave, // Ensure it's a valid object for JSONB
+        };
+        
+        // Try to include metadata (will fail gracefully if column doesn't exist)
+        try {
+          insertData.metadata = {
+            status: 'completed',
+            completedAt: new Date().toISOString(),
+            agentType: agentType,
+            format: params.format || 'detailed',
+            language: params.language || 'en',
+          };
+        } catch (e) {
+          // Metadata column might not exist, continue without it
+          console.warn(`[${agentType} Agent] Could not add metadata:`, e);
+        }
+        
         const insertResult = await supabase
           .from('research_studio_outputs')
-          .insert({
-            notebook_id: notebookId,
-            user_id: userId,
-            output_type: outputType as any,
-            content: contentToSave, // Ensure it's a valid object for JSONB
-            metadata: {
-              status: 'completed',
-              completedAt: new Date().toISOString(),
-              agentType: agentType,
-              format: params.format || 'detailed',
-              language: params.language || 'en',
-            },
-          })
+          .insert(insertData)
           .select()
           .single();
 
@@ -847,19 +867,29 @@ Format as structured JSON with clear sections.`;
               contentToSave = { text: String(outputContent) };
             }
             
+            // Build update data - only include metadata if column exists
+            const updateData: any = {
+              content: contentToSave, // Ensure it's a valid object for JSONB
+              updated_at: new Date().toISOString(),
+            };
+            
+            // Try to include metadata (will fail gracefully if column doesn't exist)
+            try {
+              updateData.metadata = {
+                status: 'completed',
+                completedAt: new Date().toISOString(),
+                agentType: agentType,
+                format: params.format || 'detailed',
+                language: params.language || 'en',
+              };
+            } catch (e) {
+              // Metadata column might not exist, continue without it
+              console.warn(`[${agentType} Agent] Could not add metadata:`, e);
+            }
+            
             const updateResult = await supabase
               .from('research_studio_outputs')
-              .update({
-                content: contentToSave, // Ensure it's a valid object for JSONB
-                metadata: {
-                  status: 'completed',
-                  completedAt: new Date().toISOString(),
-                  agentType: agentType,
-                  format: params.format || 'detailed',
-                  language: params.language || 'en',
-                },
-                updated_at: new Date().toISOString(),
-              })
+              .update(updateData)
               .eq('notebook_id', notebookId)
               .eq('user_id', userId)
               .eq('output_type', outputType)
