@@ -424,19 +424,109 @@ export interface Source {
 
 /**
  * Get all sources for a notebook
+ * Optimized: Caching, request deduplication, and error handling
  */
 export async function getNotebookSources(
   notebookId: string,
   userId: string
 ): Promise<{ data: Source[] | null; error: any }> {
-  const { data, error } = await supabase
-    .from('research_sources')
-    .select('*')
-    .eq('notebook_id', notebookId)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  const cacheKey = `sources-${notebookId}-${userId}`;
+  
+  // Check cache first
+  const cached = notebooksCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log('Returning cached sources');
+    return { data: cached.data as any, error: null };
+  }
 
-  return { data, error };
+  // Check if there's already a pending request for this key
+  const pendingRequest = pendingRequests.get(cacheKey);
+  if (pendingRequest) {
+    console.log('Deduplicating request - waiting for existing request');
+    return pendingRequest;
+  }
+
+  // Create new request
+  const requestPromise = (async () => {
+    try {
+      const startTime = performance.now();
+      
+      const { data, error } = await supabase
+        .from('research_sources')
+        .select('id, notebook_id, user_id, source_type, title, file_path, file_url, link_url, content_text, processed_content, processing_status, file_size, mime_type, is_included, metadata, extracted_verses, key_insights, toc_structure, created_at, updated_at')
+        .eq('notebook_id', notebookId)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      const queryTime = performance.now() - startTime;
+      console.log(`getNotebookSources query took ${queryTime.toFixed(2)}ms`);
+
+      // Check if error is due to missing table
+      if (error) {
+        const errorMessage = error.message || String(error);
+        if (
+          (errorMessage.includes('relation') && errorMessage.includes('does not exist')) ||
+          errorMessage.includes('PGRST116') ||
+          error.code === 'PGRST116'
+        ) {
+          return {
+            data: null,
+            error: {
+              message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+              code: 'TABLE_NOT_FOUND',
+              hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+            }
+          };
+        }
+        
+        // Check for RLS policy errors
+        if (error.code === '42501' || errorMessage.includes('permission denied') || errorMessage.includes('row-level security')) {
+          return {
+            data: null,
+            error: {
+              message: 'Permission denied. Please check Row Level Security policies.',
+              code: 'RLS_ERROR',
+              hint: 'The RLS policies may not be set up correctly. Please verify the migration was run completely.',
+              originalError: error
+            }
+          };
+        }
+      }
+
+      // Cache the result
+      if (data) {
+        notebooksCache.set(cacheKey, { data: data as any, timestamp: Date.now() });
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      // Handle JSON parsing errors (when Supabase returns HTML)
+      if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+        return {
+          data: null,
+          error: {
+            message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+            code: 'TABLE_NOT_FOUND',
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
+            originalError: err.message
+          }
+        };
+      }
+      
+      return {
+        data: null,
+        error: err
+      };
+    } finally {
+      // Remove from pending requests
+      pendingRequests.delete(cacheKey);
+    }
+  })();
+
+  // Store pending request
+  pendingRequests.set(cacheKey, requestPromise);
+
+  return requestPromise;
 }
 
 /**
@@ -466,6 +556,12 @@ export async function createSource(
     .select()
     .single();
 
+  // Clear sources cache after creating source
+  if (data) {
+    const cacheKey = `sources-${sourceData.notebook_id}-${sourceData.user_id}`;
+    notebooksCache.delete(cacheKey);
+  }
+
   return { data, error };
 }
 
@@ -477,11 +573,25 @@ export async function toggleSourceInclude(
   userId: string,
   isIncluded: boolean
 ): Promise<{ error: any }> {
+  // First get the source to know which notebook it belongs to
+  const { data: source } = await supabase
+    .from('research_sources')
+    .select('notebook_id')
+    .eq('id', sourceId)
+    .eq('user_id', userId)
+    .single();
+
   const { error } = await supabase
     .from('research_sources')
     .update({ is_included: isIncluded })
     .eq('id', sourceId)
     .eq('user_id', userId);
+
+  // Clear sources cache after updating source
+  if (!error && source) {
+    const cacheKey = `sources-${source.notebook_id}-${userId}`;
+    notebooksCache.delete(cacheKey);
+  }
 
   return { error };
 }
@@ -493,11 +603,27 @@ export async function deleteSource(
   sourceId: string,
   userId: string
 ): Promise<{ error: any }> {
+  // First get the source to know which notebook it belongs to
+  const { data: source } = await supabase
+    .from('research_sources')
+    .select('notebook_id')
+    .eq('id', sourceId)
+    .eq('user_id', userId)
+    .single();
+
   const { error } = await supabase
     .from('research_sources')
     .delete()
     .eq('id', sourceId)
     .eq('user_id', userId);
+
+  // Update notebook source count and clear cache
+  if (!error && source) {
+    await updateNotebookSourceCount(source.notebook_id, userId, -1);
+    // Clear sources cache after deleting source
+    const cacheKey = `sources-${source.notebook_id}-${userId}`;
+    notebooksCache.delete(cacheKey);
+  }
 
   return { error };
 }
