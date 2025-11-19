@@ -267,7 +267,7 @@ export function StudioOutputView({
             </Button>
           </div>
           <div className="text-xs text-gray-500">
-            {formatRelativeTime(output.generated_at || output.created_at || new Date().toISOString())}
+            {formatRelativeTime(output.generated_at || output.created_at || new Date().toISOString()) || 'Unknown'}
           </div>
         </div>
       </div>

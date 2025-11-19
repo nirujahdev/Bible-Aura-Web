@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AgentModal } from './agents/AgentModal';
 import { StudioOutputView } from './StudioOutputView';
-import { formatRelativeTime, getOutputTitle } from '@/lib/research-lab/utils';
+import { formatRelativeTime, getOutputTitle, getFormatLabel } from '@/lib/research-lab/utils';
 
 interface StudioPanelProps {
   notebookId: string;
