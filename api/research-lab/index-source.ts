@@ -90,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Verify user owns the source
     const { data: source, error: sourceError } = await supabase
       .from('research_sources')
-      .select('id, notebook_id, user_id, source_type, title, processed_content, content_text')
+      .select('id, notebook_id, user_id, source_type, title, processed_content, content_text, indexing_status, indexed_at, vector_count')
       .eq('id', sourceId)
       .eq('user_id', userId)
       .eq('notebook_id', notebookId)
@@ -101,6 +101,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    // Update indexing status to 'indexing'
+    await supabase
+      .from('research_sources')
+      .update({ indexing_status: 'indexing' })
+      .eq('id', sourceId);
+
     // Index source in Pinecone
     const { vectorCount, error: indexError } = await indexSource(
       source as Source,
@@ -110,6 +116,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (indexError) {
       console.error('[Index Source API] Indexing error:', indexError);
+      
+      // Update indexing status to 'failed'
+      await supabase
+        .from('research_sources')
+        .update({ indexing_status: 'failed' })
+        .eq('id', sourceId);
+      
       res.status(500).json({ 
         error: 'Failed to index source',
         message: indexError.message || 'Pinecone indexing failed',
@@ -117,6 +130,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
       return;
     }
+
+    // Update indexing status to 'completed' with metadata
+    await supabase
+      .from('research_sources')
+      .update({ 
+        indexing_status: 'completed',
+        indexed_at: new Date().toISOString(),
+        vector_count: vectorCount,
+      })
+      .eq('id', sourceId);
 
     res.status(200).json({
       success: true,

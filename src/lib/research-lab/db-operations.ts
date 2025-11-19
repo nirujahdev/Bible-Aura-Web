@@ -416,8 +416,11 @@ export interface Source {
   is_included: boolean;
   metadata: any;
   extracted_verses: any;
-  key_insights: any;
+  key_insights: string | null;
   toc_structure: any;
+  indexing_status?: 'pending' | 'indexing' | 'completed' | 'failed';
+  indexed_at?: string | null;
+  vector_count?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -454,7 +457,7 @@ export async function getNotebookSources(
       // Optimized field selection: only fetch fields needed for SourcesPanel display
       const { data, error } = await supabase
         .from('research_sources')
-        .select('id, notebook_id, user_id, source_type, title, file_path, file_url, link_url, processed_content, processing_status, is_included, key_insights, created_at, updated_at')
+        .select('id, notebook_id, user_id, source_type, title, file_path, file_url, link_url, processed_content, processing_status, is_included, key_insights, indexing_status, indexed_at, vector_count, created_at, updated_at')
         .eq('notebook_id', notebookId)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
