@@ -1,9 +1,9 @@
 // Vector Operations Service for Research Lab
 // Handles indexing sources and searching in Pinecone
 
-import { getPineconeIndex } from './pinecone-client';
-import { generateEmbedding, chunkText } from './embeddings';
-import type { Source } from './db-operations';
+import { getPineconeIndex } from './pinecone-client.js';
+import { generateEmbedding, generateBatchEmbeddings, chunkText } from './embeddings.js';
+import type { Source } from './db-operations.js';
 
 export interface VectorMetadata {
   notebook_id: string;
