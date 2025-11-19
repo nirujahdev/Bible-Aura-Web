@@ -7,13 +7,30 @@ import { createClient } from '@supabase/supabase-js';
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
-function getSupabaseClient() {
+function getSupabaseClient(authToken?: string) {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials not configured');
+  }
+  
+  // If auth token provided, create authenticated client for RLS
+  if (authToken) {
+    return createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+  
+  // Otherwise use shared client
   if (!supabaseClient) {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials not configured');
-    }
     supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
   return supabaseClient;
@@ -72,8 +89,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // Verify user owns the notebook
-    const supabase = getSupabaseClient();
+    // Get auth token from request
+    const authHeader = req.headers.authorization;
+    const authToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+    
+    // Verify user owns the notebook (use authenticated client for RLS)
+    const supabase = getSupabaseClient(authToken);
     const { data: notebook, error: notebookError } = await supabase
       .from('research_notebooks')
       .select('id, user_id')

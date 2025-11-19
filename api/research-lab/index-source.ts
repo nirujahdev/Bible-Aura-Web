@@ -8,13 +8,30 @@ import type { Source } from '../../src/lib/research-lab/db-operations.js';
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
-function getSupabaseClient() {
+function getSupabaseClient(authToken?: string) {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials not configured');
+  }
+  
+  // If auth token provided, create authenticated client for RLS
+  if (authToken) {
+    return createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+  
+  // Otherwise use shared client
   if (!supabaseClient) {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials not configured');
-    }
     supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
   return supabaseClient;
@@ -68,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient(req.headers.authorization?.replace('Bearer ', ''));
 
     // Verify user owns the source
     const { data: source, error: sourceError } = await supabase

@@ -10,7 +10,8 @@
         "@pinecone-database/mcp"
       ],
       "env": {
-        "PINECONE_API_KEY": "pcsk_2PXYxm_HqC9Gfs5sJ1KFmDQN1T2XwCCKYSfyymiuw5wjPDtCfZKjCtVp3vsSvyUdppRqRt"
+        "PINECONE_API_KEY": "pcsk_2PXYxm_HqC9Gfs5sJ1KFmDQN1T2XwCCKYSfyymiuw5wjPDtCfZKjCtVp3vsSvyUdppRqRt",
+        "PINECONE_INDEX_NAME": "bible-aura-research-lab"
       }
     }
   }
