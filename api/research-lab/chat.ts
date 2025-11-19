@@ -20,7 +20,7 @@ function getSupabaseClient(authToken?: string) {
   }
   
   // Always create a new client instance when auth token is provided
-  // This ensures proper authentication context
+  // This ensures proper authentication context for RLS policies
   if (authToken) {
     const client = createClient(supabaseUrl, supabaseKey, {
       global: {
@@ -28,21 +28,12 @@ function getSupabaseClient(authToken?: string) {
           Authorization: `Bearer ${authToken}`,
         },
       },
+      auth: {
+        // Disable auto-refresh in serverless (not needed)
+        autoRefreshToken: false,
+        persistSession: false,
+      },
     });
-    // Verify the token is valid by getting the user
-    // This ensures auth.uid() will work in RLS policies
-    try {
-      const { data: { user }, error: userError } = await client.auth.getUser(authToken);
-      if (userError || !user) {
-        console.warn('[Supabase Client] Token validation warning:', userError?.message || 'No user found');
-        // Continue anyway - the token in headers might still work for RLS
-      } else {
-        console.log('[Supabase Client] Token validated for user:', user.id);
-      }
-    } catch (verifyError: any) {
-      console.warn('[Supabase Client] Token verification error:', verifyError?.message);
-      // Continue anyway - headers should work
-    }
     return client;
   }
   
