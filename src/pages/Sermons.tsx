@@ -2539,10 +2539,11 @@ const SermonsContent = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredSermons.length === 0 && sermons.length > 0 && (
+        {filteredSermons.length === 0 && sermons.length > 0 && !loading && (
           <div className="text-center py-12">
             <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
