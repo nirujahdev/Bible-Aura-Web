@@ -291,30 +291,70 @@ Format as structured JSON with clear sections.`;
       sourceCount: sources.length,
     });
 
+    // Retry logic for GLM API calls
     let response: Response;
-    try {
-      response = await fetch(`${GLM_API_BASE_URL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${glmApiKey}`,
-        },
-        body: JSON.stringify({
-          model: GLM_MODEL,
-          messages: [
-            { role: 'system', content: BIBLE_SYSTEM_PROMPTS[agentType as keyof typeof BIBLE_SYSTEM_PROMPTS] },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: 0.7,
-          max_tokens: agentType === 'curriculum' || agentType === 'sermon' || agentType === 'doctrinal' ? 3000 : 2000,
-        }),
-      });
-    } catch (fetchError: any) {
-      console.error(`[${agentType} Agent] Fetch error:`, fetchError);
+    const maxRetries = 2;
+    let lastError: any = null;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`[${agentType} Agent] Retry attempt ${attempt}/${maxRetries}`);
+          // Exponential backoff: wait 1s, 2s
+          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+        }
+        
+        response = await fetch(`${GLM_API_BASE_URL}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${glmApiKey}`,
+          },
+          body: JSON.stringify({
+            model: GLM_MODEL,
+            messages: [
+              { role: 'system', content: BIBLE_SYSTEM_PROMPTS[agentType as keyof typeof BIBLE_SYSTEM_PROMPTS] },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: agentType === 'curriculum' || agentType === 'sermon' || agentType === 'doctrinal' ? 3000 : 2000,
+          }),
+        });
+        
+        // If response is ok, break out of retry loop
+        if (response.ok) {
+          break;
+        }
+        
+        // If it's a client error (4xx), don't retry
+        if (response.status >= 400 && response.status < 500) {
+          break;
+        }
+        
+        // For server errors (5xx) or network errors, retry
+        lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+        
+      } catch (fetchError: any) {
+        lastError = fetchError;
+        // If it's the last attempt, throw the error
+        if (attempt === maxRetries) {
+          console.error(`[${agentType} Agent] Fetch error after ${maxRetries + 1} attempts:`, fetchError);
+          res.status(503).json({ 
+            error: 'Failed to connect to AI service',
+            message: 'Network error. Please check your connection and try again.',
+            details: process.env.NODE_ENV === 'development' ? fetchError.message : undefined
+          });
+          return;
+        }
+      }
+    }
+    
+    // If we still don't have a response after retries, return error
+    if (!response!) {
       res.status(503).json({ 
         error: 'Failed to connect to AI service',
-        message: 'Network error. Please check your connection and try again.',
-        details: process.env.NODE_ENV === 'development' ? fetchError.message : undefined
+        message: 'Unable to reach AI service after multiple attempts. Please try again later.',
+        details: process.env.NODE_ENV === 'development' ? lastError?.message : undefined
       });
       return;
     }
@@ -442,7 +482,7 @@ Format as structured JSON with clear sections.`;
         break;
     }
 
-    // Save to database
+    // Save to database with status tracking
     const { data: savedOutput, error: saveError } = await supabase
       .from('research_studio_outputs')
       .upsert({
@@ -450,6 +490,11 @@ Format as structured JSON with clear sections.`;
         user_id: userId,
         output_type: outputType as any,
         content: outputContent,
+        metadata: {
+          status: 'completed',
+          completedAt: new Date().toISOString(),
+          agentType: agentType,
+        },
       }, {
         onConflict: 'notebook_id,output_type',
       })
@@ -466,7 +511,9 @@ Format as structured JSON with clear sections.`;
     // Return response based on agent type
     const responseData: any = {
       success: true,
+      status: 'completed',
       sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+      outputId: savedOutput?.id || null,
     };
 
     switch (agentType) {

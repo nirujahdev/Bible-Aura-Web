@@ -264,7 +264,6 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
         agentType: agentId === 'summarize' ? 'summarize' :
                     agentId === 'search-qa' ? 'search_qa' :
                     agentId === 'cross-reference' ? 'cross_reference' :
-                    agentId === 'search-qa' ? 'search_qa' :
                     agentId === 'curriculum' ? 'curriculum' :
                     agentId === 'sermon' ? 'sermon' :
                     'doctrinal',

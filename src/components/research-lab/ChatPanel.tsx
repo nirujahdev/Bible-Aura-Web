@@ -11,8 +11,9 @@ import {
   createChatMessage, 
   type ChatMessage 
 } from '@/lib/research-lab/db-operations';
-import { Send, Upload, ArrowUp, FlaskConical, MessageSquare } from 'lucide-react';
+import { Send, Upload, ArrowUp, FlaskConical, MessageSquare, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useVoiceInput } from '@/hooks/useVoiceInput';
 
 // Message type from db-operations (ChatMessage)
 type Message = ChatMessage;
@@ -28,6 +29,34 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { 
+    transcript, 
+    isListening, 
+    error: voiceError, 
+    startListening, 
+    stopListening, 
+    reset: resetVoice,
+    isSupported: isVoiceSupported 
+  } = useVoiceInput();
+
+  // Update input when transcript changes
+  useEffect(() => {
+    if (transcript) {
+      setInput(prev => prev + (prev ? ' ' : '') + transcript);
+      resetVoice();
+    }
+  }, [transcript, resetVoice]);
+
+  // Show voice error toast
+  useEffect(() => {
+    if (voiceError) {
+      toast({
+        title: 'Voice Input Error',
+        description: voiceError,
+        variant: 'destructive',
+      });
+    }
+  }, [voiceError, toast]);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -91,25 +120,48 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
 
       if (saveError) throw saveError;
 
-      // TODO: Call GLM-4.5-Air API for response
-      // For now, show placeholder response
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call GLM-4.5-Air API for response
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Session expired. Please log in again.');
+      }
 
-      const aiResponse = 'This is a placeholder response. GLM-4.5-Air integration will be implemented in the next phase.';
-
-      // Save AI message
-      const { data: aiMessage, error: aiError } = await createChatMessage({
-        notebook_id: notebookId,
-        user_id: user.id,
-        role: 'assistant',
-        content: aiResponse,
+      const response = await fetch('/api/research-lab/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          notebookId,
+          message: messageText,
+        }),
       });
 
-      if (aiError) throw aiError;
-
-      if (aiMessage) {
-        setMessages(prev => [...prev, aiMessage]);
+      if (!response.ok) {
+        let errorMessage = 'Failed to get AI response';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
+
+      const data = await response.json();
+      const aiResponse = data.message || 'No response generated';
+
+      // Update UI with AI message (it's already saved by the API)
+      const aiMessage: Message = {
+        id: data.messageId || Date.now().toString(),
+        role: 'assistant',
+        content: aiResponse,
+        created_at: new Date().toISOString(),
+        sources_used: data.sourcesUsed || [],
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
@@ -191,19 +243,35 @@ export function ChatPanel({ notebookId }: ChatPanelProps) {
       {/* Input Area */}
       <div className="border-t border-gray-200 p-3 sm:p-4 bg-white safe-area-bottom">
         <div className="flex gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Ask about your sources..."
-            className="min-h-[50px] sm:min-h-[60px] resize-none text-sm"
-            disabled={loading}
-          />
+          <div className="relative flex-1">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Ask about your sources..."
+              className="min-h-[50px] sm:min-h-[60px] resize-none text-sm pr-10"
+              disabled={loading}
+            />
+            {isVoiceSupported && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={isListening ? stopListening : startListening}
+                disabled={loading}
+                className={`absolute right-2 bottom-2 h-8 w-8 p-0 ${
+                  isListening ? 'text-red-500 animate-pulse' : 'text-gray-500'
+                }`}
+                title={isListening ? 'Stop recording' : 'Start voice input'}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           <Button
             onClick={handleSend}
             disabled={!input.trim() || loading}

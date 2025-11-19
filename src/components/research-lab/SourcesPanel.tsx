@@ -247,6 +247,11 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
                   <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{source.title}</p>
                   {source.key_insights ? (
                     <p className="text-xs text-gray-600 line-clamp-2 mt-0.5">{source.key_insights}</p>
+                  ) : source.processing_status === 'processing' ? (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                      <p className="text-xs text-gray-500">Generating summary...</p>
+                    </div>
                   ) : (
                     <p className="text-xs text-gray-500 capitalize">{source.source_type}</p>
                   )}

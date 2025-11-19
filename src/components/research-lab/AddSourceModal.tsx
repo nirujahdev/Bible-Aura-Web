@@ -21,9 +21,11 @@ import {
   Video,
   Music,
   Loader2,
-  Search
+  Search,
+  Mic
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useVoiceInput } from '@/hooks/useVoiceInput';
 
 interface AddSourceModalProps {
   open: boolean;
@@ -45,6 +47,34 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<{ title: string; url: string; summary: string }>>([]);
   const [activeTab, setActiveTab] = useState<'upload' | 'link' | 'paste' | 'search'>('upload');
+  const { 
+    transcript, 
+    isListening, 
+    error: voiceError, 
+    startListening, 
+    stopListening, 
+    reset: resetVoice,
+    isSupported: isVoiceSupported 
+  } = useVoiceInput();
+
+  // Update pasted text when transcript changes
+  useEffect(() => {
+    if (transcript && activeTab === 'paste') {
+      setPastedText(prev => prev + (prev ? ' ' : '') + transcript);
+      resetVoice();
+    }
+  }, [transcript, activeTab, resetVoice]);
+
+  // Show voice error toast
+  useEffect(() => {
+    if (voiceError) {
+      toast({
+        title: 'Voice Input Error',
+        description: voiceError,
+        variant: 'destructive',
+      });
+    }
+  }, [voiceError, toast]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -118,54 +148,150 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
     setIsUploading(true);
 
     try {
+      const uploadErrors: string[] = [];
+      let successCount = 0;
+      
       // Upload files
       for (const file of selectedFiles) {
-        const filePath = `${user.id}/${notebookId}/${Date.now()}-${file.name}`;
-        const uploadResult = await uploadFile('research-lab-sources', file, filePath);
-        
-        if (!uploadResult.success) {
-          // Check if bucket doesn't exist
-          if (uploadResult.error?.includes('Bucket not found') || uploadResult.error?.includes('not found')) {
-            throw new Error('Storage bucket "research-lab-sources" not found. Please run the SQL migration: supabase/migrations/20241118000003_create_storage_bucket.sql in Supabase Dashboard → SQL Editor.');
+        try {
+          // Validate file size
+          const maxSize = 50 * 1024 * 1024; // 50MB
+          if (file.size > maxSize) {
+            uploadErrors.push(`${file.name}: File exceeds 50MB limit`);
+            continue;
           }
-          throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
-        }
 
-        // Get signed URL (since bucket is private)
-        let signedUrl = filePath; // Fallback to file_path
-        const { data: urlData, error: urlError } = await supabase.storage
-          .from('research-lab-sources')
-          .createSignedUrl(filePath, 3600); // 1 hour expiry
-        
-        if (urlError) {
-          console.error('Error creating signed URL:', urlError);
-          // Continue with file_path as fallback
-        } else if (urlData?.signedUrl) {
-          signedUrl = urlData.signedUrl;
-        }
+          // Validate file type
+          const allowedTypes = [
+            'application/pdf',
+            'text/plain',
+            'text/markdown',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/',
+            'video/',
+            'audio/',
+          ];
+          const isValidType = allowedTypes.some(type => 
+            file.type === type || (type.endsWith('/') && file.type.startsWith(type))
+          );
+          if (!isValidType && !file.name.match(/\.(txt|md|pdf|doc|docx)$/i)) {
+            uploadErrors.push(`${file.name}: Unsupported file type`);
+            continue;
+          }
 
-        // Create source record using db-operations helper
-        const { data: newSource, error: sourceError } = await createSource({
-          notebook_id: notebookId,
-          user_id: user.id,
-          source_type: getSourceType(file) as any,
-          title: file.name,
-          file_path: filePath,
-          file_url: signedUrl, // Use signed URL or fallback to file_path
-          file_size: file.size,
-          mime_type: file.type,
+          const filePath = `${user.id}/${notebookId}/${Date.now()}-${file.name}`;
+          const uploadResult = await uploadFile('research-lab-sources', file, filePath);
+          
+          if (!uploadResult.success) {
+            // Check if bucket doesn't exist
+            if (uploadResult.error?.includes('Bucket not found') || uploadResult.error?.includes('not found')) {
+              uploadErrors.push(`Storage bucket not found. Please run the SQL migration: supabase/migrations/20241118000003_create_storage_bucket.sql`);
+              continue;
+            }
+            // Check for quota errors
+            if (uploadResult.error?.includes('quota') || uploadResult.error?.includes('storage')) {
+              uploadErrors.push(`${file.name}: Storage quota exceeded. Please upgrade your plan.`);
+              continue;
+            }
+            // Check for permission errors
+            if (uploadResult.error?.includes('permission') || uploadResult.error?.includes('403')) {
+              uploadErrors.push(`${file.name}: Permission denied. Please check your storage settings.`);
+              continue;
+            }
+            uploadErrors.push(`${file.name}: ${uploadResult.error || 'Upload failed'}`);
+            continue;
+          }
+
+          // Get signed URL (since bucket is private)
+          let signedUrl = filePath; // Fallback to file_path
+          try {
+            const { data: urlData, error: urlError } = await supabase.storage
+              .from('research-lab-sources')
+              .createSignedUrl(filePath, 3600 * 24 * 7); // 7 days expiry
+            
+            if (urlError) {
+              console.error('Error creating signed URL:', urlError);
+              // Continue with file_path as fallback - file is still uploaded
+            } else if (urlData?.signedUrl) {
+              signedUrl = urlData.signedUrl;
+            }
+          } catch (urlErr: any) {
+            console.error('Error generating signed URL:', urlErr);
+            // Continue with file_path as fallback
+          }
+
+          // Create source record using db-operations helper
+          const { data: newSource, error: sourceError } = await createSource({
+            notebook_id: notebookId,
+            user_id: user.id,
+            source_type: getSourceType(file) as any,
+            title: file.name,
+            file_path: filePath,
+            file_url: signedUrl, // Use signed URL or fallback to file_path
+            file_size: file.size,
+            mime_type: file.type,
+          });
+
+          if (sourceError) {
+            uploadErrors.push(`${file.name}: Failed to create source record - ${sourceError.message || 'Unknown error'}`);
+            continue;
+          }
+
+          successCount++;
+
+          // Automatically trigger Summarize agent for this source
+          if (newSource?.id) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              fetch('/api/research-lab/agents', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                  agentType: 'summarize',
+                  notebookId,
+                  summaryType: 'detailed',
+                  sourceIds: [newSource.id],
+                }),
+              })
+              .then(async (res) => {
+                if (res.ok) {
+                  const data = await res.json();
+                  // Update source with summary in key_insights
+                  if (data.summary) {
+                    await supabase
+                      .from('research_sources')
+                      .update({ key_insights: data.summary })
+                      .eq('id', newSource.id);
+                  }
+                }
+              })
+              .catch(err => console.error('Failed to generate summary:', err));
+            }
+          }
+        } catch (fileError: any) {
+          uploadErrors.push(`${file.name}: ${fileError.message || 'Upload failed'}`);
+        }
+      }
+
+      // Show errors if any
+      if (uploadErrors.length > 0) {
+        toast({
+          title: 'Some uploads failed',
+          description: uploadErrors.slice(0, 3).join(', ') + (uploadErrors.length > 3 ? ` and ${uploadErrors.length - 3} more` : ''),
+          variant: 'destructive',
+          duration: 5000,
         });
+      }
 
-        if (sourceError) throw sourceError;
-
-        // Generate summary in background (don't wait for it)
-        if (newSource?.id) {
-          fetch('/api/research-lab/generate-summary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sourceId: newSource.id }),
-          }).catch(err => console.error('Failed to generate summary:', err));
-        }
+      if (successCount > 0 && uploadErrors.length === 0) {
+        toast({
+          title: 'Sources added',
+          description: `Successfully added ${successCount} source(s)`,
+        });
       }
 
       // Add link source
@@ -180,13 +306,36 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
         if (linkError) throw linkError;
 
-        // Generate summary in background
+        // Automatically trigger Summarize agent for this source
         if (newSource?.id) {
-          fetch('/api/research-lab/generate-summary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sourceId: newSource.id }),
-          }).catch(err => console.error('Failed to generate summary:', err));
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            fetch('/api/research-lab/agents', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                agentType: 'summarize',
+                notebookId,
+                summaryType: 'detailed',
+                sourceIds: [newSource.id],
+              }),
+            })
+            .then(async (res) => {
+              if (res.ok) {
+                const data = await res.json();
+                if (data.summary) {
+                  await supabase
+                    .from('research_sources')
+                    .update({ key_insights: data.summary })
+                    .eq('id', newSource.id);
+                }
+              }
+            })
+            .catch(err => console.error('Failed to generate summary:', err));
+          }
         }
       }
 
@@ -202,13 +351,36 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
         if (textError) throw textError;
 
-        // Generate summary in background
+        // Automatically trigger Summarize agent for this source
         if (newSource?.id) {
-          fetch('/api/research-lab/generate-summary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sourceId: newSource.id }),
-          }).catch(err => console.error('Failed to generate summary:', err));
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            fetch('/api/research-lab/agents', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                agentType: 'summarize',
+                notebookId,
+                summaryType: 'detailed',
+                sourceIds: [newSource.id],
+              }),
+            })
+            .then(async (res) => {
+              if (res.ok) {
+                const data = await res.json();
+                if (data.summary) {
+                  await supabase
+                    .from('research_sources')
+                    .update({ key_insights: data.summary })
+                    .eq('id', newSource.id);
+                }
+              }
+            })
+            .catch(err => console.error('Failed to generate summary:', err));
+          }
         }
       }
 
@@ -266,14 +438,31 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
       const data = await response.json();
       
-      // For now, add the search result as a link source
-      // In the future, we can enhance this to add multiple results
-      if (data.summary) {
-        setSearchResults([{
-          title: `Web Search: ${searchQuery}`,
-          url: '',
-          summary: data.summary
-        }]);
+      // Display summary and all search results
+      if (data.summary || (data.results && data.results.length > 0)) {
+        const results: Array<{ title: string; url: string; summary: string }> = [];
+        
+        // Add summary as first result
+        if (data.summary) {
+          results.push({
+            title: `Search Summary: ${searchQuery}`,
+            url: '',
+            summary: data.summary
+          });
+        }
+        
+        // Add individual search results
+        if (data.results && Array.isArray(data.results)) {
+          data.results.forEach((r: any) => {
+            results.push({
+              title: r.title || 'Web Result',
+              url: r.url || '',
+              summary: r.snippet || r.content || ''
+            });
+          });
+        }
+        
+        setSearchResults(results);
       }
     } catch (error: any) {
       console.error('Web search error:', error);
@@ -500,13 +689,29 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           {activeTab === 'paste' && (
             <div>
               <Label htmlFor="pasted-text" className="text-sm sm:text-base">Paste your text</Label>
-              <textarea
-                id="pasted-text"
-                value={pastedText}
-                onChange={(e) => setPastedText(e.target.value)}
-                placeholder="Paste your text here..."
-                className="mt-1 w-full min-h-[150px] sm:min-h-[200px] p-3 border rounded-lg resize-none text-sm sm:text-base"
-              />
+              <div className="relative mt-1">
+                <textarea
+                  id="pasted-text"
+                  value={pastedText}
+                  onChange={(e) => setPastedText(e.target.value)}
+                  placeholder="Paste your text here..."
+                  className="w-full min-h-[150px] sm:min-h-[200px] p-3 pr-10 border rounded-lg resize-none text-sm sm:text-base"
+                />
+                {isVoiceSupported && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={isListening ? stopListening : startListening}
+                    disabled={isUploading}
+                    className={`absolute right-2 bottom-2 h-8 w-8 p-0 ${
+                      isListening ? 'text-red-500 animate-pulse' : 'text-gray-500'
+                    }`}
+                    title={isListening ? 'Stop recording' : 'Start voice input'}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
