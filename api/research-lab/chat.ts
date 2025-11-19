@@ -201,7 +201,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data: sources, error: sourcesError } = await getCachedSources(
       notebookId,
       userId,
-      ['id', 'title', 'processed_content', 'source_type'] // Optimized: removed 'content' field
+      ['id', 'title', 'processed_content', 'source_type'], // Optimized: removed 'content' field
+      undefined, // sourceIds
+      authToken // Pass auth token for authenticated queries
     );
 
     if (sourcesError) {

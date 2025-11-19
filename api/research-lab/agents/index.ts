@@ -192,7 +192,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fields,
       params.sourceIds && Array.isArray(params.sourceIds) && params.sourceIds.length > 0 
         ? params.sourceIds 
-        : undefined
+        : undefined,
+      authToken // Pass auth token for authenticated queries
     );
 
     if (sourcesError) {

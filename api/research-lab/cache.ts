@@ -21,13 +21,26 @@ const inFlightRequests = new Map<string, Promise<any>>();
 // Supabase client (shared instance)
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
-function getSupabaseClient() {
+function getSupabaseClient(authToken?: string) {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials not configured');
+  }
+  
+  // If auth token provided, create authenticated client
+  if (authToken) {
+    return createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    });
+  }
+  
+  // Otherwise use shared client (for non-user operations)
   if (!supabaseClient) {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials not configured');
-    }
     supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
   return supabaseClient;
@@ -74,7 +87,8 @@ export async function getCachedSources(
   notebookId: string,
   userId: string,
   fields: string[] = ['id', 'title', 'processed_content', 'source_type'],
-  sourceIds?: string[]
+  sourceIds?: string[],
+  authToken?: string
 ): Promise<{ data: any[] | null; error: any }> {
   const cacheKey = getSourcesCacheKey(notebookId, userId, sourceIds);
 
@@ -88,7 +102,7 @@ export async function getCachedSources(
   // Use request deduplication
   return fetchOnce(cacheKey, async () => {
     try {
-      const supabase = getSupabaseClient();
+      const supabase = getSupabaseClient(authToken);
       const startTime = performance.now();
 
       let query = supabase
