@@ -19,15 +19,25 @@ function getSupabaseClient(authToken?: string) {
     throw new Error('Supabase credentials not configured');
   }
   
-  // If auth token provided, create authenticated client
+  // Always create a new client instance when auth token is provided
+  // This ensures proper authentication context
   if (authToken) {
-    return createClient(supabaseUrl, supabaseKey, {
+    const client = createClient(supabaseUrl, supabaseKey, {
       global: {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       },
     });
+    // Set the session explicitly to ensure auth context is available
+    client.auth.setSession({
+      access_token: authToken,
+      refresh_token: '', // Not needed for serverless
+    } as any).catch(err => {
+      // If setSession fails, continue anyway - the token in headers should work
+      console.warn('[Supabase Client] setSession warning:', err.message);
+    });
+    return client;
   }
   
   // Otherwise use shared client (for non-user operations)
