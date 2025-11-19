@@ -42,25 +42,38 @@ export function sanitizeFileName(fileName: string): string {
 /**
  * Format relative time (e.g., "2m ago", "1h ago", "2d ago")
  */
-export function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+export function formatRelativeTime(dateString: string | null | undefined): string {
+  if (!dateString) return 'Unknown';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Unknown';
+    
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  } catch (error) {
+    console.error('Error formatting relative time:', error);
+    return 'Unknown';
+  }
 }
 
 /**
  * Get output title from content
  */
 export function getOutputTitle(output: any): string {
+  if (!output || !output.content) {
+    return 'Untitled';
+  }
+
   if (typeof output.content === 'string') {
     // Try to extract title from markdown or first line
     const lines = output.content.split('\n');
@@ -78,4 +91,24 @@ export function getOutputTitle(output: any): string {
          output.content?.scriptureReference ||
          output.content?.doctrinalQuestion ||
          'Untitled';
+}
+
+/**
+ * Get format label for output type
+ */
+export function getFormatLabel(outputType: string, format?: string): string | null {
+  if (!format) return null;
+  
+  const formatMap: Record<string, string> = {
+    'brief': 'Brief',
+    'detailed': 'Detailed',
+    'thematic': 'Thematic',
+    'expository': 'Expository',
+    'topical': 'Topical',
+    'narrative': 'Narrative',
+    'en': 'English',
+    'ta': 'Tamil',
+  };
+  
+  return formatMap[format] || format;
 }

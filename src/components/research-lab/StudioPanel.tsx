@@ -139,12 +139,17 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
   }, [notebookId, user, generatingOutputs.size]);
 
   const loadOutputs = async () => {
-    if (!notebookId || !user) return;
+    if (!notebookId || !user) {
+      setLoading(false);
+      return;
+    }
 
     try {
+      setLoading(true);
       const { data, error } = await getStudioOutputs(notebookId, user.id);
       if (error) {
         console.error('Error loading outputs:', error);
+        setOutputs([]); // Set empty array on error
         return;
       }
       setOutputs(data || []);
@@ -152,8 +157,10 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
       // Update generating outputs set
       const generating = new Set<string>();
       setGeneratingOutputs(generating);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading outputs:', error);
+      setOutputs([]); // Set empty array on error
+      // Don't show toast - errors are handled gracefully
     } finally {
       setLoading(false);
     }
@@ -292,6 +299,8 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
           {completedOutputs.length > 0 && (
             <div className="mb-4 space-y-1">
               {completedOutputs.map((output) => {
+                if (!output || !output.id) return null; // Safety check
+                
                 const agent = getAgentInfo(output.output_type);
                 const OutputIcon = getOutputIcon(output.output_type);
                 const outputSourceCount = output.content?.sourcesUsed?.length || 
@@ -300,7 +309,8 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                                         sourceCount || 0;
                 const outputTitle = getOutputTitle(output);
                 const formatLabel = getFormatLabel(output.output_type, output.metadata?.format);
-                const timeAgo = formatRelativeTime((output as any).generated_at || output.created_at);
+                const generatedAt = (output as any).generated_at || output.created_at || new Date().toISOString();
+                const timeAgo = formatRelativeTime(generatedAt);
                 
                 return (
                   <div

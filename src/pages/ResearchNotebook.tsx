@@ -195,6 +195,7 @@ export default function ResearchNotebook() {
     );
   }
 
+  // Safety check - ensure notebook exists before rendering
   if (!notebook) {
     return null;
   }
@@ -226,7 +227,7 @@ export default function ResearchNotebook() {
                     if (e.key === 'Enter') {
                       handleUpdateTitle();
                     } else if (e.key === 'Escape') {
-                      setEditedTitle(notebook.title);
+                      setEditedTitle(notebook?.title || '');
                       setIsEditingTitle(false);
                     }
                   }}
@@ -240,7 +241,7 @@ export default function ResearchNotebook() {
                 onClick={() => setIsEditingTitle(true)}
               >
                 {!isMobile && <FlaskConical className="h-5 w-5 text-orange-600 flex-shrink-0 transition-transform group-hover:scale-110" />}
-                <span className="truncate">{notebook.title}</span>
+                <span className="truncate">{notebook?.title || 'Untitled'}</span>
                 {!isMobile && <Edit2 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />}
               </h1>
             )}
