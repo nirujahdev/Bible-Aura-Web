@@ -4,10 +4,9 @@
       "url": "https://mcp.supabase.com/mcp?project_ref=foleepziqgrdgkljedux"
     },
     "pinecone": {
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@pinecone-database/mcp"
+        "node_modules/@pinecone-database/mcp/dist/index.js"
       ],
       "env": {
         "PINECONE_API_KEY": "pcsk_2PXYxm_HqC9Gfs5sJ1KFmDQN1T2XwCCKYSfyymiuw5wjPDtCfZKjCtVp3vsSvyUdppRqRt",
