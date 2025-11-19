@@ -1068,12 +1068,12 @@ const SermonsContent = () => {
       const matchesSearch = !debouncedSearchQuery || 
         sermon.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
         (sermon.content && sermon.content.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
-      
-      const matchesStatus = statusFilter === 'all' || sermon.status === statusFilter;
-      const matchesSeries = seriesFilter === 'all' || sermon.series_name === seriesFilter;
-      
-      return matchesSearch && matchesStatus && matchesSeries;
-    });
+    
+    const matchesStatus = statusFilter === 'all' || sermon.status === statusFilter;
+    const matchesSeries = seriesFilter === 'all' || sermon.series_name === seriesFilter;
+    
+    return matchesSearch && matchesStatus && matchesSeries;
+  });
   }, [sermons, debouncedSearchQuery, statusFilter, seriesFilter]);
 
   const seriesOptions = [...new Set(sermons.map(s => s.series_name).filter(Boolean))];
@@ -2452,8 +2452,8 @@ const SermonsContent = () => {
         )}
         
         {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {filteredSermons.map((sermon) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {filteredSermons.map((sermon) => (
             <Card key={sermon.id} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white cursor-default">
               <CardHeader className="pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
                 <div className="flex items-start justify-between gap-2">
@@ -2539,8 +2539,8 @@ const SermonsContent = () => {
                 </div>
               </CardContent>
             </Card>
-            ))}
-          </div>
+          ))}
+        </div>
         )}
 
         {filteredSermons.length === 0 && sermons.length > 0 && !loading && (

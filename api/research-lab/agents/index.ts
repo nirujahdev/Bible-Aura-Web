@@ -511,7 +511,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // If no ready sources, check if we should wait or return error
     if (readySources.length === 0) {
       if (processingSources.length > 0) {
-        res.status(400).json({ 
+      res.status(400).json({ 
           error: 'Sources are still processing',
           message: `Please wait for ${processingSources.length} source(s) to finish processing before using agents. This usually takes a few seconds.`,
           processingCount: processingSources.length,
@@ -522,9 +522,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         res.status(400).json({ 
           error: 'No ready sources available',
           message: 'This notebook has no sources with processed content. Please add sources and wait for them to be processed.'
-        });
-        return;
-      }
+      });
+      return;
+    }
     }
 
     // Warn if some sources are still processing but continue with ready ones
