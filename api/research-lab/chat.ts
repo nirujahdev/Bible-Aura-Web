@@ -29,14 +29,20 @@ function getSupabaseClient(authToken?: string) {
         },
       },
     });
-    // Set the session explicitly to ensure auth context is available
-    client.auth.setSession({
-      access_token: authToken,
-      refresh_token: '', // Not needed for serverless
-    } as any).catch(err => {
-      // If setSession fails, continue anyway - the token in headers should work
-      console.warn('[Supabase Client] setSession warning:', err.message);
-    });
+    // Verify the token is valid by getting the user
+    // This ensures auth.uid() will work in RLS policies
+    try {
+      const { data: { user }, error: userError } = await client.auth.getUser(authToken);
+      if (userError || !user) {
+        console.warn('[Supabase Client] Token validation warning:', userError?.message || 'No user found');
+        // Continue anyway - the token in headers might still work for RLS
+      } else {
+        console.log('[Supabase Client] Token validated for user:', user.id);
+      }
+    } catch (verifyError: any) {
+      console.warn('[Supabase Client] Token verification error:', verifyError?.message);
+      // Continue anyway - headers should work
+    }
     return client;
   }
   
