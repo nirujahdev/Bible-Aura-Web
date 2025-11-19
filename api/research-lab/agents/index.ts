@@ -36,7 +36,22 @@ function getUserIdFromToken(req: VercelRequest): string | null {
   if (!authHeader?.startsWith('Bearer ')) return null;
   try {
     const token = authHeader.split(' ')[1];
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    if (!token || token.length < 10) return null; // Basic token validation
+    
+    // Decode JWT payload (Supabase tokens are signed, but we verify ownership via database)
+    const parts = token.split('.');
+    if (parts.length !== 3) return null; // JWT should have 3 parts
+    
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+    
+    // Validate token structure
+    if (!payload || typeof payload !== 'object') return null;
+    
+    // Check token expiration if present
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      return null; // Token expired
+    }
+    
     return payload.sub || payload.user_id || null;
   } catch {
     return null;
@@ -81,6 +96,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    // Validate input types and lengths
+    if (typeof agentType !== 'string' || typeof notebookId !== 'string') {
+      res.status(400).json({ error: 'Invalid input types' });
+      return;
+    }
+
+    if (notebookId.length > 100) {
+      res.status(400).json({ error: 'Invalid notebookId format' });
+      return;
+    }
+
     const validAgentTypes = ['summarize', 'search_qa', 'cross_reference', 'curriculum', 'sermon', 'doctrinal'];
     if (!validAgentTypes.includes(agentType)) {
       res.status(400).json({ error: `Invalid agentType. Must be one of: ${validAgentTypes.join(', ')}` });
@@ -88,6 +114,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const supabase = getSupabaseClient();
+
+    // Verify notebook ownership
+    const { data: notebook, error: notebookError } = await supabase
+      .from('research_notebooks')
+      .select('id, user_id')
+      .eq('id', notebookId)
+      .eq('user_id', userId)
+      .single();
+
+    if (notebookError || !notebook) {
+      res.status(403).json({ error: 'Notebook not found or access denied' });
+      return;
+    }
 
     // Get notebook sources with caching and optimized field selection
     const fields = ['id', 'title', 'processed_content', 'source_type', 'extracted_verses'];
@@ -146,6 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Use Pinecone for semantic source selection based on agent type and query
+    // Always fallback to all sources if Pinecone fails
     let selectedSources = sources;
     let sourceTexts = '';
     
@@ -177,10 +217,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           semanticQuery = 'Bible study content';
       }
       
-      // Search Pinecone for relevant sources
+      // Search Pinecone for relevant sources (returns empty array on error)
       const pineconeResults = await searchSimilarSources(semanticQuery, notebookId, 10, 0.6);
       
-      if (pineconeResults.length > 0) {
+      if (pineconeResults && pineconeResults.length > 0) {
         // Get full source content for Pinecone results
         const pineconeSourceIds = [...new Set(pineconeResults.map(r => r.sourceId))];
         const { data: pineconeSources, error: pineconeError } = await supabase
@@ -194,9 +234,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           selectedSources = pineconeSources;
           console.log(`[${agentType} Agent] Using ${pineconeSources.length} Pinecone-retrieved sources`);
         }
+      } else {
+        console.log(`[${agentType} Agent] No Pinecone results, using all ${sources.length} sources`);
       }
     } catch (pineconeError: any) {
-      console.error(`[${agentType} Agent] Pinecone search error, using all sources:`, pineconeError);
+      // Log but don't break - will use all sources
+      console.warn(`[${agentType} Agent] Pinecone search error, using all sources:`, pineconeError?.message || pineconeError);
       // Continue with all sources if Pinecone fails
     }
     
@@ -230,7 +273,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Build prompt based on agent type
     let userPrompt = '';
-    let outputType: string;
+    let outputType: string = 'summarization'; // Default fallback
     let outputContent: any;
 
     switch (agentType) {
@@ -268,8 +311,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       case 'cross_reference': {
-        const verseReference = params.verseReference;
-        const theme = params.theme;
+        const verseReference = params.verseReference ? String(params.verseReference).trim().substring(0, 500) : null;
+        const theme = params.theme ? String(params.theme).trim().substring(0, 500) : null;
         if (!verseReference && !theme) {
           res.status(400).json({ error: 'verseReference or theme is required for cross_reference agent' });
           return;
@@ -283,7 +326,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       case 'curriculum': {
-        const topic = params.topic;
+        const topic = params.topic ? String(params.topic).trim().substring(0, 500) : null;
         if (!topic) {
           res.status(400).json({ error: 'topic is required for curriculum agent' });
           return;
@@ -308,10 +351,12 @@ Format as JSON with clear structure.`;
       }
 
       case 'sermon': {
-        const scriptureReference = params.scriptureReference;
-        const sermonType = params.sermonType || 'expository';
+        const scriptureReference = params.scriptureReference ? String(params.scriptureReference).trim().substring(0, 500) : null;
+        const sermonType = params.sermonType ? String(params.sermonType).trim().substring(0, 50) : 'expository';
+        const validSermonTypes = ['expository', 'topical', 'narrative', 'textual'];
+        const safeSermonType = validSermonTypes.includes(sermonType) ? sermonType : 'expository';
         const scriptureContext = scriptureReference ? ` for ${scriptureReference}` : '';
-        userPrompt = `Create a ${sermonType} sermon outline${scriptureContext} using these sources:
+        userPrompt = `Create a ${safeSermonType} sermon outline${scriptureContext} using these sources:
 
 ${sourceTexts}
 
@@ -330,7 +375,7 @@ Format as structured JSON.`;
       }
 
       case 'doctrinal': {
-        const doctrinalQuestion = params.doctrinalQuestion;
+        const doctrinalQuestion = params.doctrinalQuestion ? String(params.doctrinalQuestion).trim().substring(0, 2000) : null;
         if (!doctrinalQuestion) {
           res.status(400).json({ error: 'doctrinalQuestion is required for doctrinal agent' });
           return;
@@ -634,7 +679,7 @@ Format as structured JSON with clear sections.`;
                 status: 'completed',
                 completedAt: new Date().toISOString(),
                 agentType: agentType,
-                format: params.format || selectedFormat,
+                format: params.format || 'detailed',
                 language: params.language || 'en',
               },
               updated_at: new Date().toISOString(),

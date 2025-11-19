@@ -36,7 +36,22 @@ function getUserIdFromToken(req: VercelRequest): string | null {
   if (!authHeader?.startsWith('Bearer ')) return null;
   try {
     const token = authHeader.split(' ')[1];
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    if (!token || token.length < 10) return null; // Basic token validation
+    
+    // Decode JWT payload (Supabase tokens are signed, but we verify ownership via database)
+    const parts = token.split('.');
+    if (parts.length !== 3) return null; // JWT should have 3 parts
+    
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+    
+    // Validate token structure
+    if (!payload || typeof payload !== 'object') return null;
+    
+    // Check token expiration if present
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      return null; // Token expired
+    }
+    
     return payload.sub || payload.user_id || null;
   } catch {
     return null;
@@ -86,6 +101,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    // Validate input length to prevent abuse
+    if (typeof message !== 'string' || message.trim().length === 0) {
+      res.status(400).json({ error: 'Message cannot be empty' });
+      return;
+    }
+
+    if (message.length > 5000) {
+      res.status(400).json({ error: 'Message too long. Maximum 5000 characters.' });
+      return;
+    }
+
+    if (typeof notebookId !== 'string' || notebookId.length > 100) {
+      res.status(400).json({ error: 'Invalid notebookId format' });
+      return;
+    }
+
     // Validate Bible-related question
     if (!isBibleRelated(message)) {
       res.status(400).json({ 
@@ -96,6 +127,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const supabase = getSupabaseClient();
+
+    // Verify notebook ownership
+    const { data: notebook, error: notebookError } = await supabase
+      .from('research_notebooks')
+      .select('id, user_id')
+      .eq('id', notebookId)
+      .eq('user_id', userId)
+      .single();
+
+    if (notebookError || !notebook) {
+      res.status(403).json({ error: 'Notebook not found or access denied' });
+      return;
+    }
 
     // Get notebook sources with caching and optimized field selection
     const { data: sources, error: sourcesError } = await getCachedSources(
@@ -139,16 +183,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn('[Chat API] Returning empty sources due to error');
     }
 
-    // Use Pinecone for semantic source retrieval
+    // Use Pinecone for semantic source retrieval (with graceful fallback)
     let sourceContext = 'No sources available in this notebook.';
     let selectedSources: any[] = [];
     
+    // Always fallback to all included sources if Pinecone fails
+    const validSources = sources && !sourcesError ? sources : [];
+    
     try {
       // Search Pinecone for similar sources (top 5-10)
-      // searchSimilarSources internally generates the query embedding
+      // searchSimilarSources returns empty array on error, so it won't throw
       const pineconeResults = await searchSimilarSources(message, notebookId, 8, 0.6);
       
-      if (pineconeResults.length > 0) {
+      if (pineconeResults && pineconeResults.length > 0) {
         // Fetch full content for Pinecone results from Supabase
         const pineconeSourceIds = [...new Set(pineconeResults.map(r => r.sourceId))];
         const { data: pineconeSources, error: pineconeError } = await supabase
@@ -172,35 +219,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           console.log(`[Chat API] Using ${pineconeSources.length} Pinecone-retrieved sources`);
         }
       }
-      
-      // Fallback: If Pinecone returns no results, use all included sources
-      if (selectedSources.length === 0) {
-        const validSources = sources && !sourcesError ? sources : [];
-        if (validSources.length > 0) {
-          selectedSources = validSources;
-          sourceContext = validSources
-            .map(s => {
-              const content = String(s.processed_content || '');
-              return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
-            })
-            .join('\n\n---\n\n');
-          console.log(`[Chat API] Fallback: Using ${validSources.length} included sources`);
-        }
-      }
     } catch (pineconeError: any) {
-      console.error('[Chat API] Pinecone search error, falling back to all sources:', pineconeError);
-      
-      // Fallback to all included sources if Pinecone fails
-      const validSources = sources && !sourcesError ? sources : [];
-      if (validSources.length > 0) {
-        selectedSources = validSources;
-        sourceContext = validSources
-          .map(s => {
-            const content = String(s.processed_content || '');
-            return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
-          })
-          .join('\n\n---\n\n');
-      }
+      // Log but don't break - will use fallback
+      console.warn('[Chat API] Pinecone search error, using fallback:', pineconeError?.message || pineconeError);
+    }
+    
+    // Fallback: If Pinecone returns no results or fails, use all included sources
+    if (selectedSources.length === 0 && validSources.length > 0) {
+      selectedSources = validSources;
+      sourceContext = validSources
+        .map(s => {
+          const content = String(s.processed_content || '');
+          return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
+        })
+        .join('\n\n---\n\n');
+      console.log(`[Chat API] Using ${validSources.length} included sources (Pinecone unavailable or no matches)`);
     }
 
     // Call GLM-4.5-Air API

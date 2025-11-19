@@ -108,10 +108,23 @@ export async function searchSimilarSources(
   minScore: number = 0.7
 ): Promise<SearchResult[]> {
   try {
+    // Check if Pinecone is configured
+    const pineconeApiKey = process.env.PINECONE_API_KEY || process.env.VITE_PINECONE_API_KEY;
+    if (!pineconeApiKey || pineconeApiKey.trim() === '') {
+      console.warn('[Vector Ops] Pinecone API key not configured, skipping vector search');
+      return [];
+    }
+
     const index = getPineconeIndex();
     
-    // Generate embedding for query
-    const queryEmbedding = await generateEmbedding(query);
+    // Generate embedding for query (with error handling)
+    let queryEmbedding: number[];
+    try {
+      queryEmbedding = await generateEmbedding(query);
+    } catch (embeddingError: any) {
+      console.error('[Vector Ops] Failed to generate query embedding:', embeddingError);
+      return []; // Return empty if embedding fails
+    }
 
     // Query Pinecone with metadata filter
     const queryResponse = await index.query({
@@ -149,6 +162,7 @@ export async function searchSimilarSources(
     return results;
   } catch (error: any) {
     console.error('[Vector Ops] Error searching similar sources:', error);
+    // Return empty array instead of throwing - allows graceful fallback
     return [];
   }
 }
