@@ -323,17 +323,17 @@ export default function ResearchNotebook() {
               <div className="flex-1 overflow-hidden">
                 {activeTab === 'sources' && (
                   <div className="h-full bg-gray-50">
-                    <SourcesPanel notebookId={notebookId!} />
+                    {notebookId && <SourcesPanel notebookId={notebookId} />}
                   </div>
                 )}
                 {activeTab === 'chat' && (
                   <div className="h-full bg-white">
-                    <ChatPanel notebookId={notebookId!} />
+                    {notebookId && <ChatPanel notebookId={notebookId} />}
                   </div>
                 )}
                 {activeTab === 'studio' && (
                   <div className="h-full bg-gray-50">
-                    <StudioPanel notebookId={notebookId!} />
+                    {notebookId && <StudioPanel notebookId={notebookId} />}
                   </div>
                 )}
               </div>

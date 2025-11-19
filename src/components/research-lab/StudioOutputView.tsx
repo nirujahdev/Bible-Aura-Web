@@ -132,15 +132,23 @@ export function StudioOutputView({
 
   // Extract content text
   let contentText = '';
-  if (typeof output.content === 'string') {
+  if (!output || !output.content) {
+    contentText = 'No content available';
+  } else if (typeof output.content === 'string') {
     contentText = output.content;
-  } else if (output.content) {
+  } else if (output.content && typeof output.content === 'object') {
     // Try different content fields
     contentText = output.content.text || 
                   output.content.summary || 
                   output.content.content ||
                   output.content.output ||
+                  output.content.sermon ||
+                  output.content.curriculum ||
+                  output.content.harmonization ||
+                  output.content.answer ||
                   JSON.stringify(output.content, null, 2);
+  } else {
+    contentText = 'No content available';
   }
 
   return (
