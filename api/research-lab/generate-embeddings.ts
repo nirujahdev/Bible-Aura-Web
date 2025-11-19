@@ -2,7 +2,7 @@
 // Generates embeddings for source content (server-side for API key security)
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { generateEmbedding } from '../../src/lib/research-lab/embeddings';
+import { generateEmbedding } from '../../src/lib/research-lab/embeddings.js';
 
 function setCORSHeaders(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
