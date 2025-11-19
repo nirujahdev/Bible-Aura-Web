@@ -12,13 +12,26 @@ const GLM_MODEL = 'glm-4.5-air';
 
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
-function getSupabaseClient() {
+function getSupabaseClient(authToken?: string) {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Supabase credentials not configured');
+  }
+  
+  // If auth token provided, create authenticated client
+  if (authToken) {
+    return createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      },
+    });
+  }
+  
+  // Otherwise use shared client (for non-user operations)
   if (!supabaseClient) {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials not configured');
-    }
     supabaseClient = createClient(supabaseUrl, supabaseKey);
   }
   return supabaseClient;
@@ -113,18 +126,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const supabase = getSupabaseClient();
+    // Get auth token from request
+    const authHeader = req.headers.authorization;
+    const authToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+    
+    // Use authenticated Supabase client
+    const supabase = getSupabaseClient(authToken);
 
-    // Verify notebook ownership
+    // Verify notebook ownership (RLS will handle access control)
     const { data: notebook, error: notebookError } = await supabase
       .from('research_notebooks')
       .select('id, user_id')
       .eq('id', notebookId)
-      .eq('user_id', userId)
       .single();
 
-    if (notebookError || !notebook) {
-      res.status(403).json({ error: 'Notebook not found or access denied' });
+    if (notebookError) {
+      console.error('[Agent API] Notebook fetch error:', {
+        error: notebookError,
+        code: notebookError.code,
+        message: notebookError.message,
+        notebookId,
+        userId,
+      });
+      
+      // Check for specific error types
+      if (notebookError.code === 'PGRST116' || notebookError.message?.includes('does not exist')) {
+        res.status(404).json({ 
+          error: 'Notebook not found',
+          message: 'The notebook does not exist or you do not have access to it.'
+        });
+        return;
+      }
+      
+      if (notebookError.code === '42501' || notebookError.message?.includes('permission denied')) {
+        res.status(403).json({ 
+          error: 'Access denied',
+          message: 'You do not have permission to access this notebook.'
+        });
+        return;
+      }
+      
+      res.status(403).json({ 
+        error: 'Notebook access error',
+        message: notebookError.message || 'Failed to verify notebook access'
+      });
+      return;
+    }
+
+    if (!notebook) {
+      res.status(404).json({ error: 'Notebook not found' });
+      return;
+    }
+    
+    // Double-check ownership (extra security layer)
+    if (notebook.user_id !== userId) {
+      res.status(403).json({ error: 'Access denied', message: 'You do not own this notebook' });
       return;
     }
 
