@@ -733,83 +733,135 @@ Format as structured JSON with clear sections.`;
     let saveError: any = null;
     
     try {
-      const saveResult = await supabase
+      // First, try to find existing output
+      const { data: existingOutput } = await supabase
         .from('research_studio_outputs')
-        .upsert({
-          notebook_id: notebookId,
-          user_id: userId,
-          output_type: outputType as any,
-          content: outputContent,
-          metadata: {
-            status: 'completed',
-            completedAt: new Date().toISOString(),
-            agentType: agentType,
-            format: params.format || 'detailed',
-            language: params.language || 'en',
-          },
-        }, {
-          onConflict: 'notebook_id,output_type',
-        })
-        .select()
+        .select('id')
+        .eq('notebook_id', notebookId)
+        .eq('user_id', userId)
+        .eq('output_type', outputType)
         .single();
 
-      savedOutput = saveResult.data;
-      saveError = saveResult.error;
-
-      if (saveError) {
-        console.error(`[${agentType} Agent] Save error:`, {
-          error: saveError,
-          code: saveError.code,
-          message: saveError.message,
-          details: saveError.details,
-          hint: saveError.hint,
-          outputType,
-          notebookId,
-          userId,
-        });
-
-        // Check for specific error types
-        if (saveError.code === '23505') { // Unique violation
-          console.warn(`[${agentType} Agent] Output already exists, attempting to update...`);
-          // Try to update instead
-          const updateResult = await supabase
-            .from('research_studio_outputs')
-            .update({
-              content: outputContent,
-              metadata: {
-                status: 'completed',
-                completedAt: new Date().toISOString(),
-                agentType: agentType,
-                format: params.format || 'detailed',
-                language: params.language || 'en',
-              },
-              updated_at: new Date().toISOString(),
-            })
-            .eq('notebook_id', notebookId)
-            .eq('user_id', userId)
-            .eq('output_type', outputType)
-            .select()
-            .single();
-          
-          if (updateResult.error) {
-            console.error(`[${agentType} Agent] Update also failed:`, updateResult.error);
-            saveError = updateResult.error;
-          } else {
-            savedOutput = updateResult.data;
-            saveError = null;
-            console.log(`[${agentType} Agent] Output updated successfully:`, savedOutput?.id);
-          }
-        } else if (saveError.code === 'PGRST116' || saveError.message?.includes('does not exist')) {
-          // Table doesn't exist
-          res.status(500).json({
-            error: 'Database setup required',
-            message: 'The research_studio_outputs table does not exist. Please run the migration SQL file in Supabase Dashboard.',
-            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000002_update_studio_outputs_for_agents.sql'
+      if (existingOutput) {
+        // Update existing output
+        console.log(`[${agentType} Agent] Updating existing output:`, existingOutput.id);
+        const updateResult = await supabase
+          .from('research_studio_outputs')
+          .update({
+            content: outputContent,
+            metadata: {
+              status: 'completed',
+              completedAt: new Date().toISOString(),
+              agentType: agentType,
+              format: params.format || 'detailed',
+              language: params.language || 'en',
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingOutput.id)
+          .select()
+          .single();
+        
+        savedOutput = updateResult.data;
+        saveError = updateResult.error;
+        
+        if (saveError) {
+          console.error(`[${agentType} Agent] Update error:`, {
+            error: saveError,
+            code: saveError.code,
+            message: saveError.message,
+            details: saveError.details,
+            hint: saveError.hint,
           });
-          return;
+        } else {
+          console.log(`[${agentType} Agent] Output updated successfully:`, savedOutput?.id);
         }
       } else {
-        console.log(`[${agentType} Agent] Output saved successfully:`, savedOutput?.id);
+        // Insert new output
+        console.log(`[${agentType} Agent] Creating new output`);
+        const insertResult = await supabase
+          .from('research_studio_outputs')
+          .insert({
+            notebook_id: notebookId,
+            user_id: userId,
+            output_type: outputType as any,
+            content: outputContent,
+            metadata: {
+              status: 'completed',
+              completedAt: new Date().toISOString(),
+              agentType: agentType,
+              format: params.format || 'detailed',
+              language: params.language || 'en',
+            },
+          })
+          .select()
+          .single();
+
+        savedOutput = insertResult.data;
+        saveError = insertResult.error;
+
+        if (saveError) {
+          console.error(`[${agentType} Agent] Insert error:`, {
+            error: saveError,
+            code: saveError.code,
+            message: saveError.message,
+            details: saveError.details,
+            hint: saveError.hint,
+            outputType,
+            notebookId,
+            userId,
+          });
+
+          // Check for specific error types
+          if (saveError.code === '23505') { // Unique violation - try update instead
+            console.warn(`[${agentType} Agent] Unique constraint violation, attempting update...`);
+            const updateResult = await supabase
+              .from('research_studio_outputs')
+              .update({
+                content: outputContent,
+                metadata: {
+                  status: 'completed',
+                  completedAt: new Date().toISOString(),
+                  agentType: agentType,
+                  format: params.format || 'detailed',
+                  language: params.language || 'en',
+                },
+                updated_at: new Date().toISOString(),
+              })
+              .eq('notebook_id', notebookId)
+              .eq('user_id', userId)
+              .eq('output_type', outputType)
+              .select()
+              .single();
+            
+            if (updateResult.error) {
+              console.error(`[${agentType} Agent] Update also failed:`, updateResult.error);
+              saveError = updateResult.error;
+            } else {
+              savedOutput = updateResult.data;
+              saveError = null;
+              console.log(`[${agentType} Agent] Output updated successfully after conflict:`, savedOutput?.id);
+            }
+          } else if (saveError.code === '42501' || saveError.message?.includes('permission denied') || saveError.message?.includes('row-level security')) {
+            // RLS error - log but don't fail the request
+            console.error(`[${agentType} Agent] RLS permission error:`, saveError);
+            saveError = {
+              ...saveError,
+              code: 'RLS_ERROR',
+              message: 'Permission denied. Please check Row Level Security policies.',
+            };
+          } else if (saveError.code === 'PGRST116' || saveError.message?.includes('does not exist')) {
+            // Table doesn't exist
+            res.status(500).json({
+              error: 'Database setup required',
+              message: 'The research_studio_outputs table does not exist. Please run the migration SQL file in Supabase Dashboard.',
+              hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000002_update_studio_outputs_for_agents.sql'
+            });
+            return;
+          }
+        } else {
+          console.log(`[${agentType} Agent] Output saved successfully:`, savedOutput?.id);
+        }
       }
     } catch (saveException: any) {
       console.error(`[${agentType} Agent] Save exception:`, saveException);
