@@ -896,8 +896,25 @@ Format as structured JSON with clear sections.`;
 
     // Add warning if save failed but content was generated
     if (saveError && !savedOutput) {
+      console.error(`[${agentType} Agent] Save failed - detailed error:`, {
+        error: saveError,
+        code: saveError.code,
+        message: saveError.message,
+        details: saveError.details,
+        hint: saveError.hint,
+        notebookId,
+        userId,
+        outputType,
+        hasAuthToken: !!authToken,
+        authTokenLength: authToken?.length || 0,
+        outputContentKeys: outputContent ? Object.keys(outputContent) : [],
+        outputContentSize: outputContent ? JSON.stringify(outputContent).length : 0,
+      });
+      
       responseData.warning = 'Content generated but failed to save to database. Please try again.';
       responseData.saveError = process.env.NODE_ENV === 'development' ? saveError.message : undefined;
+      responseData.errorCode = saveError.code;
+      responseData.errorHint = saveError.hint || saveError.details;
     }
 
     switch (agentType) {
