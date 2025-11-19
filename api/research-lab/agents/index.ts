@@ -243,6 +243,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Continue with all sources if Pinecone fails
     }
     
+    // Ensure we have sources
+    if (selectedSources.length === 0) {
+      res.status(400).json({ 
+        error: 'No sources available',
+        message: 'This notebook has no sources. Please add sources before using agents.'
+      });
+      return;
+    }
+
     // Build source content from selected sources
     sourceTexts = selectedSources
       .map(s => {
@@ -254,6 +263,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return `[Source: ${s.title}]\n${content.substring(0, 10000)}`;
       })
       .join('\n\n---\n\n');
+
+    // Limit total source text length to prevent token overflow
+    const maxSourceLength = 100000; // ~25,000 tokens
+    if (sourceTexts.length > maxSourceLength) {
+      sourceTexts = sourceTexts.substring(0, maxSourceLength) + '\n\n[Sources truncated due to length]';
+      console.warn(`[${agentType} Agent] Source text truncated from ${sourceTexts.length} to ${maxSourceLength} characters`);
+    }
 
     // Call GLM-4.5-Air API
     const glmApiKey = process.env.GLM_API_KEY || process.env.VITE_GLM_API_KEY;
@@ -543,8 +559,24 @@ Format as structured JSON with clear sections.`;
     }
 
     // Validate response structure
-    if (!glmData || !glmData.choices || !Array.isArray(glmData.choices) || glmData.choices.length === 0) {
-      console.error(`[${agentType} Agent] Invalid response structure:`, glmData);
+    if (!glmData) {
+      console.error(`[${agentType} Agent] No response data:`, { status: response.status, statusText: response.statusText });
+      res.status(500).json({ 
+        error: 'No response from AI service',
+        message: 'The AI service did not return any data. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? 'Response was null or undefined' : undefined
+      });
+      return;
+    }
+
+    if (!glmData.choices || !Array.isArray(glmData.choices) || glmData.choices.length === 0) {
+      console.error(`[${agentType} Agent] Invalid response structure:`, { 
+        hasChoices: !!glmData.choices,
+        choicesType: typeof glmData.choices,
+        choicesLength: Array.isArray(glmData.choices) ? glmData.choices.length : 'not an array',
+        responseKeys: Object.keys(glmData),
+        fullResponse: process.env.NODE_ENV === 'development' ? JSON.stringify(glmData).substring(0, 500) : undefined
+      });
       res.status(500).json({ 
         error: 'Invalid response from AI service',
         message: 'The AI service returned an unexpected response format. Please try again.',
@@ -553,13 +585,25 @@ Format as structured JSON with clear sections.`;
       return;
     }
 
-    const result = glmData.choices[0]?.message?.content || 'No output generated';
+    // Extract response content - handle different response formats
+    const firstChoice = glmData.choices[0];
+    const result = firstChoice?.message?.content || 
+                   firstChoice?.content || 
+                   firstChoice?.text ||
+                   (typeof firstChoice === 'string' ? firstChoice : null) ||
+                   'No output generated';
     
-    if (!result || result === 'No output generated') {
-      console.warn(`[${agentType} Agent] Empty response from GLM API`);
+    if (!result || result === 'No output generated' || (typeof result === 'string' && result.trim().length === 0)) {
+      console.error(`[${agentType} Agent] Empty response from GLM API:`, {
+        firstChoice,
+        hasMessage: !!firstChoice?.message,
+        messageContent: firstChoice?.message?.content,
+        fullResponse: process.env.NODE_ENV === 'development' ? JSON.stringify(glmData).substring(0, 1000) : undefined
+      });
       res.status(500).json({ 
         error: 'Empty response from AI service',
         message: 'The AI service did not generate any content. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? 'Response structure: ' + JSON.stringify(firstChoice).substring(0, 200) : undefined
       });
       return;
     }
@@ -570,8 +614,8 @@ Format as structured JSON with clear sections.`;
         outputContent = {
           summary: result,
           summaryType: params.summaryType || 'detailed',
-          sourceIds: sources.map(s => s.id),
-          sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+          sourceIds: selectedSources.map(s => s.id),
+          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
         };
         break;
@@ -579,8 +623,8 @@ Format as structured JSON with clear sections.`;
         outputContent = {
           question: params.question,
           answer: result,
-          sourceIds: sources.map(s => s.id),
-          sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+          sourceIds: selectedSources.map(s => s.id),
+          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
         };
         break;
@@ -589,8 +633,8 @@ Format as structured JSON with clear sections.`;
           verseReference: params.verseReference,
           theme: params.theme,
           crossReferences: result,
-          sourceIds: sources.map(s => s.id),
-          sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
+          sourceIds: selectedSources.map(s => s.id),
+          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
         };
         break;

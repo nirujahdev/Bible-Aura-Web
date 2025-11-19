@@ -236,6 +236,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log(`[Chat API] Using ${validSources.length} included sources (Pinecone unavailable or no matches)`);
     }
 
+    // Ensure we have sources or provide a helpful message
+    if (selectedSources.length === 0) {
+      res.status(400).json({ 
+        error: 'No sources available',
+        message: 'This notebook has no sources. Please add sources before asking questions.'
+      });
+      return;
+    }
+
     // Call GLM-4.5-Air API
     const glmApiKey = process.env.GLM_API_KEY || process.env.VITE_GLM_API_KEY;
     if (!glmApiKey || glmApiKey.trim() === '') {
@@ -246,7 +255,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const userPrompt = `Question: ${message}\n\nAnswer based on these notebook sources:\n\n${sourceContext}\n\nProvide a clear, Bible-focused answer with citations from the sources.`;
+    // Sanitize message and ensure sourceContext is not empty
+    const sanitizedMessage = message.trim().substring(0, 5000);
+    const safeSourceContext = sourceContext || 'No sources available in this notebook.';
+    
+    // Limit total prompt length to prevent token overflow
+    const maxContextLength = 50000; // ~12,500 tokens
+    const truncatedContext = safeSourceContext.length > maxContextLength 
+      ? safeSourceContext.substring(0, maxContextLength) + '\n\n[Context truncated due to length]'
+      : safeSourceContext;
+
+    const userPrompt = `Question: ${sanitizedMessage}\n\nAnswer based on these notebook sources:\n\n${truncatedContext}\n\nProvide a clear, Bible-focused answer with citations from the sources.`;
 
     // Fetch with timeout and retry logic
     const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2): Promise<Response> => {
@@ -340,13 +359,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const glmData = await response.json();
-    const aiResponse = glmData.choices?.[0]?.message?.content || 'No response generated';
+    let glmData: any;
+    try {
+      glmData = await response.json();
+    } catch (jsonError: any) {
+      console.error('[Chat API] JSON parse error:', jsonError);
+      const errorText = await response.text().catch(() => 'Unable to read error response');
+      res.status(500).json({ 
+        error: 'Invalid response from AI service',
+        message: 'The AI service returned an invalid response. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? errorText : undefined
+      });
+      return;
+    }
 
-    if (!aiResponse || aiResponse === 'No response generated') {
+    // Validate response structure
+    if (!glmData || !glmData.choices || !Array.isArray(glmData.choices) || glmData.choices.length === 0) {
+      console.error('[Chat API] Invalid response structure:', glmData);
+      res.status(500).json({ 
+        error: 'Invalid response from AI service',
+        message: 'The AI service returned an unexpected response format. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? JSON.stringify(glmData) : undefined
+      });
+      return;
+    }
+
+    const aiResponse = glmData.choices[0]?.message?.content || glmData.choices[0]?.content || 'No response generated';
+
+    if (!aiResponse || aiResponse.trim().length === 0 || aiResponse === 'No response generated') {
+      console.error('[Chat API] Empty response from AI:', { glmData });
       res.status(500).json({ 
         error: 'Empty response from AI service',
-        message: 'The AI service did not generate a response. Please try again.'
+        message: 'The AI service did not generate a response. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? JSON.stringify(glmData) : undefined
       });
       return;
     }
