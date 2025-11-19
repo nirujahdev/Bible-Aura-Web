@@ -757,10 +757,17 @@ Format as structured JSON with clear sections.`;
       if (existingOutput && !findError) {
         // Update existing output
         console.log(`[${agentType} Agent] Updating existing output:`, existingOutput.id);
+        
+        // Ensure content is valid JSON (Supabase expects JSONB)
+        let contentToSave = outputContent;
+        if (typeof outputContent !== 'object') {
+          contentToSave = { text: String(outputContent) };
+        }
+        
         const updateResult = await supabase
           .from('research_studio_outputs')
           .update({
-            content: outputContent,
+            content: contentToSave, // Ensure it's a valid object for JSONB
             metadata: {
               status: 'completed',
               completedAt: new Date().toISOString(),
@@ -791,13 +798,20 @@ Format as structured JSON with clear sections.`;
       } else {
         // Insert new output
         console.log(`[${agentType} Agent] Creating new output`);
+        
+        // Ensure content is valid JSON (Supabase expects JSONB)
+        let contentToSave = outputContent;
+        if (typeof outputContent !== 'object') {
+          contentToSave = { text: String(outputContent) };
+        }
+        
         const insertResult = await supabase
           .from('research_studio_outputs')
           .insert({
             notebook_id: notebookId,
             user_id: userId,
             output_type: outputType as any,
-            content: outputContent,
+            content: contentToSave, // Ensure it's a valid object for JSONB
             metadata: {
               status: 'completed',
               completedAt: new Date().toISOString(),
@@ -827,10 +841,16 @@ Format as structured JSON with clear sections.`;
           // Check for specific error types
           if (saveError.code === '23505') { // Unique violation - try update instead
             console.warn(`[${agentType} Agent] Unique constraint violation, attempting update...`);
+            // Ensure content is valid JSON (Supabase expects JSONB)
+            let contentToSave = outputContent;
+            if (typeof outputContent !== 'object') {
+              contentToSave = { text: String(outputContent) };
+            }
+            
             const updateResult = await supabase
               .from('research_studio_outputs')
               .update({
-                content: outputContent,
+                content: contentToSave, // Ensure it's a valid object for JSONB
                 metadata: {
                   status: 'completed',
                   completedAt: new Date().toISOString(),
