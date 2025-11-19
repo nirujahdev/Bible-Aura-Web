@@ -526,29 +526,97 @@ Format as structured JSON with clear sections.`;
     }
 
     // Save to database with status tracking
-    const { data: savedOutput, error: saveError } = await supabase
-      .from('research_studio_outputs')
-      .upsert({
-        notebook_id: notebookId,
-        user_id: userId,
-        output_type: outputType as any,
-        content: outputContent,
-        metadata: {
-          status: 'completed',
-          completedAt: new Date().toISOString(),
-          agentType: agentType,
-        },
-      }, {
-        onConflict: 'notebook_id,output_type',
-      })
-      .select()
-      .single();
+    let savedOutput: any = null;
+    let saveError: any = null;
+    
+    try {
+      const saveResult = await supabase
+        .from('research_studio_outputs')
+        .upsert({
+          notebook_id: notebookId,
+          user_id: userId,
+          output_type: outputType as any,
+          content: outputContent,
+          metadata: {
+            status: 'completed',
+            completedAt: new Date().toISOString(),
+            agentType: agentType,
+            format: params.format || 'detailed',
+            language: params.language || 'en',
+          },
+        }, {
+          onConflict: 'notebook_id,output_type',
+        })
+        .select()
+        .single();
 
-    if (saveError) {
-      console.error(`[${agentType} Agent] Save error:`, saveError);
-      // Continue even if save fails - still return the result
-    } else {
-      console.log(`[${agentType} Agent] Output saved successfully:`, savedOutput?.id);
+      savedOutput = saveResult.data;
+      saveError = saveResult.error;
+
+      if (saveError) {
+        console.error(`[${agentType} Agent] Save error:`, {
+          error: saveError,
+          code: saveError.code,
+          message: saveError.message,
+          details: saveError.details,
+          hint: saveError.hint,
+          outputType,
+          notebookId,
+          userId,
+        });
+
+        // Check for specific error types
+        if (saveError.code === '23505') { // Unique violation
+          console.warn(`[${agentType} Agent] Output already exists, attempting to update...`);
+          // Try to update instead
+          const updateResult = await supabase
+            .from('research_studio_outputs')
+            .update({
+              content: outputContent,
+              metadata: {
+                status: 'completed',
+                completedAt: new Date().toISOString(),
+                agentType: agentType,
+                format: params.format || selectedFormat,
+                language: params.language || 'en',
+              },
+              updated_at: new Date().toISOString(),
+            })
+            .eq('notebook_id', notebookId)
+            .eq('user_id', userId)
+            .eq('output_type', outputType)
+            .select()
+            .single();
+          
+          if (updateResult.error) {
+            console.error(`[${agentType} Agent] Update also failed:`, updateResult.error);
+            saveError = updateResult.error;
+          } else {
+            savedOutput = updateResult.data;
+            saveError = null;
+            console.log(`[${agentType} Agent] Output updated successfully:`, savedOutput?.id);
+          }
+        } else if (saveError.code === 'PGRST116' || saveError.message?.includes('does not exist')) {
+          // Table doesn't exist
+          res.status(500).json({
+            error: 'Database setup required',
+            message: 'The research_studio_outputs table does not exist. Please run the migration SQL file in Supabase Dashboard.',
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000002_update_studio_outputs_for_agents.sql'
+          });
+          return;
+        }
+      } else {
+        console.log(`[${agentType} Agent] Output saved successfully:`, savedOutput?.id);
+      }
+    } catch (saveException: any) {
+      console.error(`[${agentType} Agent] Save exception:`, saveException);
+      saveError = saveException;
+    }
+
+    // If save failed critically, return error (but still log the generated content)
+    if (saveError && saveError.code !== '23505') {
+      // Only fail if it's not a unique constraint violation (we tried to handle that above)
+      console.error(`[${agentType} Agent] Critical save error, but returning generated content:`, saveError);
     }
 
     // Return response based on agent type
@@ -558,6 +626,12 @@ Format as structured JSON with clear sections.`;
       sourcesUsed: sources.map(s => ({ id: s.id, title: s.title })),
       outputId: savedOutput?.id || null,
     };
+
+    // Add warning if save failed but content was generated
+    if (saveError && !savedOutput) {
+      responseData.warning = 'Content generated but failed to save to database. Please try again.';
+      responseData.saveError = process.env.NODE_ENV === 'development' ? saveError.message : undefined;
+    }
 
     switch (agentType) {
       case 'summarize':

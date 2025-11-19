@@ -246,12 +246,28 @@ export function AgentModal({
 
       const data = await response.json();
 
-      toast({
-        title: 'Generation started',
-        description: `Your ${agentName} output is being generated. This may take a few minutes.`,
-      });
+      // Check if there's a warning about save failure
+      if (data.warning) {
+        toast({
+          title: 'Generated with warning',
+          description: data.warning,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Generation started',
+          description: `Your ${agentName} output is being generated. This may take a few minutes.`,
+        });
+      }
 
-      onGenerated();
+      // Only call onGenerated if we have an outputId (successfully saved)
+      if (data.outputId) {
+        onGenerated();
+      } else if (data.success && data.status === 'completed') {
+        // Content was generated but not saved - still trigger refresh to show it
+        onGenerated();
+      }
+
       handleClose();
     } catch (error: any) {
       console.error('Agent generation error:', error);
