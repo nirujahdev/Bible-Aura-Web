@@ -344,17 +344,17 @@ export default function ResearchNotebook() {
           <div className="flex-1 flex overflow-hidden animate-in fade-in duration-300">
             {/* Left Panel: Sources */}
             <div className="w-80 border-r border-gray-200 bg-gray-50 flex flex-col transition-all">
-              <SourcesPanel notebookId={notebookId!} />
+              {notebookId && <SourcesPanel notebookId={notebookId} />}
             </div>
 
             {/* Center Panel: Chat */}
             <div className="flex-1 flex flex-col bg-white">
-              <ChatPanel notebookId={notebookId!} />
+              {notebookId && <ChatPanel notebookId={notebookId} />}
             </div>
 
             {/* Right Panel: Studio */}
             <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col transition-all">
-              <StudioPanel notebookId={notebookId!} />
+              {notebookId && <StudioPanel notebookId={notebookId} />}
             </div>
           </div>
         )}
