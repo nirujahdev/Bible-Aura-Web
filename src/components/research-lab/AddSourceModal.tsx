@@ -296,109 +296,143 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
       // Add link source
       if (linkUrl) {
-        const { data: newSource, error: linkError } = await createSource({
-          notebook_id: notebookId,
-          user_id: user.id,
-          source_type: 'link',
-          title: linkUrl,
-          link_url: linkUrl,
-        });
+        try {
+          const { data: newSource, error: linkError } = await createSource({
+            notebook_id: notebookId,
+            user_id: user.id,
+            source_type: 'link',
+            title: linkUrl,
+            link_url: linkUrl,
+          });
 
-        if (linkError) throw linkError;
+          if (linkError) {
+            uploadErrors.push(`Link: Failed to add - ${linkError.message || 'Unknown error'}`);
+          } else {
+            successCount++;
 
-        // Automatically trigger Summarize agent for this source
-        if (newSource?.id) {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            fetch('/api/research-lab/agents', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({
-                agentType: 'summarize',
-                notebookId,
-                summaryType: 'detailed',
-                sourceIds: [newSource.id],
-              }),
-            })
-            .then(async (res) => {
-              if (res.ok) {
-                const data = await res.json();
-                if (data.summary) {
-                  await supabase
-                    .from('research_sources')
-                    .update({ key_insights: data.summary })
-                    .eq('id', newSource.id);
-                }
+            // Automatically trigger Summarize agent for this source
+            if (newSource?.id) {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                fetch('/api/research-lab/agents', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                  },
+                  body: JSON.stringify({
+                    agentType: 'summarize',
+                    notebookId,
+                    summaryType: 'detailed',
+                    sourceIds: [newSource.id],
+                  }),
+                })
+                .then(async (res) => {
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.summary) {
+                      await supabase
+                        .from('research_sources')
+                        .update({ key_insights: data.summary })
+                        .eq('id', newSource.id);
+                    }
+                  }
+                })
+                .catch(err => console.error('Failed to generate summary:', err));
               }
-            })
-            .catch(err => console.error('Failed to generate summary:', err));
+            }
           }
+        } catch (linkErr: any) {
+          uploadErrors.push(`Link: ${linkErr.message || 'Failed to add'}`);
         }
       }
 
       // Add pasted text source
       if (pastedText) {
-        const { data: newSource, error: textError } = await createSource({
-          notebook_id: notebookId,
-          user_id: user.id,
-          source_type: 'text',
-          title: 'Pasted Text',
-          content_text: pastedText,
-        });
+        try {
+          const { data: newSource, error: textError } = await createSource({
+            notebook_id: notebookId,
+            user_id: user.id,
+            source_type: 'text',
+            title: 'Pasted Text',
+            content_text: pastedText,
+          });
 
-        if (textError) throw textError;
+          if (textError) {
+            uploadErrors.push(`Pasted text: Failed to add - ${textError.message || 'Unknown error'}`);
+          } else {
+            successCount++;
 
-        // Automatically trigger Summarize agent for this source
-        if (newSource?.id) {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            fetch('/api/research-lab/agents', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({
-                agentType: 'summarize',
-                notebookId,
-                summaryType: 'detailed',
-                sourceIds: [newSource.id],
-              }),
-            })
-            .then(async (res) => {
-              if (res.ok) {
-                const data = await res.json();
-                if (data.summary) {
-                  await supabase
-                    .from('research_sources')
-                    .update({ key_insights: data.summary })
-                    .eq('id', newSource.id);
-                }
+            // Automatically trigger Summarize agent for this source
+            if (newSource?.id) {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                fetch('/api/research-lab/agents', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                  },
+                  body: JSON.stringify({
+                    agentType: 'summarize',
+                    notebookId,
+                    summaryType: 'detailed',
+                    sourceIds: [newSource.id],
+                  }),
+                })
+                .then(async (res) => {
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data.summary) {
+                      await supabase
+                        .from('research_sources')
+                        .update({ key_insights: data.summary })
+                        .eq('id', newSource.id);
+                    }
+                  }
+                })
+                .catch(err => console.error('Failed to generate summary:', err));
               }
-            })
-            .catch(err => console.error('Failed to generate summary:', err));
+            }
           }
+        } catch (textErr: any) {
+          uploadErrors.push(`Pasted text: ${textErr.message || 'Failed to add'}`);
         }
       }
 
       // Update notebook source count
-      const sourceCount = selectedFiles.length + (linkUrl ? 1 : 0) + (pastedText ? 1 : 0);
-      const { error: countError } = await updateNotebookSourceCount(notebookId, user.id, sourceCount);
-      if (countError) {
-        console.warn('Failed to update source count:', countError);
-        // Don't throw - source creation was successful
+      const totalSourceCount = successCount;
+      if (totalSourceCount > 0) {
+        const { error: countError } = await updateNotebookSourceCount(notebookId, user.id, totalSourceCount);
+        if (countError) {
+          console.warn('Failed to update source count:', countError);
+          // Don't throw - source creation was successful
+        }
       }
 
-      toast({
-        title: 'Sources added',
-        description: `Successfully added ${sourceCount} source(s)`,
-      });
+      // Show final success message if no errors or partial success
+      if (successCount > 0) {
+        if (uploadErrors.length === 0) {
+          toast({
+            title: 'Sources added',
+            description: `Successfully added ${successCount} source(s). Summaries are being generated...`,
+            duration: 3000,
+          });
+        } else {
+          toast({
+            title: 'Partial success',
+            description: `Added ${successCount} source(s), but ${uploadErrors.length} failed.`,
+            variant: 'default',
+            duration: 4000,
+          });
+        }
+      }
 
-      handleClose();
-      onAdded();
+      // Only close if we have at least one success
+      if (successCount > 0) {
+        handleClose();
+        onAdded();
+      }
     } catch (error: any) {
       console.error('Error adding sources:', error);
       toast({
