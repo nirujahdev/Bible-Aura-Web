@@ -292,7 +292,7 @@ Format as structured JSON with clear sections.`;
     });
 
     // Retry logic for GLM API calls
-    let response: Response;
+    let response: Response | null = null;
     const maxRetries = 2;
     let lastError: any = null;
     
@@ -350,7 +350,7 @@ Format as structured JSON with clear sections.`;
     }
     
     // If we still don't have a response after retries, return error
-    if (!response!) {
+    if (!response) {
       res.status(503).json({ 
         error: 'Failed to connect to AI service',
         message: 'Unable to reach AI service after multiple attempts. Please try again later.',
