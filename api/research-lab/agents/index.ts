@@ -742,7 +742,12 @@ Format as structured JSON with clear sections.`;
         .eq('output_type', outputType)
         .maybeSingle(); // Use maybeSingle() to avoid error when no row found
 
-      if (existingOutput) {
+      // If find error is not a "not found" error, log it but continue
+      if (findError && findError.code !== 'PGRST116') {
+        console.warn(`[${agentType} Agent] Error finding existing output (will try insert):`, findError.message);
+      }
+
+      if (existingOutput && !findError) {
         // Update existing output
         console.log(`[${agentType} Agent] Updating existing output:`, existingOutput.id);
         const updateResult = await supabase
