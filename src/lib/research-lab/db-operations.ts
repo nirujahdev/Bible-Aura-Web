@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 // CACHE CONFIGURATION
 // ============================================================================
 
-const CACHE_TTL = 5 * 1000; // 5 seconds cache TTL
+const CACHE_TTL = 30 * 1000; // 30 seconds cache TTL (increased for better performance)
 
 // In-memory cache for notebooks (defined before Notebook interface to avoid forward reference)
 interface NotebookCacheEntry {
@@ -15,7 +15,16 @@ interface NotebookCacheEntry {
   timestamp: number;
 }
 
+interface SingleNotebookCacheEntry {
+  data: Notebook;
+  timestamp: number;
+}
+
 const notebooksCache = new Map<string, NotebookCacheEntry>();
+const singleNotebookCache = new Map<string, SingleNotebookCacheEntry>();
+
+// Request deduplication: prevent multiple simultaneous requests for the same data
+const pendingRequests = new Map<string, Promise<any>>();
 
 // ============================================================================
 // NOTEBOOK OPERATIONS
@@ -101,7 +110,7 @@ export async function createNotebook(
 
 /**
  * Get all notebooks for a user
- * Optimized: Only select necessary fields, with caching for better performance
+ * Optimized: Only select necessary fields, with caching and request deduplication for better performance
  */
 export async function getUserNotebooks(
   userId: string,
@@ -116,64 +125,82 @@ export async function getUserNotebooks(
     return { data: cached.data, error: null };
   }
 
-  try {
-    const startTime = performance.now();
-    
-    const { data, error } = await supabase
-      .from('research_notebooks')
-      .select('id, user_id, title, description, thumbnail_url, source_count, created_at, updated_at')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false })
-      .limit(limit);
+  // Check if there's already a pending request for this key
+  const pendingRequest = pendingRequests.get(cacheKey);
+  if (pendingRequest) {
+    console.log('Deduplicating request - waiting for existing request');
+    return pendingRequest;
+  }
 
-    const queryTime = performance.now() - startTime;
-    console.log(`Database query took ${queryTime.toFixed(2)}ms`);
+  // Create new request
+  const requestPromise = (async () => {
+    try {
+      const startTime = performance.now();
+      
+      const { data, error } = await supabase
+        .from('research_notebooks')
+        .select('id, user_id, title, description, thumbnail_url, source_count, created_at, updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(limit);
 
-    // Check if error is due to missing table
-    if (error) {
-      const errorMessage = error.message || String(error);
-      if (
-        errorMessage.includes('relation') && 
-        errorMessage.includes('does not exist') ||
-        errorMessage.includes('PGRST116') ||
-        error.code === 'PGRST116'
-      ) {
+      const queryTime = performance.now() - startTime;
+      console.log(`Database query took ${queryTime.toFixed(2)}ms`);
+
+      // Check if error is due to missing table
+      if (error) {
+        const errorMessage = error.message || String(error);
+        if (
+          errorMessage.includes('relation') && 
+          errorMessage.includes('does not exist') ||
+          errorMessage.includes('PGRST116') ||
+          error.code === 'PGRST116'
+        ) {
+          return {
+            data: null,
+            error: {
+              message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+              code: 'TABLE_NOT_FOUND',
+              hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+            }
+          };
+        }
+      }
+
+      // Cache the result
+      if (data) {
+        notebooksCache.set(cacheKey, { data, timestamp: Date.now() });
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      // Handle JSON parsing errors (when Supabase returns HTML)
+      if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
         return {
           data: null,
           error: {
             message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
             code: 'TABLE_NOT_FOUND',
-            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql'
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
+            originalError: err.message
           }
         };
       }
-    }
-
-    // Cache the result
-    if (data) {
-      notebooksCache.set(cacheKey, { data, timestamp: Date.now() });
-    }
-
-    return { data, error };
-  } catch (err: any) {
-    // Handle JSON parsing errors (when Supabase returns HTML)
-    if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+      
       return {
         data: null,
-        error: {
-          message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
-          code: 'TABLE_NOT_FOUND',
-          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
-          originalError: err.message
-        }
+        error: err
       };
+    } finally {
+      // Remove from pending requests
+      pendingRequests.delete(cacheKey);
     }
-    
-    return {
-      data: null,
-      error: err
-    };
-  }
+  })();
+
+  // Store pending request
+  pendingRequests.set(cacheKey, requestPromise);
+
+  return requestPromise;
 }
 
 /**
@@ -189,26 +216,58 @@ export function clearNotebooksCache(userId?: string) {
       }
     });
     keysToDelete.forEach(key => notebooksCache.delete(key));
+    
+    // Also clear single notebook cache for this user
+    singleNotebookCache.forEach((_, key) => {
+      if (key.includes(`-${userId}`)) {
+        singleNotebookCache.delete(key);
+      }
+    });
   } else {
     // Clear all cache
     notebooksCache.clear();
+    singleNotebookCache.clear();
   }
 }
 
 /**
  * Get a single notebook by ID
+ * Optimized: Caching and request deduplication for better performance
  */
 export async function getNotebook(
   notebookId: string,
   userId: string
 ): Promise<{ data: Notebook | null; error: any }> {
-  try {
-    const { data, error } = await supabase
-      .from('research_notebooks')
-      .select('*')
-      .eq('id', notebookId)
-      .eq('user_id', userId)
-      .single();
+  const cacheKey = `notebook-${notebookId}-${userId}`;
+  
+  // Check cache first
+  const cached = singleNotebookCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log('Returning cached notebook');
+    return { data: cached.data, error: null };
+  }
+
+  // Check if there's already a pending request for this key
+  const pendingRequest = pendingRequests.get(cacheKey);
+  if (pendingRequest) {
+    console.log('Deduplicating request - waiting for existing request');
+    return pendingRequest;
+  }
+
+  // Create new request
+  const requestPromise = (async () => {
+    try {
+      const startTime = performance.now();
+      
+      const { data, error } = await supabase
+        .from('research_notebooks')
+        .select('id, user_id, title, description, thumbnail_url, source_count, created_at, updated_at')
+        .eq('id', notebookId)
+        .eq('user_id', userId)
+        .single();
+
+      const queryTime = performance.now() - startTime;
+      console.log(`getNotebook query took ${queryTime.toFixed(2)}ms`);
 
     // Check if error is due to missing table
     if (error) {
@@ -249,26 +308,40 @@ export async function getNotebook(
       }
     }
 
-    return { data, error };
-  } catch (err: any) {
-    // Handle JSON parsing errors (when Supabase returns HTML)
-    if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+      // Cache the result
+      if (data) {
+        singleNotebookCache.set(cacheKey, { data, timestamp: Date.now() });
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      // Handle JSON parsing errors (when Supabase returns HTML)
+      if (err.message?.includes('JSON') || err.message?.includes('DOCTYPE')) {
+        return {
+          data: null,
+          error: {
+            message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
+            code: 'TABLE_NOT_FOUND',
+            hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
+            originalError: err.message
+          }
+        };
+      }
+      
       return {
         data: null,
-        error: {
-          message: 'Database tables not found. Please run the migration SQL file in Supabase Dashboard.',
-          code: 'TABLE_NOT_FOUND',
-          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration from supabase/migrations/20241118000000_create_research_lab_tables.sql',
-          originalError: err.message
-        }
+        error: err
       };
+    } finally {
+      // Remove from pending requests
+      pendingRequests.delete(cacheKey);
     }
-    
-    return {
-      data: null,
-      error: err
-    };
-  }
+  })();
+
+  // Store pending request
+  pendingRequests.set(cacheKey, requestPromise);
+
+  return requestPromise;
 }
 
 /**
@@ -290,6 +363,9 @@ export async function updateNotebookTitle(
   // Clear cache after updating notebook
   if (data) {
     clearNotebooksCache(userId);
+    // Also clear single notebook cache
+    const singleCacheKey = `notebook-${notebookId}-${userId}`;
+    singleNotebookCache.delete(singleCacheKey);
   }
 
   return { data, error };
@@ -311,6 +387,9 @@ export async function deleteNotebook(
   // Clear cache after deleting notebook
   if (!error) {
     clearNotebooksCache(userId);
+    // Also clear single notebook cache
+    const singleCacheKey = `notebook-${notebookId}-${userId}`;
+    singleNotebookCache.delete(singleCacheKey);
   }
 
   return { error };

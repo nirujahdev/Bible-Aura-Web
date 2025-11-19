@@ -216,9 +216,15 @@ export function AgentModal({
       } else if (agentId === 'sermon' && description) {
         requestBody.scriptureReference = description;
       } else if (agentId === 'doctrinal' && description) {
-        requestBody.question = description;
+        requestBody.doctrinalQuestion = description;
       } else if (agentId === 'summarize') {
-        requestBody.summaryType = selectedFormat;
+        // Map frontend format IDs to API summaryType
+        const formatToSummaryType: Record<string, string> = {
+          'briefing': 'brief',
+          'detailed': 'detailed',
+          'executive': 'thematic',
+        };
+        requestBody.summaryType = formatToSummaryType[selectedFormat] || 'detailed';
         if (description) {
           requestBody.customInstructions = description;
         }

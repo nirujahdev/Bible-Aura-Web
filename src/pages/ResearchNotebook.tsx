@@ -1,5 +1,5 @@
 // Research Notebook View - Three-column layout (Sources | Chat | Studio)
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -52,15 +52,7 @@ export default function ResearchNotebook() {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'sources' | 'chat' | 'studio'>('sources');
 
-  useEffect(() => {
-    if (notebookId && user) {
-      loadNotebook();
-    } else if (!user) {
-      setLoading(false);
-    }
-  }, [notebookId, user]);
-
-  const loadNotebook = async () => {
+  const loadNotebook = useCallback(async () => {
     if (!notebookId || !user) return;
 
     setLoading(true);
@@ -120,7 +112,15 @@ export default function ResearchNotebook() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notebookId, user, navigate, toast]);
+
+  useEffect(() => {
+    if (notebookId && user) {
+      loadNotebook();
+    } else if (!user) {
+      setLoading(false);
+    }
+  }, [notebookId, user, loadNotebook]);
 
   const handleUpdateTitle = async () => {
     if (!notebookId || !user || !editedTitle.trim()) return;
