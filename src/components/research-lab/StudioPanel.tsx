@@ -32,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AgentModal } from './agents/AgentModal';
 
 interface StudioPanelProps {
   notebookId: string;
@@ -126,23 +127,11 @@ function getOutputIcon(outputType: string) {
 export function StudioPanel({ notebookId }: StudioPanelProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [activeAgentModal, setActiveAgentModal] = useState<string | null>(null);
   const [outputs, setOutputs] = useState<StudioOutput[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingOutputs, setGeneratingOutputs] = useState<Set<string>>(new Set());
-  
-  // Agent form states
-  const [summaryType, setSummaryType] = useState<'brief' | 'detailed' | 'thematic'>('detailed');
-  const [question, setQuestion] = useState('');
-  const [verseReference, setVerseReference] = useState('');
-  const [theme, setTheme] = useState('');
-  const [topic, setTopic] = useState('');
-  const [duration, setDuration] = useState('');
-  const [audience, setAudience] = useState('');
-  const [scriptureReference, setScriptureReference] = useState('');
-  const [sermonType, setSermonType] = useState<'expository' | 'topical' | 'narrative'>('expository');
-  const [doctrinalQuestion, setDoctrinalQuestion] = useState('');
-  const [includePerspectives, setIncludePerspectives] = useState(true);
+  const [sourceCount, setSourceCount] = useState(0);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -180,7 +169,8 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
     }
   };
 
-  const handleGenerateAgent = async (agentId: string) => {
+  // Removed handleGenerateAgent - now handled by AgentModal
+  const _handleGenerateAgent = async (agentId: string) => {
     if (!user || !notebookId) {
       toast({
         title: 'Error',
@@ -415,11 +405,22 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
   };
 
   const handleOpenAgent = (agentId: string) => {
-    setActiveAgent(agentId);
+    setActiveAgentModal(agentId);
   };
 
   const handleCloseAgent = () => {
-    setActiveAgent(null);
+    setActiveAgentModal(null);
+  };
+
+  const handleAgentGenerated = () => {
+    setGeneratingOutputs(prev => {
+      const next = new Set(prev);
+      if (activeAgentModal) {
+        next.add(activeAgentModal);
+      }
+      return next;
+    });
+    setTimeout(() => loadOutputs(), 2000);
   };
 
   // Get outputs grouped by status
@@ -453,7 +454,7 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                 <Card
                   key={agent.id}
                   className={`cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation ${
-                    activeAgent === agent.id ? 'ring-2 ring-orange-500' : ''
+                    activeAgentModal === agent.id ? 'ring-2 ring-orange-500' : ''
                   }`}
                   onClick={() => handleOpenAgent(agent.id)}
                 >
@@ -468,243 +469,21 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
             })}
           </div>
 
-          {/* Active Agent Form */}
-          {activeAgent && (
-            <div className="mb-4 p-4 bg-white rounded-lg border-2 border-orange-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src="/✦Bible Aura (2).png" 
-                    alt="Bible Aura" 
-                    className="h-5 w-5 rounded"
-                  />
-                  <h3 className="font-semibold text-sm">
-                    {aiAgents.find(a => a.id === activeAgent)?.name}
-                  </h3>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCloseAgent}
-                  className="h-6 w-6 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {/* Summarize Form */}
-                {activeAgent === 'summarize' && (
-                  <>
-                    <div>
-                      <Label htmlFor="summaryType" className="text-xs">Summary Type</Label>
-                      <Select value={summaryType} onValueChange={(v: any) => setSummaryType(v)}>
-                        <SelectTrigger id="summaryType" className="h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="brief">Brief (2-3 paragraphs)</SelectItem>
-                          <SelectItem value="detailed">Detailed (comprehensive)</SelectItem>
-                          <SelectItem value="thematic">Thematic (organized by themes)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button
-                      onClick={() => handleGenerateAgent('summarize')}
-                      disabled={generatingTypes.includes('summarize')}
-                      className="w-full h-8 text-xs"
-                    >
-                      {generatingTypes.includes('summarize') ? 'Generating...' : 'Generate Summary'}
-                    </Button>
-                  </>
-                )}
-
-                {/* Search Q&A Form */}
-                {activeAgent === 'search-qa' && (
-                  <>
-                    <div>
-                      <Label htmlFor="question" className="text-xs">Ask a Bible-related question</Label>
-                      <Textarea
-                        id="question"
-                        placeholder="e.g., What does the Bible say about forgiveness?"
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                        rows={2}
-                        className="text-xs"
-                      />
-                    </div>
-                    <Button
-                      onClick={() => handleGenerateAgent('search-qa')}
-                      disabled={generatingTypes.includes('search-qa') || !question.trim()}
-                      className="w-full h-8 text-xs"
-                    >
-                      {generatingTypes.includes('search-qa') ? 'Searching...' : 'Get Answer'}
-                    </Button>
-                  </>
-                )}
-
-                {/* Cross-Reference Form */}
-                {activeAgent === 'cross-reference' && (
-                  <>
-                    <div>
-                      <Label htmlFor="verseReference" className="text-xs">Verse Reference (optional)</Label>
-                      <Input
-                        id="verseReference"
-                        placeholder="e.g., John 3:16"
-                        value={verseReference}
-                        onChange={(e) => setVerseReference(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="theme" className="text-xs">OR Theme (optional)</Label>
-                      <Textarea
-                        id="theme"
-                        placeholder="e.g., forgiveness, grace"
-                        value={theme}
-                        onChange={(e) => setTheme(e.target.value)}
-                        rows={2}
-                        className="text-xs"
-                      />
-                    </div>
-                    <Button
-                      onClick={() => handleGenerateAgent('cross-reference')}
-                      disabled={generatingTypes.includes('cross-reference') || (!verseReference.trim() && !theme.trim())}
-                      className="w-full h-8 text-xs"
-                    >
-                      {generatingTypes.includes('cross-reference') ? 'Finding...' : 'Find Cross-References'}
-                    </Button>
-                  </>
-                )}
-
-                {/* Curriculum Form */}
-                {activeAgent === 'curriculum' && (
-                  <>
-                    <div>
-                      <Label htmlFor="topic" className="text-xs">Study Topic *</Label>
-                      <Input
-                        id="topic"
-                        placeholder="e.g., Prayer in the Bible"
-                        value={topic}
-                        onChange={(e) => setTopic(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="duration" className="text-xs">Duration (optional)</Label>
-                      <Input
-                        id="duration"
-                        placeholder="e.g., 4 weeks"
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="audience" className="text-xs">Audience (optional)</Label>
-                      <Input
-                        id="audience"
-                        placeholder="e.g., teens, new believers"
-                        value={audience}
-                        onChange={(e) => setAudience(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <Button
-                      onClick={() => handleGenerateAgent('curriculum')}
-                      disabled={generatingTypes.includes('curriculum') || !topic.trim()}
-                      className="w-full h-8 text-xs"
-                    >
-                      {generatingTypes.includes('curriculum') ? 'Generating...' : 'Generate Curriculum'}
-                    </Button>
-                  </>
-                )}
-
-                {/* Sermon Form */}
-                {activeAgent === 'sermon' && (
-                  <>
-                    <div>
-                      <Label htmlFor="scriptureReference" className="text-xs">Scripture Reference (optional)</Label>
-                      <Input
-                        id="scriptureReference"
-                        placeholder="e.g., Romans 8:1-17"
-                        value={scriptureReference}
-                        onChange={(e) => setScriptureReference(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="sermonType" className="text-xs">Sermon Type</Label>
-                      <Select value={sermonType} onValueChange={(v: any) => setSermonType(v)}>
-                        <SelectTrigger id="sermonType" className="h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="expository">Expository</SelectItem>
-                          <SelectItem value="topical">Topical</SelectItem>
-                          <SelectItem value="narrative">Narrative</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button
-                      onClick={() => handleGenerateAgent('sermon')}
-                      disabled={generatingTypes.includes('sermon')}
-                      className="w-full h-8 text-xs"
-                    >
-                      {generatingTypes.includes('sermon') ? 'Generating...' : 'Generate Sermon Outline'}
-                    </Button>
-                  </>
-                )}
-
-                {/* Doctrinal Form */}
-                {activeAgent === 'doctrinal' && (
-                  <>
-                    <div>
-                      <Label htmlFor="doctrinalQuestion" className="text-xs">Doctrinal Question *</Label>
-                      <Textarea
-                        id="doctrinalQuestion"
-                        placeholder="e.g., How can we reconcile Paul and James on faith vs. works?"
-                        value={doctrinalQuestion}
-                        onChange={(e) => setDoctrinalQuestion(e.target.value)}
-                        rows={2}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="includePerspectives"
-                        checked={includePerspectives}
-                        onCheckedChange={(checked) => setIncludePerspectives(checked === true)}
-                      />
-                      <Label htmlFor="includePerspectives" className="text-xs font-normal cursor-pointer">
-                        Include multiple perspectives
-                      </Label>
-                    </div>
-                    <Button
-                      onClick={() => handleGenerateAgent('doctrinal')}
-                      disabled={generatingTypes.includes('doctrinal') || !doctrinalQuestion.trim()}
-                      className="w-full h-8 text-xs"
-                    >
-                      {generatingTypes.includes('doctrinal') ? 'Harmonizing...' : 'Harmonize Doctrine'}
-                    </Button>
-                  </>
-                )}
-              </div>
-
-              {/* Show loading animation when generating */}
-              {generatingTypes.includes(activeAgent) && (
-                <div className="mt-4 pt-4 border-t">
-                  <BibleAuraLoadingAnimation 
-                    message={`Generating ${aiAgents.find(a => a.id === activeAgent)?.name}...`} 
-                    size="small" 
-                  />
-                </div>
-              )}
-            </div>
+          {/* Agent Modal */}
+          {activeAgentModal && (
+            <AgentModal
+              open={true}
+              onClose={handleCloseAgent}
+              agentId={activeAgentModal}
+              agentName={aiAgents.find(a => a.id === activeAgentModal)?.name || 'Agent'}
+              notebookId={notebookId}
+              sourceCount={sourceCount}
+              onGenerated={handleAgentGenerated}
+            />
           )}
 
           {/* Generating Status */}
-          {generatingTypes.length > 0 && !activeAgent && (
+          {generatingTypes.length > 0 && !activeAgentModal && (
             <div className="mb-4 space-y-2">
               {generatingTypes.map((outputType) => {
                 const agent = getAgentInfo(outputType);

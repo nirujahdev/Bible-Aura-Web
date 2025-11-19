@@ -1,5 +1,5 @@
 // Add Source Modal - For adding sources to existing notebook
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadFile } from '@/lib/supabase-storage';
 import { createSource, updateNotebookSourceCount } from '@/lib/research-lab/db-operations';
+import { sanitizeFileName } from '@/lib/research-lab/utils';
 import {
   Upload,
   Link as LinkIcon,
@@ -180,7 +181,9 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
             continue;
           }
 
-          const filePath = `${user.id}/${notebookId}/${Date.now()}-${file.name}`;
+          // Sanitize filename to prevent "Invalid key" errors
+          const sanitizedFileName = sanitizeFileName(file.name);
+          const filePath = `${user.id}/${notebookId}/${Date.now()}-${sanitizedFileName}`;
           const uploadResult = await uploadFile('research-lab-sources', file, filePath);
           
           if (!uploadResult.success) {
