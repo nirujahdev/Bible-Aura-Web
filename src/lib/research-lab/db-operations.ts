@@ -758,6 +758,7 @@ export interface StudioOutput {
   user_id: string;
   output_type: 'summary' | 'audio_overview' | 'mind_map' | 'flashcards' | 'quiz' | 'report' | 'study_guide' | 'sermon' | 'timeline' | 'glossary' | 'summarization' | 'theology_qa' | 'cross_references' | 'curriculum' | 'doctrinal_harmony';
   content: any;
+  metadata?: any; // Optional - may not exist if migration not run
   generated_at: string;
   updated_at: string;
 }
@@ -769,14 +770,33 @@ export async function getStudioOutputs(
   notebookId: string,
   userId: string
 ): Promise<{ data: StudioOutput[] | null; error: any }> {
-  const { data, error } = await supabase
-    .from('research_studio_outputs')
-    .select('*')
-    .eq('notebook_id', notebookId)
-    .eq('user_id', userId)
-    .order('generated_at', { ascending: false });
+  try {
+    // Try to select with metadata first (if column exists)
+    const { data, error } = await supabase
+      .from('research_studio_outputs')
+      .select('id, notebook_id, user_id, output_type, content, generated_at, updated_at, metadata')
+      .eq('notebook_id', notebookId)
+      .eq('user_id', userId)
+      .order('generated_at', { ascending: false });
 
-  return { data, error };
+    // If error is about missing column, try without metadata
+    if (error && (error.message?.includes('column') && error.message?.includes('metadata'))) {
+      console.warn('Metadata column not found, querying without it');
+      const { data: dataWithoutMetadata, error: errorWithoutMetadata } = await supabase
+        .from('research_studio_outputs')
+        .select('id, notebook_id, user_id, output_type, content, generated_at, updated_at')
+        .eq('notebook_id', notebookId)
+        .eq('user_id', userId)
+        .order('generated_at', { ascending: false });
+      
+      return { data: dataWithoutMetadata, error: errorWithoutMetadata };
+    }
+
+    return { data, error };
+  } catch (err: any) {
+    console.error('Error in getStudioOutputs:', err);
+    return { data: null, error: err };
+  }
 }
 
 /**

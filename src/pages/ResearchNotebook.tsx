@@ -162,6 +162,39 @@ export default function ResearchNotebook() {
     );
   }
 
+  if (!notebook && !loading) {
+    // Show error state instead of returning null
+    return (
+      <ModernLayout>
+        <div className="flex-1 flex items-center justify-center bg-white">
+          <div className="text-center animate-in fade-in max-w-md mx-auto p-8">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+              <FlaskConical className="h-8 w-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Notebook not found</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              This notebook doesn't exist or you don't have access to it.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/research-lab')}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Research Lab
+              </Button>
+              <Button
+                onClick={() => loadNotebook()}
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </ModernLayout>
+    );
+  }
+
   if (!notebook) {
     return null;
   }
