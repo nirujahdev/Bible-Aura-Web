@@ -2,6 +2,16 @@
   "mcpServers": {
     "supabase": {
       "url": "https://mcp.supabase.com/mcp?project_ref=foleepziqgrdgkljedux"
+    },
+    "pinecone": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pinecone-database/mcp"
+      ],
+      "env": {
+        "PINECONE_API_KEY": "pcsk_2PXYxm_HqC9Gfs5sJ1KFmDQN1T2XwCCKYSfyymiuw5wjPDtCfZKjCtVp3vsSvyUdppRqRt"
+      }
     }
   }
 }

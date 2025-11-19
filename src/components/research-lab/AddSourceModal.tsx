@@ -243,10 +243,61 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
           successCount++;
 
-          // Automatically trigger Summarize agent for this source
+          // Index source in Pinecone and trigger Summarize agent
           if (newSource?.id) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
+              // Update indexing status
+              await supabase
+                .from('research_sources')
+                .update({ indexing_status: 'indexing' })
+                .eq('id', newSource.id);
+
+              // Index source in Pinecone (async, non-blocking)
+              const contentToIndex = newSource.processed_content || newSource.content_text || '';
+              if (contentToIndex) {
+                fetch('/api/research-lab/index-source', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                  },
+                  body: JSON.stringify({
+                    sourceId: newSource.id,
+                    notebookId,
+                    content: contentToIndex,
+                  }),
+                })
+                .then(async (res) => {
+                  if (res.ok) {
+                    const data = await res.json();
+                    // Update source with indexing status
+                    await supabase
+                      .from('research_sources')
+                      .update({ 
+                        indexing_status: 'completed',
+                        indexed_at: new Date().toISOString(),
+                        vector_count: data.vectorCount || 0,
+                      })
+                      .eq('id', newSource.id);
+                  } else {
+                    // Mark as failed but don't block
+                    await supabase
+                      .from('research_sources')
+                      .update({ indexing_status: 'failed' })
+                      .eq('id', newSource.id);
+                  }
+                })
+                .catch(async (err) => {
+                  console.error('Failed to index source:', err);
+                  await supabase
+                    .from('research_sources')
+                    .update({ indexing_status: 'failed' })
+                    .eq('id', newSource.id);
+                });
+              }
+
+              // Automatically trigger Summarize agent for this source
               fetch('/api/research-lab/agents', {
                 method: 'POST',
                 headers: {
@@ -313,10 +364,59 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           } else {
             successCount++;
 
-            // Automatically trigger Summarize agent for this source
+            // Index source in Pinecone and trigger Summarize agent
             if (newSource?.id) {
               const { data: { session } } = await supabase.auth.getSession();
               if (session) {
+                // Update indexing status
+                await supabase
+                  .from('research_sources')
+                  .update({ indexing_status: 'indexing' })
+                  .eq('id', newSource.id);
+
+                // Index source in Pinecone (async, non-blocking)
+                const contentToIndex = newSource.processed_content || newSource.content_text || '';
+                if (contentToIndex) {
+                  fetch('/api/research-lab/index-source', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                      sourceId: newSource.id,
+                      notebookId,
+                      content: contentToIndex,
+                    }),
+                  })
+                  .then(async (res) => {
+                    if (res.ok) {
+                      const data = await res.json();
+                      await supabase
+                        .from('research_sources')
+                        .update({ 
+                          indexing_status: 'completed',
+                          indexed_at: new Date().toISOString(),
+                          vector_count: data.vectorCount || 0,
+                        })
+                        .eq('id', newSource.id);
+                    } else {
+                      await supabase
+                        .from('research_sources')
+                        .update({ indexing_status: 'failed' })
+                        .eq('id', newSource.id);
+                    }
+                  })
+                  .catch(async (err) => {
+                    console.error('Failed to index source:', err);
+                    await supabase
+                      .from('research_sources')
+                      .update({ indexing_status: 'failed' })
+                      .eq('id', newSource.id);
+                  });
+                }
+
+                // Automatically trigger Summarize agent
                 fetch('/api/research-lab/agents', {
                   method: 'POST',
                   headers: {
@@ -366,10 +466,59 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
           } else {
             successCount++;
 
-            // Automatically trigger Summarize agent for this source
+            // Index source in Pinecone and trigger Summarize agent
             if (newSource?.id) {
               const { data: { session } } = await supabase.auth.getSession();
               if (session) {
+                // Update indexing status
+                await supabase
+                  .from('research_sources')
+                  .update({ indexing_status: 'indexing' })
+                  .eq('id', newSource.id);
+
+                // Index source in Pinecone (async, non-blocking)
+                const contentToIndex = newSource.processed_content || newSource.content_text || '';
+                if (contentToIndex) {
+                  fetch('/api/research-lab/index-source', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                      sourceId: newSource.id,
+                      notebookId,
+                      content: contentToIndex,
+                    }),
+                  })
+                  .then(async (res) => {
+                    if (res.ok) {
+                      const data = await res.json();
+                      await supabase
+                        .from('research_sources')
+                        .update({ 
+                          indexing_status: 'completed',
+                          indexed_at: new Date().toISOString(),
+                          vector_count: data.vectorCount || 0,
+                        })
+                        .eq('id', newSource.id);
+                    } else {
+                      await supabase
+                        .from('research_sources')
+                        .update({ indexing_status: 'failed' })
+                        .eq('id', newSource.id);
+                    }
+                  })
+                  .catch(async (err) => {
+                    console.error('Failed to index source:', err);
+                    await supabase
+                      .from('research_sources')
+                      .update({ indexing_status: 'failed' })
+                      .eq('id', newSource.id);
+                  });
+                }
+
+                // Automatically trigger Summarize agent
                 fetch('/api/research-lab/agents', {
                   method: 'POST',
                   headers: {

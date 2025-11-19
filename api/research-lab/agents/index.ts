@@ -1,9 +1,11 @@
 // Unified Research Lab AI Agents API
 // Handles all 6 AI agents in a single endpoint to stay within Vercel function limits
+// Enhanced with Pinecone vector search for semantic source selection
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { getCachedSources } from '../cache';
+import { searchSimilarSources } from '../../../src/lib/research-lab/vector-operations';
 
 const GLM_API_BASE_URL = 'https://api.z.ai/api/paas/v4';
 const GLM_MODEL = 'glm-4.5-air';
@@ -143,8 +145,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // Build source content (use processed_content only, no 'content' field)
-    const sourceTexts = sources
+    // Use Pinecone for semantic source selection based on agent type and query
+    let selectedSources = sources;
+    let sourceTexts = '';
+    
+    try {
+      // Build query for semantic search based on agent type
+      let semanticQuery = '';
+      switch (agentType) {
+        case 'summarize':
+          semanticQuery = params.summaryType === 'thematic' 
+            ? 'themes and major topics'
+            : 'key points and summary';
+          break;
+        case 'search_qa':
+          semanticQuery = params.question || 'answer and explanation';
+          break;
+        case 'cross_reference':
+          semanticQuery = params.verseReference || params.theme || 'Bible verses and cross-references';
+          break;
+        case 'curriculum':
+          semanticQuery = params.topic || 'Bible study curriculum and lessons';
+          break;
+        case 'sermon':
+          semanticQuery = params.scriptureReference || 'sermon preparation and biblical teaching';
+          break;
+        case 'doctrinal':
+          semanticQuery = params.doctrinalQuestion || 'doctrinal harmony and theology';
+          break;
+        default:
+          semanticQuery = 'Bible study content';
+      }
+      
+      // Search Pinecone for relevant sources
+      const pineconeResults = await searchSimilarSources(semanticQuery, notebookId, 10, 0.6);
+      
+      if (pineconeResults.length > 0) {
+        // Get full source content for Pinecone results
+        const pineconeSourceIds = [...new Set(pineconeResults.map(r => r.sourceId))];
+        const { data: pineconeSources, error: pineconeError } = await supabase
+          .from('research_sources')
+          .select('id, title, processed_content, source_type, extracted_verses')
+          .eq('notebook_id', notebookId)
+          .eq('user_id', userId)
+          .in('id', pineconeSourceIds);
+        
+        if (!pineconeError && pineconeSources && pineconeSources.length > 0) {
+          selectedSources = pineconeSources;
+          console.log(`[${agentType} Agent] Using ${pineconeSources.length} Pinecone-retrieved sources`);
+        }
+      }
+    } catch (pineconeError: any) {
+      console.error(`[${agentType} Agent] Pinecone search error, using all sources:`, pineconeError);
+      // Continue with all sources if Pinecone fails
+    }
+    
+    // Build source content from selected sources
+    sourceTexts = selectedSources
       .map(s => {
         const content = String(s.processed_content || '');
         if (agentType === 'cross_reference') {

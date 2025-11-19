@@ -1,9 +1,11 @@
 // Research Lab Chat API
 // GLM-4.5-Air integration with notebook sources and Bible guardrails
+// Enhanced with Pinecone vector search for semantic source retrieval
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { getCachedSources } from './cache';
+import { searchSimilarSources } from '../../src/lib/research-lab/vector-operations';
 
 const GLM_API_BASE_URL = 'https://api.z.ai/api/paas/v4';
 const GLM_MODEL = 'glm-4.5-air';
@@ -137,16 +139,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn('[Chat API] Returning empty sources due to error');
     }
 
-    // Build source context (use processed_content only, fallback to empty string)
-    const validSources = sources && !sourcesError ? sources : [];
-    const sourceContext = validSources.length > 0
-      ? validSources
+    // Use Pinecone for semantic source retrieval
+    let sourceContext = 'No sources available in this notebook.';
+    let selectedSources: any[] = [];
+    
+    try {
+      // Search Pinecone for similar sources (top 5-10)
+      // searchSimilarSources internally generates the query embedding
+      const pineconeResults = await searchSimilarSources(message, notebookId, 8, 0.6);
+      
+      if (pineconeResults.length > 0) {
+        // Fetch full content for Pinecone results from Supabase
+        const pineconeSourceIds = [...new Set(pineconeResults.map(r => r.sourceId))];
+        const { data: pineconeSources, error: pineconeError } = await supabase
+          .from('research_sources')
+          .select('id, title, processed_content, source_type')
+          .eq('notebook_id', notebookId)
+          .eq('user_id', userId)
+          .in('id', pineconeSourceIds);
+        
+        if (!pineconeError && pineconeSources && pineconeSources.length > 0) {
+          // Build context from Pinecone-retrieved sources (semantically relevant)
+          selectedSources = pineconeSources;
+          sourceContext = pineconeSources
+            .map(s => {
+              const content = String(s.processed_content || '');
+              const result = pineconeResults.find(r => r.sourceId === s.id);
+              return `[Source: ${s.title}${result ? ` (Relevance: ${(result.score * 100).toFixed(0)}%)` : ''}]\n${content.substring(0, 5000)}`;
+            })
+            .join('\n\n---\n\n');
+          
+          console.log(`[Chat API] Using ${pineconeSources.length} Pinecone-retrieved sources`);
+        }
+      }
+      
+      // Fallback: If Pinecone returns no results, use all included sources
+      if (selectedSources.length === 0) {
+        const validSources = sources && !sourcesError ? sources : [];
+        if (validSources.length > 0) {
+          selectedSources = validSources;
+          sourceContext = validSources
+            .map(s => {
+              const content = String(s.processed_content || '');
+              return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
+            })
+            .join('\n\n---\n\n');
+          console.log(`[Chat API] Fallback: Using ${validSources.length} included sources`);
+        }
+      }
+    } catch (pineconeError: any) {
+      console.error('[Chat API] Pinecone search error, falling back to all sources:', pineconeError);
+      
+      // Fallback to all included sources if Pinecone fails
+      const validSources = sources && !sourcesError ? sources : [];
+      if (validSources.length > 0) {
+        selectedSources = validSources;
+        sourceContext = validSources
           .map(s => {
             const content = String(s.processed_content || '');
             return `[Source: ${s.title}]\n${content.substring(0, 5000)}`;
           })
-          .join('\n\n---\n\n')
-      : 'No sources available in this notebook.';
+          .join('\n\n---\n\n');
+      }
+    }
 
     // Call GLM-4.5-Air API
     const glmApiKey = process.env.GLM_API_KEY || process.env.VITE_GLM_API_KEY;
@@ -271,7 +326,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user_id: userId,
         role: 'user',
         content: message,
-        sources_used: validSources.map(s => ({ id: s.id, title: s.title })),
+        sources_used: selectedSources.map(s => ({ id: s.id, title: s.title })),
       });
 
     if (userMsgError) {
@@ -285,7 +340,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user_id: userId,
         role: 'assistant',
         content: aiResponse,
-        sources_used: validSources.map(s => ({ id: s.id, title: s.title })),
+        sources_used: selectedSources.map(s => ({ id: s.id, title: s.title })),
       })
       .select()
       .single();
