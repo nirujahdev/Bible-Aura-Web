@@ -32,3 +32,9 @@ dist-ssr
 
 .cursor/rules/kluster-code-verify.mdc
 .kluster
+
+# Cross-reference data files (staging files, not committed to Git)
+bible-cross-reference-json/
+.cross-ref-*.json
+cross-reference-cleanup-report.json
+cross-reference-indexed-backup/

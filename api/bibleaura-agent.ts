@@ -230,9 +230,25 @@ async function retrieveBibleContext(
     // Use Pinecone for Bible retrieval (import dynamically to avoid issues in serverless)
     const { retrieveBibleContextFromPinecone } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
     
+    // Extract verse references from user input
+    const verseReferences = extractVerseReferences(userInput);
+    
+    // Expand query with cross-references if verse references found
+    let expandedQuery = userInput;
+    if (verseReferences.length > 0 && lang === 'en') {
+      try {
+        const { expandQueryWithCrossReferences } = await import('../src/lib/cross-references.js');
+        expandedQuery = await expandQueryWithCrossReferences(userInput, verseReferences);
+        console.log('[RAG Retriever] Expanded query with cross-references:', verseReferences.length, 'verses found');
+      } catch (error) {
+        console.warn('[RAG Retriever] Failed to expand with cross-references:', error);
+        // Continue with original query if cross-reference expansion fails
+      }
+    }
+    
     // Parallel: Pinecone Bible search + Web search
     const [bibleRAGResult, webResults] = await Promise.all([
-      retrieveBibleContextFromPinecone(userInput, client, preferredLanguage).catch(() => ({
+      retrieveBibleContextFromPinecone(expandedQuery, client, preferredLanguage).catch(() => ({
         lang,
         context: userInput,
         query: userInput,
@@ -242,7 +258,44 @@ async function retrieveBibleContext(
     ]);
 
     // Extract Bible sources from results
-    const bibleSources = bibleRAGResult.sources || [];
+    let bibleSources = bibleRAGResult.sources || [];
+    
+    // Add cross-references as additional sources if verse references were found
+    // Try Pinecone first, fallback to JSON files
+    if (verseReferences.length > 0 && lang === 'en') {
+      try {
+        const { retrieveCrossReferencesForVerses } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
+        let crossRefMap: Map<string, string[]>;
+        
+        try {
+          // Try Pinecone first (faster and more semantic)
+          crossRefMap = await retrieveCrossReferencesForVerses(verseReferences, 5);
+          console.log('[RAG Retriever] Retrieved cross-references from Pinecone');
+        } catch (pineconeError) {
+          // Fallback to JSON files
+          console.warn('[RAG Retriever] Pinecone cross-refs failed, using JSON fallback:', pineconeError);
+          const { getCrossReferencesForVerses } = await import('../src/lib/cross-references.js');
+          crossRefMap = await getCrossReferencesForVerses(verseReferences);
+        }
+        
+        // Add cross-references as sources (limit to top 5 per verse)
+        crossRefMap.forEach((crossRefs, verseRef) => {
+          crossRefs.slice(0, 5).forEach((crossRef, idx) => {
+            bibleSources.push({
+              id: `crossref-${verseRef}-${idx}`,
+              filename: crossRef,
+              score: 0.85, // High score for cross-references
+              url: undefined,
+              snippet: `Cross-reference for ${verseRef}`
+            });
+          });
+        });
+        
+        console.log('[RAG Retriever] Added', Array.from(crossRefMap.values()).reduce((sum, refs) => sum + refs.length, 0), 'cross-references');
+      } catch (error) {
+        console.warn('[RAG Retriever] Failed to add cross-references:', error);
+      }
+    }
 
     // Add web sources
     const webSources = webResults.map((result, idx) => ({
@@ -500,9 +553,10 @@ async function runGlobalGuardrails(
   }
 }
 
-// Extract cross-references - only from actual Bible sources, not web sources
-function extractCrossReferences(sources: Array<{ filename: string; url?: string }>): string[] {
-  return sources
+// Extract cross-references - enhanced with Pinecone and cross-reference database
+async function extractCrossReferences(sources: Array<{ filename: string; url?: string }>): Promise<string[]> {
+  // Extract verse references from source filenames
+  const verseRefs = sources
     .filter(s => {
       // Only include Bible sources (no URL), not web sources
       if (s.url) return false;
@@ -512,8 +566,48 @@ function extractCrossReferences(sources: Array<{ filename: string; url?: string 
              /^[A-Za-z]+\s+\d+/.test(filename);
     })
     .map(s => s.filename)
-    .filter((ref, idx, arr) => arr.indexOf(ref) === idx) // Remove duplicates
-    .slice(0, 5);
+    .filter((ref, idx, arr) => arr.indexOf(ref) === idx); // Remove duplicates
+  
+  // If we have verse references, get their cross-references
+  // Try Pinecone first, fallback to JSON files
+  if (verseRefs.length > 0) {
+    try {
+      // Try Pinecone first (semantic search)
+      const { retrieveCrossReferencesForVerses } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
+      const crossRefMap = await retrieveCrossReferencesForVerses(verseRefs, 5);
+      
+      // Collect all cross-references
+      const allCrossRefs = new Set<string>();
+      crossRefMap.forEach((crossRefs) => {
+        crossRefs.forEach(ref => allCrossRefs.add(ref));
+      });
+      
+      // Return cross-references (limit to 10)
+      return Array.from(allCrossRefs).slice(0, 10);
+    } catch (pineconeError) {
+      // Fallback to JSON files
+      try {
+        console.warn('[Cross-References] Pinecone failed, using JSON fallback:', pineconeError);
+        const { getCrossReferencesForVerses } = await import('../src/lib/cross-references.js');
+        const crossRefMap = await getCrossReferencesForVerses(verseRefs);
+        
+        // Collect all cross-references
+        const allCrossRefs = new Set<string>();
+        crossRefMap.forEach((crossRefs) => {
+          crossRefs.forEach(ref => allCrossRefs.add(ref));
+        });
+        
+        // Return cross-references (limit to 10)
+        return Array.from(allCrossRefs).slice(0, 10);
+      } catch (error) {
+        console.warn('[Cross-References] Failed to get cross-references:', error);
+        // Final fallback: return original verse refs
+        return verseRefs.slice(0, 5);
+      }
+    }
+  }
+  
+  return verseRefs.slice(0, 5);
 }
 
 // Validate verse references - only return references that appear in the actual response text
@@ -601,7 +695,7 @@ async function runFastRAGPipeline(
     safeText = improveTamilText(safeText);
   }
 
-  const crossReferences = extractCrossReferences(ragResult.sources);
+  const crossReferences = await extractCrossReferences(ragResult.sources);
 
   return {
     text: safeText,
