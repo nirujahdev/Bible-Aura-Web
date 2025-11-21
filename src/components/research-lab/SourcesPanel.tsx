@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +26,7 @@ import {
   Video,
   Music,
   Link as LinkIcon,
+  ChevronRight,
   MoreVertical,
   Trash2,
   FlaskConical,
@@ -40,7 +42,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Switch } from '@/components/ui/switch';
 
 interface SourcesPanelProps {
   notebookId: string;
@@ -365,6 +366,33 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
     }
   };
 
+  const handleToggleAllIncluded = async (isIncluded: boolean) => {
+    if (!user || filteredSources.length === 0) return;
+
+    setLoading(true);
+    try {
+      const ids = filteredSources.map((s) => s.id);
+      const { error, updatedCount } = await bulkToggleSourceInclude(ids, user.id, isIncluded);
+      if (error) throw error;
+
+      toast({
+        title: 'Sources updated',
+        description: `${updatedCount} source(s) ${isIncluded ? 'included' : 'excluded'}`,
+      });
+
+      loadSources();
+    } catch (error: any) {
+      console.error('Error updating sources:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update sources',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getSourceIcon = (type: string) => {
     switch (type) {
       case 'pdf':
@@ -388,132 +416,139 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
   const filteredSources = sources.filter(source =>
     source.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const allSourcesIncluded = filteredSources.length > 0 && filteredSources.every((source) => source.is_included);
+  const partiallyIncluded = filteredSources.some((source) => source.is_included) && !allSourcesIncluded;
 
   return (
     <div className="flex flex-col h-full">
       {/* Header - Enhanced */}
-      <div className="p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-white to-orange-50/30">
-        <div className="flex items-center justify-between mb-3 gap-2">
-          <div className="flex items-center gap-2">
-            {bulkMode && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSelectAll}
-                className="h-7 w-7 p-0"
-              >
-                {selectedSources.size === filteredSources.length ? (
-                  <CheckSquare className="h-4 w-4" />
-                ) : (
-                  <Square className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-              <FileText className="h-4 w-4 text-orange-600" />
+      <div className="p-3 sm:p-4 border-b border-gray-100 bg-white space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600">
+              <FileText className="h-5 w-5" />
             </div>
-            <h2 className="font-bold text-gray-900 text-sm sm:text-base">Sources</h2>
-            {sources.length > 0 && (
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                {sources.length}
-              </span>
-            )}
-            {bulkMode && selectedSources.size > 0 && (
-              <span className="text-xs text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full font-medium">
-                {selectedSources.size} selected
-              </span>
-            )}
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Sources</p>
+              <p className="text-base font-semibold text-gray-900">
+                {sources.length} saved source{sources.length === 1 ? '' : 's'}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            {bulkMode ? (
-              <>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setBulkMode(false);
-                    setSelectedSources(new Set());
-                  }}
-                  className="text-xs sm:text-sm"
-                >
-                  <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  Cancel
-                </Button>
-                {selectedSources.size > 0 && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleBulkToggleInclude(true)}
-                      disabled={loading}
-                      className="text-xs sm:text-sm"
-                    >
-                      Include
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleBulkToggleInclude(false)}
-                      disabled={loading}
-                      className="text-xs sm:text-sm"
-                    >
-                      Exclude
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={handleBulkDelete}
-                      disabled={loading}
-                      className="text-xs sm:text-sm"
-                    >
-                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                      Delete ({selectedSources.size})
-                    </Button>
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                {sources.length > 0 && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setBulkMode(true)}
-                    className="text-xs sm:text-sm"
-                  >
-                    <CheckSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    <span className="hidden sm:inline">Select</span>
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  onClick={() => setAddModalOpen(true)}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs sm:text-sm px-2 sm:px-3 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
-                >
-                  <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">Add source</span>
-                  <span className="sm:hidden">Add</span>
-                </Button>
-              </>
+            {sources.length > 0 && !bulkMode && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setBulkMode(true)}
+                className="text-xs text-gray-600"
+              >
+                <CheckSquare className="h-3 w-3 mr-1" />
+                Select
+              </Button>
             )}
+            <Button
+              size="sm"
+              onClick={() => setAddModalOpen(true)}
+              className="bg-gray-900 hover:bg-black text-white text-xs px-3 py-2 rounded-full"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Add sources
+            </Button>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-          <Input
-            placeholder="Search the web for new sources"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 sm:pl-9 pr-16 sm:pr-9 text-sm h-9 sm:h-10"
-          />
-          <div className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
-            <Button variant="ghost" size="sm" className="h-6 w-6 sm:w-auto sm:px-2 p-0">
-              <Globe className="h-3 w-3" />
+        {bulkMode && (
+          <div className="flex flex-wrap items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl p-2">
+            <span className="text-xs text-gray-600">{selectedSources.size} selected</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs"
+              onClick={handleSelectAll}
+            >
+              {selectedSources.size === filteredSources.length ? 'Deselect all' : 'Select all'}
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 sm:w-auto sm:px-2 p-0">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleBulkToggleInclude(true)}
+              disabled={loading}
+              className="text-xs"
+            >
+              Include
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleBulkToggleInclude(false)}
+              disabled={loading}
+              className="text-xs"
+            >
+              Exclude
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleBulkDelete}
+              disabled={loading}
+              className="text-xs"
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Delete
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="ml-auto text-xs"
+              onClick={() => {
+                setBulkMode(false);
+                setSelectedSources(new Set());
+              }}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Done
+            </Button>
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-purple-100 bg-purple-50/60 px-4 py-3 flex items-center gap-3 text-xs text-gray-700">
+          <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-purple-500">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm text-gray-900">Try Deep Research</p>
+            <p className="text-xs text-gray-600">Generate reports and discover fresh sources instantly.</p>
+          </div>
+          <Button variant="outline" size="sm" className="text-xs rounded-full border-purple-200 text-purple-600">
+            Explore
+          </Button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="rounded-2xl border border-gray-200 p-3 space-y-2">
+          <div className="flex items-center gap-2 text-[11px] text-gray-500">
+            <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-600 flex items-center gap-1 text-[11px]">
+              <Globe className="h-3 w-3" />
+              Web
+            </span>
+            <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-600 flex items-center gap-1 text-[11px]">
               <Sparkles className="h-3 w-3" />
+              Fast research
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search the web for new sources"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4 h-10 text-sm bg-white"
+              />
+            </div>
+            <Button variant="secondary" className="rounded-full h-10 w-10 p-0 bg-gray-900 text-white hover:bg-black">
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -583,6 +618,15 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
           </div>
         ) : (
           <div className="p-2 sm:p-3 space-y-2">
+            <div className="flex items-center justify-between px-3 py-2 rounded-2xl border border-gray-100 bg-gray-50">
+              <p className="text-xs font-medium text-gray-700">Select all sources</p>
+              <Checkbox
+                checked={allSourcesIncluded ? true : partiallyIncluded ? 'indeterminate' : false}
+                onCheckedChange={(checked) => handleToggleAllIncluded(Boolean(checked))}
+                aria-label="Toggle all sources"
+                className="border-gray-300 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+              />
+            </div>
             {filteredSources.map((source, index) => (
               <motion.div
                 key={source.id}
@@ -643,10 +687,11 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <Switch
+                  <Checkbox
                     checked={source.is_included}
                     onCheckedChange={() => handleToggleInclude(source.id, source.is_included)}
-                    className="scale-75 sm:scale-100 transition-all"
+                    aria-label="Toggle source"
+                    className="border-gray-300 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
                   />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

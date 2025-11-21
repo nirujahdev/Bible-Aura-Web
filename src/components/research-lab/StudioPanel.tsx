@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,64 +49,50 @@ const aiAgents = [
   { 
     id: 'summarize', 
     name: 'Summarize', 
-    description: 'Condense every document into high-level briefs.',
     icon: FileText, 
     color: 'bg-blue-50 text-blue-600',
-    gradient: 'from-blue-50 via-white to-blue-100',
     outputType: 'summarization' as const
   },
   { 
     id: 'search-qa', 
     name: 'AskScripture', 
-    description: 'Ask nuanced theology questions with citations.',
     icon: Search, 
     color: 'bg-purple-50 text-purple-600',
-    gradient: 'from-purple-50 via-white to-purple-100',
     outputType: 'theology_qa' as const
   },
   { 
     id: 'cross-reference', 
     name: 'Cross-Reference', 
-    description: 'Surface related verses and canonical ties.',
     icon: Link2, 
     color: 'bg-green-50 text-green-600',
-    gradient: 'from-emerald-50 via-white to-green-100',
     outputType: 'cross_references' as const
   },
   { 
     id: 'curriculum', 
     name: 'Study Builder', 
-    description: 'Design lesson plans or group guides instantly.',
     icon: BookOpen, 
     color: 'bg-orange-50 text-orange-600',
-    gradient: 'from-orange-50 via-white to-amber-100',
     outputType: 'curriculum' as const
   },
   { 
     id: 'sermon', 
     name: 'Sermon Assistant', 
-    description: 'Outline sermons with hooks, points, and prayers.',
     icon: Mic, 
     color: 'bg-pink-50 text-pink-600',
-    gradient: 'from-pink-50 via-white to-rose-100',
     outputType: 'sermon' as const
   },
   { 
     id: 'doctrinal', 
     name: 'Doctrine Lens', 
-    description: 'Check harmony across doctrinal themes.',
     icon: Scale, 
     color: 'bg-indigo-50 text-indigo-600',
-    gradient: 'from-indigo-50 via-white to-indigo-100',
     outputType: 'doctrinal_harmony' as const
   },
   { 
     id: 'translate', 
     name: 'Translate', 
-    description: 'Render passages into 130+ languages.',
     icon: Globe, 
     color: 'bg-teal-50 text-teal-600',
-    gradient: 'from-teal-50 via-white to-cyan-100',
     outputType: 'translation' as const
   },
 ];
@@ -266,70 +251,41 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
 
       {/* Agents Grid & Outputs */}
       <ScrollArea className="flex-1">
-        <div className="p-3 sm:p-4 space-y-5">
-          {/* Quick status banner */}
-          <div className="rounded-2xl border border-orange-100/70 bg-gradient-to-br from-orange-50/60 via-white to-amber-50/70 p-4 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-orange-500 font-semibold">
-                  Notebook AI Studio
-                </p>
-                <p className="text-base font-semibold text-gray-900 mt-1">Pick an agent to start creating</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  Agents read every included source and respond with citations automatically.
-                </p>
-              </div>
-              <div className="hidden sm:flex items-center gap-2 text-xs text-gray-700 bg-white/70 rounded-full px-3 py-2 border border-orange-100">
-                <Sparkles className="h-4 w-4 text-orange-500" />
-                <span>{completedOutputs.length} saved output{completedOutputs.length === 1 ? '' : 's'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Agents Grid - Enhanced layout */}
+        <div className="p-3 sm:p-4 space-y-4">
+          {/* Agents Grid - Compact NotebookLM style */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Research agents</p>
-                <p className="text-xs text-gray-500">Seven focused workflows for your notebook.</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">Notebook AI studio</p>
+              <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                <Sparkles className="h-3 w-3 text-orange-500" />
+                <span>{completedOutputs.length} saved</span>
               </div>
-              <Badge variant="secondary" className="bg-white border border-gray-200 text-gray-700">
-                Bible-focused
-              </Badge>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {aiAgents.map((agent) => {
                 const Icon = agent.icon;
                 const isGenerating = generatingTypes.includes(agent.id);
                 return (
                   <Card
                     key={agent.id}
-                    className={`cursor-pointer overflow-hidden rounded-2xl border group ${
+                    className={`cursor-pointer rounded-xl border group ${
                       activeAgentModal === agent.id
-                        ? 'border-orange-300 shadow-lg shadow-orange-100 ring-2 ring-orange-200'
-                        : 'border-gray-100 hover:border-orange-200 hover:shadow-md'
-                    } transition-all duration-300`}
+                        ? 'border-orange-300 shadow-sm shadow-orange-100 ring-2 ring-orange-200'
+                        : 'border-gray-100 hover:border-orange-200'
+                    } transition-all duration-200 bg-white`}
                     onClick={() => handleOpenAgent(agent.id)}
                   >
-                    <CardContent className={`p-4 sm:p-5 flex flex-col gap-4 bg-gradient-to-br ${agent.gradient} relative`}>
-                      <div className="flex items-center justify-between">
-                        <div className={`w-11 h-11 rounded-xl ${agent.color} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
-                          <Icon className="h-5 w-5" />
+                    <CardContent className="p-3 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={`w-9 h-9 rounded-lg ${agent.color} flex items-center justify-center text-sm`}>
+                          <Icon className="h-4 w-4" />
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          {isGenerating && (
-                            <span className="flex items-center gap-1 text-orange-600">
-                              <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-                              Running
-                            </span>
-                          )}
-                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
-                        </div>
+                        <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{agent.name}</p>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{agent.name}</p>
-                        <p className="text-xs text-gray-600 mt-1 leading-relaxed">{agent.description}</p>
+                      <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                        {isGenerating && <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />}
+                        <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-orange-500 transition-colors" />
                       </div>
                     </CardContent>
                   </Card>
