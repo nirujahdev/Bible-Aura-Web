@@ -380,20 +380,22 @@ export default function ResearchNotebook() {
           </div>
         ) : (
           /* Desktop: Three-Column Layout - Enhanced */
-          <div className="flex-1 flex overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Left Panel: Sources */}
-            <div className="w-80 border-r border-gray-200 bg-gradient-to-b from-gray-50 to-white flex flex-col transition-all shadow-sm">
-              {notebookId && <SourcesPanel notebookId={notebookId} />}
-            </div>
+          <div className="flex-1 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 bg-gradient-to-br from-orange-50/40 via-white to-amber-50/40">
+            <div className="h-full flex gap-4 px-3 lg:px-4 pb-4">
+              {/* Left Panel: Sources */}
+              <div className="w-80 flex-shrink-0 flex flex-col rounded-2xl border border-gray-200/70 bg-white shadow-sm overflow-hidden">
+                {notebookId && <SourcesPanel notebookId={notebookId} />}
+              </div>
 
-            {/* Center Panel: Chat */}
-            <div className="flex-1 flex flex-col bg-white border-x border-gray-100">
-              {notebookId && <ChatPanel notebookId={notebookId} />}
-            </div>
+              {/* Center Panel: Chat */}
+              <div className="flex-1 flex flex-col rounded-2xl border border-gray-200/70 bg-white shadow-sm overflow-hidden">
+                {notebookId && <ChatPanel notebookId={notebookId} />}
+              </div>
 
-            {/* Right Panel: Studio */}
-            <div className="w-80 border-l border-gray-200 bg-gradient-to-b from-gray-50 to-white flex flex-col transition-all shadow-sm">
-              {notebookId && <StudioPanel notebookId={notebookId} />}
+              {/* Right Panel: Studio */}
+              <div className="w-80 flex-shrink-0 flex flex-col rounded-2xl border border-gray-200/70 bg-white shadow-sm overflow-hidden">
+                {notebookId && <StudioPanel notebookId={notebookId} />}
+              </div>
             </div>
           </div>
         )}

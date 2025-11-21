@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +23,7 @@ import {
   FilePlus,
   Play,
   MoreVertical,
+  ChevronRight,
   X,
   Copy,
   Trash2,
@@ -48,50 +50,64 @@ const aiAgents = [
   { 
     id: 'summarize', 
     name: 'Summarize', 
+    description: 'Condense every document into high-level briefs.',
     icon: FileText, 
     color: 'bg-blue-50 text-blue-600',
+    gradient: 'from-blue-50 via-white to-blue-100',
     outputType: 'summarization' as const
   },
   { 
     id: 'search-qa', 
     name: 'AskScripture', 
+    description: 'Ask nuanced theology questions with citations.',
     icon: Search, 
     color: 'bg-purple-50 text-purple-600',
+    gradient: 'from-purple-50 via-white to-purple-100',
     outputType: 'theology_qa' as const
   },
   { 
     id: 'cross-reference', 
     name: 'Cross-Reference', 
+    description: 'Surface related verses and canonical ties.',
     icon: Link2, 
     color: 'bg-green-50 text-green-600',
+    gradient: 'from-emerald-50 via-white to-green-100',
     outputType: 'cross_references' as const
   },
   { 
     id: 'curriculum', 
     name: 'Study Builder', 
+    description: 'Design lesson plans or group guides instantly.',
     icon: BookOpen, 
     color: 'bg-orange-50 text-orange-600',
+    gradient: 'from-orange-50 via-white to-amber-100',
     outputType: 'curriculum' as const
   },
   { 
     id: 'sermon', 
     name: 'Sermon Assistant', 
+    description: 'Outline sermons with hooks, points, and prayers.',
     icon: Mic, 
     color: 'bg-pink-50 text-pink-600',
+    gradient: 'from-pink-50 via-white to-rose-100',
     outputType: 'sermon' as const
   },
   { 
     id: 'doctrinal', 
     name: 'Doctrine Lens', 
+    description: 'Check harmony across doctrinal themes.',
     icon: Scale, 
     color: 'bg-indigo-50 text-indigo-600',
+    gradient: 'from-indigo-50 via-white to-indigo-100',
     outputType: 'doctrinal_harmony' as const
   },
   { 
     id: 'translate', 
     name: 'Translate', 
+    description: 'Render passages into 130+ languages.',
     icon: Globe, 
     color: 'bg-teal-50 text-teal-600',
+    gradient: 'from-teal-50 via-white to-cyan-100',
     outputType: 'translation' as const
   },
 ];
@@ -250,36 +266,76 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
 
       {/* Agents Grid & Outputs */}
       <ScrollArea className="flex-1">
-        <div className="p-3 sm:p-4">
-          {/* Agents Grid - Enhanced with better styling */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
-            {aiAgents.map((agent) => {
-              const Icon = agent.icon;
-              const isGenerating = generatingTypes.includes(agent.id);
-              return (
-                <Card
-                  key={agent.id}
-                  className={`cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation border-2 ${
-                    activeAgentModal === agent.id 
-                      ? 'ring-2 ring-orange-500 border-orange-300 shadow-lg' 
-                      : 'border-transparent hover:border-gray-200'
-                  }`}
-                  onClick={() => handleOpenAgent(agent.id)}
-                >
-                  <CardContent className="p-3 sm:p-4 flex flex-col items-center text-center group">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${agent.color} flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
-                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                    </div>
-                    <p className="text-xs sm:text-sm font-semibold text-gray-900 leading-tight group-hover:text-orange-600 transition-colors">{agent.name}</p>
-                    {isGenerating && (
-                      <div className="mt-1.5">
-                        <div className="w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
+        <div className="p-3 sm:p-4 space-y-5">
+          {/* Quick status banner */}
+          <div className="rounded-2xl border border-orange-100/70 bg-gradient-to-br from-orange-50/60 via-white to-amber-50/70 p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-orange-500 font-semibold">
+                  Notebook AI Studio
+                </p>
+                <p className="text-base font-semibold text-gray-900 mt-1">Pick an agent to start creating</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Agents read every included source and respond with citations automatically.
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-xs text-gray-700 bg-white/70 rounded-full px-3 py-2 border border-orange-100">
+                <Sparkles className="h-4 w-4 text-orange-500" />
+                <span>{completedOutputs.length} saved output{completedOutputs.length === 1 ? '' : 's'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Agents Grid - Enhanced layout */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Research agents</p>
+                <p className="text-xs text-gray-500">Seven focused workflows for your notebook.</p>
+              </div>
+              <Badge variant="secondary" className="bg-white border border-gray-200 text-gray-700">
+                Bible-focused
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {aiAgents.map((agent) => {
+                const Icon = agent.icon;
+                const isGenerating = generatingTypes.includes(agent.id);
+                return (
+                  <Card
+                    key={agent.id}
+                    className={`cursor-pointer overflow-hidden rounded-2xl border group ${
+                      activeAgentModal === agent.id
+                        ? 'border-orange-300 shadow-lg shadow-orange-100 ring-2 ring-orange-200'
+                        : 'border-gray-100 hover:border-orange-200 hover:shadow-md'
+                    } transition-all duration-300`}
+                    onClick={() => handleOpenAgent(agent.id)}
+                  >
+                    <CardContent className={`p-4 sm:p-5 flex flex-col gap-4 bg-gradient-to-br ${agent.gradient} relative`}>
+                      <div className="flex items-center justify-between">
+                        <div className={`w-11 h-11 rounded-xl ${agent.color} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          {isGenerating && (
+                            <span className="flex items-center gap-1 text-orange-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                              Running
+                            </span>
+                          )}
+                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                        </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{agent.name}</p>
+                        <p className="text-xs text-gray-600 mt-1 leading-relaxed">{agent.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
 
           {/* Agent Modal */}
@@ -334,8 +390,24 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
 
           {/* Completed Outputs List - NotebookLM Style */}
           {completedOutputs.length > 0 && (
-            <div className="mb-4 space-y-1">
-              {completedOutputs.map((output) => {
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Saved insights</p>
+                  <p className="text-xs text-gray-500">Tap any card to reopen the full response.</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-gray-500 hover:text-orange-600"
+                  onClick={() => setSelectedOutput(completedOutputs[0])}
+                >
+                  View latest
+                </Button>
+              </div>
+
+              <div className="space-y-1">
+                {completedOutputs.map((output) => {
                 if (!output || !output.id) return null; // Safety check
                 
                 const agent = getAgentInfo(output.output_type);
@@ -349,86 +421,87 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                 const generatedAt = (output as any).generated_at || output.created_at || new Date().toISOString();
                 const timeAgo = formatRelativeTime(generatedAt);
                 
-                return (
-                  <div
-                    key={output.id}
-                    className="bg-white rounded-lg p-3 flex items-center gap-3 border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
-                    onClick={() => setSelectedOutput(output)}
-                  >
-                    <div className={`w-10 h-10 rounded-lg ${agent.color} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105`}>
-                      <OutputIcon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
-                        {outputTitle}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {formatLabel && `${formatLabel} · `}
-                        {outputSourceCount} source{outputSourceCount !== 1 ? 's' : ''} · {timeAgo}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedOutput(output);
-                        }}
-                      >
-                        <Play className="h-4 w-4 text-blue-600" />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenuItem onClick={() => setSelectedOutput(output)}>
-                            <Play className="h-4 w-4 mr-2" />
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={async () => {
-                            const text = typeof output.content === 'string' 
-                              ? output.content 
-                              : JSON.stringify(output.content, null, 2);
-                            await navigator.clipboard.writeText(text);
-                            toast({ title: 'Copied', description: 'Output copied to clipboard' });
-                          }}>
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={async () => {
-                              if (confirm('Delete this output?')) {
-                                const { error } = await supabase
-                                  .from('research_studio_outputs')
-                                  .delete()
-                                  .eq('id', output.id);
-                                if (!error) {
-                                  loadOutputs();
-                                  toast({ title: 'Deleted', description: 'Output removed' });
+                  return (
+                    <div
+                      key={output.id}
+                      className="bg-white rounded-xl p-3 flex items-center gap-3 border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+                      onClick={() => setSelectedOutput(output)}
+                    >
+                      <div className={`w-11 h-11 rounded-lg ${agent.color} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105`}>
+                        <OutputIcon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                          {outputTitle}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {formatLabel && `${formatLabel} · `}
+                          {outputSourceCount} source{outputSourceCount !== 1 ? 's' : ''} · {timeAgo}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOutput(output);
+                          }}
+                        >
+                          <Play className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuItem onClick={() => setSelectedOutput(output)}>
+                              <Play className="h-4 w-4 mr-2" />
+                              View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={async () => {
+                              const text = typeof output.content === 'string' 
+                                ? output.content 
+                                : JSON.stringify(output.content, null, 2);
+                              await navigator.clipboard.writeText(text);
+                              toast({ title: 'Copied', description: 'Output copied to clipboard' });
+                            }}>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={async () => {
+                                if (confirm('Delete this output?')) {
+                                  const { error } = await supabase
+                                    .from('research_studio_outputs')
+                                    .delete()
+                                    .eq('id', output.id);
+                                  if (!error) {
+                                    loadOutputs();
+                                    toast({ title: 'Deleted', description: 'Output removed' });
+                                  }
                                 }
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
 
