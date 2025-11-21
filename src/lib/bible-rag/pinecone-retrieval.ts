@@ -16,7 +16,12 @@ export interface RAGResult {
     id: string;
     filename: string;
     score: number;
+    url?: string;
+    snippet?: string;
+    reference?: string;
+    verseText?: string;
   }>;
+  crossReferences?: string[];
 }
 
 /**
@@ -91,13 +96,17 @@ export async function retrieveBibleContextFromPinecone(
       })
       .slice(0, MAX_CHUNKS)
       .map((match: any) => {
-        const metadata = match.metadata;
+        const metadata = match.metadata || {};
+        const verseRef = metadata.verse_reference || 
+                        `${metadata.book} ${metadata.chapter}:${metadata.verse}`;
+        const verseText = metadata.verse_text || '';
         return {
           id: match.id,
-          filename: metadata.verse_reference || `${metadata.book} ${metadata.chapter}:${metadata.verse}`,
+          filename: verseRef || match.id,
           score: match.score || 0,
-          text: metadata.verse_text || '', // Use stored verse text
-          metadata: metadata,
+          text: verseText,
+          metadata,
+          verseRef,
         };
       });
 
@@ -118,6 +127,9 @@ export async function retrieveBibleContextFromPinecone(
       id: result.id,
       filename: result.filename,
       score: result.score,
+      snippet: result.text,
+      reference: result.verseRef || result.filename,
+      verseText: result.text,
     }));
 
     console.log(`[Bible RAG] Found ${results.length} Bible verses for query (language: ${lang})`);
