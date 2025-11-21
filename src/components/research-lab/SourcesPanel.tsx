@@ -12,7 +12,6 @@ import {
   getNotebookSources, 
   toggleSourceInclude, 
   deleteSource,
-  bulkDeleteSources,
   bulkToggleSourceInclude,
   type Source 
 } from '@/lib/research-lab/db-operations';
@@ -30,10 +29,7 @@ import {
   MoreVertical,
   Trash2,
   FlaskConical,
-  BookOpen,
-  CheckSquare,
-  Square,
-  X
+  BookOpen
 } from 'lucide-react';
 import { AddSourceModal } from './AddSourceModal';
 import {
@@ -56,8 +52,6 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
-  const [bulkMode, setBulkMode] = useState(false);
 
   useEffect(() => {
     if (notebookId && user) {
@@ -288,84 +282,6 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
     }
   };
 
-  const handleToggleSelection = (sourceId: string) => {
-    const newSelected = new Set(selectedSources);
-    if (newSelected.has(sourceId)) {
-      newSelected.delete(sourceId);
-    } else {
-      newSelected.add(sourceId);
-    }
-    setSelectedSources(newSelected);
-  };
-
-  const handleSelectAll = () => {
-    if (selectedSources.size === filteredSources.length) {
-      setSelectedSources(new Set());
-    } else {
-      setSelectedSources(new Set(filteredSources.map(s => s.id)));
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (!user || selectedSources.size === 0) return;
-
-    if (!confirm(`Are you sure you want to delete ${selectedSources.size} source(s)?`)) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error, deletedCount } = await bulkDeleteSources(Array.from(selectedSources), user.id);
-      if (error) throw error;
-
-      toast({
-        title: 'Sources deleted',
-        description: `${deletedCount} source(s) have been removed`,
-      });
-
-      setSelectedSources(new Set());
-      setBulkMode(false);
-      loadSources();
-    } catch (error: any) {
-      console.error('Error deleting sources:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete sources',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBulkToggleInclude = async (isIncluded: boolean) => {
-    if (!user || selectedSources.size === 0) return;
-
-    setLoading(true);
-    try {
-      const { error, updatedCount } = await bulkToggleSourceInclude(Array.from(selectedSources), user.id, isIncluded);
-      if (error) throw error;
-
-      toast({
-        title: 'Sources updated',
-        description: `${updatedCount} source(s) ${isIncluded ? 'included' : 'excluded'}`,
-      });
-
-      setSelectedSources(new Set());
-      setBulkMode(false);
-      loadSources();
-    } catch (error: any) {
-      console.error('Error updating sources:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update sources',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleToggleAllIncluded = async (isIncluded: boolean) => {
     if (!user || filteredSources.length === 0) return;
 
@@ -435,93 +351,13 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {sources.length > 0 && !bulkMode && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setBulkMode(true)}
-                className="text-xs text-gray-600"
-              >
-                <CheckSquare className="h-3 w-3 mr-1" />
-                Select
-              </Button>
-            )}
-            <Button
-              size="sm"
-              onClick={() => setAddModalOpen(true)}
-              className="bg-gray-900 hover:bg-black text-white text-xs px-3 py-2 rounded-full"
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Add sources
-            </Button>
-          </div>
-        </div>
-
-        {bulkMode && (
-          <div className="flex flex-wrap items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl p-2">
-            <span className="text-xs text-gray-600">{selectedSources.size} selected</span>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs"
-              onClick={handleSelectAll}
-            >
-              {selectedSources.size === filteredSources.length ? 'Deselect all' : 'Select all'}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleBulkToggleInclude(true)}
-              disabled={loading}
-              className="text-xs"
-            >
-              Include
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleBulkToggleInclude(false)}
-              disabled={loading}
-              className="text-xs"
-            >
-              Exclude
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={handleBulkDelete}
-              disabled={loading}
-              className="text-xs"
-            >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Delete
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="ml-auto text-xs"
-              onClick={() => {
-                setBulkMode(false);
-                setSelectedSources(new Set());
-              }}
-            >
-              <X className="h-3 w-3 mr-1" />
-              Done
-            </Button>
-          </div>
-        )}
-
-        <div className="rounded-2xl border border-purple-100 bg-purple-50/60 px-4 py-3 flex items-center gap-3 text-xs text-gray-700">
-          <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-purple-500">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold text-sm text-gray-900">Try Deep Research</p>
-            <p className="text-xs text-gray-600">Generate reports and discover fresh sources instantly.</p>
-          </div>
-          <Button variant="outline" size="sm" className="text-xs rounded-full border-purple-200 text-purple-600">
-            Explore
+          <Button
+            size="sm"
+            onClick={() => setAddModalOpen(true)}
+            className="bg-gray-900 hover:bg-black text-white text-xs px-3 py-2 rounded-full"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add sources
           </Button>
         </div>
 
@@ -635,16 +471,6 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
                 transition={{ duration: 0.2, delay: index * 0.05 }}
                 className="group flex items-center gap-2 p-2 sm:p-3 rounded-xl hover:bg-gradient-to-r hover:from-gray-50 hover:to-orange-50/30 active:bg-gray-100 transition-all duration-300 hover:shadow-md touch-manipulation border border-transparent hover:border-orange-200"
               >
-                {bulkMode && (
-                  <div className="flex-shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={selectedSources.has(source.id)}
-                      onChange={() => handleToggleSelection(source.id)}
-                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                    />
-                  </div>
-                )}
                 <div className="flex-shrink-0 text-gray-500">
                   {getSourceIcon(source.source_type)}
                 </div>

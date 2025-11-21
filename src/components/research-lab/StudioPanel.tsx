@@ -255,7 +255,7 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
           {/* Agents Grid - Compact NotebookLM style */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase">Notebook AI studio</p>
+              <p className="text-[11px] font-semibold tracking-wide text-gray-500 uppercase">Notebook AI studio</p>
               <div className="flex items-center gap-1 text-[11px] text-gray-500">
                 <Sparkles className="h-3 w-3 text-orange-500" />
                 <span>{completedOutputs.length} saved</span>
@@ -276,12 +276,12 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                     } transition-all duration-200 bg-white`}
                     onClick={() => handleOpenAgent(agent.id)}
                   >
-                    <CardContent className="p-3 flex items-center justify-between gap-2">
+                    <CardContent className="p-2.5 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className={`w-9 h-9 rounded-lg ${agent.color} flex items-center justify-center text-sm`}>
-                          <Icon className="h-4 w-4" />
+                        <div className={`w-8 h-8 rounded-lg ${agent.color} flex items-center justify-center`}>
+                          <Icon className="h-3.5 w-3.5" />
                         </div>
-                        <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{agent.name}</p>
+                        <p className="text-[13px] font-semibold text-gray-900 truncate">{agent.name}</p>
                       </div>
                       <div className="flex items-center gap-1 text-[11px] text-gray-400">
                         {isGenerating && <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />}
@@ -461,16 +461,6 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
             </div>
           )}
 
-          {/* Info Message */}
-          <div className="bg-orange-50 rounded-lg p-3 sm:p-4 text-center border border-orange-200">
-            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 mx-auto mb-2" />
-            <p className="text-xs text-gray-700 mb-1 font-medium">
-              AI agents analyze your notebook sources.
-            </p>
-            <p className="text-xs text-gray-600">
-              All agents are Bible-focused and work with your uploaded content.
-            </p>
-          </div>
         </div>
       </ScrollArea>
 
