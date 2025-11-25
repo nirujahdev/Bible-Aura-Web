@@ -261,26 +261,26 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2">
             {aiAgents.map((agent) => {
               const Icon = agent.icon;
               const isGenerating = generatingTypes.includes(agent.id);
               return (
                 <Card
                   key={agent.id}
-                  className={`cursor-pointer rounded-2xl border ${agent.chip} group transition-all duration-200 overflow-hidden`}
+                  className={`cursor-pointer rounded-xl border ${agent.chip} group transition-all duration-200 overflow-hidden`}
                   onClick={() => handleOpenAgent(agent.id)}
                 >
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className={`w-8 h-8 rounded-xl bg-white/70 flex items-center justify-center ${agent.color}`}>
+                  <CardContent className="p-2.5">
+                    <div className="flex items-start justify-between mb-1.5">
+                      <div className={`w-7 h-7 rounded-lg bg-white/70 flex items-center justify-center ${agent.color}`}>
                         <Icon className="h-3 w-3" />
                       </div>
-                      <PenSquare className="h-3 w-3 text-gray-400" />
+                      <PenSquare className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="text-xs sm:text-sm font-semibold text-gray-900 leading-tight">{agent.name}</p>
-                      <div className="flex items-center gap-1 text-[11px] text-gray-500 flex-shrink-0 ml-1">
+                      <p className="text-xs font-semibold text-gray-900 leading-tight">{agent.name}</p>
+                      <div className="flex items-center gap-1 text-[10px] text-gray-500 flex-shrink-0 ml-1">
                         {isGenerating && <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />}
                         <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-orange-600 transition-colors" />
                       </div>
