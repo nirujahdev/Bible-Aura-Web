@@ -272,17 +272,17 @@ export function StudioPanel({ notebookId }: StudioPanelProps) {
                   onClick={() => handleOpenAgent(agent.id)}
                 >
                   <CardContent className="p-3 sm:p-4">
-                    <div className="flex items-start justify-between">
-                      <div className={`w-10 h-10 rounded-2xl bg-white/70 flex items-center justify-center ${agent.color}`}>
-                        <Icon className="h-4 w-4" />
+                    <div className="flex items-start justify-between mb-2">
+                      <div className={`w-8 h-8 rounded-xl bg-white/70 flex items-center justify-center ${agent.color}`}>
+                        <Icon className="h-3 w-3" />
                       </div>
-                      <PenSquare className="h-4 w-4 text-gray-400" />
+                      <PenSquare className="h-3 w-3 text-gray-400" />
                     </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{agent.name}</p>
-                      <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-900 leading-tight">{agent.name}</p>
+                      <div className="flex items-center gap-1 text-[11px] text-gray-500 flex-shrink-0 ml-1">
                         {isGenerating && <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />}
-                        <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
+                        <ChevronRight className="h-3 w-3 text-gray-400 group-hover:text-orange-600 transition-colors" />
                       </div>
                     </div>
                   </CardContent>

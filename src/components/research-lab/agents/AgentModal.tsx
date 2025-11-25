@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, X, FileText, BookOpen, PenTool, Sparkles, Scale, Globe } from 'lucide-react';
+import { ArrowLeft, FileText, BookOpen, PenTool, Sparkles, Scale, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BibleAuraLoadingAnimation } from '@/components/BibleAuraLoadingAnimation';
 
@@ -146,16 +146,6 @@ const formatOptions: Record<string, FormatOption[]> = {
 const languages = [
   { value: 'en', label: 'English' },
   { value: 'ta', label: 'Tamil' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'fr', label: 'French' },
-  { value: 'de', label: 'German' },
-  { value: 'pt', label: 'Portuguese' },
-  { value: 'zh', label: 'Chinese' },
-  { value: 'ja', label: 'Japanese' },
-  { value: 'ko', label: 'Korean' },
-  { value: 'hi', label: 'Hindi' },
-  { value: 'ar', label: 'Arabic' },
-  { value: 'ru', label: 'Russian' },
 ];
 
 export function AgentModal({
@@ -341,7 +331,7 @@ export function AgentModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <Button
@@ -354,21 +344,13 @@ export function AgentModal({
             </Button>
             <FileText className="h-5 w-5 text-orange-500" />
             <DialogTitle className="text-lg sm:text-xl">Create {agentName}</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="h-8 w-8 p-0 ml-auto"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
+        <div className="space-y-5 mt-4">
           {/* Format Selection */}
           <div>
-            <Label className="text-base font-semibold mb-3 block">Format</Label>
+            <Label className="text-sm font-semibold mb-3 block text-gray-700">Format</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {formats.map((format) => {
                 const Icon = format.icon;
@@ -412,7 +394,7 @@ export function AgentModal({
 
           {/* Language Selection - Show prominently for translate agent */}
           <div>
-            <Label htmlFor="language" className="text-base font-semibold mb-2 block">
+            <Label htmlFor="language" className="text-sm font-semibold mb-2 block text-gray-700">
               {agentId === 'translate' ? 'Target Language' : 'Choose language'}
             </Label>
             <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
@@ -436,7 +418,7 @@ export function AgentModal({
 
           {/* Description Input */}
           <div>
-            <Label htmlFor="description" className="text-base font-semibold mb-2 block">
+            <Label htmlFor="description" className="text-sm font-semibold mb-2 block text-gray-700">
               Describe the {agentName.toLowerCase()} that you want to create
             </Label>
             <Textarea
@@ -449,7 +431,7 @@ export function AgentModal({
           </div>
 
           {/* Generate Button */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
             <Button variant="outline" onClick={handleClose} disabled={isGenerating}>
               Cancel
             </Button>
@@ -470,7 +452,7 @@ export function AgentModal({
           </div>
 
           {/* Disclaimer */}
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-400 text-center pt-2">
             Bible Aura can be inaccurate; please double-check its responses.
           </p>
         </div>
