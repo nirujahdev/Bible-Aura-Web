@@ -828,8 +828,9 @@ async function strictVerseValidation(
     const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/g;
     const matches = [...text.matchAll(versePattern)];
     
+    // If no verses found, return 'verified' (nothing to validate)
     if (matches.length === 0) {
-      return { validatedVerses: [], validationStatus: 'failed' };
+      return { validatedVerses: [], validationStatus: 'verified' };
     }
     
     // Get unique references
@@ -890,11 +891,11 @@ async function strictVerseValidation(
       const normalized = normalizeVerseReference(ref);
       const sourceList = verseSourceMap.get(normalized) || [];
       
-      // Strict requirement: verse must appear in at least 2 different sources
+      // Improved validation: Accept 1+ sources as verified, prefer 2+ for higher confidence
       const uniqueSources = new Set(sourceList.map(s => s.source));
       
       if (uniqueSources.size >= 2) {
-        // Verified: appears in 2+ sources
+        // Verified: appears in 2+ sources (high confidence)
         const verseText = sourceList[0].verseText;
         validatedVerses.push({
           reference: ref,
@@ -905,14 +906,13 @@ async function strictVerseValidation(
         });
         verifiedCount++;
       } else if (uniqueSources.size === 1) {
-        // Partial: only 1 source, but try to verify with Pinecone
+        // Found in 1 source - try to verify with Pinecone for additional confirmation
         try {
-          // Try to get verse from Pinecone for additional confirmation
           const { retrieveBibleContextFromPinecone } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
           const pineconeResult = await retrieveBibleContextFromPinecone(ref, client!, 'en');
           
           if (pineconeResult.sources && pineconeResult.sources.length > 0) {
-            // Found in Pinecone, now we have 2 sources
+            // Found in Pinecone + original source = 2 sources (verified)
             const verseText = sourceList[0].verseText || pineconeResult.sources[0].verseText || '';
             validatedVerses.push({
               reference: ref,
@@ -923,14 +923,32 @@ async function strictVerseValidation(
             });
             verifiedCount++;
           } else {
+            // Only 1 source found, but still valid - mark as partial
+            const verseText = sourceList[0].verseText;
+            validatedVerses.push({
+              reference: ref,
+              verseText,
+              book: match[1].trim(),
+              chapter: parseInt(match[2]),
+              verse: parseInt(match[3])
+            });
             partialCount++;
           }
         } catch (error) {
-          console.warn('[Strict Validation] Pinecone verification failed for', ref, error);
+          // Pinecone check failed, but we have 1 source - accept as partial
+          console.warn('[Validation] Pinecone verification failed for', ref, error);
+          const verseText = sourceList[0].verseText;
+          validatedVerses.push({
+            reference: ref,
+            verseText,
+            book: match[1].trim(),
+            chapter: parseInt(match[2]),
+            verse: parseInt(match[3])
+          });
           partialCount++;
         }
       } else {
-        // Failed: not found in any source
+        // Not found in any source - mark as failed
         failedCount++;
       }
     }
@@ -1008,34 +1026,18 @@ async function runFastRAGPipeline(
   const crossReferences = ragResult.crossReferences || [];
   const trimmedSources = (ragResult.sources || []).slice(0, 5);
   
-  // Strict verse validation with multi-source confirmation
+  // Verse validation (non-blocking) - informational only for UI warnings
+  // Content moderation is handled strictly by guardrails (bad words, adult content, political, etc.)
   const validationResult = await strictVerseValidation(
     safeText,
     trimmedSources,
     client
   );
   
-  // Strict validation: Block response if critical verses can't be verified
-  // Check if response contains verse references that couldn't be validated
-  const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/g;
-  const hasVerses = versePattern.test(safeText);
-  
-  if (validationResult.validationStatus === 'failed' && hasVerses && validationResult.validatedVerses.length === 0) {
-    console.warn('[RAG Pipeline] Strict validation failed - response contains unverified verses');
-    // For strict mode: Return error response indicating validation failure
-    // This ensures biblical accuracy - only return responses with verified verses
-    // Return a user-friendly error message instead of throwing
-    return {
-      text: `I apologize, but I couldn't verify the Bible verses mentioned in my response with multiple trusted sources. This is important for ensuring biblical accuracy. Could you please rephrase your question or ask about a different topic?`,
-      mode: metaAgentResult.mode,
-      lang: metaAgentResult.lang,
-      sources: [],
-      crossReferences: [],
-      validatedVerses: [],
-      validationStatus: 'failed' as const,
-      followUpQuestions: []
-    };
-  }
+  // NOTE: We don't block responses based on verse validation
+  // Validation status is shown in UI as a warning badge, but responses are always returned
+  // This allows general Bible questions to be answered while maintaining accuracy tracking
+  // Only guardrails block content (inappropriate material, bad words, etc.)
 
   // Generate follow-up questions using AI
   let followUpQuestions: Array<{ question: string; relevance: number }> | undefined;
@@ -1059,8 +1061,8 @@ async function runFastRAGPipeline(
     sources: trimmedSources,
     crossReferences,
     validatedVerses: validationResult.validatedVerses,
-    validationStatus: validationResult.validationStatus,
-    followUpQuestions
+    validationStatus: validationResult.validationStatus, // Shows in UI as warning, but doesn't block
+    followUpQuestions: followUpQuestions || []
   };
 }
 

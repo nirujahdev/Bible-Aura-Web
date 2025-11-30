@@ -920,7 +920,7 @@ export function BibleAuraChat() {
                               )}
                             </div>
                           )}
-                          <div className="prose max-w-none text-gray-700 leading-relaxed">
+                          <div className="prose max-w-none text-gray-700 leading-relaxed max-h-[600px] overflow-y-auto">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
                               if (line.trim().startsWith('✦')) {
@@ -1211,8 +1211,8 @@ export function BibleAuraChat() {
         </ScrollArea>
 
         {/* Input Area - Fixed at bottom (moves up with keyboard on mobile) */}
-        <div className="bg-white border-t border-gray-200 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 safe-area-bottom fixed bottom-0 left-0 right-0 lg:relative lg:left-auto lg:right-auto">
-          <div className="max-w-3xl mx-auto w-full">
+        <div className="bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 safe-area-bottom fixed bottom-0 left-0 right-0 lg:relative lg:left-auto lg:right-auto">
+          <div className="max-w-7xl mx-auto w-full">
             {/* Mobile: Redesigned Input Bar */}
             <div className="lg:hidden">
               {/* Mode and Language - On Top */}
