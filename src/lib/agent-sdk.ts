@@ -34,6 +34,11 @@ export interface AgentSDKResponse {
     chapter: number;
     verse: number;
   }>;
+  followUpQuestions?: Array<{
+    question: string;
+    relevance: number;
+  }>;
+  validationStatus?: 'verified' | 'partial' | 'failed';
 }
 
 // Request type for Agent SDK API
@@ -41,17 +46,28 @@ export interface AgentSDKRequest {
   message: string;
   mode?: string;
   language?: string;
+  conversationHistory?: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
 }
 
 /**
  * Send a message to Bible Aura using Agent SDK
  * @param message - The user's message to send
- * @param options - Optional mode and language preferences
- * @returns Promise with the Agent SDK response containing text, mode, language, sources, and cross-references
+ * @param options - Optional mode, language preferences, and conversation history
+ * @returns Promise with the Agent SDK response containing text, mode, language, sources, cross-references, follow-up questions, and validation status
  */
 export async function sendBibleAuraMessage(
   message: string, 
-  options?: { mode?: string; language?: string }
+  options?: { 
+    mode?: string; 
+    language?: string;
+    conversationHistory?: Array<{
+      role: 'user' | 'assistant';
+      content: string;
+    }>;
+  }
 ): Promise<AgentSDKResponse> {
   // Validate input
   if (!message || typeof message !== 'string' || message.trim() === '') {
@@ -81,7 +97,8 @@ export async function sendBibleAuraMessage(
       body: JSON.stringify({ 
         message: message.trim(),
         mode: options?.mode,
-        language: options?.language
+        language: options?.language,
+        conversationHistory: options?.conversationHistory
       } as AgentSDKRequest),
     });
 
@@ -113,7 +130,9 @@ export async function sendBibleAuraMessage(
         mode: data.mode,
         lang: data.lang,
         sourcesCount: data.sources?.length || 0,
-        crossReferencesCount: data.crossReferences?.length || 0
+        crossReferencesCount: data.crossReferences?.length || 0,
+        followUpQuestionsCount: data.followUpQuestions?.length || 0,
+        validationStatus: data.validationStatus
       });
     }
 

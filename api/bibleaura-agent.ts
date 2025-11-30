@@ -15,6 +15,8 @@ interface CachedResponse {
   sources?: AgentResponse['sources'];
   crossReferences?: string[];
   validatedVerses?: AgentResponse['validatedVerses'];
+  followUpQuestions?: AgentResponse['followUpQuestions'];
+  validationStatus?: AgentResponse['validationStatus'];
   timestamp: number;
 }
 
@@ -58,7 +60,14 @@ function setCachedResponse(
   
   const key = getCacheKey(message, mode, language, modelMode);
   responseCache.set(key, {
-    ...response,
+    text: response.text,
+    mode: response.mode,
+    lang: response.lang,
+    sources: response.sources,
+    crossReferences: response.crossReferences,
+    validatedVerses: response.validatedVerses,
+    followUpQuestions: response.followUpQuestions,
+    validationStatus: response.validationStatus,
     timestamp: Date.now()
   });
 }
@@ -114,6 +123,11 @@ interface AgentResponse {
     chapter: number;
     verse: number;
   }>;
+  followUpQuestions?: Array<{
+    question: string;
+    relevance: number;
+  }>;
+  validationStatus?: 'verified' | 'partial' | 'failed';
 }
 
 interface RAGResult {
@@ -190,79 +204,196 @@ function determineLanguage(userInput: string, preferredLanguage?: "en" | "ta"): 
 }
 
 // Web search function using Tavily API (or fallback to simple search)
+// Trusted Bible study domains for web search
 const BIBLE_WEB_DOMAINS = [
-  'biblehub.com',
+  'openbible.info', // Cross-references and topical Bible
   'blueletterbible.org',
+  'biblehub.com',
+  'enduringword.com',
+  'preceptaustin.org',
+  'studylight.org',
   'gotquestions.org',
+  'biblegateway.com',
+  'logos.com',
   'desiringgod.org',
-  'biblestudytools.com',
-  'enduringword.com'
+  'thebibleproject.com'
 ];
 
-async function fetchFallbackBibleResult(domain: string, query: string) {
-  try {
-    const encoded = encodeURIComponent(`site:${domain} ${query}`);
-    const response = await fetch(`https://api.duckduckgo.com/?q=${encoded}&format=json&no_redirect=1&no_html=1`);
-    if (!response.ok) {
+async function fetchFallbackBibleResult(domain: string, query: string, retries: number = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const encoded = encodeURIComponent(`site:${domain} ${query}`);
+      const response = await fetch(`https://api.duckduckgo.com/?q=${encoded}&format=json&no_redirect=1&no_html=1`, {
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      });
+      
+      if (!response.ok) {
+        if (attempt < retries) continue;
+        return null;
+      }
+      
+      const data = await response.json();
+      const snippet =
+        (data.AbstractText as string | undefined) ||
+        (data.RelatedTopics?.find((topic: any) => typeof topic?.Text === 'string')?.Text as string | undefined) ||
+        '';
+      
+      if (!snippet || snippet.trim().length < 20) {
+        if (attempt < retries) continue;
+        return null;
+      }
+      
+      const url =
+        (typeof data.AbstractURL === 'string' && data.AbstractURL.length > 0
+          ? data.AbstractURL
+          : `https://${domain}/`);
+      
+      // Validate URL is accessible
+      try {
+        const urlObj = new URL(url);
+        if (!['http:', 'https:'].includes(urlObj.protocol)) {
+          return null;
+        }
+      } catch {
+        return null;
+      }
+      
+      const title =
+        (typeof data.Heading === 'string' && data.Heading.length > 0
+          ? data.Heading
+          : `${domain} reference`);
+      
+      return {
+        title,
+        url,
+        snippet: snippet.replace(/\s+/g, ' ').slice(0, 400)
+      };
+    } catch (error: any) {
+      if (attempt < retries) {
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempt)));
+        continue;
+      }
+      console.warn('[Web Search] Fallback fetch failed for', domain, error.message);
       return null;
     }
-    const data = await response.json();
-    const snippet =
-      (data.AbstractText as string | undefined) ||
-      (data.RelatedTopics?.find((topic: any) => typeof topic?.Text === 'string')?.Text as string | undefined) ||
-      '';
-    if (!snippet) {
-      return null;
-    }
-    const url =
-      (typeof data.AbstractURL === 'string' && data.AbstractURL.length > 0
-        ? data.AbstractURL
-        : `https://${domain}/`);
-    const title =
-      (typeof data.Heading === 'string' && data.Heading.length > 0
-        ? data.Heading
-        : `${domain} reference`);
-    return {
-      title,
-      url,
-      snippet: snippet.replace(/\s+/g, ' ').slice(0, 400)
-    };
-  } catch (error) {
-    console.warn('[Web Search] Fallback fetch failed for', domain, error);
-    return null;
   }
+  return null;
 }
 
-async function searchWeb(query: string): Promise<Array<{ title: string; url: string; snippet: string }>> {
+// Build enhanced search query with mode-specific keywords and context
+function buildEnhancedSearchQuery(
+  userInput: string,
+  conversationContext?: string,
+  mode?: string
+): string {
+  let query = userInput.trim();
+  
+  // Add mode-specific keywords
+  if (mode) {
+    const modeKeywords: Record<string, string[]> = {
+      'verse': ['commentary', 'exegesis', 'interpretation'],
+      'topical': ['cross-reference', 'biblical theme', 'scripture'],
+      'parable': ['parable explanation', 'Jesus teaching', 'kingdom of God'],
+      'character': ['biblical character', 'biography', 'bible study'],
+      'qa': ['bible answer', 'scripture reference'],
+      'chat': ['bible study', 'biblical guidance']
+    };
+    
+    const keywords = modeKeywords[mode] || [];
+    if (keywords.length > 0) {
+      query = `${query} ${keywords[0]}`;
+    }
+  }
+  
+  // Add conversation context keywords if available
+  if (conversationContext) {
+    // Extract key terms from conversation (simple extraction)
+    const contextWords = conversationContext
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 4)
+      .slice(0, 3);
+    
+    if (contextWords.length > 0) {
+      query = `${query} ${contextWords.join(' ')}`;
+    }
+  }
+  
+  // Remove common stop words and clean up
+  const stopWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+  const words = query.split(/\s+/).filter(word => 
+    word.length > 2 && !stopWords.includes(word.toLowerCase())
+  );
+  
+  return words.join(' ').trim() || userInput;
+}
+
+async function searchWeb(
+  query: string,
+  conversationContext?: string,
+  mode?: string
+): Promise<Array<{ title: string; url: string; snippet: string }>> {
   try {
+    // Build enhanced query
+    const enhancedQuery = buildEnhancedSearchQuery(query, conversationContext, mode);
+    
     // Try Tavily API if available
     const tavilyApiKey = process.env.TAVILY_API_KEY;
     if (tavilyApiKey) {
+      // Prioritize openbible.info for cross-reference queries
+      const includeDomains = mode === 'topical' || query.toLowerCase().includes('cross-reference')
+        ? ['openbible.info', ...BIBLE_WEB_DOMAINS.filter(d => d !== 'openbible.info')]
+        : BIBLE_WEB_DOMAINS;
+      
       const response = await fetch('https://api.tavily.com/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           api_key: tavilyApiKey,
-          query: query,
+          query: enhancedQuery,
           search_depth: 'basic',
-          max_results: 3,
-          include_domains: BIBLE_WEB_DOMAINS
+          max_results: 5, // Increased from 3 to get more results
+          include_domains: includeDomains
         })
       });
       
       if (response.ok) {
         const data = await response.json();
-        return (data.results || []).map((r: any) => ({
+        const results = (data.results || []).map((r: any) => ({
           title: r.title || 'Web Result',
           url: r.url || '',
           snippet: r.content || r.snippet || ''
         }));
+        
+        // Score and sort results by domain authority
+        const domainScores: Record<string, number> = {
+          'openbible.info': 1.0,
+          'biblehub.com': 0.95,
+          'blueletterbible.org': 0.95,
+          'biblegateway.com': 0.9,
+          'logos.com': 0.9,
+          'gotquestions.org': 0.85,
+          'desiringgod.org': 0.85,
+          'enduringword.com': 0.8,
+          'preceptaustin.org': 0.8,
+          'studylight.org': 0.75,
+          'thebibleproject.com': 0.7
+        };
+        
+        const scoredResults = results.map(result => {
+          const domain = new URL(result.url).hostname.replace('www.', '');
+          const score = domainScores[domain] || 0.5;
+          return { ...result, score };
+        }).sort((a, b) => (b.score || 0) - (a.score || 0));
+        
+        return scoredResults.slice(0, 5);
       }
     }
     
     // Fallback: hit curated Bible domains via lightweight scraping
     const fallbackResults = await Promise.all(
-      BIBLE_WEB_DOMAINS.slice(0, 4).map(domain => fetchFallbackBibleResult(domain, query))
+      BIBLE_WEB_DOMAINS.slice(0, 6).map(domain => fetchFallbackBibleResult(domain, enhancedQuery))
     );
     return fallbackResults.filter(Boolean) as Array<{ title: string; url: string; snippet: string }>;
   } catch (error: any) {
@@ -271,10 +402,60 @@ async function searchWeb(query: string): Promise<Array<{ title: string; url: str
   }
 }
 
+// Build contextual query from conversation history
+function buildContextualQuery(
+  userInput: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+): string {
+  if (!conversationHistory || conversationHistory.length === 0) {
+    return userInput;
+  }
+
+  // Extract key topics from last 3-5 messages
+  const recentMessages = conversationHistory.slice(-5);
+  const topics: string[] = [];
+  
+  // Extract verse references from conversation
+  const conversationText = recentMessages.map(m => m.content).join(' ');
+  const verseRefs = extractVerseReferences(conversationText);
+  if (verseRefs.length > 0) {
+    topics.push(...verseRefs.slice(0, 3));
+  }
+  
+  // Extract key terms (simple keyword extraction)
+  const allWords = conversationText
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(word => word.length > 4 && !['bible', 'scripture', 'verse', 'chapter'].includes(word));
+  
+  // Count word frequency
+  const wordCount = new Map<string, number>();
+  allWords.forEach(word => {
+    wordCount.set(word, (wordCount.get(word) || 0) + 1);
+  });
+  
+  // Get top 3 most frequent words
+  const topWords = Array.from(wordCount.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([word]) => word);
+  
+  topics.push(...topWords);
+  
+  // Combine with current query
+  if (topics.length > 0) {
+    return `${userInput} ${topics.join(' ')}`;
+  }
+  
+  return userInput;
+}
+
 async function retrieveBibleContext(
   userInput: string,
   client: OpenAI,
-  preferredLanguage?: "en" | "ta"
+  preferredLanguage?: "en" | "ta",
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  mode?: string
 ): Promise<RAGResult> {
   // Always respect preferred language if provided
   const lang = determineLanguage(userInput, preferredLanguage);
@@ -282,24 +463,32 @@ async function retrieveBibleContext(
   console.log('[RAG Retriever] Language:', lang, 'Preferred:', preferredLanguage, 'Using Pinecone');
 
   try {
+    // Build contextual query
+    const contextualQuery = buildContextualQuery(userInput, conversationHistory);
+    
     // Use Pinecone for Bible retrieval (import dynamically to avoid issues in serverless)
     const { retrieveBibleContextFromPinecone } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
     
-    // Extract verse references from user input
-    const verseReferences = extractVerseReferences(userInput);
+    // Extract verse references from user input and conversation
+    const verseReferences = extractVerseReferences(contextualQuery);
     
     // Expand query with cross-references if verse references found
-    let expandedQuery = userInput;
+    let expandedQuery = contextualQuery;
     if (verseReferences.length > 0 && lang === 'en') {
       try {
         const { expandQueryWithCrossReferences } = await import('../src/lib/cross-references.js');
-        expandedQuery = await expandQueryWithCrossReferences(userInput, verseReferences);
+        expandedQuery = await expandQueryWithCrossReferences(contextualQuery, verseReferences);
         console.log('[RAG Retriever] Expanded query with cross-references:', verseReferences.length, 'verses found');
       } catch (error) {
         console.warn('[RAG Retriever] Failed to expand with cross-references:', error);
         // Continue with original query if cross-reference expansion fails
       }
     }
+    
+    // Build conversation context string for web search
+    const conversationContext = conversationHistory
+      ? conversationHistory.slice(-3).map(m => m.content).join(' ')
+      : undefined;
     
     // Parallel: Pinecone Bible search + Web search
     const [bibleRAGResult, webResults] = await Promise.all([
@@ -309,7 +498,7 @@ async function retrieveBibleContext(
         query: userInput,
         sources: []
       })),
-      searchWeb(userInput)
+      searchWeb(userInput, conversationContext, mode)
     ]);
 
     // Extract Bible sources from results
@@ -619,33 +808,65 @@ function normalizeVerseReference(ref: string) {
   return ref.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
-async function validateVerseReferences(
+// Strict verse validation with multi-source confirmation
+async function strictVerseValidation(
   text: string,
-  language: 'en' | 'ta',
-  sources?: AgentResponse['sources']
-): Promise<Array<{
-  reference: string;
-  verseText: string;
-  book: string;
-  chapter: number;
-  verse: number;
-}>> {
+  sources?: AgentResponse['sources'],
+  client?: OpenAI
+): Promise<{
+  validatedVerses: Array<{
+    reference: string;
+    verseText: string;
+    book: string;
+    chapter: number;
+    verse: number;
+  }>;
+  validationStatus: 'verified' | 'partial' | 'failed';
+}> {
   try {
-    // Extract verse references from text - only real ones mentioned in response
+    // Extract verse references from text
     const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/g;
     const matches = [...text.matchAll(versePattern)];
     
-    if (matches.length === 0) return [];
+    if (matches.length === 0) {
+      return { validatedVerses: [], validationStatus: 'failed' };
+    }
     
-    // Get unique references that actually appear in the response
+    // Get unique references
     const uniqueRefs = [...new Set(matches.map(m => m[0]))];
     
-    const verseLookup = new Map<string, string>();
+    // Build verse lookup from sources (group by reference)
+    const verseSourceMap = new Map<string, Array<{ source: string; verseText: string }>>();
+    
     sources?.forEach(source => {
       const ref = source?.reference || source?.filename;
       const verseText = source?.verseText || source?.snippet;
       if (ref && verseText) {
-        verseLookup.set(normalizeVerseReference(ref), verseText);
+        const normalized = normalizeVerseReference(ref);
+        if (!verseSourceMap.has(normalized)) {
+          verseSourceMap.set(normalized, []);
+        }
+        verseSourceMap.get(normalized)!.push({
+          source: source.id || source.filename || 'unknown',
+          verseText
+        });
+      }
+    });
+    
+    // Also check snippet content for verse references
+    sources?.forEach(source => {
+      if (source.snippet) {
+        const snippetRefs = extractVerseReferences(source.snippet);
+        snippetRefs.forEach(ref => {
+          const normalized = normalizeVerseReference(ref);
+          if (!verseSourceMap.has(normalized)) {
+            verseSourceMap.set(normalized, []);
+          }
+          verseSourceMap.get(normalized)!.push({
+            source: source.id || source.filename || 'unknown',
+            verseText: source.snippet || ''
+          });
+        });
       }
     });
 
@@ -657,14 +878,24 @@ async function validateVerseReferences(
       verse: number;
     }> = [];
     
-    for (const ref of uniqueRefs.slice(0, 5)) { // Limit to 5 verses
+    let verifiedCount = 0;
+    let partialCount = 0;
+    let failedCount = 0;
+    
+    // Validate each verse reference
+    for (const ref of uniqueRefs.slice(0, 10)) { // Check up to 10 verses
       const match = ref.match(/^(\d*\s*[A-Za-z]+\.?)\s+(\d+):(\d+)$/i);
-      if (match) {
-        const normalized = normalizeVerseReference(ref);
-        const verseText = verseLookup.get(normalized);
-        if (!verseText) {
-          continue;
-        }
+      if (!match) continue;
+      
+      const normalized = normalizeVerseReference(ref);
+      const sourceList = verseSourceMap.get(normalized) || [];
+      
+      // Strict requirement: verse must appear in at least 2 different sources
+      const uniqueSources = new Set(sourceList.map(s => s.source));
+      
+      if (uniqueSources.size >= 2) {
+        // Verified: appears in 2+ sources
+        const verseText = sourceList[0].verseText;
         validatedVerses.push({
           reference: ref,
           verseText,
@@ -672,14 +903,71 @@ async function validateVerseReferences(
           chapter: parseInt(match[2]),
           verse: parseInt(match[3])
         });
+        verifiedCount++;
+      } else if (uniqueSources.size === 1) {
+        // Partial: only 1 source, but try to verify with Pinecone
+        try {
+          // Try to get verse from Pinecone for additional confirmation
+          const { retrieveBibleContextFromPinecone } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
+          const pineconeResult = await retrieveBibleContextFromPinecone(ref, client!, 'en');
+          
+          if (pineconeResult.sources && pineconeResult.sources.length > 0) {
+            // Found in Pinecone, now we have 2 sources
+            const verseText = sourceList[0].verseText || pineconeResult.sources[0].verseText || '';
+            validatedVerses.push({
+              reference: ref,
+              verseText,
+              book: match[1].trim(),
+              chapter: parseInt(match[2]),
+              verse: parseInt(match[3])
+            });
+            verifiedCount++;
+          } else {
+            partialCount++;
+          }
+        } catch (error) {
+          console.warn('[Strict Validation] Pinecone verification failed for', ref, error);
+          partialCount++;
+        }
+      } else {
+        // Failed: not found in any source
+        failedCount++;
       }
     }
     
-    return validatedVerses;
+    // Determine overall validation status
+    let validationStatus: 'verified' | 'partial' | 'failed';
+    if (failedCount > 0 && verifiedCount === 0) {
+      validationStatus = 'failed';
+    } else if (partialCount > 0 || (verifiedCount > 0 && failedCount > 0)) {
+      validationStatus = 'partial';
+    } else if (verifiedCount > 0) {
+      validationStatus = 'verified';
+    } else {
+      validationStatus = 'failed';
+    }
+    
+    return { validatedVerses, validationStatus };
   } catch (error) {
-    console.error('[Verse Validation] Error:', error);
-    return [];
+    console.error('[Strict Verse Validation] Error:', error);
+    return { validatedVerses: [], validationStatus: 'failed' };
   }
+}
+
+// Legacy function for backward compatibility (non-strict)
+async function validateVerseReferences(
+  text: string,
+  language: 'en' | 'ta',
+  sources?: AgentResponse['sources']
+): Promise<Array<{
+  reference: string;
+  verseText: string;
+  book: string;
+  chapter: number;
+  verse: number;
+}>> {
+  const result = await strictVerseValidation(text, sources);
+  return result.validatedVerses;
 }
 
 /**
@@ -688,15 +976,18 @@ async function validateVerseReferences(
 async function runFastRAGPipeline(
   userInput: string,
   preferredMode?: string,
-  preferredLanguage?: string
+  preferredLanguage?: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
 ): Promise<AgentResponse> {
   const client = getOpenAIClient();
 
-  // Node 1: RAG Retriever
+  // Node 1: RAG Retriever with conversation context
   const ragResult = await retrieveBibleContext(
     userInput,
     client,
-    preferredLanguage as "en" | "ta" | undefined
+    preferredLanguage as "en" | "ta" | undefined,
+    conversationHistory,
+    preferredMode
   );
 
   // Node 2: Meta-Agent with Chain-of-Thought reasoning
@@ -716,11 +1007,50 @@ async function runFastRAGPipeline(
 
   const crossReferences = ragResult.crossReferences || [];
   const trimmedSources = (ragResult.sources || []).slice(0, 5);
-  const validatedVerses = await validateVerseReferences(
+  
+  // Strict verse validation with multi-source confirmation
+  const validationResult = await strictVerseValidation(
     safeText,
-    metaAgentResult.lang,
-    trimmedSources
+    trimmedSources,
+    client
   );
+  
+  // Strict validation: Block response if critical verses can't be verified
+  // Check if response contains verse references that couldn't be validated
+  const versePattern = /\b(\d*\s*[A-Za-z]+\.?\s+\d+):(\d+)(?:-(\d+))?\b/g;
+  const hasVerses = versePattern.test(safeText);
+  
+  if (validationResult.validationStatus === 'failed' && hasVerses && validationResult.validatedVerses.length === 0) {
+    console.warn('[RAG Pipeline] Strict validation failed - response contains unverified verses');
+    // For strict mode: Return error response indicating validation failure
+    // This ensures biblical accuracy - only return responses with verified verses
+    // Return a user-friendly error message instead of throwing
+    return {
+      text: `I apologize, but I couldn't verify the Bible verses mentioned in my response with multiple trusted sources. This is important for ensuring biblical accuracy. Could you please rephrase your question or ask about a different topic?`,
+      mode: metaAgentResult.mode,
+      lang: metaAgentResult.lang,
+      sources: [],
+      crossReferences: [],
+      validatedVerses: [],
+      validationStatus: 'failed' as const,
+      followUpQuestions: []
+    };
+  }
+
+  // Generate follow-up questions using AI
+  let followUpQuestions: Array<{ question: string; relevance: number }> | undefined;
+  try {
+    const { generateContextualFollowUps } = await import('../src/lib/ai-followup-generator.js');
+    followUpQuestions = await generateContextualFollowUps(
+      userInput,
+      safeText,
+      conversationHistory || [],
+      client
+    );
+  } catch (error) {
+    console.warn('[RAG Pipeline] Failed to generate follow-up questions:', error);
+    // Continue without follow-up questions
+  }
 
   return {
     text: safeText,
@@ -728,7 +1058,9 @@ async function runFastRAGPipeline(
     lang: metaAgentResult.lang,
     sources: trimmedSources,
     crossReferences,
-    validatedVerses
+    validatedVerses: validationResult.validatedVerses,
+    validationStatus: validationResult.validationStatus,
+    followUpQuestions
   };
 }
 
@@ -929,7 +1261,12 @@ export default async function handler(
       return;
     }
 
-    const { message, mode: preferredMode, language: preferredLanguage } = req.body;
+    const { 
+      message, 
+      mode: preferredMode, 
+      language: preferredLanguage,
+      conversationHistory 
+    } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       res.status(400).json({
@@ -937,6 +1274,26 @@ export default async function handler(
         message: 'Message is required and must be a non-empty string'
       });
       return;
+    }
+
+    // Validate conversation history format
+    let validConversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> | undefined;
+    if (conversationHistory) {
+      if (Array.isArray(conversationHistory)) {
+        validConversationHistory = conversationHistory
+          .filter((msg: any) => 
+            msg && 
+            typeof msg === 'object' &&
+            (msg.role === 'user' || msg.role === 'assistant') &&
+            typeof msg.content === 'string' &&
+            msg.content.trim().length > 0
+          )
+          .slice(-5) // Only last 5 messages
+          .map((msg: any) => ({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content.trim().slice(0, 1000) // Limit content length
+          }));
+      }
     }
 
     const sanitizedMessage = message.trim().slice(0, 2000);
@@ -990,18 +1347,21 @@ export default async function handler(
       return;
     }
 
-    // Check cache first
-    const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage, 'aura-1.0');
-    if (cached) {
-      console.log('[Bible Aura AI] Cache hit');
-      res.status(200).json(cached);
-      return;
+    // Check cache first (but skip if conversation history is provided, as it affects results)
+    if (!validConversationHistory || validConversationHistory.length === 0) {
+      const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage, 'aura-1.0');
+      if (cached) {
+        console.log('[Bible Aura AI] Cache hit');
+        res.status(200).json(cached);
+        return;
+      }
     }
 
     const result = await runFastRAGPipeline(
       sanitizedMessage,
       preferredMode,
-      preferredLanguage
+      preferredLanguage,
+      validConversationHistory
     );
 
     // Only return sources that are actually retrieved (not empty or invalid)
@@ -1016,12 +1376,8 @@ export default async function handler(
       });
     }
 
-    // Only validate verses that actually exist in the retrieved context
-    // Don't create fake verse references
-    const validatedVerses = await validateVerseReferences(result.text, result.lang);
-    if (validatedVerses.length > 0) {
-      result.validatedVerses = validatedVerses;
-    }
+    // Validation is already done in runFastRAGPipeline with strict validation
+    // No need to re-validate here
 
     // Cache the result
     setCachedResponse(sanitizedMessage, result, preferredMode, preferredLanguage, 'aura-1.0');

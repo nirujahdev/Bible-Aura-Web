@@ -70,6 +70,11 @@ interface Message {
     chapter: number;
     verse: number;
   }>;
+  followUpQuestions?: Array<{
+    question: string;
+    relevance: number;
+  }>;
+  validationStatus?: 'verified' | 'partial' | 'failed';
   feedback?: 'positive' | 'negative' | null;
 }
 
@@ -98,86 +103,8 @@ const CHAT_MODES = {
   'qa-clean': { name: 'Quick Q&A', icon: Brain, description: 'Fast answers' }
 };
 
-// Generate related questions based on the conversation
-function generateRelatedQuestions(lastResponse: string, allMessages: Message[]): string[] {
-  const questions: string[] = [];
-  const responseLower = lastResponse.toLowerCase();
-  const userMessages = allMessages.filter(m => m.role === 'user').map(m => m.content.toLowerCase());
-  const lastUserMessage = userMessages[userMessages.length - 1] || '';
-  
-  // Check for Jesus/Christ mentions
-  if (responseLower.includes('jesus') || responseLower.includes('christ')) {
-    questions.push('Historical evidence for Jesus outside the New Testament');
-    questions.push('Key differences between the historical Jesus and theological claims');
-    questions.push('Major non-Christian sources that mention Jesus and what they say');
-  }
-  
-  // Check for Bible verses
-  const verseMatch = lastResponse.match(/(\d*\s*[A-Za-z]+\s+\d+:\d+)/);
-  if (verseMatch) {
-    const verse = verseMatch[1];
-    questions.push(`What is the historical context of ${verse}?`);
-    questions.push(`How do scholars interpret ${verse}?`);
-  }
-  
-  // Check for theological topics
-  if (responseLower.includes('salvation') || responseLower.includes('saved')) {
-    questions.push('What does the Bible say about how to be saved?');
-    questions.push('What is the difference between grace and works in salvation?');
-  }
-  
-  if (responseLower.includes('trinity') || responseLower.includes('god the father') || responseLower.includes('holy spirit')) {
-    questions.push('What is the biblical basis for the Trinity?');
-    questions.push('How do different Christian denominations understand the Trinity?');
-  }
-  
-  if (responseLower.includes('parable')) {
-    questions.push('What are the main themes in Jesus\' parables?');
-    questions.push('How do parables relate to the Kingdom of God?');
-  }
-  
-  if (responseLower.includes('character') || responseLower.includes('person')) {
-    questions.push('What can we learn from biblical character studies?');
-    questions.push('How do biblical characters demonstrate faith?');
-  }
-  
-  // Generic follow-up questions
-  if (questions.length < 5) {
-    if (lastUserMessage.includes('who is')) {
-      questions.push('What is the historical background of this person?');
-      questions.push('What are the key events in this person\'s life?');
-    } else if (lastUserMessage.includes('what is') || lastUserMessage.includes('what does')) {
-      questions.push('How does this relate to other biblical teachings?');
-      questions.push('What is the practical application of this?');
-    } else if (lastUserMessage.includes('why')) {
-      questions.push('What is the biblical context for this?');
-      questions.push('How do scholars explain this?');
-    } else {
-      questions.push('What are the key biblical passages about this topic?');
-      questions.push('How does this relate to the overall biblical narrative?');
-    }
-  }
-  
-  // Fill remaining slots with generic questions
-  const genericQuestions = [
-    'What are the key biblical passages about this topic?',
-    'How do different Christian traditions interpret this?',
-    'What is the historical context of this?',
-    'How does this apply to modern life?',
-    'What are the theological implications of this?'
-  ];
-  
-  while (questions.length < 5) {
-    const generic = genericQuestions[questions.length % genericQuestions.length];
-    if (!questions.includes(generic)) {
-      questions.push(generic);
-    } else {
-      break;
-    }
-  }
-  
-  return questions.slice(0, 5);
-}
+// Note: generateRelatedQuestions has been replaced with AI-generated follow-up questions
+// Follow-up questions are now provided by the API response (message.followUpQuestions)
 
 export function BibleAuraChat() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -497,9 +424,18 @@ export function BibleAuraChat() {
       const apiMode = currentMode.replace('-clean', '');
       const apiLanguage = currentLanguage === 'english' ? 'en' : 'ta';
       
+      // Extract last 3-5 messages for conversation context
+      const conversationHistory = newMessages
+        .slice(-5) // Last 5 messages (including the current user message)
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+      
       const aiResponse = await sendBibleAuraMessage(userInput, {
         mode: apiMode,
-        language: apiLanguage
+        language: apiLanguage,
+        conversationHistory: conversationHistory
       });
       
       const responseTime = Date.now() - startTime;
@@ -512,7 +448,9 @@ export function BibleAuraChat() {
         mode: aiResponse.mode || currentMode,
         sources: aiResponse.sources,
         crossReferences: aiResponse.crossReferences,
-        validatedVerses: (aiResponse as any).validatedVerses
+        validatedVerses: aiResponse.validatedVerses,
+        followUpQuestions: aiResponse.followUpQuestions,
+        validationStatus: aiResponse.validationStatus
       };
 
       const finalMessages = [...newMessages, aiMessage];
@@ -950,6 +888,38 @@ export function BibleAuraChat() {
                     <div className={`${message.role === 'assistant' ? 'w-full' : 'max-w-[75%] sm:max-w-[70%] md:max-w-[60%]'} ${message.role === 'assistant' ? 'w-full' : ''}`}>
                       {message.role === 'assistant' ? (
                         <div className="bg-white border-0 sm:border border-gray-100 rounded-none sm:rounded-xl md:rounded-2xl p-3 sm:p-3 md:p-4 shadow-none sm:shadow-sm w-full">
+                          {/* Validation Status Indicator */}
+                          {message.validationStatus && (
+                            <div className="mb-3 flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                {message.validationStatus === 'verified' && (
+                                  <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
+                                    <span className="mr-1">✓</span> Verified
+                                  </Badge>
+                                )}
+                                {message.validationStatus === 'partial' && (
+                                  <Badge variant="outline" className="text-[10px] bg-yellow-50 text-yellow-700 border-yellow-200">
+                                    <span className="mr-1">⚠</span> Partially Verified
+                                  </Badge>
+                                )}
+                                {message.validationStatus === 'failed' && (
+                                  <Badge variant="outline" className="text-[10px] bg-red-50 text-red-700 border-red-200">
+                                    <span className="mr-1">⚠</span> Verification Failed
+                                  </Badge>
+                                )}
+                              </div>
+                              {message.validationStatus === 'partial' && (
+                                <p className="text-[10px] text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
+                                  Some verses could not be verified with multiple sources. Please verify independently.
+                                </p>
+                              )}
+                              {message.validationStatus === 'failed' && (
+                                <p className="text-[10px] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
+                                  Critical verses could not be verified. This response may contain unverified content.
+                                </p>
+                              )}
+                            </div>
+                          )}
                           <div className="prose max-w-none text-gray-700 leading-relaxed">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
@@ -1151,8 +1121,8 @@ export function BibleAuraChat() {
                     </div>
                   </motion.div>
                   
-                  {/* Related Questions - Show after assistant messages */}
-                  {message.role === 'assistant' && index === messages.length - 1 && (
+                  {/* Follow-Up Questions - Show after assistant messages */}
+                  {message.role === 'assistant' && index === messages.length - 1 && message.followUpQuestions && message.followUpQuestions.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -1160,19 +1130,22 @@ export function BibleAuraChat() {
                       className="mt-4 px-4"
                     >
                       <div className="max-w-2xl">
-                        <div className="text-sm font-semibold text-gray-700 mb-3">Related</div>
+                        <div className="text-sm font-semibold text-gray-700 mb-3">Suggested Questions</div>
                         <div className="space-y-2">
-                          {generateRelatedQuestions(message.content, messages).map((question, idx) => (
+                          {message.followUpQuestions.map((followUp, idx) => (
                             <button
                               key={idx}
                               onClick={() => {
-                                setInput(question);
+                                setInput(followUp.question);
                                 handleSendMessage();
                               }}
                               className="w-full text-left flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg px-3 py-2 transition-colors group"
                             >
                               <span className="text-gray-400 group-hover:text-orange-500">→</span>
-                              <span>{question}</span>
+                              <span>{followUp.question}</span>
+                              {followUp.relevance > 0.8 && (
+                                <span className="ml-auto text-[10px] text-orange-500">High relevance</span>
+                              )}
                             </button>
                           ))}
                         </div>
