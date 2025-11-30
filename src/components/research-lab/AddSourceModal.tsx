@@ -243,87 +243,73 @@ export function AddSourceModal({ open, onClose, notebookId, onAdded }: AddSource
 
           successCount++;
 
-          // Index source in Pinecone and trigger Summarize agent
+          // Process source (extract text and index) - async, non-blocking
           if (newSource?.id) {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-              // Update indexing status
-              await supabase
-                .from('research_sources')
-                .update({ indexing_status: 'indexing' })
-                .eq('id', newSource.id);
-
-              // Index source in Pinecone (async, non-blocking)
-              const contentToIndex = newSource.processed_content || newSource.content_text || '';
-              if (contentToIndex) {
-                fetch('/api/research-lab/index-source', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
-                  },
-                  body: JSON.stringify({
-                    sourceId: newSource.id,
-                    notebookId,
-                    content: contentToIndex,
-                  }),
-                })
-                .then(async (res) => {
-                  if (res.ok) {
-                    const data = await res.json();
-                    // Update source with indexing status
-                    await supabase
-                      .from('research_sources')
-                      .update({ 
-                        indexing_status: 'completed',
-                        indexed_at: new Date().toISOString(),
-                        vector_count: data.vectorCount || 0,
-                      })
-                      .eq('id', newSource.id);
-                  } else {
-                    // Mark as failed but don't block
-                    await supabase
-                      .from('research_sources')
-                      .update({ indexing_status: 'failed' })
-                      .eq('id', newSource.id);
-                  }
-                })
-                .catch(async (err) => {
-                  console.error('Failed to index source:', err);
-                  await supabase
-                    .from('research_sources')
-                    .update({ indexing_status: 'failed' })
-                    .eq('id', newSource.id);
-                });
-              }
-
-              // Automatically trigger Summarize agent for this source
-              fetch('/api/research-lab/agents', {
+              // Call process-source API to extract text and index
+              // This handles: file download → text extraction → content update → indexing
+              fetch('/api/research-lab/process-source', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${session.access_token}`,
                 },
                 body: JSON.stringify({
-                  agentType: 'summarize',
+                  sourceId: newSource.id,
                   notebookId,
-                  summaryType: 'detailed',
-                  sourceIds: [newSource.id],
                 }),
               })
               .then(async (res) => {
                 if (res.ok) {
                   const data = await res.json();
-                  // Update source with summary in key_insights
-                  if (data.summary) {
-                    await supabase
-                      .from('research_sources')
-                      .update({ key_insights: data.summary })
-                      .eq('id', newSource.id);
-                  }
+                  console.log('Source processed successfully:', data);
+                  
+                  // Automatically trigger Summarize agent after processing completes
+                  // Wait a bit to ensure indexing is done
+                  setTimeout(() => {
+                    fetch('/api/research-lab/agents', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`,
+                      },
+                      body: JSON.stringify({
+                        agentType: 'summarize',
+                        notebookId,
+                        summaryType: 'detailed',
+                        sourceIds: [newSource.id],
+                      }),
+                    })
+                    .then(async (res) => {
+                      if (res.ok) {
+                        const data = await res.json();
+                        // Update source with summary in key_insights
+                        if (data.summary) {
+                          await supabase
+                            .from('research_sources')
+                            .update({ key_insights: data.summary })
+                            .eq('id', newSource.id);
+                        }
+                      }
+                    })
+                    .catch(err => console.error('Failed to generate summary:', err));
+                  }, 2000); // Wait 2 seconds for indexing to complete
+                } else {
+                  const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                  console.error('Failed to process source:', errorData);
+                  // Processing status will be set to 'failed' by the API
                 }
               })
-              .catch(err => console.error('Failed to generate summary:', err));
+              .catch((err) => {
+                console.error('Failed to process source:', err);
+                // Mark processing as failed
+                supabase
+                  .from('research_sources')
+                  .update({ processing_status: 'failed' })
+                  .eq('id', newSource.id)
+                  .catch(updateErr => console.error('Failed to update status:', updateErr));
+              });
             }
           }
         } catch (fileError: any) {

@@ -223,30 +223,40 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
 
             sourceCount++;
 
-            // Index source and trigger summary (async, non-blocking)
+            // Process source (extract text and index) - async, non-blocking
             if (newSource?.id) {
               const { data: { session } } = await supabase.auth.getSession();
               if (session) {
-                await supabase
-                  .from('research_sources')
-                  .update({ indexing_status: 'indexing' })
-                  .eq('id', newSource.id);
-
-                const contentToIndex = newSource.processed_content || newSource.content_text || '';
-                if (contentToIndex) {
-                  fetch('/api/research-lab/index-source', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${session.access_token}`,
-                    },
-                    body: JSON.stringify({
-                      sourceId: newSource.id,
-                      notebookId: notebook.id,
-                      content: contentToIndex,
-                    }),
-                  }).catch(err => console.error('Failed to index source:', err));
-                }
+                // Call process-source API to extract text and index
+                // This handles: file download → text extraction → content update → indexing
+                fetch('/api/research-lab/process-source', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                  },
+                  body: JSON.stringify({
+                    sourceId: newSource.id,
+                    notebookId: notebook.id,
+                  }),
+                })
+                .then(async (res) => {
+                  if (res.ok) {
+                    console.log('Source processed successfully');
+                  } else {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error('Failed to process source:', errorData);
+                  }
+                })
+                .catch((err) => {
+                  console.error('Failed to process source:', err);
+                  // Mark processing as failed
+                  supabase
+                    .from('research_sources')
+                    .update({ processing_status: 'failed' })
+                    .eq('id', newSource.id)
+                    .catch(updateErr => console.error('Failed to update status:', updateErr));
+                });
               }
             }
           } catch (fileError: any) {
@@ -269,30 +279,21 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
               uploadErrors.push(`Link: Failed to add - ${linkError.message || 'Unknown error'}`);
             } else {
               sourceCount++;
-              // Index link source (async)
+              // Process link source (process-source API will detect it has content_text and just trigger indexing)
               if (newSource?.id) {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
-                  await supabase
-                    .from('research_sources')
-                    .update({ indexing_status: 'indexing' })
-                    .eq('id', newSource.id);
-
-                  const contentToIndex = newSource.processed_content || newSource.content_text || '';
-                  if (contentToIndex) {
-                    fetch('/api/research-lab/index-source', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`,
-                      },
-                      body: JSON.stringify({
-                        sourceId: newSource.id,
-                        notebookId: notebook.id,
-                        content: contentToIndex,
-                      }),
-                    }).catch(err => console.error('Failed to index source:', err));
-                  }
+                  fetch('/api/research-lab/process-source', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                      sourceId: newSource.id,
+                      notebookId: notebook.id,
+                    }),
+                  }).catch(err => console.error('Failed to process source:', err));
                 }
               }
             }
@@ -316,30 +317,21 @@ export function CreateNotebookModal({ open, onClose, onCreated }: CreateNotebook
               uploadErrors.push(`Pasted text: Failed to add - ${textError.message || 'Unknown error'}`);
             } else {
               sourceCount++;
-              // Index text source (async)
+              // Process text source (process-source API will detect it has content_text and just trigger indexing)
               if (newSource?.id) {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
-                  await supabase
-                    .from('research_sources')
-                    .update({ indexing_status: 'indexing' })
-                    .eq('id', newSource.id);
-
-                  const contentToIndex = newSource.processed_content || newSource.content_text || '';
-                  if (contentToIndex) {
-                    fetch('/api/research-lab/index-source', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`,
-                      },
-                      body: JSON.stringify({
-                        sourceId: newSource.id,
-                        notebookId: notebook.id,
-                        content: contentToIndex,
-                      }),
-                    }).catch(err => console.error('Failed to index source:', err));
-                  }
+                  fetch('/api/research-lab/process-source', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({
+                      sourceId: newSource.id,
+                      notebookId: notebook.id,
+                    }),
+                  }).catch(err => console.error('Failed to process source:', err));
                 }
               }
             }

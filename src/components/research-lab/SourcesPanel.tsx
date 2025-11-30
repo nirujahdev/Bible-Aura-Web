@@ -232,40 +232,40 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
 
     setLoading(true);
     try {
-      // Get the processed content to retry indexing
-      const content = source.processed_content || source.content_text || '';
-      
-      if (!content || content.trim().length === 0) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast({
-          title: 'Cannot retry',
-          description: 'Source has no content to process',
+          title: 'Error',
+          description: 'Please sign in to retry processing',
           variant: 'destructive',
         });
         setLoading(false);
         return;
       }
 
-      const response = await fetch('/api/research-lab/index-source', {
+      // Call process-source API which handles both extraction and indexing
+      const response = await fetch('/api/research-lab/process-source', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           sourceId,
           notebookId,
-          content,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to retry processing');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.message || errorData.error || 'Failed to retry processing');
       }
 
+      const result = await response.json();
+      
       toast({
         title: 'Retry initiated',
-        description: 'Source processing has been restarted',
+        description: result.message || 'Source processing has been restarted',
       });
 
       // Reload sources to show updated status

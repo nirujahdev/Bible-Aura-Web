@@ -27,15 +27,10 @@ import Bible from '@/pages/Bible';
 import EnhancedBible from '@/pages/EnhancedBible';
 import BibleQA from '@/pages/BibleQA';
 import ReadingPlan from '@/pages/ReadingPlan';
-import Sermons from '@/pages/Sermons';
-import SermonWriter from '@/pages/SermonWriter';
-import EnhancedSermonHub from '@/pages/EnhancedSermonHub';
 import Favorites from '@/pages/Favorites';
 import TopicalStudy from '@/pages/TopicalStudy';
 import ParablesStudy from '@/pages/ParablesStudy';
 import Profile from '@/pages/Profile';
-
-import SermonLibrary from '@/pages/SermonLibrary';
 import ResearchLab from '@/pages/ResearchLab';
 import ResearchNotebook from '@/pages/ResearchNotebook';
 import { ResearchLabPinProtection } from '@/components/research-lab/ResearchLabPinProtection';
@@ -68,7 +63,6 @@ const PublicBibleStudyPage = () => (
           <li>• AI-powered Bible chat and Q&A</li>
           <li>• Multiple Bible translations (KJV, NIV, ESV, etc.)</li>
           <li>• Character and topical studies</li>
-          <li>• Sermon writing and teaching tools</li>
         </ul>
         <a 
           href="/auth" 
@@ -168,18 +162,6 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/sermons" element={
-                  <ProtectedRoute>
-                    <Sermons />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/sermon-writer" element={
-                  <ProtectedRoute>
-                    <SermonWriter />
-                  </ProtectedRoute>
-                } />
-                
                 <Route path="/bible-qa" element={
                   <ProtectedRoute>
                     <BibleQA />
@@ -201,14 +183,6 @@ function App() {
                 <Route path="/parables-study" element={
                   <ProtectedRoute>
                     <ParablesStudy />
-                  </ProtectedRoute>
-                } />
-                
-
-                
-                <Route path="/sermon-library" element={
-                  <ProtectedRoute>
-                    <SermonLibrary />
                   </ProtectedRoute>
                 } />
                 

@@ -472,18 +472,8 @@ async function retrieveBibleContext(
     // Extract verse references from user input and conversation
     const verseReferences = extractVerseReferences(contextualQuery);
     
-    // Expand query with cross-references if verse references found
-    let expandedQuery = contextualQuery;
-    if (verseReferences.length > 0 && lang === 'en') {
-      try {
-        const { expandQueryWithCrossReferences } = await import('../src/lib/cross-references.js');
-        expandedQuery = await expandQueryWithCrossReferences(contextualQuery, verseReferences);
-        console.log('[RAG Retriever] Expanded query with cross-references:', verseReferences.length, 'verses found');
-      } catch (error) {
-        console.warn('[RAG Retriever] Failed to expand with cross-references:', error);
-        // Continue with original query if cross-reference expansion fails
-      }
-    }
+    // Use contextual query directly (cross-references handled via Pinecone)
+    const expandedQuery = contextualQuery;
     
     // Build conversation context string for web search
     const conversationContext = conversationHistory
@@ -520,14 +510,8 @@ async function retrieveBibleContext(
         const { retrieveCrossReferencesForVerses } = await import('../src/lib/bible-rag/pinecone-retrieval.js');
         let crossRefMap: Map<string, string[]>;
 
-        try {
-          crossRefMap = await retrieveCrossReferencesForVerses(candidateArray, 5);
-          console.log('[RAG Retriever] Retrieved cross-references from Pinecone');
-        } catch (pineconeError) {
-          console.warn('[RAG Retriever] Pinecone cross-refs failed, using JSON fallback:', pineconeError);
-          const { getCrossReferencesForVerses } = await import('../src/lib/cross-references.js');
-          crossRefMap = await getCrossReferencesForVerses(candidateArray);
-        }
+        crossRefMap = await retrieveCrossReferencesForVerses(candidateArray, 5);
+        console.log('[RAG Retriever] Retrieved cross-references from Pinecone');
 
         crossRefMap.forEach((crossRefs) => {
           crossRefs.slice(0, 5).forEach(ref => crossReferenceSet.add(ref));
