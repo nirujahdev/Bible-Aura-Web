@@ -56,10 +56,7 @@ export default defineConfig(({ mode }) => ({
               './src/pages/Home',
               './src/pages/Dashboard',
               './src/pages/Bible'
-            ],
-          'pages-features': [
-            './src/pages/Sermons'
-          ]
+            ]
         }
       }
     },
