@@ -15,6 +15,7 @@ import {
   bulkToggleSourceInclude,
   type Source 
 } from '@/lib/research-lab/db-operations';
+import logger from '@/lib/research-lab/logger';
 import { 
   Plus, 
   Search, 
@@ -73,10 +74,10 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
 
     if (processingSources.length === 0) return;
 
-    // Poll every 3 seconds for processing sources (skip loading state to avoid flicker)
+    // Poll every 5 seconds for processing sources (optimized frequency)
     const pollInterval = setInterval(() => {
       loadSources(false, true);
-    }, 3000);
+    }, 5000);
 
     return () => clearInterval(pollInterval);
   }, [notebookId, user, sources]);
@@ -125,7 +126,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
       setSources(data || []);
       setRetryCount(0); // Reset retry count on success
     } catch (error: any) {
-      console.error('[SourcesPanel] Error loading sources:', {
+      logger.error('[SourcesPanel] Error loading sources', {
         error,
         context: 'load_sources',
         notebookId,
@@ -134,7 +135,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
         message: error?.message,
         details: error?.details,
         hint: error?.hint
-      });
+      }, 'SourcesPanel');
       
       // Check for various error types
       const errorMessage = error?.message || String(error) || '';
@@ -190,7 +191,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
       if (error) throw error;
       loadSources();
     } catch (error: any) {
-      console.error('Error toggling source:', error);
+      logger.error('Error toggling source', error, 'SourcesPanel');
       toast({
         title: 'Error',
         description: 'Failed to update source',
@@ -215,7 +216,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
         description: 'Source has been removed',
       });
     } catch (error: any) {
-      console.error('Error deleting source:', error);
+      logger.error('Error deleting source', error, 'SourcesPanel');
       toast({
         title: 'Error',
         description: 'Failed to delete source',
@@ -271,7 +272,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
       // Reload sources to show updated status
       loadSources();
     } catch (error: any) {
-      console.error('Error retrying source processing:', error);
+      logger.error('Error retrying source processing', error, 'SourcesPanel');
       toast({
         title: 'Error',
         description: error.message || 'Failed to retry processing',
@@ -298,7 +299,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
 
       loadSources();
     } catch (error: any) {
-      console.error('Error updating sources:', error);
+      logger.error('Error updating sources', error, 'SourcesPanel');
       toast({
         title: 'Error',
         description: 'Failed to update sources',
@@ -329,9 +330,17 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
     }
   };
 
-  const filteredSources = sources.filter(source =>
-    source.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Enhanced filtering: search by title, source type, and processing status
+  const filteredSources = sources.filter(source => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    
+    const matchesTitle = source.title.toLowerCase().includes(query);
+    const matchesType = source.source_type?.toLowerCase().includes(query);
+    const matchesStatus = source.processing_status?.toLowerCase().includes(query);
+    
+    return matchesTitle || matchesType || matchesStatus;
+  });
   const allSourcesIncluded = filteredSources.length > 0 && filteredSources.every((source) => source.is_included);
   const partiallyIncluded = filteredSources.some((source) => source.is_included) && !allSourcesIncluded;
 
@@ -377,7 +386,7 @@ export function SourcesPanel({ notebookId }: SourcesPanelProps) {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search the web for new sources"
+                placeholder="Search sources by title..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-4 h-10 text-sm bg-white"

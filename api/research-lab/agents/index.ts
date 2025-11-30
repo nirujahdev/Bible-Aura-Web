@@ -185,29 +185,6 @@ Curriculum Structure Should Include:
 - Prayer Prompts: Guided prayer for each session
 - Assessment: Ways to measure understanding and growth`,
   
-  sermon: `You are a sermon preparation assistant with expertise in biblical preaching and homiletics. You MUST ONLY help with Bible-based sermons.
-
-Key Guidelines:
-- Create sermon outlines that are Bible-focused and theologically sound
-- Base all points directly on Scripture
-- Include illustrations that illuminate biblical truth
-- Develop applications that connect Scripture to life
-- Maintain proper biblical interpretation (exegesis)
-- Ensure sermons are Christ-centered and gospel-focused
-- Balance explanation, illustration, and application
-
-Sermon Structure Should Include:
-- Title: Clear, memorable, biblically grounded
-- Main Scripture: Primary passage for the sermon
-- Introduction: Hook that connects to the text
-- Main Points: 3-5 points directly from the text
-  - Each point with sub-points
-  - Supporting verses for each point
-  - Illustrations or examples
-  - Practical applications
-- Conclusion: Summary and call to action
-- Closing Prayer: Prayer prompt based on the message`,
-  
   doctrinal: `You are a doctrinal harmonization assistant specializing in systematic theology and biblical doctrine. You MUST ONLY work with Bible doctrine and theology.
 
 Key Guidelines:
@@ -276,7 +253,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const validAgentTypes = ['summarize', 'search_qa', 'cross_reference', 'curriculum', 'sermon', 'doctrinal', 'translate'];
+    const validAgentTypes = ['summarize', 'search_qa', 'cross_reference', 'curriculum', 'doctrinal', 'translate'];
     if (!validAgentTypes.includes(agentType)) {
       res.status(400).json({ error: `Invalid agentType. Must be one of: ${validAgentTypes.join(', ')}` });
       return;
@@ -457,9 +434,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           break;
         case 'curriculum':
           semanticQuery = params.topic || 'Bible study curriculum and lessons';
-          break;
-        case 'sermon':
-          semanticQuery = params.scriptureReference || 'sermon preparation and biblical teaching';
           break;
         case 'doctrinal':
           semanticQuery = params.doctrinalQuestion || 'doctrinal harmony and theology';
@@ -646,30 +620,6 @@ Create a structured curriculum with:
 
 Format as JSON with clear structure.`;
         outputType = 'curriculum';
-        break;
-      }
-
-      case 'sermon': {
-        const scriptureReference = params.scriptureReference ? String(params.scriptureReference).trim().substring(0, 500) : null;
-        const sermonType = params.sermonType ? String(params.sermonType).trim().substring(0, 50) : 'expository';
-        const validSermonTypes = ['expository', 'topical', 'narrative', 'textual'];
-        const safeSermonType = validSermonTypes.includes(sermonType) ? sermonType : 'expository';
-        const scriptureContext = scriptureReference ? ` for ${scriptureReference}` : '';
-        userPrompt = `Create a ${safeSermonType} sermon outline${scriptureContext} using these sources:
-
-${sourceTexts}
-
-Provide:
-1. Sermon title
-2. Main scripture reference
-3. 3-5 main points with sub-points
-4. Supporting Bible verses for each point
-5. Illustrations or examples (from sources if available)
-6. Application points
-7. Closing prayer prompt
-
-Format as structured JSON.`;
-        outputType = 'sermon';
         break;
       }
 
@@ -911,7 +861,7 @@ Requirements:
               { role: 'user', content: userPrompt }
             ],
             temperature: 0.7,
-            max_tokens: agentType === 'curriculum' || agentType === 'sermon' || agentType === 'doctrinal' ? 3000 : 2000,
+            max_tokens: agentType === 'curriculum' || agentType === 'doctrinal' ? 3000 : 2000,
           }),
         }
       );
@@ -1049,16 +999,6 @@ Requirements:
           duration: params.duration,
           audience: params.audience,
           curriculum: result,
-          sourceIds: selectedSources.map(s => s.id),
-          sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
-          generatedAt: new Date().toISOString(),
-        };
-        break;
-      case 'sermon':
-        outputContent = {
-          scriptureReference: params.scriptureReference,
-          sermonType: params.sermonType || 'expository',
-          sermon: result,
           sourceIds: selectedSources.map(s => s.id),
           sourcesUsed: selectedSources.map(s => ({ id: s.id, title: s.title })),
           generatedAt: new Date().toISOString(),
@@ -1335,11 +1275,6 @@ Requirements:
       case 'curriculum':
         responseData.topic = params.topic;
         responseData.curriculum = result;
-        break;
-      case 'sermon':
-        responseData.scriptureReference = params.scriptureReference;
-        responseData.sermonType = params.sermonType || 'expository';
-        responseData.sermon = result;
         break;
       case 'doctrinal':
         responseData.doctrinalQuestion = params.doctrinalQuestion;

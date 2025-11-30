@@ -72,14 +72,6 @@ const aiAgents = [
     outputType: 'curriculum' as const
   },
   { 
-    id: 'sermon', 
-    name: 'Sermon Assistant', 
-    icon: Mic, 
-    color: 'text-pink-600',
-    chip: 'bg-pink-50 border-pink-100',
-    outputType: 'sermon' as const
-  },
-  { 
     id: 'doctrinal', 
     name: 'Doctrine Lens', 
     icon: Scale, 
@@ -123,8 +115,6 @@ function getOutputIcon(outputType: string) {
       return Link2;
     case 'curriculum':
       return BookOpen;
-    case 'sermon':
-      return Mic;
     case 'doctrinal_harmony':
       return Scale;
     case 'translation':
