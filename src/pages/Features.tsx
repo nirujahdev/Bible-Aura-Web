@@ -79,21 +79,6 @@ const Features = () => {
       borderColor: "border-orange-200"
     },
     {
-      title: "Sermon Writing & Preparation",
-      description: "Create and organize sermons with AI assistance. Build sermon outlines, save drafts, and manage your sermon library.",
-      icon: PenTool,
-      features: [
-        "Sermon writing tools",
-        "AI-assisted outlines",
-        "Sermon library management",
-        "Bible references integration"
-      ],
-      link: "/sermons",
-      color: "from-green-500 to-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200"
-    },
-    {
       title: "Favorites & Bookmarks",
       description: "Save your favorite Bible verses, organize them, and access them anytime. Build your personal collection of meaningful Scripture.",
       icon: Heart,
