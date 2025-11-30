@@ -345,59 +345,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-                      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-600 px-4 py-2 text-sm font-medium border-b-2 border-purple-600 rounded-t-lg">
-                        Research
-                      </div>
-                      <div className="text-gray-500 px-4 py-2 text-sm hover:text-gray-700 transition-colors">
-                        Bible
-                      </div>
-                      <div className="text-gray-500 px-4 py-2 text-sm hover:text-gray-700 transition-colors">
-                        AI Chat
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <span className="font-medium text-gray-700">Research Topic:</span>
-                    <span className="bg-gradient-to-r from-purple-50 to-indigo-50 px-3 py-1 rounded-lg text-purple-700 font-medium">The Good Shepherd</span>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-gray-50 to-purple-50/30 p-4 rounded-xl border border-purple-100">
-                    <div className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-purple-600" />
-                      Key Verses Found
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="text-gray-700 bg-white p-2 rounded border-l-4 border-purple-500">
-                        <span className="font-semibold text-purple-600">John 10:11</span> - "I am the good shepherd. The good shepherd lays down his life for the sheep."
-                      </div>
-                      <div className="text-gray-700 bg-white p-2 rounded border-l-4 border-indigo-500">
-                        <span className="font-semibold text-indigo-600">Psalm 23:1</span> - "The Lord is my shepherd, I lack nothing."
-                      </div>
-                      <div className="text-gray-700 bg-white p-2 rounded border-l-4 border-blue-500">
-                        <span className="font-semibold text-blue-600">1 Peter 5:4</span> - "And when the Chief Shepherd appears..."
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t">
-                    <span className="flex items-center gap-1">
-                      <BarChart3 className="h-3 w-3" />
-                      12 verses • 3 topics
-                    </span>
-                    <span className="text-green-600 font-medium flex items-center gap-1">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                      Research saved
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Smart Analysis Section */}
       <section className="py-12 md:py-20 bg-white">
