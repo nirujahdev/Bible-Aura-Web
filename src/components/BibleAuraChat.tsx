@@ -920,7 +920,7 @@ export function BibleAuraChat() {
                               )}
                             </div>
                           )}
-                          <div className="prose max-w-none text-gray-700 leading-relaxed max-h-[600px] overflow-y-auto">
+                          <div className="prose max-w-none text-gray-700 leading-relaxed">
                             {message.content.split('\n').map((line, idx) => {
                               // Check if line starts with ✦ (title marker)
                               if (line.trim().startsWith('✦')) {
@@ -1282,7 +1282,7 @@ export function BibleAuraChat() {
             {/* Desktop: Original Input Bar */}
             <div className="hidden lg:block">
               <div className="relative">
-                <div className="relative bg-transparent rounded-2xl border border-gray-200/30 shadow-sm hover:shadow-md hover:border-gray-300/50 transition-all duration-200 focus-within:border-gray-300/50 focus-within:shadow-lg">
+                <div className="relative bg-transparent rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 focus-within:shadow-lg">
                   <div className="flex items-center gap-2 px-3 py-2.5">
                     {/* Mode Selector */}
                     <Select value={currentMode} onValueChange={(value) => setCurrentMode(value as ChatMode)}>
