@@ -55,8 +55,8 @@ export async function transcribeMedia(buffer: Buffer, mimeType: string): Promise
     // Create FormData for multipart/form-data request
     // In Node.js, we need to use form-data package
     const FormDataModule = await import('form-data');
-    // @ts-ignore - form-data module structure varies
-    const FormDataClass = FormDataModule.default || FormDataModule;
+    // @ts-expect-error - form-data module structure varies, handle both default and named exports
+    const FormDataClass = (FormDataModule.default || FormDataModule) as any;
     const formData = new FormDataClass();
     
     // Append file as buffer with proper metadata

@@ -4,7 +4,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { getCachedSources } from './cache.js';
+import { getCachedSources } from '../../src/lib/research-lab/cache.js';
 import { searchSimilarSources } from '../../src/lib/research-lab/vector-operations.js';
 import logger from '../../src/lib/research-lab/logger.js';
 import { EnhancedRateLimiter } from '../../src/lib/enhancedRateLimiter.js';
