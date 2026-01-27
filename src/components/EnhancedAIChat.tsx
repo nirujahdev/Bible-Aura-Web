@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, hasSupabaseCredentials } from '@/integrations/supabase/client';
+import { sendBibleAuraMessage } from '@/lib/agent-sdk';
 // import { subscriptionService } from '@/lib/subscription-service'; // Removed subscription feature
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
   MessageCircle, 
   Plus, 
@@ -57,6 +59,38 @@ interface Message {
   content: string;
   timestamp: string;
   mode?: string;
+  sources?: Array<{
+    id: string;
+    filename: string;
+    score: number;
+    url?: string;
+    snippet?: string;
+    reference?: string;
+    verseText?: string;
+  }>;
+  crossReferences?: string[];
+  validatedVerses?: Array<{
+    reference: string;
+    verseText: string;
+    book: string;
+    chapter: number;
+    verse: number;
+  }>;
+  followUpQuestions?: Array<{
+    question: string;
+    relevance: number;
+  }>;
+  validationStatus?: 'verified' | 'partial' | 'failed';
+  thinking?: {
+    reasoningSummary: string[];
+    selectedSources: Array<{
+      reference?: string;
+      filename: string;
+      score: number;
+      url?: string;
+    }>;
+    confidence: 'high' | 'medium' | 'low';
+  };
 }
 
 interface Conversation {
@@ -97,16 +131,23 @@ const TRANSLATIONS = [
   { code: 'NKJV', name: 'New King James Version' }
 ];
 
-const PLACEHOLDER_RESPONSES: Record<ChatMode, string> = {
-  'chat-clean': 'AI chat responses are currently unavailable. Please explore the built-in study tools or revisit later.',
-  'verse-clean': 'Verse analysis is temporarily offline. Consider using commentaries or study guides for deeper insight.',
-  'parable-clean': 'Parable explanations are paused. Reflect on the passage and its context for understanding.',
-  'character-clean': 'Character study assistance is unavailable. Review the related scriptures toLearn more.',
-  'topical-clean': 'Topical study summaries are paused. Explore the concordance or topical index for verses.',
-  'qa-clean': 'Quick Q&A responses are currently disabled. Search the knowledge base or trusted resources for guidance.'
-};
+// Map UI mode names to API mode names
+function mapModeToAPI(mode: ChatMode): string {
+  const modeMap: Record<ChatMode, string> = {
+    'chat-clean': 'chat',
+    'verse-clean': 'verse',
+    'parable-clean': 'parable',
+    'character-clean': 'character',
+    'topical-clean': 'topical',
+    'qa-clean': 'qa'
+  };
+  return modeMap[mode] || 'chat';
+}
 
-const getPlaceholderResponse = async (mode: ChatMode) => PLACEHOLDER_RESPONSES[mode] ?? PLACEHOLDER_RESPONSES['chat-clean'];
+// Map UI language to API language
+function mapLanguageToAPI(language: Language): string {
+  return language === 'english' ? 'en' : 'ta';
+}
 
 export function EnhancedAIChat() {
   const { user } = useAuth();
@@ -331,7 +372,23 @@ export function EnhancedAIChat() {
     }, 800);
 
     try {
-      const response = await getPlaceholderResponse(currentMode);
+      // Build conversation history from current messages
+      const conversationHistory = messages
+        .slice(-5) // Last 5 messages for context
+        .map(msg => ({
+          role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
+          content: msg.content
+        }));
+
+      // Call the real API
+      const apiMode = mapModeToAPI(currentMode);
+      const apiLanguage = mapLanguageToAPI(currentLanguage);
+      
+      const response = await sendBibleAuraMessage(input.trim(), {
+        mode: apiMode,
+        language: apiLanguage,
+        conversationHistory: conversationHistory.length > 0 ? conversationHistory : undefined
+      });
       
       clearInterval(stateInterval);
       setAiState('idle');
@@ -339,15 +396,18 @@ export function EnhancedAIChat() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response,
+        content: response.text,
         timestamp: new Date().toISOString(),
-        mode: currentMode
+        mode: currentMode,
+        sources: response.sources,
+        crossReferences: response.crossReferences,
+        validatedVerses: response.validatedVerses,
+        followUpQuestions: response.followUpQuestions,
+        validationStatus: response.validationStatus,
+        thinking: response.thinking
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-      
-      // Usage tracking removed
-      // await subscriptionService.incrementUsage(user.id, 'ai_chat');
       
     } catch (error) {
       clearInterval(stateInterval);
@@ -541,9 +601,172 @@ export function EnhancedAIChat() {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-orange-500">✦</span>
                         <span className="text-sm font-medium text-gray-600">Bible Aura</span>
+                        {message.validationStatus && (
+                          <Badge 
+                            variant="outline" 
+                            className={`text-[10px] ${
+                              message.validationStatus === 'verified' 
+                                ? 'bg-green-50 text-green-700 border-green-200' 
+                                : message.validationStatus === 'partial'
+                                ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            }`}
+                          >
+                            {message.validationStatus === 'verified' ? '✓ Verified' : message.validationStatus}
+                          </Badge>
+                        )}
                       </div>
                     )}
                     <div className="whitespace-pre-wrap">{message.content}</div>
+                    
+                    {/* Sources, Validated Verses, and Thinking Panels */}
+                    {message.role === 'assistant' && 
+                     ((message.sources && message.sources.length > 0) || 
+                      (message.validatedVerses && message.validatedVerses.length > 0) || 
+                      message.thinking) && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <Tabs defaultValue="sources" className="w-full">
+                          <TabsList className="inline-flex h-auto p-0 bg-transparent gap-0 border-b border-gray-100">
+                            {message.sources && message.sources.length > 0 && (
+                              <TabsTrigger 
+                                value="sources" 
+                                className="text-xs font-medium text-gray-600 px-3 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                              >
+                                <span>Sources</span>
+                                <span className="ml-1 text-[10px] text-gray-500">({message.sources.length})</span>
+                              </TabsTrigger>
+                            )}
+                            {message.validatedVerses && message.validatedVerses.length > 0 && (
+                              <TabsTrigger 
+                                value="verses" 
+                                className="text-xs font-medium text-gray-600 px-3 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                              >
+                                <span>Verses</span>
+                                <span className="ml-1 text-[10px] text-gray-500">({message.validatedVerses.length})</span>
+                              </TabsTrigger>
+                            )}
+                            {message.thinking && (
+                              <TabsTrigger 
+                                value="thinking" 
+                                className="text-xs font-medium text-gray-600 px-3 py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                              >
+                                <span>Thinking</span>
+                              </TabsTrigger>
+                            )}
+                          </TabsList>
+                          
+                          {message.sources && message.sources.length > 0 && (
+                            <TabsContent value="sources" className="mt-3">
+                              <div className="space-y-2">
+                                {message.sources.map((source, idx) => (
+                                  <div key={idx} className="flex items-center justify-between text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                      {source.url ? (
+                                        <LinkIcon className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                                      ) : (
+                                        <FileText className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                                      )}
+                                      {source.url ? (
+                                        <a 
+                                          href={source.url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="truncate text-blue-600 hover:underline"
+                                        >
+                                          {source.filename}
+                                        </a>
+                                      ) : (
+                                        <span className="truncate">{source.filename}</span>
+                                      )}
+                                    </div>
+                                    <Badge variant="outline" className="ml-2 text-[10px] bg-white">
+                                      {source.url ? 'Web' : `${(source.score * 100).toFixed(0)}%`}
+                                    </Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </TabsContent>
+                          )}
+                          
+                          {message.validatedVerses && message.validatedVerses.length > 0 && (
+                            <TabsContent value="verses" className="mt-3">
+                              <div className="space-y-3">
+                                {message.validatedVerses.map((verse, idx) => (
+                                  <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-sm font-semibold text-blue-900">{verse.reference}</span>
+                                      <Badge variant="outline" className="text-[10px] bg-white text-blue-700 border-blue-300">
+                                        Validated
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-gray-700 leading-relaxed">{verse.verseText}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </TabsContent>
+                          )}
+                          
+                          {message.thinking && (
+                            <TabsContent value="thinking" className="mt-3">
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-600">Confidence:</span>
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-[10px] ${
+                                      message.thinking.confidence === 'high' 
+                                        ? 'bg-green-50 text-green-700 border-green-200' 
+                                        : message.thinking.confidence === 'medium'
+                                        ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                        : 'bg-red-50 text-red-700 border-red-200'
+                                    }`}
+                                  >
+                                    {message.thinking.confidence.toUpperCase()}
+                                  </Badge>
+                                </div>
+                                
+                                {message.thinking.reasoningSummary && message.thinking.reasoningSummary.length > 0 && (
+                                  <div>
+                                    <h4 className="text-xs font-semibold text-gray-700 mb-2">Reasoning:</h4>
+                                    <ul className="space-y-1.5">
+                                      {message.thinking.reasoningSummary.map((reason, idx) => (
+                                        <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
+                                          <span className="text-orange-500 mt-0.5">•</span>
+                                          <span>{reason}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                
+                                {message.thinking.selectedSources && message.thinking.selectedSources.length > 0 && (
+                                  <div>
+                                    <h4 className="text-xs font-semibold text-gray-700 mb-2">Selected Sources:</h4>
+                                    <div className="space-y-1.5">
+                                      {message.thinking.selectedSources.map((source, idx) => (
+                                        <div key={idx} className="flex items-center justify-between text-xs bg-gray-50 rounded px-2 py-1.5">
+                                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <FileText className="h-3 w-3 text-orange-500 flex-shrink-0" />
+                                            <span className="truncate">{source.filename}</span>
+                                            {source.reference && (
+                                              <span className="text-gray-500 text-[10px]">({source.reference})</span>
+                                            )}
+                                          </div>
+                                          <Badge variant="outline" className="ml-2 text-[10px] bg-white">
+                                            {(source.score * 100).toFixed(0)}%
+                                          </Badge>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </TabsContent>
+                          )}
+                        </Tabs>
+                      </div>
+                    )}
+                    
                     <div className="text-xs opacity-70 mt-2">
                       {new Date(message.timestamp).toLocaleTimeString()}
                     </div>

@@ -39,6 +39,16 @@ export interface AgentSDKResponse {
     relevance: number;
   }>;
   validationStatus?: 'verified' | 'partial' | 'failed';
+  thinking?: {
+    reasoningSummary: string[];
+    selectedSources: Array<{
+      reference?: string;
+      filename: string;
+      score: number;
+      url?: string;
+    }>;
+    confidence: 'high' | 'medium' | 'low';
+  };
 }
 
 // Request type for Agent SDK API

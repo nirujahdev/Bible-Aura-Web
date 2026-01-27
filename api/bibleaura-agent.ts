@@ -25,7 +25,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_SIZE = 100;
 
 function getCacheKey(message: string, mode?: string, language?: string, modelMode?: string): string {
-  return `${message.trim().toLowerCase()}|${mode || 'default'}|${language || 'default'}|${modelMode || 'aura-1.0'}`;
+  return `${message.trim().toLowerCase()}|${mode || 'default'}|${language || 'default'}|${modelMode || 'v2'}`;
 }
 
 function getCachedResponse(message: string, mode?: string, language?: string, modelMode?: string): CachedResponse | null {
@@ -128,6 +128,16 @@ interface AgentResponse {
     relevance: number;
   }>;
   validationStatus?: 'verified' | 'partial' | 'failed';
+  thinking?: {
+    reasoningSummary: string[];
+    selectedSources: Array<{
+      reference?: string;
+      filename: string;
+      score: number;
+      url?: string;
+    }>;
+    confidence: 'high' | 'medium' | 'low';
+  };
 }
 
 interface RAGResult {
@@ -973,7 +983,128 @@ async function validateVerseReferences(
 }
 
 /**
- * Ultra-Fast 3-Node RAG Pipeline
+ * V2 Pipeline: Router → Retriever → Rerank → Ground → Compose → Inject → Validate
+ */
+async function runV2Pipeline(
+  userInput: string,
+  preferredMode?: string,
+  preferredLanguage?: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<AgentResponse> {
+  try {
+    // Import V2 modules
+    const { routeQuery } = await import('../src/lib/ai-v2/router.js');
+    const { retrieveFromPinecone, retrieveCrossReferences } = await import('../src/lib/ai-v2/pinecone.js');
+    const { rerankCandidates } = await import('../src/lib/ai-v2/rerank.js');
+    const { buildEvidencePack } = await import('../src/lib/ai-v2/evidence.js');
+    const { generateGroundingPlan } = await import('../src/lib/ai-v2/ground.js');
+    const { composeResponse } = await import('../src/lib/ai-v2/compose.js');
+    const { injectVerseTexts, updateSourcesWithVerseText } = await import('../src/lib/ai-v2/bibleText.js');
+    const { validateResponse, generateSafeFallback } = await import('../src/lib/ai-v2/validate.js');
+
+    // A) Router
+    const router = await routeQuery(userInput, preferredMode, preferredLanguage as 'en' | 'ta' | undefined);
+
+    // B) Retriever
+    const candidates = await retrieveFromPinecone(userInput, router.lang, router.verseRefs);
+    
+    if (candidates.length === 0) {
+      // Fallback if no candidates found
+      return {
+        text: generateSafeFallback(router.verseRefs[0]),
+        mode: router.mode,
+        lang: router.lang,
+        sources: [],
+        validatedVerses: [],
+        validationStatus: 'failed',
+        followUpQuestions: []
+      };
+    }
+
+    // C) Rerank
+    const reranked = await rerankCandidates(candidates, userInput);
+
+    // D) Evidence Pack
+    const evidence = buildEvidencePack(reranked);
+
+    // E) Grounding Plan
+    const grounding = await generateGroundingPlan(userInput, evidence);
+
+    // F) Compose Response
+    const composed = await composeResponse(userInput, grounding, evidence, router.mode, router.lang);
+
+    // G) Quote Injection
+    const validatedVerses = await injectVerseTexts(composed.usedVerseRefs, router.lang);
+    
+    // Update sources with verseText
+    const updatedSources = updateSourcesWithVerseText(evidence.sources, validatedVerses);
+
+    // H) Validators
+    const validation = validateResponse(composed.text, validatedVerses, updatedSources);
+
+    // If validation failed, return safe fallback
+    if (validation.status === 'failed') {
+      return {
+        text: generateSafeFallback(composed.usedVerseRefs[0]),
+        mode: composed.mode,
+        lang: composed.lang,
+        sources: updatedSources.slice(0, 5),
+        validatedVerses: validatedVerses.slice(0, 3), // Include what we have
+        validationStatus: 'failed',
+        followUpQuestions: composed.followUpQuestions
+      };
+    }
+
+    // Retrieve cross-references if verse refs detected
+    let crossReferences: string[] = [];
+    if (router.hasDirectVerseRef && router.verseRefs.length > 0) {
+      try {
+        crossReferences = await retrieveCrossReferences(router.verseRefs[0], 10);
+      } catch (error) {
+        console.warn('[V2 Pipeline] Failed to retrieve cross-references:', error);
+      }
+    }
+
+    // Build thinking object
+    const thinking = {
+      reasoningSummary: grounding.reasoningSummary,
+      selectedSources: updatedSources.slice(0, 5).map(s => ({
+        reference: s.reference,
+        filename: s.filename || '',
+        score: s.score,
+        url: s.url
+      })),
+      confidence: grounding.confidenceDraft
+    };
+
+    return {
+      text: composed.text,
+      mode: composed.mode,
+      lang: composed.lang,
+      sources: updatedSources.slice(0, 5),
+      crossReferences,
+      validatedVerses,
+      validationStatus: validation.status,
+      followUpQuestions: composed.followUpQuestions,
+      thinking
+    };
+  } catch (error: any) {
+    console.error('[V2 Pipeline] Error:', error);
+    // Return safe fallback on error
+    return {
+      text: generateSafeFallback(),
+      mode: 'chat',
+      lang: preferredLanguage === 'ta' ? 'ta' : 'en',
+      sources: [],
+      validatedVerses: [],
+      validationStatus: 'failed',
+      followUpQuestions: []
+    };
+  }
+}
+
+/**
+ * Legacy Ultra-Fast 3-Node RAG Pipeline (kept for fallback)
  */
 async function runFastRAGPipeline(
   userInput: string,
@@ -1335,7 +1466,7 @@ export default async function handler(
 
     // Check cache first (but skip if conversation history is provided, as it affects results)
     if (!validConversationHistory || validConversationHistory.length === 0) {
-      const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage, 'aura-1.0');
+      const cached = getCachedResponse(sanitizedMessage, preferredMode, preferredLanguage, 'v2');
       if (cached) {
         console.log('[Bible Aura AI] Cache hit');
         res.status(200).json(cached);
@@ -1343,12 +1474,24 @@ export default async function handler(
       }
     }
 
-    const result = await runFastRAGPipeline(
-      sanitizedMessage,
-      preferredMode,
-      preferredLanguage,
-      validConversationHistory
-    );
+    // Use V2 pipeline (fallback to legacy if V2 fails)
+    let result: AgentResponse;
+    try {
+      result = await runV2Pipeline(
+        sanitizedMessage,
+        preferredMode,
+        preferredLanguage,
+        validConversationHistory
+      );
+    } catch (v2Error: any) {
+      console.error('[V2 Pipeline] Failed, falling back to legacy:', v2Error);
+      result = await runFastRAGPipeline(
+        sanitizedMessage,
+        preferredMode,
+        preferredLanguage,
+        validConversationHistory
+      );
+    }
 
     // Only return sources that are actually retrieved (not empty or invalid)
     // Filter out JSON files and invalid sources
@@ -1366,7 +1509,7 @@ export default async function handler(
     // No need to re-validate here
 
     // Cache the result
-    setCachedResponse(sanitizedMessage, result, preferredMode, preferredLanguage, 'aura-1.0');
+    setCachedResponse(sanitizedMessage, result, preferredMode, preferredLanguage, 'v2');
 
     res.status(200).json(result);
 

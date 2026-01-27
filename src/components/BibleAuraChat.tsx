@@ -75,6 +75,16 @@ interface Message {
     relevance: number;
   }>;
   validationStatus?: 'verified' | 'partial' | 'failed';
+  thinking?: {
+    reasoningSummary: string[];
+    selectedSources: Array<{
+      reference?: string;
+      filename: string;
+      score: number;
+      url?: string;
+    }>;
+    confidence: 'high' | 'medium' | 'low';
+  };
   feedback?: 'positive' | 'negative' | null;
 }
 
@@ -450,7 +460,8 @@ export function BibleAuraChat() {
         crossReferences: aiResponse.crossReferences,
         validatedVerses: aiResponse.validatedVerses,
         followUpQuestions: aiResponse.followUpQuestions,
-        validationStatus: aiResponse.validationStatus
+        validationStatus: aiResponse.validationStatus,
+        thinking: (aiResponse as any).thinking
       };
 
       const finalMessages = [...newMessages, aiMessage];
@@ -977,6 +988,14 @@ export function BibleAuraChat() {
                                       <span className="ml-1 text-[10px] md:text-xs text-gray-500">({message.validatedVerses.length})</span>
                                     </TabsTrigger>
                                   )}
+                                  {message.thinking && (
+                                    <TabsTrigger 
+                                      value="thinking" 
+                                      className="text-xs md:text-sm font-medium text-gray-600 px-2 md:px-4 py-1.5 md:py-2 border-b-2 border-transparent data-[state=active]:text-gray-900 data-[state=active]:border-gray-900 rounded-none bg-transparent hover:text-gray-900 transition-colors"
+                                    >
+                                      <span>Thinking</span>
+                                    </TabsTrigger>
+                                  )}
                                 </TabsList>
                                 
                                 <TabsContent value="sources" className="mt-3">
@@ -1047,6 +1066,67 @@ export function BibleAuraChat() {
                                           <p className="text-sm text-gray-700 leading-relaxed">{verse.verseText}</p>
                                         </div>
                                       ))}
+                                    </div>
+                                  </TabsContent>
+                                )}
+                                
+                                {message.thinking && (
+                                  <TabsContent value="thinking" className="mt-3">
+                                    <div className="space-y-4">
+                                      {/* Confidence Badge */}
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-medium text-gray-600">Confidence:</span>
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`text-[10px] ${
+                                            message.thinking.confidence === 'high' 
+                                              ? 'bg-green-50 text-green-700 border-green-200' 
+                                              : message.thinking.confidence === 'medium'
+                                              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                              : 'bg-red-50 text-red-700 border-red-200'
+                                          }`}
+                                        >
+                                          {message.thinking.confidence.toUpperCase()}
+                                        </Badge>
+                                      </div>
+                                      
+                                      {/* Reasoning Summary */}
+                                      {message.thinking.reasoningSummary && message.thinking.reasoningSummary.length > 0 && (
+                                        <div>
+                                          <h4 className="text-xs font-semibold text-gray-700 mb-2">Reasoning:</h4>
+                                          <ul className="space-y-1.5">
+                                            {message.thinking.reasoningSummary.map((reason, idx) => (
+                                              <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
+                                                <span className="text-orange-500 mt-0.5">•</span>
+                                                <span>{reason}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      
+                                      {/* Selected Sources */}
+                                      {message.thinking.selectedSources && message.thinking.selectedSources.length > 0 && (
+                                        <div>
+                                          <h4 className="text-xs font-semibold text-gray-700 mb-2">Selected Sources:</h4>
+                                          <div className="space-y-1.5">
+                                            {message.thinking.selectedSources.map((source, idx) => (
+                                              <div key={idx} className="flex items-center justify-between text-xs bg-gray-50 rounded px-2 py-1.5">
+                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                  <FileText className="h-3 w-3 text-orange-500 flex-shrink-0" />
+                                                  <span className="truncate">{source.filename}</span>
+                                                  {source.reference && (
+                                                    <span className="text-gray-500 text-[10px]">({source.reference})</span>
+                                                  )}
+                                                </div>
+                                                <Badge variant="outline" className="ml-2 text-[10px] bg-white">
+                                                  {(source.score * 100).toFixed(0)}%
+                                                </Badge>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   </TabsContent>
                                 )}
