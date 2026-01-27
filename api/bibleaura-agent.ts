@@ -991,6 +991,9 @@ async function runV2Pipeline(
   preferredLanguage?: string,
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
 ): Promise<AgentResponse> {
+  // Import generateSafeFallback at function level for use in catch block
+  const { generateSafeFallback } = await import('../src/lib/ai-v2/validate.js');
+  
   try {
     // Import V2 modules
     const { routeQuery } = await import('../src/lib/ai-v2/router.js');
@@ -1000,7 +1003,7 @@ async function runV2Pipeline(
     const { generateGroundingPlan } = await import('../src/lib/ai-v2/ground.js');
     const { composeResponse } = await import('../src/lib/ai-v2/compose.js');
     const { injectVerseTexts, updateSourcesWithVerseText } = await import('../src/lib/ai-v2/bibleText.js');
-    const { validateResponse, generateSafeFallback } = await import('../src/lib/ai-v2/validate.js');
+    const { validateResponse } = await import('../src/lib/ai-v2/validate.js');
 
     // A) Router
     const router = await routeQuery(userInput, preferredMode, preferredLanguage as 'en' | 'ta' | undefined);

@@ -68,12 +68,18 @@ export async function composeResponse(
       throw new Error('Invalid response from compose: missing required fields');
     }
     
+    // Ensure followUpQuestions have all required fields
+    const followUpQuestions = (result.followUpQuestions || []).map(q => ({
+      question: q.question || '',
+      relevance: q.relevance || 0.5
+    }));
+    
     return {
       text: result.text,
       mode: result.mode,
       lang: result.lang,
       usedVerseRefs: result.usedVerseRefs || [],
-      followUpQuestions: result.followUpQuestions || []
+      followUpQuestions
     };
   } catch (error) {
     console.error('[Compose] Error:', error);
