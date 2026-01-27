@@ -1,7 +1,9 @@
 // File Extraction Utilities for Research Lab
 // Extracts text content from various file types (PDF, DOCX, TXT, etc.)
 
+// @ts-ignore - pdf-parse doesn't have type definitions
 import pdfParse from 'pdf-parse';
+// @ts-ignore - mammoth doesn't have type definitions
 import mammoth from 'mammoth';
 import { extractImageText } from './image-extractor.js';
 

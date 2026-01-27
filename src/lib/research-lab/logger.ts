@@ -16,10 +16,13 @@ class Logger {
   private isProduction: boolean;
 
   constructor() {
-    this.isDevelopment = 
-      typeof window !== 'undefined' 
-        ? import.meta.env.DEV 
-        : process.env.NODE_ENV === 'development';
+    if (typeof window !== 'undefined') {
+      // Client-side: use import.meta.env
+      this.isDevelopment = (import.meta as any).env?.DEV || false;
+    } else {
+      // Server-side: use process.env
+      this.isDevelopment = process.env.NODE_ENV === 'development';
+    }
     this.isProduction = !this.isDevelopment;
   }
 

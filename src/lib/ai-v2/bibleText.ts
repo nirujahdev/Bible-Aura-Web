@@ -1,6 +1,8 @@
 // Bible Text: Verse resolver + verseText injector
 // Fetches exact verse text from Bible JSON API
 
+import type { Source } from './evidence.js';
+
 export interface ValidatedVerse {
   reference: string;
   verseText: string;
@@ -89,9 +91,9 @@ export async function injectVerseTexts(
  * Update sources with verseText from validatedVerses
  */
 export function updateSourcesWithVerseText(
-  sources: Array<{ reference?: string; verseText?: string; [key: string]: any }>,
+  sources: Source[],
   validatedVerses: ValidatedVerse[]
-): Array<{ reference?: string; verseText?: string; [key: string]: any }> {
+): Source[] {
   const verseMap = new Map<string, string>();
   validatedVerses.forEach(v => {
     verseMap.set(v.reference, v.verseText);

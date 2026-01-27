@@ -63,7 +63,18 @@ export async function composeResponse(
       }
     }
 
-    return result;
+    // Ensure all required fields are present
+    if (!result.text || !result.mode || !result.lang) {
+      throw new Error('Invalid response from compose: missing required fields');
+    }
+    
+    return {
+      text: result.text,
+      mode: result.mode,
+      lang: result.lang,
+      usedVerseRefs: result.usedVerseRefs || [],
+      followUpQuestions: result.followUpQuestions || []
+    };
   } catch (error) {
     console.error('[Compose] Error:', error);
     // Fallback response
